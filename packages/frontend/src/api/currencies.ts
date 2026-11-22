@@ -1,9 +1,15 @@
 import { api } from '@/api/_api';
 import {
   type BaseCurrencyChangeStatus,
+  type CoingeckoCoinSearchResult,
   type CreateCustomCurrencyBody,
+  type CurrencyRateHistoryResponse,
+  type CurrencyRateSourceResponse,
   CurrencyModel,
   type CustomCurrencyModel,
+  type TestCurrencyRateSourceBody,
+  type TestCurrencyRateSourceResponse,
+  type UpdateCurrencyRateSourceBody,
   type UpdateCustomCurrencyBody,
   ExchangeRatesModel,
   RefBalanceRemeasureResult,
@@ -21,6 +27,8 @@ export const deleteCustomRate = (
   pairs: {
     baseCode: string;
     quoteCode: string;
+    /** Removes only the rate of a custom currency that starts on this day (`yyyy-MM-dd`). */
+    effectiveDate?: string;
   }[],
 ): Promise<{ remeasure: RefBalanceRemeasureResult }> => api.delete('/user/currency/rates', { data: { pairs } });
 
@@ -53,6 +61,8 @@ export const editUserCurrenciesExchangeRates = async (
     baseCode: string;
     quoteCode: string;
     rate: number;
+    /** The day (`yyyy-MM-dd`) a rate of a custom currency starts to apply; today when omitted. */
+    effectiveDate?: string;
   }[],
 ): Promise<{ rates: UserExchangeRatesModel[]; remeasure: RefBalanceRemeasureResult }> =>
   api.put('/user/currency/rates', { pairs });
@@ -98,3 +108,45 @@ export const updateCustomCurrency = ({
 /** Allowed only while none of the user's rows use the currency (422 `currencyInUse` otherwise). */
 export const deleteCustomCurrency = ({ code }: { code: string }): Promise<void> =>
   api.delete(`/user/currencies/custom/${encodeURIComponent(code)}`);
+
+/**
+ * Saves where a custom currency's rates come from. A CoinGecko source answers 503
+ * (`CRYPTO_PROVIDER_NOT_CONFIGURED`) on an instance without a CoinGecko key. For an `http` source,
+ * `config.headers` omitted keeps the saved headers and `{}` removes them.
+ */
+export const updateCurrencyRateSource = ({
+  code,
+  body,
+}: {
+  code: string;
+  body: UpdateCurrencyRateSourceBody;
+}): Promise<CurrencyRateSourceResponse> => api.put(`/user/currencies/${encodeURIComponent(code)}/rate-source`, body);
+
+/** Asks an HTTP source for one day's rate and saves nothing. A failed request is an answer, not an error. */
+export const testCurrencyRateSource = ({
+  code,
+  body,
+}: {
+  code: string;
+  body: TestCurrencyRateSourceBody;
+}): Promise<TestCurrencyRateSourceResponse> =>
+  api.post(`/user/currencies/${encodeURIComponent(code)}/rate-source/test`, body);
+
+/** Coins matching a query, for the CoinGecko source editor. */
+export const searchCoingeckoCoins = ({ query }: { query: string }): Promise<CoingeckoCoinSearchResult[]> =>
+  api.get('/user/currencies/coingecko/search', { query });
+
+/**
+ * Stored rates of a custom currency, latest first. Only the first page (`offset` 0) carries
+ * `totalCount`.
+ */
+export const loadCurrencyRateHistory = ({
+  code,
+  limit,
+  offset,
+}: {
+  code: string;
+  limit: number;
+  offset: number;
+}): Promise<CurrencyRateHistoryResponse> =>
+  api.get(`/user/currencies/${encodeURIComponent(code)}/rate-history`, { limit, offset });

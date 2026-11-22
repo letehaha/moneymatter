@@ -1,25 +1,24 @@
 <template>
-  <DesktopOnlyTooltip
-    :content="$t('settings.currencies.delete.disabledTooltip')"
-    :disabled="!isDeletionDisabled"
-    content-class-name="max-w-[320px]"
+  <p
+    v-if="accountsCount > 0"
+    class="text-muted-foreground max-w-56 text-right text-sm"
+    data-testid="delete-currency-blocked"
   >
-    <!-- Disabled native buttons don't fire pointer events, so the tooltip trigger
-    (merged onto this child via as-child) needs a non-disabled wrapper to hover on. -->
-    <span class="inline-flex">
-      <Button
-        variant="soft-destructive"
-        size="sm"
-        class="whitespace-nowrap"
-        :disabled="isDeletionDisabled || isFormDisabled"
-        @click="openConfirm"
-      >
-        <Trash2Icon class="size-4" />
-        <span class="hidden @[450px]/currencies:inline">{{ $t('settings.currencies.delete.button') }}</span>
-        <span class="@[450px]/currencies:hidden">{{ $t('settings.currencies.delete.buttonShort') }}</span>
-      </Button>
-    </span>
-  </DesktopOnlyTooltip>
+    {{ $t('settings.currencies.dialog.footer.deleteBlocked', { count: accountsCount }, accountsCount) }}
+  </p>
+  <Button
+    v-else
+    variant="soft-destructive"
+    size="sm"
+    class="whitespace-nowrap"
+    :disabled="isFormDisabled"
+    data-testid="delete-currency"
+    @click="openConfirm"
+  >
+    <Trash2Icon class="size-4" />
+    <span class="hidden @[450px]/currencies:inline">{{ $t('settings.currencies.delete.button') }}</span>
+    <span class="@[450px]/currencies:hidden">{{ $t('settings.currencies.delete.buttonShort') }}</span>
+  </Button>
 
   <ResponsiveAlertDialog
     v-model:open="isConfirmOpen"
@@ -50,7 +49,6 @@
 import { deleteCustomCurrency, deleteUserCurrency } from '@/api/currencies';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
-import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { ApiErrorResponseError } from '@/js/errors';
 import { API_ERROR_CODES, type CurrencyInUseBlocker, type CurrencyInUseDetails } from '@bt/shared/types';
@@ -68,7 +66,8 @@ const { t } = useI18n();
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
   isFormDisabled: boolean;
-  isDeletionDisabled: boolean;
+  /** Accounts using the currency; any blocks the delete. */
+  accountsCount: number;
 }>();
 
 const emit = defineEmits<{

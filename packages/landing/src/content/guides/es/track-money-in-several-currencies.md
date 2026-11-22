@@ -73,20 +73,20 @@ Por la misma razón, si tiene moneda extranjera, los ingresos menos los gastos d
 
 ## Use un tipo personalizado solo si quiere un tipo fijo
 
-El tipo de su banco rara vez coincide con el del mercado, así que quizá quiera introducir el suyo. Vaya a **Ajustes** → **Monedas**, despliegue la fila de la moneda, desmarque **Actualización en tiempo real**, escriba el tipo en cualquiera de los dos campos y haga clic en **Guardar**.
+El tipo de su banco rara vez coincide con el del mercado, así que quizá quiera introducir el suyo. Vaya a **Ajustes** → **Monedas**, haga clic en la fila de la moneda, desactive **Tipo en tiempo real**, escriba el tipo en cualquiera de los dos campos y haga clic en **Guardar tipo**.
 
-![Una fila de PLN desplegada en la página «Currencies», con «Live update» desmarcado, un tipo personalizado de 0.25 introducido y el botón «Save»](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
+![El diálogo de PLN en la página «Currencies», con «Live rate» desactivado, un tipo personalizado de 0.25 introducido y el botón «Save rate»](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
 
 Obtiene un único tipo por moneda, sin fecha asociada:
 
 - Las transacciones nuevas y cualquier transacción que edite y guarde lo usan, aunque sean del año pasado. Las transacciones que ya ha guardado conservan sus importes base hasta que las edite.
 - Los saldos pasan a usarlo en cuanto guarda. En las cuentas gestionadas manualmente, MoneyMatter también vuelve a calcular todo el historial de saldos con ese tipo, así que el gráfico deja de seguir al mercado para esa moneda.
 
-Yo dejaría activada la **Actualización en tiempo real** en la mayoría de las monedas. No puede fijar un tipo por pago, y una transferencia ya registra el tipo real de cada cambio de divisa. Para volver atrás, marque de nuevo **Actualización en tiempo real** y haga clic en **Guardar**.
+Yo dejaría activado el **Tipo en tiempo real** en la mayoría de las monedas. No puede fijar un tipo por pago, y una transferencia ya registra el tipo real de cada cambio de divisa. Para volver atrás, active de nuevo el **Tipo en tiempo real** y confirme con **Usar tipo en tiempo real**.
 
 ## Si se muda de país
 
-Cuando cambie la moneda en la que piensa, cambie su moneda base y conserve sus datos. Vaya a **Ajustes** → **Monedas** y añada la nueva moneda si no aparece en la lista. Después despliegue su fila, haga clic en **Establecer como moneda base** y confirme.
+Cuando cambie la moneda en la que piensa, cambie su moneda base y conserve sus datos. Vaya a **Ajustes** → **Monedas** y añada la nueva moneda si no aparece en la lista. Después haga clic en su fila, luego en **Establecer como moneda base** y confirme.
 
 MoneyMatter vuelve a calcular cada transacción al tipo de mercado de su fecha y convierte los saldos al tipo de hoy. Sus importes originales se quedan tal como los introdujo. Antes de empezar:
 

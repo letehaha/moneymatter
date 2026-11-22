@@ -624,9 +624,19 @@
     "customCurrencyLastRate": "\"{{code}}\" is a custom currency and always needs a rate. Set a new rate instead of removing the last one",
     "customCurrencyQuoteNotIso": "The rate of a custom currency must be given in an ISO currency, and \"{{code}}\" is a custom currency",
     "customCurrencyRateNeedsQuote": "Set a base currency first, or give the rate of the custom currency in an ISO currency you hold",
-    "customCurrencyOneQuote": "\"{{code}}\" has a single quote currency. Send its rates against one currency only",
+    "customCurrencyOneQuote": "A rate of {{code}} for one day can be quoted in one currency only.",
+    "customCurrencyRateNotManual": "{{code}} takes its rates from its rate source. Switch it to manual rates to set or remove a rate.",
+    "customCurrencyRemovalNeedsDate": "Name the day of the {{code}} rate to remove: a custom currency's rates are removed one day at a time.",
     "customCurrencyRateViaPairs": "\"{{code}}\" is a custom currency. Change its rate from its exchange rate instead",
-    "customCurrencyDefinitionConflict": "Your own \"{{code}}\" has different decimals than the account owner's \"{{code}}\", so you can't add or edit \"{{code}}\" transactions on this shared account"
+    "customCurrencyDefinitionConflict": "Your own \"{{code}}\" has different decimals than the account owner's \"{{code}}\", so you can't add or edit \"{{code}}\" transactions on this shared account",
+    "rateSourceCurrencyNotHeld": "\"{{code}}\" is not in your currencies",
+    "rateSourceIsoNotAllowed": "Rate sources are for custom currencies only. Use live rates or your own rate for {{code}}.",
+    "rateHistoryIsoNotAllowed": "\"{{code}}\" is an ISO currency, so it has one undated rate and no rate history",
+    "rateSourceHttpsRequired": "Rates from an HTTP source must be fetched over https",
+    "rateSourceHeadersUnreadable": "Cannot read the saved request headers of \"{{code}}\" (the server secret changed). Enter the headers again",
+    "rateSourceFirstFetchFailed": "Couldn't get a rate for \"{{code}}\" from this source, so it wasn't saved. Check its settings and try again.",
+    "rateSourceLeavesNoRate": "\"{{code}}\" is a custom currency and always needs a rate. This source would leave it without one, so it wasn't saved.",
+    "rateSourceChangedMeanwhile": "The rate source of \"{{code}}\" changed while this one was being saved. Reload and try again."
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"
@@ -905,8 +915,8 @@
         "checksumMismatch": "Backup file {{path}} failed its integrity check (checksum mismatch).",
         "amountNotCents": "Backup file {{path}} is corrupt: it contains an invalid amount ({{value}}).",
         "differentAccount": "This backup was exported by a different account and cannot be restored here.",
-        "customCurrencyInvalid": "The backup's custom currency \"{{code}}\" has an invalid name, symbol or decimals, so it cannot be restored",
-        "customCurrencyWithoutRate": "The backup's custom currency \"{{code}}\" needs exactly one positive exchange rate against an ISO currency, so it cannot be restored",
+        "customCurrencyInvalid": "The backup's custom currency \"{{code}}\" has an invalid definition or rate source, so it cannot be restored",
+        "customCurrencyWithoutRate": "The backup's custom currency \"{{code}}\" needs a positive exchange rate against an ISO currency, or a peg to one, so it cannot be restored",
         "alreadyInProgress": "A backup restore is already in progress. Wait for it to finish before starting another.",
         "failed": "The backup restore failed. Your existing data was not changed."
       }

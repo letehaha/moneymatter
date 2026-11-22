@@ -1,4 +1,12 @@
-import { CUSTOM_CURRENCY_DECIMALS_MAX, CUSTOM_CURRENCY_DECIMALS_MIN, RecordId } from '@bt/shared/types';
+import {
+  CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_DECIMALS_MIN,
+  type CoingeckoRateSourceConfig,
+  type CurrencyRateSource,
+  type HttpRateSourceConfig,
+  type PegRateSourceConfig,
+  type RecordId,
+} from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { IdColumn } from '@common/types/id-column';
@@ -7,11 +15,25 @@ import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
-import { Table, Column, Model, ForeignKey, BelongsTo, DataType, AfterSave, AfterDestroy } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  ForeignKey,
+  BelongsTo,
+  DataType,
+  AfterSave,
+  AfterDestroy,
+  DefaultScope,
+} from 'sequelize-typescript';
 
 import Currencies, { NON_CURRENCY_CODES } from './currencies.model';
 import Users from './users.model';
 
+// The encrypted request headers of an HTTP rate source stay out of every ordinary read, so no
+// endpoint, serializer or backup can return them by accident. The services that dial the source
+// ask for them with `UsersCurrencies.unscoped()`.
+@DefaultScope(() => ({ attributes: { exclude: ['rateSourceHeadersEncrypted'] } }))
 @Table({
   timestamps: false,
   tableName: 'UsersCurrencies',
@@ -94,6 +116,21 @@ export default class UsersCurrencies extends Model {
 
   @Column({ allowNull: true, type: DataType.UUID })
   logoImageId!: string | null;
+
+  /**
+   * Where the user's rates for a custom currency come from; the settings of each source are in
+   * `rateSourceConfig`. An ISO currency stays on `manual`: `liveRateUpdate` prices it.
+   */
+  @Column({ allowNull: false, defaultValue: 'manual', type: DataType.STRING(16) })
+  declare rateSource: CurrencyRateSource;
+
+  /** Settings of `rateSource`; `null` for `manual`. Written only by the rate-source endpoint. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.JSONB })
+  declare rateSourceConfig: PegRateSourceConfig | CoingeckoRateSourceConfig | HttpRateSourceConfig | null;
+
+  /** Request headers of an `http` source as one `encryptToken` blob (a JSON object); `null` when it sends none. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
+  declare rateSourceHeadersEncrypted: string | null;
 
   // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
   @AfterSave

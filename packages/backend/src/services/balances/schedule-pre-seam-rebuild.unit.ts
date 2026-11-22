@@ -32,7 +32,7 @@ jest.mock('@services/user-exchange-rate/get-exchange-rate.service', () => ({
 }));
 jest.mock('@services/user-exchange-rate/resolve-custom-pair-rate', () => ({
   __esModule: true,
-  findCustomCurrencyQuote: jest.fn(),
+  loadCustomCurrencyDailyQuote: jest.fn(),
 }));
 jest.mock('@services/currencies/custom-currency-codes', () => ({
   __esModule: true,

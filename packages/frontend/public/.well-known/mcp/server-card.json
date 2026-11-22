@@ -1239,12 +1239,17 @@
     {
       "name": "delete_exchange_rates",
       "toolset": "currencies",
-      "description": "Remove the user's own exchange rates for currency pairs, so the pair falls back to the market rate. Requires finance:delete scope."
+      "description": "Remove the user's own exchange rates for currency pairs: an ISO pair falls back to the market rate, a custom currency to its other stored rates. Requires finance:delete scope."
     },
     {
       "name": "delete_user_currency",
       "toolset": "currencies",
       "description": "Stop holding a currency. Requires finance:delete scope."
+    },
+    {
+      "name": "get_currency_rate_history",
+      "toolset": "currencies",
+      "description": "List the stored rates of one of the user's custom currencies, latest first: quote currency, rate, effective date, source (initial, manual, coingecko, http), when it was written, and which row is in force now."
     },
     {
       "name": "get_exchange_rate",
@@ -1267,9 +1272,24 @@
       "description": "List every ISO 4217 currency the app supports, with its code, name and decimals."
     },
     {
+      "name": "search_coingecko_coins",
+      "toolset": "currencies",
+      "description": "Search CoinGecko coins by name or symbol, ranked by market cap."
+    },
+    {
+      "name": "set_currency_rate_source",
+      "toolset": "currencies",
+      "description": "Set how one of the user's custom currencies gets its rates. Requires finance:write scope."
+    },
+    {
       "name": "set_exchange_rates",
       "toolset": "currencies",
       "description": "Set the user's own exchange rates for currency pairs. Requires finance:write scope."
+    },
+    {
+      "name": "test_currency_rate_source",
+      "toolset": "currencies",
+      "description": "Try an HTTP rate source for one day without saving anything: the server fetches the filled URL and reads the price at jsonPath. Requires finance:write scope."
     },
     {
       "name": "update_custom_currency",

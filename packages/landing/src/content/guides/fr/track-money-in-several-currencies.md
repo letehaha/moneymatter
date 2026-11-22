@@ -73,20 +73,20 @@ Pour la même raison, quand vous détenez des devises étrangères, les revenus 
 
 ## N'utilisez un taux personnalisé que si vous voulez un taux fixe
 
-Le taux de votre banque correspond rarement au taux du marché, et vous voudrez peut-être saisir le vôtre. Allez dans **Paramètres** → **Devises**, dépliez la ligne de la devise, décochez **Actualisation en direct**, saisissez le taux dans l'un ou l'autre champ et cliquez sur **Enregistrer**.
+Le taux de votre banque correspond rarement au taux du marché, et vous voudrez peut-être saisir le vôtre. Allez dans **Paramètres** → **Devises**, cliquez sur la ligne de la devise, désactivez **Taux en direct**, saisissez le taux dans l'un ou l'autre champ et cliquez sur **Enregistrer le taux**.
 
-![Une ligne PLN dépliée sur la page « Currencies », avec « Live update » décoché, un taux personnalisé de 0.25 saisi et le bouton « Save »](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
+![La boîte de dialogue PLN sur la page « Currencies », avec « Live rate » désactivé, un taux personnalisé de 0.25 saisi et le bouton « Save rate »](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
 
 Vous obtenez un seul taux par devise, sans date associée :
 
 - Les nouvelles opérations, ainsi que toute opération que vous modifiez et enregistrez, l'utilisent, même si elles datent de l'an dernier. Les opérations déjà enregistrées gardent leur montant de base jusqu'à ce que vous les modifiiez.
 - Les soldes passent à ce taux dès que vous enregistrez. Pour les comptes suivis manuellement, MoneyMatter recalcule aussi tout l'historique du solde à ce taux, si bien que le graphique cesse de suivre le marché pour cette devise.
 
-Je vous conseille de laisser **Actualisation en direct** activé pour la plupart des devises. Vous ne pouvez pas définir de taux par paiement, et un virement enregistre déjà le taux réel de chaque opération de change. Pour revenir en arrière, cochez à nouveau **Actualisation en direct** et cliquez sur **Enregistrer**.
+Je vous conseille de laisser **Taux en direct** activé pour la plupart des devises. Vous ne pouvez pas définir de taux par paiement, et un virement enregistre déjà le taux réel de chaque opération de change. Pour revenir en arrière, réactivez **Taux en direct** et confirmez avec **Utiliser le taux en direct**.
 
 ## Si vous changez de pays
 
-Quand la devise dans laquelle vous raisonnez change, changez votre devise principale et conservez vos données. Allez dans **Paramètres** → **Devises** et ajoutez la nouvelle devise si elle n'est pas dans la liste. Dépliez ensuite sa ligne, cliquez sur **Définir comme devise principale** et confirmez.
+Quand la devise dans laquelle vous raisonnez change, changez votre devise principale et conservez vos données. Allez dans **Paramètres** → **Devises** et ajoutez la nouvelle devise si elle n'est pas dans la liste. Cliquez ensuite sur sa ligne, puis sur **Définir comme devise principale** et confirmez.
 
 MoneyMatter recalcule chaque opération au taux du marché de sa date et convertit les soldes au taux du jour. Vos montants d'origine restent tels que vous les avez saisis. Avant de commencer :
 

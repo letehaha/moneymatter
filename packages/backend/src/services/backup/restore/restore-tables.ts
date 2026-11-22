@@ -76,14 +76,19 @@ function buildRowOverrides({
     if (resolved) overrides.securityId = resolved;
   }
 
-  // The validated definition replaces the archive's override columns; an ISO row carries none,
-  // and no logo either. Every row gets every key, keeping the batch's column set uniform.
+  // The validated definition replaces the archive's override and rate-source columns; an ISO row
+  // carries none and no logo either. Every row gets every key, keeping the batch's column set uniform.
   if (def.fileName === 'users-currencies') {
     const definition = ctx.customDefinitions.get(String(row.currencyCode));
     overrides.nameOverride = definition?.name ?? null;
     overrides.symbolOverride = definition?.symbol ?? null;
     overrides.decimalsOverride = definition?.decimals ?? null;
     for (const key of LOGO_FIELD_KEYS) overrides[key] = definition ? (row[key] ?? null) : null;
+
+    overrides.rateSource = definition?.rateSourceSetting.rateSource ?? 'manual';
+    overrides.rateSourceConfig = definition?.rateSourceSetting.rateSourceConfig ?? null;
+    // The request headers never travel: the user enters them again.
+    overrides.rateSourceHeadersEncrypted = null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and

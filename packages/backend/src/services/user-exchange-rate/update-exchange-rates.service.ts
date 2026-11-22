@@ -2,6 +2,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { connection } from '@models/connection';
 import * as UserExchangeRates from '@models/user-exchange-rates.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import { remeasureRefBalances } from '@services/accounts/remeasure-ref-balances';
 import { clearRefAmountCache } from '@services/ref-amount-cache';
 import { Op } from 'sequelize';
@@ -10,13 +11,43 @@ import { withTransaction } from '../common/with-transaction';
 import { assertCurrencyCodesVisible } from '../currencies/assert-currency-codes-visible';
 import { resolveRateQuoteCode } from '../currencies/custom-currencies.service';
 import { findCustomCurrencyCodes } from '../currencies/custom-currency-codes';
+import { planRateChanges, resolveRateChanges } from '../currencies/custom-rate-changes';
+import { recomputeCustomRefAmounts } from '../currencies/recompute-custom-ref-amounts.service';
+import { assertEditPairRules } from './exchange-rate-pair-rules';
 import { revalueAccountsInCurrencies } from './revalue-accounts-in-currencies';
 
 /**
- * A custom currency keeps exactly one ISO quote, so its pairs replace every stored row of the code.
- * Written directly: `updateRates` would also switch live rates off on the ISO side.
+ * Only a custom currency on manual rates takes the user's own rates: a peg or a synced source prices
+ * the others. ISO currencies are not checked.
  */
-const replaceCustomRates = async ({
+export const assertCustomRatesAreManual = async ({
+  userId,
+  customCodes,
+}: {
+  userId: number;
+  customCodes: Set<string>;
+}): Promise<void> => {
+  if (!customCodes.size) return;
+
+  const held = await UsersCurrencies.findOne({
+    where: { userId, currencyCode: { [Op.in]: [...customCodes] }, rateSource: { [Op.ne]: 'manual' } },
+    attributes: ['currencyCode'],
+    raw: true,
+  });
+  if (held) {
+    throw new ValidationError({
+      message: t({ key: 'currencies.customCurrencyRateNotManual', variables: { code: held.currencyCode } }),
+    });
+  }
+};
+
+/**
+ * Writes the dated rates of pairs with a custom side. A custom currency holds one rate per day in an
+ * ISO currency the user holds: a rate replaces whatever that day held, in any quote, and leaves the
+ * other days alone. Only the custom-to-ISO direction is stored; the other one is its inverse. Written
+ * directly: `updateRates` would also switch live rates off on the ISO side.
+ */
+const writeCustomRates = async ({
   userId,
   pairs,
   customCodes,
@@ -25,46 +56,46 @@ const replaceCustomRates = async ({
   pairs: UserExchangeRates.UpdateExchangeRatePair[];
   customCodes: Set<string>;
 }) => {
-  const quoteByCustomCode = new Map<string, string>();
+  const today = UserExchangeRates.toEffectiveDate({ date: new Date() });
+  const rateByDay = new Map<string, UserExchangeRates.UpdateExchangeRatePair & { effectiveDate: string }>();
 
-  for (const pair of pairs) {
-    const [code, quoteCode] = customCodes.has(pair.baseCode)
-      ? [pair.baseCode, pair.quoteCode]
-      : [pair.quoteCode, pair.baseCode];
-    const known = quoteByCustomCode.get(code);
+  for (const pair of pairs.filter((item) => customCodes.has(item.baseCode))) {
+    const effectiveDate = pair.effectiveDate ?? today;
+    const key = `${pair.baseCode}>${effectiveDate}`;
+    const known = rateByDay.get(key);
 
-    if (known !== undefined && known !== quoteCode) {
+    if (known && known.quoteCode !== pair.quoteCode) {
       throw new ValidationError({
-        message: t({ key: 'currencies.customCurrencyOneQuote', variables: { code } }),
+        message: t({ key: 'currencies.customCurrencyOneQuote', variables: { code: pair.baseCode } }),
       });
     }
-    quoteByCustomCode.set(code, quoteCode);
+    rateByDay.set(key, { ...pair, effectiveDate });
   }
 
-  // Same quote rule as at create: an ISO currency the user holds.
-  for (const quoteCode of new Set(quoteByCustomCode.values())) await resolveRateQuoteCode({ userId, quoteCode });
+  for (const quoteCode of new Set([...rateByDay.values()].map((pair) => pair.quoteCode))) {
+    await resolveRateQuoteCode({ userId, quoteCode });
+  }
 
-  // The lock the removal takes, so a concurrent removal cannot drop the rows written here.
-  await connection.sequelize.query(`SELECT pg_advisory_xact_lock(hashtext('user-exchange-rates'), :userId)`, {
-    replacements: { userId },
-  });
+  const written: UserExchangeRates.default[] = [];
+  for (const pairItem of rateByDay.values()) {
+    await UserExchangeRates.default.destroy({
+      where: {
+        userId,
+        baseCode: pairItem.baseCode,
+        effectiveDate: pairItem.effectiveDate,
+        quoteCode: { [Op.ne]: pairItem.quoteCode },
+      },
+    });
+    written.push(await UserExchangeRates.writeDatedRate({ userId, pairItem }));
+  }
 
-  const codes = [...quoteByCustomCode.keys()];
-  await UserExchangeRates.default.destroy({
-    where: { userId, [Op.or]: [{ baseCode: { [Op.in]: codes } }, { quoteCode: { [Op.in]: codes } }] },
-  });
-
-  // A repeated pair would collide on the primary key in one batch; the last one wins.
-  const uniquePairs = new Map(pairs.map((pair) => [`${pair.baseCode}>${pair.quoteCode}`, pair]));
-
-  return UserExchangeRates.default.bulkCreate(
-    [...uniquePairs.values()].map(({ baseCode, quoteCode, rate }) => ({ userId, baseCode, quoteCode, rate })),
-    { returning: true },
-  );
+  return written;
 };
 
 export const editUserExchangeRates = withTransaction(
   async ({ userId, pairs }: { userId: number; pairs: UserExchangeRates.UpdateExchangeRatePair[] }) => {
+    assertEditPairRules({ pairs });
+
     const codes = pairs.flatMap((pair) => [pair.baseCode, pair.quoteCode]);
     await assertCurrencyCodesVisible({ userId, codes, allowedWithoutPlan: codes });
 
@@ -79,13 +110,24 @@ export const editUserExchangeRates = withTransaction(
       });
     }
 
+    // The lock rate removals and rate source changes take, so the source checked here stays in force
+    // and a concurrent removal cannot drop the rows written below.
+    if (customCodes.size) {
+      await connection.sequelize.query(`SELECT pg_advisory_xact_lock(hashtext('user-exchange-rates'), :userId)`, {
+        replacements: { userId },
+      });
+    }
+    await assertCustomRatesAreManual({ userId, customCodes });
+
     const isCustomPair = (pair: UserExchangeRates.UpdateExchangeRatePair) =>
       customCodes.has(pair.baseCode) || customCodes.has(pair.quoteCode);
     const customPairs = pairs.filter(isCustomPair);
     const isoPairs = pairs.filter((pair) => !isCustomPair(pair));
 
+    const plannedChanges = await planRateChanges({ userId, pairs, kind: 'edit' });
+
     const rates = [
-      ...(customPairs.length ? await replaceCustomRates({ userId, pairs: customPairs, customCodes }) : []),
+      ...(customPairs.length ? await writeCustomRates({ userId, pairs: customPairs, customCodes }) : []),
       ...(isoPairs.length ? await UserExchangeRates.updateRates({ userId, pairs: isoPairs }) : []),
     ];
 
@@ -95,6 +137,13 @@ export const editUserExchangeRates = withTransaction(
     // committed and throwing would roll it back. Return the counts so the caller can
     // warn the user; the daily sync re-anchors the lagging ones later.
     const remeasure = await remeasureRefBalances({ userId });
+
+    // Saved rows in a custom currency follow a rate that changed for days they were valued on.
+    await recomputeCustomRefAmounts({
+      userId,
+      changes: await resolveRateChanges({ userId, planned: plannedChanges }),
+      remeasureSpot: false,
+    });
 
     await revalueAccountsInCurrencies({ userId, pairs });
     await clearRefAmountCache({ userId });

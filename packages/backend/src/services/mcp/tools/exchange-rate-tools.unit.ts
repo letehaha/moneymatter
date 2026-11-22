@@ -75,12 +75,21 @@ describe('set_exchange_rates', () => {
     expect(schema.safeParse({ pairs }).success).toBe(true);
   });
 
+  it('accepts a custom pair with an effective date', () => {
+    const datedPairs = [
+      { baseCode: 'PTS', quoteCode: 'USD', rate: 0.5, effectiveDate: '2026-10-01' },
+      { baseCode: 'USD', quoteCode: 'PTS', rate: 2, effectiveDate: '2026-10-01' },
+    ];
+    expect(schema.safeParse({ pairs: datedPairs }).success).toBe(true);
+  });
+
   it.each([
     { label: 'no pairs', input: { pairs: [] } },
     { label: 'a zero rate', input: { pairs: [{ baseCode: 'EUR', quoteCode: 'USD', rate: 0 }] } },
     { label: 'a negative rate', input: { pairs: [{ baseCode: 'EUR', quoteCode: 'USD', rate: -1 }] } },
     { label: 'an unknown key', input: { pairs: [{ baseCode: 'EUR', quoteCode: 'USD', rate: 1, note: 'x' }] } },
     { label: 'a missing quote', input: { pairs: [{ baseCode: 'EUR', rate: 1 }] } },
+    { label: 'a malformed effective date', input: { pairs: [{ ...pairs[0], effectiveDate: 'yesterday' }] } },
   ])('rejects $label', ({ input }) => {
     expect(schema.safeParse(input).success).toBe(false);
   });
@@ -93,25 +102,6 @@ describe('set_exchange_rates', () => {
 
     expect(ratesService.editUserExchangeRates).toHaveBeenCalledWith({ userId: 42, pairs });
     expect(parsed(result)).toEqual(edited);
-  });
-
-  it('refuses a pair without its opposite and a pair with the same base and quote, as the REST route does', async () => {
-    await expect(tool.handler({ pairs: [pairs[0]] }, WRITE)).rejects.toThrow('opposite pair');
-    await expect(
-      tool.handler(
-        {
-          pairs: [
-            { baseCode: 'USD', quoteCode: 'EUR', rate: 0.9 },
-            { baseCode: 'EUR', quoteCode: 'GBP', rate: 0.85 },
-          ],
-        },
-        WRITE,
-      ),
-    ).rejects.toThrow('opposite pair');
-    await expect(tool.handler({ pairs: [{ baseCode: 'USD', quoteCode: 'USD', rate: 1 }] }, WRITE)).rejects.toThrow(
-      'same base and quote',
-    );
-    expect(ratesService.editUserExchangeRates).not.toHaveBeenCalled();
   });
 
   it('is refused without the write scope, for read-only users and while the lock is set', async () => {
@@ -136,8 +126,18 @@ describe('delete_exchange_rates', () => {
     { baseCode: 'USD', quoteCode: 'EUR' },
   ];
 
-  it('accepts pairs and rejects a pair without a quote', () => {
+  it('accepts pairs, with or without an effective date, and rejects a pair without a quote', () => {
     expect(schema.safeParse({ pairs }).success).toBe(true);
+    expect(
+      schema.safeParse({
+        pairs: [
+          { baseCode: 'PTS', quoteCode: 'USD', effectiveDate: '2026-10-01' },
+          { baseCode: 'USD', quoteCode: 'PTS', effectiveDate: '2026-10-01' },
+        ],
+      }).success,
+    ).toBe(true);
+    expect(schema.safeParse({ pairs: [{ ...pairs[0], effectiveDate: '01/10/2026' }] }).success).toBe(false);
+    expect(schema.safeParse({ pairs: [{ ...pairs[0], rate: 1 }] }).success).toBe(false);
     expect(schema.safeParse({ pairs: [{ baseCode: 'EUR' }] }).success).toBe(false);
     expect(schema.safeParse({ pairs: [] }).success).toBe(false);
     expect(schema.safeParse({}).success).toBe(false);
@@ -153,20 +153,14 @@ describe('delete_exchange_rates', () => {
     expect(parsed(result)).toEqual(removed);
   });
 
-  it('refuses a pair without its opposite, as the REST route does', async () => {
-    await expect(tool.handler({ pairs: [pairs[0]] }, DELETE)).rejects.toThrow('opposite pair');
-    await expect(
-      tool.handler(
-        {
-          pairs: [
-            { baseCode: 'USD', quoteCode: 'EUR' },
-            { baseCode: 'EUR', quoteCode: 'GBP' },
-          ],
-        },
-        DELETE,
-      ),
-    ).rejects.toThrow('opposite pair');
-    expect(ratesService.removeUserExchangeRates).not.toHaveBeenCalled();
+  it("passes the service's refusal to remove a custom currency's last rate through", async () => {
+    ratesService.removeUserExchangeRates.mockRejectedValueOnce(new Error('currencies.customCurrencyLastRate'));
+    const customPairs = [
+      { baseCode: 'PTS', quoteCode: 'USD', effectiveDate: '2026-10-01' },
+      { baseCode: 'USD', quoteCode: 'PTS', effectiveDate: '2026-10-01' },
+    ];
+
+    await expect(tool.handler({ pairs: customPairs }, DELETE)).rejects.toThrow('currencies.customCurrencyLastRate');
   });
 
   it('needs finance:delete, not finance:write, and a user who can edit', async () => {

@@ -250,10 +250,11 @@ describe('Transactions in custom currencies', () => {
     it('refuses to remove the last rate of a custom currency with 422 and keeps valuing it', async () => {
       await createCurrency({ code: 'USDT', decimals: 6, rate: 4 });
 
+      const today = new Date().toISOString().slice(0, 10);
       const response = await helpers.removeCurrencyExchangeRate({
         pairs: [
-          { baseCode: 'USDT', quoteCode: BASE() },
-          { baseCode: BASE(), quoteCode: 'USDT' },
+          { baseCode: 'USDT', quoteCode: BASE(), effectiveDate: today },
+          { baseCode: BASE(), quoteCode: 'USDT', effectiveDate: today },
         ],
       });
 
@@ -282,7 +283,7 @@ describe('Transactions in custom currencies', () => {
       expect(messageOf(hidden)).toBe(messageOf(unknown).replaceAll('NOPE', 'SAT'));
     });
 
-    it('re-quotes a custom currency in another ISO currency, keeping a single quote and live rates on it', async () => {
+    it("re-quotes a custom currency's rate of the day in another ISO currency, keeping live rates on it", async () => {
       await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
       await createCurrency({ code: 'USDT', decimals: 6, rate: 4 });
       await setRates([...pairRates({ code: 'USDT', rate: 1, quote: 'USD' }), ...pairRates({ code: 'USD', rate: 3.9 })]);
@@ -294,13 +295,14 @@ describe('Transactions in custom currencies', () => {
           .filter((row) => row.baseCode === 'USDT' || row.quoteCode === 'USDT')
           .map(({ baseCode, quoteCode }) => `${baseCode}>${quoteCode}`)
           .toSorted(),
-      ).toEqual(['USD>USDT', 'USDT>USD']);
+      ).toEqual(['USDT>USD']);
 
-      // Its only quote is also its last rate.
+      // The rate of the day is also its last rate.
+      const today = new Date().toISOString().slice(0, 10);
       const removal = await helpers.removeCurrencyExchangeRate({
         pairs: [
-          { baseCode: 'USDT', quoteCode: 'USD' },
-          { baseCode: 'USD', quoteCode: 'USDT' },
+          { baseCode: 'USDT', quoteCode: 'USD', effectiveDate: today },
+          { baseCode: 'USD', quoteCode: 'USDT', effectiveDate: today },
         ],
       });
       expect(removal.statusCode).toBe(422);
@@ -383,6 +385,19 @@ describe('Transactions in custom currencies', () => {
 
       await setRates(pairRates({ code: 'USDT', rate: 4 }));
       expect((await helpers.deleteUserCurrency({ currencyCode: 'USD' })).statusCode).toBe(200);
+    });
+
+    it('refuses to remove the ISO currency a custom currency is pegged to, naming it as the blocker', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+      await createCurrency({ code: 'USDT', decimals: 6, rate: 4, name: 'Tether' });
+      await helpers.pegTo({ code: 'USDT', pegCurrency: 'USD' });
+
+      const blocked = await helpers.deleteUserCurrency<helpers.ErrorResponse>({ currencyCode: 'USD' });
+
+      expect(blocked.statusCode).toBe(422);
+      expect(helpers.extractResponse(blocked).details).toEqual({
+        blockers: [{ type: 'customCurrency', id: 'USDT', name: 'Tether' }],
+      });
     });
   });
 
@@ -500,6 +515,24 @@ describe('Transactions in custom currencies', () => {
 
           const holdings = (await helpers.getUserCurrencies()).filter((item) => item.currencyCode === 'SAT');
           expect(holdings).toHaveLength(1);
+        },
+      });
+    });
+
+    it("values a collaborator's write with the owner's peg, which the collaborator's holding takes", async () => {
+      const { account, bob } = await shareSatAccountWithBob();
+      await helpers.pegTo({ code: 'SAT', pegCurrency: BASE(), factor: 2 });
+
+      await helpers.asUser({
+        cookies: bob.cookies,
+        fn: async () => {
+          const [created] = await createTx({ accountId: account.id, amount: 10 });
+
+          expect(created!.refAmount).toBe(20);
+          expect(await helpers.savedSource({ code: 'SAT' })).toEqual({
+            rateSource: 'peg',
+            rateSourceConfig: { pegCurrency: BASE(), factor: 2 },
+          });
         },
       });
     });
@@ -699,14 +732,31 @@ describe('Transactions in custom currencies', () => {
       expect(await helpers.listCustomCurrencies({ raw: true })).toHaveLength(1);
     });
 
+    it('restores an archive whose custom currency also has rates in a second ISO currency', async () => {
+      await createCurrency({ code: 'USDT', decimals: 6, name: 'Tether', rate: 4 });
+
+      const exported = await helpers.exportBackup();
+      const archive = helpers.parseBackupArchive({ buffer: exported.body });
+      const rates = archive.readData({ name: 'user-exchange-rates' }) as Record<string, unknown>[];
+      archive.files.set(
+        'data/user-exchange-rates.json',
+        Buffer.from(
+          JSON.stringify([...rates, { ...rates.find((row) => row.baseCode === 'USDT')!, quoteCode: 'JPY', rate: 500 }]),
+        ),
+      );
+
+      await helpers.wipeUserData();
+      const restore = await helpers.restoreBackup({
+        fileContent: await helpers.repackBackup({ files: archive.files }),
+      });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      const held = (await helpers.getUserCurrencies()).map((row) => row.currencyCode);
+      expect(held).toEqual(expect.arrayContaining(['USDT', 'JPY']));
+    });
+
     it.each([
-      {
-        name: 'is quoted in a second ISO currency',
-        tamper: (rows: Record<string, unknown>[]) => [
-          ...rows,
-          { ...rows.find((row) => row.baseCode === 'USDT')!, quoteCode: 'JPY', rate: 500 },
-        ],
-      },
       {
         name: 'is quoted in a code that is not ISO here',
         tamper: (rows: Record<string, unknown>[]) =>

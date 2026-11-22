@@ -1430,6 +1430,8 @@ export const USER_BASE_CURRENCY: UserCurrencyModel = {
   symbolOverride: null,
   decimalsOverride: null,
   ...NO_LOGO,
+  rateSource: 'manual',
+  rateSourceConfig: null,
   currency: SYSTEM_CURRENCIES.find((item) => item.code === USER_BASE_CURRENCY_CODE),
 };
 
@@ -1446,6 +1448,8 @@ export const USER_CURRENCIES: UserCurrencyModel[] = [
     symbolOverride: null,
     decimalsOverride: null,
     ...NO_LOGO,
+    rateSource: 'manual',
+    rateSourceConfig: null,
     currency: SYSTEM_CURRENCIES.find((item) => item.code === 'EUR'),
   },
   {
@@ -1459,6 +1463,8 @@ export const USER_CURRENCIES: UserCurrencyModel[] = [
     symbolOverride: null,
     decimalsOverride: null,
     ...NO_LOGO,
+    rateSource: 'manual',
+    rateSourceConfig: null,
     currency: SYSTEM_CURRENCIES.find((item) => item.code === 'USD'),
   },
 ];

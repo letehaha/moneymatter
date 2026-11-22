@@ -1,0 +1,84 @@
+---
+title: Custom currencies
+description: Track stablecoins, crypto or any other unit that isn't an ISO currency, choose how many decimals it keeps, and see how its exchange rate values your transactions.
+sidebar:
+  order: 11
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+A **custom currency** is a currency you define yourself: a stablecoin such as USDT, a crypto asset such as BTC or ETH, loyalty points, or any other unit. Custom currencies work like any other currency in your accounts and transactions. The differences are that you choose how precise they are, and that you tell MoneyMatter where their exchange rate comes from.
+
+Custom currencies are private to your account. Other people never see them, and two people can define the same code differently, for example USDT with 2 decimals for one and 6 for the other.
+
+Custom currencies are part of the Plus plan. See [Plans and billing](/settings/plans-and-billing/#custom-currencies) for what still works without it.
+
+## How precise amounts are
+
+Every currency keeps its own number of decimals. Amounts are saved exactly as you type them, rounded to that number:
+
+- USD, EUR and most currencies keep 2 decimals.
+- JPY keeps 0, and KWD keeps 3.
+- A custom currency keeps whatever you choose, from 0 to 8. For example, `0.00040641` BTC needs 8 decimals.
+
+An amount with more digits than the currency allows is rounded when you save it. Converted amounts, such as the base amount of a transaction, are rounded to the decimals of the currency they are shown in.
+
+## Add a custom currency
+
+<Steps>
+
+1. Open **Settings**, then **Currencies** under **Workspace**.
+2. Click **Add custom currency**.
+3. Fill in the form:
+   - **Code:** 2 to 16 capital letters or digits, such as `USDT`. A code that is already an ISO currency code (EUR, USD and so on) isn't allowed: add those from **Add a currency** instead. You can't use the same code twice.
+   - **Name:** how the currency is called in the app, such as Tether.
+   - **Symbol (optional):** up to 8 characters, such as ₮.
+   - **Decimals:** a whole number from 0 to 8. The **Example** line shows how an amount will look.
+   - **Rate:** what one unit is worth in your base currency, a number above zero. A custom currency always needs a rate, so this field is required.
+4. Click **Add currency**.
+
+</Steps>
+
+The currency appears in your list with a **Custom currency** badge, and you can pick it when you create an account or enter an original amount. It starts on the [Manual](/settings/rate-sources/#manual) source, with the rate you entered as its starting rate. To take its rate from somewhere else, [choose a rate source](/settings/rate-sources/). CoinGecko and HTTP replace the starting rate on the days they fetch.
+
+## Edit a custom currency
+
+Click the currency's row to open it in a dialog, then click **Edit details**. You can change the name, the symbol and the logo at any time.
+
+The number of **Decimals** can change only while nothing uses the currency, because saved amounts were rounded to the old number. While an account is in the currency, the field is locked. If something else still uses it, saving lists each item, the same way [deleting a currency](/settings/base-currency-and-currencies/#delete-a-currency) does. Change or delete them, then try again. Changing the decimals also removes the foreign amounts that transactions in other accounts recorded in this currency.
+
+## Delete a custom currency
+
+Click the currency's row to open it and click **Delete currency**. Like any currency, it can only be deleted when nothing of yours uses it. Deleting a custom currency also removes your rates for it.
+
+## A custom currency always has a rate
+
+A custom currency has no market rate, so its rate comes from its [rate source](/settings/rate-sources/). Every rate is a price in an ISO currency, such as USD or EUR, never in another custom currency.
+
+A custom currency always has at least one rate, so every transaction in it gets a base amount. A transaction dated before the currency's first rate uses that first rate. To value those days differently, add a manual rate with an earlier **Use this rate from** date while the currency is on the **Manual** source: click **Update rate** and pick that day.
+
+MoneyMatter refuses any change that would leave a custom currency with no rate at all, such as removing its last rate or saving a source that can't fetch a single price. You see an error and nothing changes.
+
+## When the rate changes
+
+Transactions in a custom currency follow their rate source, unlike transactions in ISO currencies:
+
+- **Saving or changing the rate source** values your saved transactions in that currency again, with the rate in force on each transaction's date.
+- **Correcting a rate,** removing one, or adding a rate for a past date re-values the transactions on the days it covers. So does a CoinGecko source filling in past days.
+- **Adding a rate for a new day,** such as today's rate or the daily price of a synced source, doesn't touch transactions you already saved.
+
+Transactions in ISO currencies keep the base amounts they were saved with, as described in [Base currency and currencies](/settings/base-currency-and-currencies/#what-a-custom-rate-changes).
+
+## Base currency and custom currencies
+
+You can [change your base currency](/settings/base-currency-and-currencies/#change-your-base-currency) while you hold custom currencies. Their rates keep working: MoneyMatter converts from the ISO currency the rate is priced in to your new base, the same way it does for any other currency.
+
+## Backups
+
+A [backup](/settings/security-and-account/#backup-and-restore) includes your custom currency definitions (code, name, symbol and decimals), their rate sources and their rates. An [HTTP source](/settings/rate-sources/#http) keeps its settings and header names, but the header values are never included, because they are secrets. A restore clears the headers and the restore summary shows a warning. Open that currency, click **Change** next to **Rate comes from**, and enter them again, or its rates stop updating. A backup in which a custom currency has no rate can't be restored.
+
+## Related
+
+- [Rate sources](/settings/rate-sources/)
+- [Base currency and currencies](/settings/base-currency-and-currencies/)
+- [How stats are calculated](/stats/how-stats-are-calculated/)

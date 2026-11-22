@@ -1,12 +1,12 @@
 import Accounts from '@models/accounts.model';
-import UserExchangeRates from '@models/user-exchange-rates.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
-import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
+import { loadDependencyEdges } from '@services/currencies/load-dependency-edges';
 
 /**
- * The edited codes plus the user's custom currencies quoted in one of them: a custom currency is worth
- * its stored rate times its ISO quote's rate into the base, so editing the quote moves it too.
+ * The edited codes plus the user's custom currencies valued through one of them: pegged to it, or
+ * quoting it in a stored rate. A custom currency is worth its peg factor or stored rate times that
+ * ISO currency's rate into the base, so editing that rate moves the custom currency too.
  */
 const withDependentCustomCurrencies = async ({
   userId,
@@ -15,14 +15,12 @@ const withDependentCustomCurrencies = async ({
   userId: number;
   currencyCodes: string[];
 }): Promise<string[]> => {
-  const rows = await UserExchangeRates.findAll({
-    where: { userId, quoteCode: currencyCodes },
-    attributes: ['baseCode'],
-    raw: true,
-  });
-  const customCodes = await findCustomCurrencyCodes({ codes: rows.map((row) => row.baseCode) });
+  const edited = new Set(currencyCodes);
+  const dependents = (await loadDependencyEdges({ userId }))
+    .filter((edge) => edited.has(edge.source))
+    .map((edge) => edge.dependent);
 
-  return [...new Set([...currencyCodes, ...customCodes])];
+  return [...new Set([...currencyCodes, ...dependents])];
 };
 
 /**

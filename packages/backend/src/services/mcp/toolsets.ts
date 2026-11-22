@@ -98,6 +98,7 @@ import { getCashFlowTool } from './tools/get-cash-flow';
 import { getCategoriesTool } from './tools/get-categories';
 import { getCategoryTransactionCountTool } from './tools/get-category-transaction-count';
 import { getCumulativeStatsTool } from './tools/get-cumulative-stats';
+import { getCurrencyRateHistoryTool } from './tools/get-currency-rate-history';
 import { getEarliestTransactionDateTool } from './tools/get-earliest-transaction-date';
 import { getExchangeRateTool } from './tools/get-exchange-rate';
 import { getExpensesForPeriodTool } from './tools/get-expenses-for-period';
@@ -196,16 +197,19 @@ import { restoreBudgetPlanTool } from './tools/restore-budget-plan';
 import { restorePortfolioTool } from './tools/restore-portfolio';
 import { restoreRemovedTransactionsTool } from './tools/restore-removed-transactions';
 import { revertSubscriptionPeriodTool } from './tools/revert-subscription-period';
+import { searchCoingeckoCoinsTool } from './tools/search-coingecko-coins';
 import { searchSecuritiesTool } from './tools/search-securities';
 import { searchTransactionsTool } from './tools/search-transactions';
 import { setBudgetPlanAccountsTool } from './tools/set-budget-plan-accounts';
 import { setBudgetPlanAssignmentTool } from './tools/set-budget-plan-assignment';
 import { setBudgetPlanLineGoalTool } from './tools/set-budget-plan-line-goal';
+import { setCurrencyRateSourceTool } from './tools/set-currency-rate-source';
 import { setExchangeRatesTool } from './tools/set-exchange-rates';
 import { setPortfolioTransferAdjustmentTool } from './tools/set-portfolio-transfer-adjustment';
 import { skipSubscriptionPeriodTool } from './tools/skip-subscription-period';
 import { snoozeBudgetPlanLineGoalTool } from './tools/snooze-budget-plan-line-goal';
 import { splitTransactionTool } from './tools/split-transaction';
+import { testCurrencyRateSourceTool } from './tools/test-currency-rate-source';
 import { toggleSubscriptionActiveTool } from './tools/toggle-subscription-active';
 import { transferAccountToPortfolioTool } from './tools/transfer-account-to-portfolio';
 import { transferBetweenPortfoliosTool } from './tools/transfer-between-portfolios';
@@ -348,6 +352,7 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   getCategoriesTool,
   getCategoryTransactionCountTool,
   getCumulativeStatsTool,
+  getCurrencyRateHistoryTool,
   getEarliestTransactionDateTool,
   getExchangeRateTool,
   getExpensesForPeriodTool,
@@ -446,16 +451,19 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   restorePortfolioTool,
   restoreRemovedTransactionsTool,
   revertSubscriptionPeriodTool,
+  searchCoingeckoCoinsTool,
   searchSecuritiesTool,
   searchTransactionsTool,
   setBudgetPlanAccountsTool,
   setBudgetPlanAssignmentTool,
   setBudgetPlanLineGoalTool,
+  setCurrencyRateSourceTool,
   setExchangeRatesTool,
   setPortfolioTransferAdjustmentTool,
   skipSubscriptionPeriodTool,
   snoozeBudgetPlanLineGoalTool,
   splitTransactionTool,
+  testCurrencyRateSourceTool,
   toggleSubscriptionActiveTool,
   transferAccountToPortfolioTool,
   transferBetweenPortfoliosTool,

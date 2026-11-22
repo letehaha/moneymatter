@@ -139,10 +139,11 @@ async function resolveUserConnection({
 }
 
 /**
- * The user's manual rate, if any. It only applies when they turned live rates
- * off AND are converting into their own base currency; otherwise there is no
- * custom rate and the caller falls through to the market cross-rate. Never
- * cached globally – it belongs to one user.
+ * The user's manual rate between two ISO currencies, if any. It only applies when they turned
+ * live rates off AND are converting into their own base currency; otherwise there is no custom
+ * rate and the caller falls through to the market cross-rate. It applies to every date: the latest
+ * stored row wins whatever day is being converted. A pair with a custom currency never gets here, it
+ * is read by day in `resolveCustomPairRate`. Never cached globally – it belongs to one user.
  */
 export async function resolveCustomRate({
   userId,

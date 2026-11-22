@@ -15,7 +15,7 @@ export function useOffsetHistoryQuery<TItem>({
   pageLimit = DEFAULT_PAGE_LIMIT,
 }: {
   queryKey: readonly unknown[];
-  fetchPage: (params: { limit: number; offset: number }) => Promise<{ items: TItem[] }>;
+  fetchPage: (params: { limit: number; offset: number }) => Promise<{ items: TItem[]; totalCount?: number | null }>;
   pageLimit?: number;
 }) {
   const {
@@ -23,8 +23,10 @@ export function useOffsetHistoryQuery<TItem>({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     isFetched,
     isLoadingError,
+    isRefetchError,
     refetch,
   } = useInfiniteQuery({
     queryKey: [...queryKey],
@@ -39,13 +41,17 @@ export function useOffsetHistoryQuery<TItem>({
   });
 
   const items = computed(() => historyPages.value?.pages.flatMap((page) => page.items) ?? []);
+  const totalCount = computed(() => historyPages.value?.pages[0]?.totalCount ?? null);
 
   return {
     items,
+    totalCount,
     isFetched,
     isLoadingError,
+    isRefetchError,
     hasNextPage,
     isFetchingNextPage,
+    isFetchNextPageError,
     fetchNextPage,
     refetch,
   };

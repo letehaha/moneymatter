@@ -73,20 +73,20 @@ Pelo mesmo motivo, quando você tem moeda estrangeira, a receita menos os gastos
 
 ## Use uma taxa personalizada só se quiser uma taxa fixa
 
-A taxa do seu banco raramente bate com a taxa de mercado, então talvez você queira informar a sua. Vá em **Configurações** → **Moedas**, expanda a linha da moeda, desmarque **Atualização ao vivo**, digite a taxa em qualquer um dos campos e clique em **Salvar**.
+A taxa do seu banco raramente bate com a taxa de mercado, então talvez você queira informar a sua. Vá em **Configurações** → **Moedas**, clique na linha da moeda, desative **Taxa ao vivo**, digite a taxa em qualquer um dos campos e clique em **Salvar taxa**.
 
-![Linha de PLN expandida na página “Currencies”, com “Live update” desmarcado, uma taxa personalizada de 0.25 digitada e o botão “Save”](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
+![Caixa de diálogo de PLN na página “Currencies”, com “Live rate” desativado, uma taxa personalizada de 0.25 digitada e o botão “Save rate”](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
 
 Você tem uma taxa por moeda, sem data associada:
 
 - Novas transações, e qualquer transação que você editar e salvar, usam essa taxa, mesmo com data do ano passado. As transações já salvas mantêm seus valores na moeda base até você editá-las.
 - Os saldos passam a usá-la assim que você salva. Nas contas acompanhadas manualmente, o MoneyMatter também redesenha todo o histórico de saldo com essa taxa, e o gráfico deixa de acompanhar o mercado para essa moeda.
 
-Eu deixaria **Atualização ao vivo** ligada para a maioria das moedas. Não dá para definir uma taxa por pagamento, e uma transferência já registra a taxa real de cada câmbio. Para voltar, marque **Atualização ao vivo** de novo e clique em **Salvar**.
+Eu deixaria **Taxa ao vivo** ligada para a maioria das moedas. Não dá para definir uma taxa por pagamento, e uma transferência já registra a taxa real de cada câmbio. Para voltar, ative **Taxa ao vivo** de novo e confirme com **Usar taxa ao vivo**.
 
 ## Se você mudar de país
 
-Quando a moeda que você usa como referência mudar, mude sua moeda base e mantenha seus dados. Vá em **Configurações** → **Moedas** e adicione a nova moeda se ela não estiver na lista. Depois, expanda a linha dela, clique em **Definir como moeda base** e confirme.
+Quando a moeda que você usa como referência mudar, mude sua moeda base e mantenha seus dados. Vá em **Configurações** → **Moedas** e adicione a nova moeda se ela não estiver na lista. Depois, clique na linha dela e em seguida em **Definir como moeda base** e confirme.
 
 O MoneyMatter recalcula cada transação pela taxa de mercado da data dela e converte os saldos pela taxa de hoje. Seus valores originais ficam como você os informou. Antes de começar:
 

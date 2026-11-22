@@ -12,14 +12,13 @@ import Securities from '@models/investments/securities.model';
 import Subscriptions from '@models/subscriptions.model';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { updateTransactions } from '@models/transactions-query';
-import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import VentureDeals from '@models/venture/venture-deals.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
 import VentureEvents from '@models/venture/venture-events.model';
 import { Op } from 'sequelize';
 
-import { findCustomCurrencyCodes } from './custom-currency-codes';
+import { loadDependencyEdges } from './load-dependency-edges';
 
 const getCurrencyInUseBlockers = async ({
   userId,
@@ -155,13 +154,12 @@ const getCurrencyInUseBlockers = async ({
   });
   deals.forEach((d) => push({ type: 'ventureDeal', id: d.id, name: d.name, trashed: !!d.deletedAt }));
 
-  // A custom currency always keeps a rate against its ISO quote.
-  const quotedRates = await UserExchangeRates.findAll({
-    where: { userId, quoteCode: currencyCode },
-    attributes: ['baseCode'],
-    raw: true,
-  });
-  const quotedCustomCodes = await findCustomCurrencyCodes({ codes: quotedRates.map((rate) => rate.baseCode) });
+  // A custom currency is always valued through an ISO currency: its peg or the quote of its rates.
+  const quotedCustomCodes = new Set(
+    (await loadDependencyEdges({ userId }))
+      .filter((edge) => edge.source === currencyCode)
+      .map((edge) => edge.dependent),
+  );
   if (quotedCustomCodes.size) {
     const quotedCustom = await UsersCurrencies.findAll({
       where: { userId, currencyCode: { [Op.in]: [...quotedCustomCodes] } },

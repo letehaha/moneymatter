@@ -31,7 +31,7 @@ import {
   toDayKey,
 } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
-import { findCustomCurrencyQuote } from '@services/user-exchange-rate/resolve-custom-pair-rate';
+import { loadCustomCurrencyDailyQuote } from '@services/user-exchange-rate/resolve-custom-pair-rate';
 import Big from 'big.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { QueryTypes } from 'sequelize';
@@ -227,8 +227,8 @@ const buildIsoRateForDay = async ({
 
 /**
  * Each day's rate to the owner's base currency, or null when the pair has no stored rate. A custom
- * currency is priced the way its transactions are: the user's flat rate in its ISO quote, times that
- * quote's daily rate to the base.
+ * currency is priced the way its transactions are: its peg or dated rate in its ISO quote that day,
+ * times that quote's daily rate to the base.
  */
 export const buildRateForDay = async ({
   account,
@@ -246,28 +246,24 @@ export const buildRateForDay = async ({
     return buildIsoRateForDay({ account, currencyCode: account.currencyCode, baseCurrencyCode, from, to });
   }
 
-  const quote = await findCustomCurrencyQuote({
-    userId: account.userId,
-    code: account.currencyCode,
-    preferredQuoteCode: baseCurrencyCode,
-  });
-  if (!quote) {
+  const quotes = await loadCustomCurrencyDailyQuote({ userId: account.userId, code: account.currencyCode });
+  if (!quotes) {
     logger.error('Custom currency has no rate; account left untouched', { accountId: account.id });
     return null;
   }
 
-  const resolveIsoRate = await buildIsoRateForDay({
-    account,
-    currencyCode: quote.quoteCode,
-    baseCurrencyCode,
-    from,
-    to,
-  });
-  if (!resolveIsoRate) return null;
+  const isoRateByQuote = new Map<string, DailyPairRateResolver | null>();
+  for (const quoteCode of quotes.quoteCodes) {
+    isoRateByQuote.set(
+      quoteCode,
+      await buildIsoRateForDay({ account, currencyCode: quoteCode, baseCurrencyCode, from, to }),
+    );
+  }
 
   return (dayKey) => {
-    const isoRate = resolveIsoRate(dayKey);
-    return isoRate === null ? null : new Big(quote.rate).times(isoRate).toNumber();
+    const quote = quotes.quoteOn(dayKey);
+    const isoRate = quote ? isoRateByQuote.get(quote.quoteCode)?.(dayKey) : null;
+    return quote && isoRate != null ? new Big(quote.rate).times(isoRate).toNumber() : null;
   };
 };
 

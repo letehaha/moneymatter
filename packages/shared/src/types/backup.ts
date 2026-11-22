@@ -84,7 +84,9 @@ export type BackupRestoreWarningCode =
   | 'invalid_row_dropped'
   // A nullable foreign-key column pointed at data outside this backup; the column
   // was reset to null and the row kept.
-  | 'foreign_reference_nulled';
+  | 'foreign_reference_nulled'
+  // An HTTP rate source restored without its request headers; the user enters them again.
+  | 'rate_source_headers_dropped';
 
 /**
  * Built inside the restore worker, which has no request locale, so it carries

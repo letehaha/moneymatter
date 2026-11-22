@@ -40,7 +40,10 @@ describe('[Stats] Combined balance history', () => {
     rate: number;
     source: EXCHANGE_RATE_PROVIDER_TYPE;
   }[] = [];
-  let userFxSnapshot: { userId: number; baseCode: string; quoteCode: string; date: Date; rate: number }[] = [];
+  let userFxSnapshot: Pick<
+    UserExchangeRates,
+    'userId' | 'baseCode' | 'quoteCode' | 'date' | 'rate' | 'effectiveDate' | 'source'
+  >[] = [];
 
   beforeAll(async () => {
     fxSnapshot = (
@@ -50,7 +53,15 @@ describe('[Stats] Combined balance history', () => {
       })
     ).map(({ baseCode, quoteCode, date, rate, source }) => ({ baseCode, quoteCode, date, rate, source }));
     userFxSnapshot = (await UserExchangeRates.findAll({ where: { userId: 1 }, raw: true })).map(
-      ({ userId, baseCode, quoteCode, date, rate }) => ({ userId, baseCode, quoteCode, date, rate }),
+      ({ userId, baseCode, quoteCode, date, rate, effectiveDate, source }) => ({
+        userId,
+        baseCode,
+        quoteCode,
+        date,
+        rate,
+        effectiveDate,
+        source,
+      }),
     );
   });
 
@@ -665,6 +676,7 @@ describe('[Stats] Combined balance history', () => {
         quoteCode: 'AED',
         rate: 10,
         date: pickedDay,
+        effectiveDate: dayKey,
       });
 
       const data = (await helpers.getCombinedBalanceHistory({

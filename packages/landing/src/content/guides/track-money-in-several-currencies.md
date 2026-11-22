@@ -73,20 +73,20 @@ For the same reason, when you hold foreign currency, a month's income minus spen
 
 ## Use a custom rate only if you want one fixed rate
 
-Your bank's rate rarely matches the market rate, so you may want to enter your own. Go to **Settings** → **Currencies**, expand the currency's row, uncheck **Live update**, type the rate in either field and click **Save**.
+Your bank's rate rarely matches the market rate, so you may want to enter your own. Go to **Settings** → **Currencies**, click the currency's row, turn off **Live rate**, type the rate in either field and click **Save rate**.
 
-![An expanded PLN row on the Currencies page with Live update unchecked, a custom rate of 0.25 typed in, and the Save button](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
+![The PLN dialog on the Currencies page with Live rate turned off, a custom rate of 0.25 typed in, and the Save rate button](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
 
 You get one rate per currency, with no date attached:
 
 - New transactions and any transaction you edit and save use it, even when dated last year. Transactions you've already saved keep their base amounts until you edit them.
 - Balances switch to it as soon as you save. For manually tracked accounts, MoneyMatter also redraws the whole balance history at that rate, so the chart stops following the market for that currency.
 
-I'd leave **Live update** on for most currencies. You can't set a rate per payment, and a transfer already records the real rate of each exchange. To go back, check **Live update** again and click **Save**.
+I'd leave **Live rate** on for most currencies. You can't set a rate per payment, and a transfer already records the real rate of each exchange. To go back, turn **Live rate** back on and confirm with **Use live rate**.
 
 ## If you move country
 
-When the currency you think in changes, change your base currency and keep your data. Go to **Settings** → **Currencies** and add the new currency if it isn't listed. Then expand its row, click **Set as base currency** and confirm.
+When the currency you think in changes, change your base currency and keep your data. Go to **Settings** → **Currencies** and add the new currency if it isn't listed. Then click its row, click **Set as base currency** and confirm.
 
 MoneyMatter recalculates every transaction at the market rate for its date and converts balances at today's rate. Your original amounts stay as you entered them. Before you start:
 

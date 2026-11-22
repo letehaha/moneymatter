@@ -13,7 +13,7 @@ import { namespace } from '@models/connection';
 import Currencies, { customCurrencyStub } from '@models/currencies.model';
 import SubscriptionCandidates from '@models/subscription-candidates.model';
 import { findTransactions } from '@models/transactions-query';
-import UserExchangeRates from '@models/user-exchange-rates.model';
+import UserExchangeRates, { toEffectiveDate } from '@models/user-exchange-rates.model';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
 import { serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 import { applyLogoWrite } from '@services/brand-logos';
@@ -189,11 +189,16 @@ export const createCustomCurrency = withTransaction(
       ...logoPatch,
     });
 
-    // Written directly: `updateRates` would also switch live rates off on the ISO quote.
-    await UserExchangeRates.bulkCreate([
-      { userId, baseCode: code, quoteCode, rate: rate.value },
-      { userId, baseCode: quoteCode, quoteCode: code, rate: 1 / rate.value },
-    ]);
+    // Written directly: `updateRates` would also switch live rates off on the ISO quote. The first
+    // rate also values every day before it.
+    await UserExchangeRates.create({
+      userId,
+      baseCode: code,
+      quoteCode,
+      rate: rate.value,
+      effectiveDate: toEffectiveDate({ date: new Date() }),
+      source: 'initial',
+    });
 
     return toCustomCurrencyModel({ currency, held });
   },

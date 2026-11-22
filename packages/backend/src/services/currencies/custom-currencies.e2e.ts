@@ -169,19 +169,18 @@ describe('Custom currencies', () => {
       expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([created.body.response]);
     });
 
-    it('stores the rate against the base currency in both directions', async () => {
+    it('stores the rate against the base currency as the rate it was created with', async () => {
       await helpers.createCustomCurrency({ payload: sat({ rate: 4 }) });
 
       const rates = await UserExchangeRates.findAll({
         where: { userId: await userId() },
-        attributes: ['baseCode', 'quoteCode', 'rate'],
+        attributes: ['baseCode', 'quoteCode', 'rate', 'source'],
       });
-      expect(rates.map(({ baseCode, quoteCode, rate }) => ({ baseCode, quoteCode, rate }))).toEqual(
-        expect.arrayContaining([
-          { baseCode: SAT, quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
-          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: SAT, rate: 0.25 },
-        ]),
-      );
+      expect(
+        rates
+          .filter(({ baseCode, quoteCode }) => baseCode === SAT || quoteCode === SAT)
+          .map(({ baseCode, quoteCode, rate, source }) => ({ baseCode, quoteCode, rate, source })),
+      ).toEqual([{ baseCode: SAT, quoteCode: global.BASE_CURRENCY_CODE, rate: 4, source: 'initial' }]);
       const account = await createCustomAccount({ code: SAT });
       const transaction = await createExpense({ accountId: account.id, amount: 1.5 });
       expect(Number(transaction.refAmount)).toBe(6);

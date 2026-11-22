@@ -10,6 +10,7 @@ const VARIANT_CLASSES: Record<Variant, { pill: string; dot: string }> = {
   destructive: { pill: 'border-destructive/25 bg-destructive/10 text-destructive-text', dot: 'bg-destructive' },
   warning: { pill: 'border-warning-text/25 bg-warning-text/10 text-warning-text', dot: 'bg-warning-text' },
   info: { pill: 'border-primary/25 bg-primary/10 text-primary-text', dot: 'bg-primary' },
+  neutral: { pill: 'border-border text-muted-foreground', dot: '' },
 };
 </script>
 
@@ -22,7 +23,11 @@ const VARIANT_CLASSES: Record<Variant, { pill: string; dot: string }> = {
       )
     "
   >
-    <span :class="cn('size-1.5 rounded-full', VARIANT_CLASSES[variant].dot)" aria-hidden="true" />
+    <span
+      v-if="variant !== 'neutral'"
+      :class="cn('size-1.5 rounded-full', VARIANT_CLASSES[variant].dot)"
+      aria-hidden="true"
+    />
     <slot />
   </span>
 </template>

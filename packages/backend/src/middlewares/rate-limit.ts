@@ -4,6 +4,7 @@ import { TooManyRequests } from '@js/errors';
 import { logger } from '@js/utils';
 import Users from '@models/users.model';
 import { RateLimitService } from '@services/common/rate-limit.service';
+import { RATE_SOURCE_SAVE_LIMIT, RATE_SOURCE_TEST_LIMIT, type UserRateLimit } from '@services/common/user-rate-limits';
 import { getMaxSendInvitationsPerOwnerPer24h } from '@services/sharing/limits';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -340,3 +341,24 @@ export const logoSearchRateLimit = createRateLimit({
     return `logo-search:user:${user.id}`;
   },
 });
+
+/**
+ * Builds the middleware of a per-user budget that the MCP tools draw from too, so the two paths
+ * share one counter per user.
+ */
+const createUserRateLimit = ({ limit, failClosed }: { limit: UserRateLimit; failClosed?: boolean }) =>
+  createRateLimit({
+    windowSeconds: limit.windowSeconds,
+    maxAttempts: limit.maxAttempts,
+    keyGenerator: (req: Request) => limit.key({ userId: (req.user as Users).id }),
+    failClosed,
+  });
+
+/**
+ * Rate-source preview limit; the budget and its reason are on `RATE_SOURCE_TEST_LIMIT`. Fails
+ * closed, since every preview fetches a URL the user typed.
+ */
+export const rateSourceTestRateLimit = createUserRateLimit({ limit: RATE_SOURCE_TEST_LIMIT, failClosed: true });
+
+/** Rate-source save limit; the budget and its reason are on `RATE_SOURCE_SAVE_LIMIT`. */
+export const rateSourceSaveRateLimit = createUserRateLimit({ limit: RATE_SOURCE_SAVE_LIMIT });

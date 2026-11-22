@@ -101,12 +101,16 @@ const hasAddedCurrencies = computed(() => currenciesList.value.some((currency) =
 
 const usageMap = computed(() => buildCurrencyUsageMap({ accounts: accounts.value ?? [] }));
 
-// A snapshot, so a refresh that drops the currency can't unmount the dialog mid-close.
-const selectedCurrency = ref<CurrencyWithExchangeRate | null>(null);
+// A snapshot, so a refresh that drops the currency can't unmount the dialog mid-close. While the
+// currency is listed, the dialog follows its refreshed data (a custom currency's editor stays open).
+const selectedSnapshot = ref<CurrencyWithExchangeRate | null>(null);
+const selectedCurrency = computed(
+  () => currenciesList.value.find((item) => item.id === selectedSnapshot.value?.id) ?? selectedSnapshot.value,
+);
 const isEditOpen = ref(false);
 
 const openCurrency = ({ currency }: { currency: CurrencyWithExchangeRate }) => {
-  selectedCurrency.value = currency;
+  selectedSnapshot.value = currency;
   isEditOpen.value = true;
 };
 </script>

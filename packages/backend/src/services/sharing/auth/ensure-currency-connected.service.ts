@@ -8,9 +8,9 @@ import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { withTransaction } from '@services/common/with-transaction';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { lockUserCurrencies } from '@services/currencies/lock-user-currencies';
+import { findPeg } from '@services/currencies/rate-sources/peg';
 import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
 import pick from 'lodash/pick';
-import { Op } from 'sequelize';
 
 /**
  * Idempotently ensure that `currencyCode` is connected to the user and return
@@ -78,14 +78,18 @@ export const ensureUserCurrencyConnected = withTransaction(
     }
 
     const ownerRates = await UserExchangeRates.findAll({
-      where: { userId: ownerRow.userId, [Op.or]: [{ baseCode: currencyCode }, { quoteCode: currencyCode }] },
-      attributes: ['baseCode', 'quoteCode', 'rate'],
+      where: { userId: ownerRow.userId, baseCode: currencyCode },
+      attributes: ['baseCode', 'quoteCode', 'rate', 'effectiveDate', 'source'],
       raw: true,
     });
     await UserExchangeRates.bulkCreate(ownerRates.map((rate) => ({ ...rate, userId })));
 
-    const quote = ownerRates.find((rate) => rate.baseCode === currencyCode)?.quoteCode;
-    if (quote) await UsersCurrencies.addCurrency({ userId, currencyCode: quote });
+    // A peg values the currency without stored rows, so its config is copied. A synced source is not:
+    // it would fetch on the user's behalf, and its encrypted headers belong to the owner.
+    const peg = await findPeg({ userId: ownerRow.userId, code: currencyCode });
+    const quotes = new Set(ownerRates.map((rate) => rate.quoteCode));
+    if (peg) quotes.add(peg.quoteCode);
+    for (const quote of quotes) await UsersCurrencies.addCurrency({ userId, currencyCode: quote });
 
     return UsersCurrenciesModel.create({
       userId,
@@ -95,6 +99,8 @@ export const ensureUserCurrencyConnected = withTransaction(
       nameOverride: ownerRow.nameOverride,
       symbolOverride: ownerRow.symbolOverride,
       decimalsOverride: ownerRow.decimalsOverride,
+      rateSource: peg ? 'peg' : 'manual',
+      rateSourceConfig: peg ? { pegCurrency: peg.quoteCode, factor: peg.factor } : null,
       ...pick(ownerRow, LOGO_FIELD_KEYS),
       // A logo blob has one owner row, which deletes it on edit or delete. A failed copy must not
       // fail the collaborator's write, so the copy goes without the image.

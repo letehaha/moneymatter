@@ -1,7 +1,12 @@
 import type {
   BaseCurrencyChangeStatus,
+  CoingeckoCoinSearchResult,
   CreateCustomCurrencyBody,
+  CurrencyRateHistoryResponse,
+  CurrencyRateSourceResponse,
   CustomCurrencyModel,
+  TestCurrencyRateSourceResponse,
+  UpdateCurrencyRateSourceBody,
   UpdateCustomCurrencyBody,
 } from '@bt/shared/types';
 import Currencies from '@models/currencies.model';
@@ -287,6 +292,79 @@ export function deleteCustomCurrency<R extends boolean | undefined = undefined>(
   return makeRequest<void, R>({
     method: 'delete',
     url: `/user/currencies/custom/${code}`,
+    raw,
+  });
+}
+
+export function setCurrencyRateSource<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  /** Typed loosely so a test can send a body the API must reject. */
+  payload: UpdateCurrencyRateSourceBody | Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<CurrencyRateSourceResponse, R>({
+    method: 'put',
+    url: `/user/currencies/${code}/rate-source`,
+    payload,
+    raw,
+  });
+}
+
+export function testCurrencyRateSource<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  /** Typed loosely so a test can send a body the API must reject. */
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<TestCurrencyRateSourceResponse, R>({
+    method: 'post',
+    url: `/user/currencies/${code}/rate-source/test`,
+    payload,
+    raw,
+  });
+}
+
+export function searchCoingeckoCoins<R extends boolean | undefined = undefined>({
+  query,
+  raw,
+}: {
+  query: string;
+  raw?: R;
+}) {
+  return makeRequest<CoingeckoCoinSearchResult[], R>({
+    method: 'get',
+    url: `/user/currencies/coingecko/search?query=${encodeURIComponent(query)}`,
+    raw,
+  });
+}
+
+export function getCurrencyRateHistory<R extends boolean | undefined = undefined>({
+  code,
+  limit,
+  offset,
+  raw,
+}: {
+  code: string;
+  limit?: number;
+  offset?: number;
+  raw?: R;
+}) {
+  const query = new URLSearchParams();
+  if (limit !== undefined) query.set('limit', String(limit));
+  if (offset !== undefined) query.set('offset', String(offset));
+  const suffix = query.size ? `?${query.toString()}` : '';
+
+  return makeRequest<CurrencyRateHistoryResponse, R>({
+    method: 'get',
+    url: `/user/currencies/${code}/rate-history${suffix}`,
     raw,
   });
 }

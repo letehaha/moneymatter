@@ -12,6 +12,7 @@ const WARNING_KEYS = {
   foreign_reference_dropped: 'settings.security.backup.restore.warnings.foreignReferenceDropped',
   invalid_row_dropped: 'settings.security.backup.restore.warnings.invalidRowDropped',
   foreign_reference_nulled: 'settings.security.backup.restore.warnings.foreignReferenceNulled',
+  rate_source_headers_dropped: 'settings.security.backup.restore.warnings.rateSourceHeadersDropped',
 } satisfies Record<BackupRestoreWarningCode, string>;
 
 const UNKNOWN_WARNING_KEY = 'settings.security.backup.restore.warnings.unknown';

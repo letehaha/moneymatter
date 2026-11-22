@@ -24,7 +24,7 @@ jest.mock('@i18n/index', () => ({ t: ({ key }: { key: string }) => key }));
 jest.mock('@js/utils/logger', () => ({ logger: { error: jest.fn() } }));
 
 /* eslint-disable import/first */
-import { ValidationError } from '@js/errors';
+import { UnexpectedError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrenciesModel, * as UsersCurrencies from '@models/users-currencies.model';
@@ -42,6 +42,8 @@ const OWNER_DEFINITION = {
   nameOverride: 'Sats',
   symbolOverride: 's',
   decimalsOverride: 8,
+  rateSource: 'coingecko',
+  rateSourceConfig: { coinId: 'bitcoin', quoteCurrency: 'USD' },
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
@@ -75,8 +77,8 @@ describe('ensureUserCurrencyConnected', () => {
     findCurrency.mockResolvedValue({ code: 'SAT', isCustom: true });
     holdingsOf({ owner: true });
     findRates.mockResolvedValue([
-      { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0006 },
-      { baseCode: 'USD', quoteCode: 'SAT', rate: 1666.67 },
+      { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0006, effectiveDate: '2026-01-01', source: 'initial' },
+      { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0007, effectiveDate: '2026-02-01', source: 'coingecko' },
     ]);
     copyLogoImage.mockResolvedValue(COPIED_IMAGE_ID);
 
@@ -95,6 +97,8 @@ describe('ensureUserCurrencyConnected', () => {
       nameOverride: OWNER_DEFINITION.nameOverride,
       symbolOverride: OWNER_DEFINITION.symbolOverride,
       decimalsOverride: OWNER_DEFINITION.decimalsOverride,
+      rateSource: 'manual',
+      rateSourceConfig: null,
       logoDomain: OWNER_DEFINITION.logoDomain,
       logoInitials: OWNER_DEFINITION.logoInitials,
       logoColor: OWNER_DEFINITION.logoColor,
@@ -102,13 +106,65 @@ describe('ensureUserCurrencyConnected', () => {
       logoImageId: COPIED_IMAGE_ID,
     });
     expect(copyLogoImage).toHaveBeenCalledWith({ id: OWNER_DEFINITION.logoImageId });
-    expect((findRates.mock.calls[0]![0] as { where: { userId: number } }).where.userId).toBe(OWNER_ID);
+    expect((findRates.mock.calls[0]![0] as { where: unknown }).where).toEqual({ userId: OWNER_ID, baseCode: 'SAT' });
     expect(copyRates).toHaveBeenCalledWith([
-      { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0006, userId: COLLABORATOR_ID },
-      { baseCode: 'USD', quoteCode: 'SAT', rate: 1666.67, userId: COLLABORATOR_ID },
+      {
+        baseCode: 'SAT',
+        quoteCode: 'USD',
+        rate: 0.0006,
+        effectiveDate: '2026-01-01',
+        source: 'initial',
+        userId: COLLABORATOR_ID,
+      },
+      {
+        baseCode: 'SAT',
+        quoteCode: 'USD',
+        rate: 0.0007,
+        effectiveDate: '2026-02-01',
+        source: 'coingecko',
+        userId: COLLABORATOR_ID,
+      },
     ]);
     expect(addCurrency).toHaveBeenCalledTimes(1);
     expect(addCurrency).toHaveBeenCalledWith({ userId: COLLABORATOR_ID, currencyCode: 'USD' });
+  });
+
+  it("copies the owner's peg, which has no stored rates, and connects the pegged currency", async () => {
+    const pegConfig = { pegCurrency: 'EUR', factor: 2 };
+    findCurrency.mockResolvedValue({ code: 'SAT', isCustom: true });
+    findHolding.mockImplementation(async (options) =>
+      (options as { where: { userId: number } }).where.userId === OWNER_ID
+        ? { ...OWNER_DEFINITION, rateSource: 'peg', rateSourceConfig: pegConfig }
+        : null,
+    );
+    findRates.mockResolvedValue([]);
+    copyLogoImage.mockResolvedValue(COPIED_IMAGE_ID);
+
+    await ensureUserCurrencyConnected({
+      userId: COLLABORATOR_ID,
+      currencyCode: 'SAT',
+      definitionOwnerUserId: OWNER_ID,
+    });
+
+    expect(createHolding).toHaveBeenCalledWith(
+      expect.objectContaining({ rateSource: 'peg', rateSourceConfig: pegConfig }),
+    );
+    expect(addCurrency).toHaveBeenCalledWith({ userId: COLLABORATOR_ID, currencyCode: 'EUR' });
+  });
+
+  it("refuses an owner's peg whose config cannot be read, and connects nothing", async () => {
+    findCurrency.mockResolvedValue({ code: 'SAT', isCustom: true });
+    findHolding.mockImplementation(async (options) =>
+      (options as { where: { userId: number } }).where.userId === OWNER_ID
+        ? { ...OWNER_DEFINITION, rateSource: 'peg', rateSourceConfig: null }
+        : null,
+    );
+    findRates.mockResolvedValue([]);
+
+    await expect(
+      ensureUserCurrencyConnected({ userId: COLLABORATOR_ID, currencyCode: 'SAT', definitionOwnerUserId: OWNER_ID }),
+    ).rejects.toBeInstanceOf(UnexpectedError);
+    expect(createHolding).not.toHaveBeenCalled();
   });
 
   it('connects the custom currency without its logo image when copying the image fails', async () => {
