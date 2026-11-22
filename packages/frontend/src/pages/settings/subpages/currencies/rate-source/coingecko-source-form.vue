@@ -8,6 +8,7 @@
         :disabled="disabled"
         :error-message="errors.coinId ? $t(errors.coinId) : undefined"
         @select="selectCoin({ coin: $event })"
+        @not-configured="emit('not-configured')"
       />
 
       <p v-if="model.coinId" class="text-sm" data-testid="rate-source-selected-coin">
@@ -25,18 +26,12 @@
       data-testid="rate-source-coingecko-quote"
       @update:model-value="model = { ...model, quoteCurrency: $event?.value ?? model.quoteCurrency }"
     />
-
-    <p class="text-muted-foreground flex items-start gap-1 text-xs leading-5">
-      <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
-      {{ $t('settings.currencies.rateSource.coingecko.hint') }}
-    </p>
   </div>
 </template>
 
 <script setup lang="ts">
 import SelectField from '@/components/fields/select-field.vue';
 import type { CoingeckoCoinSearchResult } from '@bt/shared/types';
-import { InfoIcon } from '@lucide/vue';
 
 import CoingeckoCoinSearch from '../coingecko-coin-search.vue';
 import type { RateSourceDraft, RateSourceDraftErrors } from './rate-source-draft';
@@ -46,6 +41,8 @@ defineProps<{
   errors: RateSourceDraftErrors;
   disabled?: boolean;
 }>();
+
+const emit = defineEmits<{ 'not-configured': [] }>();
 
 const model = defineModel<RateSourceDraft['coingecko']>({ required: true });
 

@@ -2,7 +2,7 @@
   <div class="grid gap-4" data-testid="rate-source-http-form">
     <InputField
       :model-value="model.urlTemplate"
-      :label="$t('settings.currencies.rateSource.http.urlLabel')"
+      :label="$t('settings.currencies.dialog.sourceView.http.address')"
       :placeholder="$t('settings.currencies.rateSource.http.urlPlaceholder')"
       :disabled="disabled"
       :error-message="errors.urlTemplate ? $t(errors.urlTemplate) : undefined"
@@ -16,7 +16,7 @@
     <div class="grid gap-3 @[26rem]/currencies:grid-cols-2">
       <InputField
         :model-value="model.jsonPath"
-        :label="$t('settings.currencies.rateSource.http.pathLabel')"
+        :label="$t('settings.currencies.dialog.sourceView.http.path')"
         :placeholder="$t('settings.currencies.rateSource.http.pathPlaceholder')"
         :disabled="disabled"
         :error-message="errors.jsonPath ? $t(errors.jsonPath) : undefined"
@@ -37,12 +37,12 @@
     </div>
 
     <section class="grid gap-3" data-testid="rate-source-http-headers">
-      <div>
-        <h4 class="text-sm font-medium">{{ $t('settings.currencies.rateSource.http.headersTitle') }}</h4>
-        <p class="text-muted-foreground mt-0.5 text-xs leading-5">
-          {{ $t('settings.currencies.rateSource.http.headersHint') }}
-        </p>
-      </div>
+      <h4 class="text-sm font-medium">
+        {{ $t('settings.currencies.dialog.sourceView.http.headers') }}
+        <span class="text-muted-foreground font-normal">
+          · {{ $t('settings.currencies.dialog.sourceView.http.headersStored') }}
+        </span>
+      </h4>
 
       <template v-if="savedHeaderNames.length && model.headersMode === 'keep'">
         <p class="text-sm" data-testid="rate-source-saved-headers">
@@ -154,7 +154,11 @@
           @click="runTest"
         >
           <FlaskConicalIcon class="size-4" />
-          {{ $t('settings.currencies.rateSource.http.testButton') }}
+          {{
+            testResult || testFailure
+              ? $t('settings.currencies.dialog.sourceView.http.testAgain')
+              : $t('settings.currencies.dialog.sourceView.http.test')
+          }}
         </Button>
       </div>
 

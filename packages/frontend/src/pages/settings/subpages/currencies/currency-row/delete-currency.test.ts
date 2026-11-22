@@ -19,13 +19,25 @@ vi.mock('@/components/notification-center', () => ({
   useNotificationCenter: () => ({ addSuccessNotification: vi.fn(), addErrorNotification: vi.fn() }),
 }));
 
-const i18n = createI18n({ legacy: false, locale: 'en', missingWarn: false, fallbackWarn: false, messages: { en: {} } });
-
-const passThrough = defineComponent({
-  setup:
-    (_props, { slots }) =>
-    () =>
-      h('div', {}, slots.default?.()),
+const i18n = createI18n({
+  legacy: false,
+  locale: 'en',
+  missingWarn: false,
+  fallbackWarn: false,
+  messages: {
+    en: {
+      settings: {
+        currencies: {
+          dialog: {
+            footer: {
+              deleteBlocked:
+                "Used by {count} account, so it can't be deleted. | Used by {count} accounts, so it can't be deleted.",
+            },
+          },
+        },
+      },
+    },
+  },
 });
 
 // Renders the dialog inline; its confirm button stands in for the real confirm action.
@@ -44,16 +56,22 @@ const AlertDialogStub = defineComponent({
         : null,
 });
 
-const mountDelete = ({ currency }: { currency: Partial<CurrencyWithExchangeRate> }) =>
+const mountDelete = ({
+  currency,
+  accountsCount = 0,
+}: {
+  currency: Partial<CurrencyWithExchangeRate>;
+  accountsCount?: number;
+}) =>
   mount(DeleteCurrency, {
     props: {
       currency: currency as CurrencyWithExchangeRate,
       isFormDisabled: false,
-      isDeletionDisabled: false,
+      accountsCount,
     },
     global: {
       plugins: [i18n, [VueQueryPlugin, { queryClient: new QueryClient() }]],
-      stubs: { DesktopOnlyTooltip: passThrough, ResponsiveAlertDialog: AlertDialogStub },
+      stubs: { ResponsiveAlertDialog: AlertDialogStub },
     },
   });
 
@@ -104,5 +122,14 @@ describe('DeleteCurrency', () => {
     expect(wrapper.get('[data-testid="currency-blocker-list"]').text()).toContain('Trip');
     expect(wrapper.get('[data-testid="confirm"]').attributes('disabled')).toBeDefined();
     expect(wrapper.emitted('submit')).toBeUndefined();
+  });
+
+  it('says why a currency accounts use cannot be deleted, and offers no delete', () => {
+    const wrapper = mountDelete({ currency: { currencyCode: 'EUR', isCustomCurrency: false }, accountsCount: 2 });
+
+    expect(wrapper.get('[data-testid="delete-currency-blocked"]').text()).toBe(
+      "Used by 2 accounts, so it can't be deleted.",
+    );
+    expect(wrapper.find('button').exists()).toBe(false);
   });
 });

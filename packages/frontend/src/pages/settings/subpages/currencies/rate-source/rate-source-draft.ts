@@ -56,11 +56,11 @@ export interface RateSourceDraftErrors {
 
 export type SavedRateSource = Pick<UserCurrencyModel, 'rateSource' | 'rateSourceConfig'>;
 
-const isPegConfig = (config: SavedRateSource['rateSourceConfig']): config is PegRateSourceConfig =>
+export const isPegConfig = (config: SavedRateSource['rateSourceConfig']): config is PegRateSourceConfig =>
   Boolean(config && 'pegCurrency' in config);
-const isCoingeckoConfig = (config: SavedRateSource['rateSourceConfig']): config is CoingeckoRateSourceConfig =>
+export const isCoingeckoConfig = (config: SavedRateSource['rateSourceConfig']): config is CoingeckoRateSourceConfig =>
   Boolean(config && 'coinId' in config);
-const isHttpConfig = (config: SavedRateSource['rateSourceConfig']): config is HttpRateSourceConfig =>
+export const isHttpConfig = (config: SavedRateSource['rateSourceConfig']): config is HttpRateSourceConfig =>
   Boolean(config && 'urlTemplate' in config);
 
 /** Names of the headers saved on the currency's HTTP source; their values are never available. */

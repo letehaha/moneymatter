@@ -90,7 +90,8 @@ test.describe('Custom currencies', () => {
     await page.goto('/settings/currencies');
 
     await page.getByRole('button', { name: new RegExp(NAME) }).click();
-    await page.getByTestId('rate-source-tabs').locator('[data-value="peg"]').click();
+    await page.getByTestId('source-summary-change').click();
+    await page.getByTestId('rate-source-radio-peg').click();
 
     await page.getByTestId('rate-source-peg-currency').locator('button[role="combobox"]').click();
     await page.getByRole('option', { name: /^USD ·/ }).click();
@@ -111,7 +112,8 @@ test.describe('Custom currencies', () => {
     // The peg kept from the previous case overrides stored rates, so the currency goes back to manual first.
     await page.goto('/settings/currencies');
     await page.getByRole('button', { name: new RegExp(NAME) }).click();
-    await page.getByTestId('rate-source-tabs').locator('[data-value="manual"]').click();
+    await page.getByTestId('source-summary-change').click();
+    await page.getByTestId('rate-source-radio-manual').click();
     await page.getByTestId('rate-source-save').click();
     await waitForSuccessToast({ page });
 
@@ -134,7 +136,8 @@ test.describe('Custom currencies', () => {
     await page.reload();
     await page.getByRole('button', { name: new RegExp(NAME) }).click();
 
-    // The rate given at creation starts today, so it is the latest one and in force.
+    // The rate given at creation starts today, so it is the latest one and in force. With three rates the
+    // overview's recent list shows them all.
     const rows = page.getByTestId('rate-history-row');
     await expect(rows).toHaveCount(3);
     await expect(rows.first().getByTestId('rate-history-rate')).toHaveText(`1 USDT = ${RATE} USD`);
@@ -142,15 +145,17 @@ test.describe('Custom currencies', () => {
     await expect(rows.nth(1).getByTestId('rate-history-rate')).toHaveText('1 USDT = 4 USD');
     await expect(rows.last().getByTestId('rate-history-rate')).toHaveText('1 USDT = 2 USD');
 
+    const editDialog = page.getByRole('dialog').filter({ has: page.getByTestId('edit-dated-rate') });
+
     await rows.nth(1).getByTestId('rate-history-edit').click();
-    const editDialog = page.getByTestId('edit-dated-rate');
     await editDialog.locator('input[data-testid="manual-rate-base"], [data-testid="manual-rate-base"] input').fill('5');
     await editDialog.getByTestId('manual-rate-save').click();
     await waitForSuccessToast({ page });
     await expect(rows.nth(1).getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
     await expect(rows).toHaveCount(3);
 
-    await rows.last().getByTestId('rate-history-remove').click();
+    await rows.last().getByTestId('rate-history-edit').click();
+    await editDialog.getByTestId('rate-form-remove').click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Remove rate' }).click();
     await waitForSuccessToast({ page });
     await expect(rows).toHaveCount(2);

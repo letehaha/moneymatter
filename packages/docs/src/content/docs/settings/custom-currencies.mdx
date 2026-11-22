@@ -43,7 +43,7 @@ The currency appears in your list with a **Custom currency** badge, and you can 
 
 ## Edit a custom currency
 
-Click the currency's row to open it in a dialog, then click **Edit**. You can change the name, the symbol and the logo at any time.
+Click the currency's row to open it in a dialog, then click **Edit details**. You can change the name, the symbol and the logo at any time.
 
 The number of **Decimals** can change only while nothing uses the currency, because saved amounts were rounded to the old number. While an account is in the currency, the field is locked. If something else still uses it, saving lists each item, the same way [deleting a currency](/settings/base-currency-and-currencies/#delete-a-currency) does. Change or delete them, then try again. Changing the decimals also removes the foreign amounts that transactions in other accounts recorded in this currency.
 
@@ -55,7 +55,7 @@ Click the currency's row to open it and click **Delete currency**. Like any curr
 
 A custom currency has no market rate, so its rate comes from its [rate source](/settings/rate-sources/). Every rate is a price in an ISO currency, such as USD or EUR, never in another custom currency.
 
-A custom currency always has at least one rate, so every transaction in it gets a base amount. A transaction dated before the currency's first rate uses that first rate. To value those days differently, add a manual rate with an earlier **Effective from** date while the currency is on the **Manual** source.
+A custom currency always has at least one rate, so every transaction in it gets a base amount. A transaction dated before the currency's first rate uses that first rate. To value those days differently, add a manual rate with an earlier **Use this rate from** date while the currency is on the **Manual** source: click **Update rate** and pick that day.
 
 MoneyMatter refuses any change that would leave a custom currency with no rate at all, such as removing its last rate or saving a source that can't fetch a single price. You see an error and nothing changes.
 
@@ -75,7 +75,7 @@ You can [change your base currency](/settings/base-currency-and-currencies/#chan
 
 ## Backups
 
-A [backup](/settings/security-and-account/#backup-and-restore) includes your custom currency definitions (code, name, symbol and decimals), their rate sources and their rates. An [HTTP source](/settings/rate-sources/#http) keeps its settings and header names, but the header values are never included, because they are secrets. A restore clears the headers and the restore summary shows a warning. Open that currency's rate source settings and enter them again, or its rates stop updating. A backup in which a custom currency has no rate can't be restored.
+A [backup](/settings/security-and-account/#backup-and-restore) includes your custom currency definitions (code, name, symbol and decimals), their rate sources and their rates. An [HTTP source](/settings/rate-sources/#http) keeps its settings and header names, but the header values are never included, because they are secrets. A restore clears the headers and the restore summary shows a warning. Open that currency, click **Change** next to **Rate comes from**, and enter them again, or its rates stop updating. A backup in which a custom currency has no rate can't be restored.
 
 ## Related
 

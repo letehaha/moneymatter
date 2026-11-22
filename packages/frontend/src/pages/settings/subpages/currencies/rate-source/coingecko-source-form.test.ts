@@ -2,7 +2,7 @@ import currenciesEn from '@/i18n/locales/chunks/en/settings/currencies.json';
 import { ApiErrorResponseError } from '@/js/errors';
 import { API_ERROR_CODES } from '@bt/shared/types';
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
-import { type VueWrapper, flushPromises, mount } from '@vue/test-utils';
+import { DOMWrapper, type VueWrapper, enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 
 import CoingeckoSourceForm from './coingecko-source-form.vue';
@@ -33,6 +33,8 @@ vi.mock('@/components/fields/select-field.vue', async () => {
 });
 
 const SEARCH_DEBOUNCE_MS = 300;
+// The dropdown is portaled to the body, outside the wrapper.
+const page = new DOMWrapper(document.body);
 const i18n = createI18n({ legacy: false, locale: 'en', messages: { en: { ...currenciesEn } } });
 
 const BITCOIN = {
@@ -69,13 +71,21 @@ const mountForm = ({ coinId = '' }: { coinId?: string } = {}) => {
   return wrapper;
 };
 
+const findInput = ({ wrapper }: { wrapper: VueWrapper }) =>
+  wrapper.find('input[data-testid="rate-source-coin-search"]');
+
 const search = async ({ wrapper, term }: { wrapper: VueWrapper; term: string }) => {
-  await wrapper
-    .find('[data-testid="rate-source-coin-search"] input, input[data-testid="rate-source-coin-search"]')
-    .setValue(term);
+  await findInput({ wrapper }).setValue(term);
   await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
   await flushPromises();
 };
+
+const isDropdownOpen = ({ wrapper }: { wrapper: VueWrapper }) =>
+  findInput({ wrapper }).attributes('aria-expanded') === 'true' && page.find('[role="listbox"]').exists();
+
+// jsdom lacks scrollIntoView, which reka-ui calls on the highlighted option.
+Element.prototype.scrollIntoView = vi.fn();
+enableAutoUnmount(afterEach);
 
 describe('CoingeckoSourceForm', () => {
   beforeEach(() => {
@@ -94,37 +104,92 @@ describe('CoingeckoSourceForm', () => {
     expect(mockSearch).not.toHaveBeenCalled();
   });
 
-  it('waits for the typing to pause and then lists the matching coins', async () => {
+  it('keeps the dropdown closed until something is typed', () => {
+    const wrapper = mountForm();
+
+    expect(isDropdownOpen({ wrapper })).toBe(false);
+  });
+
+  it('opens the dropdown while typing and lists the matching coins once the typing pauses', async () => {
     mockSearch.mockResolvedValue([BITCOIN, WRAPPED]);
     const wrapper = mountForm();
 
-    await wrapper
-      .find('input[data-testid="rate-source-coin-search"], [data-testid="rate-source-coin-search"] input')
-      .setValue('bit');
+    await findInput({ wrapper }).setValue('bit');
     expect(mockSearch).not.toHaveBeenCalled();
-    expect(wrapper.find('[data-testid="rate-source-coin-loading"]').exists()).toBe(true);
+    expect(isDropdownOpen({ wrapper })).toBe(true);
+    expect(page.find('[role="listbox"] [data-testid="rate-source-coin-loading"]').exists()).toBe(true);
 
     await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
     await flushPromises();
 
     expect(mockSearch).toHaveBeenCalledWith({ query: 'bit' });
-    const results = wrapper.find('[data-testid="rate-source-coin-results"]');
-    expect(results.text()).toContain('Bitcoin');
-    expect(results.text()).toContain('#1');
-    expect(results.text()).toContain('Wrapped Bitcoin');
+    const options = page.findAll('[role="listbox"] [data-testid="rate-source-coin-results"] [role="option"]');
+    expect(options.map((option) => option.attributes('data-testid'))).toEqual([
+      'rate-source-coin-bitcoin',
+      'rate-source-coin-wrapped-bitcoin',
+    ]);
+    expect(options[0]!.text()).toContain('Bitcoin');
+    expect(options[0]!.text()).toContain('#1');
   });
 
-  it('selects a coin and reports it with a readable label', async () => {
+  it('selects a coin, reports it with a readable label and closes the dropdown', async () => {
     mockSearch.mockResolvedValue([BITCOIN]);
     const wrapper = mountForm();
 
     await search({ wrapper, term: 'bit' });
-    await wrapper.find('[data-testid="rate-source-coin-bitcoin"]').trigger('click');
+    await page.find('[data-testid="rate-source-coin-bitcoin"]').trigger('click');
+    await flushPromises();
 
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([
       { coinId: 'bitcoin', coinLabel: 'Bitcoin (BTC)', quoteCurrency: 'USD', logoUrl: 'https://img.test/btc.png' },
     ]);
     expect(wrapper.find('[data-testid="rate-source-selected-coin"]').text()).toBe('Selected coin: Bitcoin (BTC)');
+    expect(isDropdownOpen({ wrapper })).toBe(false);
+    expect((findInput({ wrapper }).element as HTMLInputElement).value).toBe('bit');
+  });
+
+  it('picks the highlighted coin with the arrow keys and Enter', async () => {
+    mockSearch.mockResolvedValue([BITCOIN, WRAPPED]);
+    const wrapper = mountForm();
+
+    await search({ wrapper, term: 'bit' });
+    await findInput({ wrapper }).trigger('keydown', { key: 'ArrowDown' });
+    await findInput({ wrapper }).trigger('keydown', { key: 'Enter' });
+    await flushPromises();
+
+    expect(wrapper.emitted('update:modelValue')?.at(-1)?.[0]).toMatchObject({ coinId: 'wrapped-bitcoin' });
+    expect(isDropdownOpen({ wrapper })).toBe(false);
+  });
+
+  it('marks the selected coin in the results, also after it is picked again', async () => {
+    mockSearch.mockResolvedValue([BITCOIN, WRAPPED]);
+    const wrapper = mountForm({ coinId: 'bitcoin' });
+
+    await search({ wrapper, term: 'bit' });
+
+    expect(page.find('[data-testid="rate-source-coin-bitcoin"]').attributes('aria-selected')).toBe('true');
+    expect(page.find('[data-testid="rate-source-coin-wrapped-bitcoin"]').attributes('aria-selected')).toBe('false');
+
+    await page.find('[data-testid="rate-source-coin-bitcoin"]').trigger('click');
+    await findInput({ wrapper }).trigger('keydown', { key: 'ArrowDown' });
+    await flushPromises();
+
+    expect(isDropdownOpen({ wrapper })).toBe(true);
+    expect(page.find('[data-testid="rate-source-coin-bitcoin"]').attributes('aria-selected')).toBe('true');
+  });
+
+  it('closes the dropdown on Escape', async () => {
+    mockSearch.mockResolvedValue([BITCOIN]);
+    const wrapper = mountForm();
+
+    await search({ wrapper, term: 'bit' });
+    expect(isDropdownOpen({ wrapper })).toBe(true);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await flushPromises();
+
+    expect(isDropdownOpen({ wrapper })).toBe(false);
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   });
 
   it('carries no logo for a coin that has none', async () => {
@@ -132,7 +197,7 @@ describe('CoingeckoSourceForm', () => {
     const wrapper = mountForm();
 
     await search({ wrapper, term: 'wrapped' });
-    await wrapper.find('[data-testid="rate-source-coin-wrapped-bitcoin"]').trigger('click');
+    await page.find('[data-testid="rate-source-coin-wrapped-bitcoin"]').trigger('click');
 
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([
       { coinId: 'wrapped-bitcoin', coinLabel: 'Wrapped Bitcoin (WBTC)', quoteCurrency: 'USD', logoUrl: null },
@@ -151,10 +216,11 @@ describe('CoingeckoSourceForm', () => {
 
     await search({ wrapper, term: 'zzzz' });
 
-    expect(wrapper.find('[data-testid="rate-source-coin-empty"]').text()).toBe('No coins found');
+    expect(isDropdownOpen({ wrapper })).toBe(true);
+    expect(page.find('[role="listbox"] [data-testid="rate-source-coin-empty"]').text()).toBe('No coins found');
   });
 
-  it('tells the user CoinGecko is not set up when the instance has no key', async () => {
+  it('reports that CoinGecko is not set up when the instance has no key', async () => {
     mockSearch.mockRejectedValue(
       new ApiErrorResponseError('not configured', {
         code: API_ERROR_CODES.cryptoProviderNotConfigured,
@@ -165,22 +231,41 @@ describe('CoingeckoSourceForm', () => {
 
     await search({ wrapper, term: 'bit' });
 
-    expect(wrapper.find('[data-testid="rate-source-coingecko-not-configured"]').text()).toContain('COINGECKO_API_KEY');
-    expect(wrapper.find('[data-testid="rate-source-coin-empty"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="rate-source-coin-search-error"]').exists()).toBe(false);
+    expect(wrapper.emitted('not-configured')).toHaveLength(1);
+    expect(isDropdownOpen({ wrapper })).toBe(false);
+    expect(page.find('[data-testid="rate-source-coin-empty"]').exists()).toBe(false);
+    expect(page.find('[data-testid="rate-source-coin-search-error"]').exists()).toBe(false);
   });
 
   it('shows a retry hint for any other search failure', async () => {
-    mockSearch.mockRejectedValue(
-      new ApiErrorResponseError('boom', { code: API_ERROR_CODES.unexpected, message: 'boom' }),
-    );
+    mockSearch.mockRejectedValue(new Error('network down'));
     const wrapper = mountForm();
 
     await search({ wrapper, term: 'bit' });
 
-    expect(wrapper.find('[data-testid="rate-source-coin-search-error"]').text()).toContain(
+    expect(isDropdownOpen({ wrapper })).toBe(true);
+    expect(page.find('[role="listbox"] [data-testid="rate-source-coin-search-error"]').text()).toContain(
       'Could not search CoinGecko',
     );
-    expect(wrapper.find('[data-testid="rate-source-coingecko-not-configured"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="rate-source-coin-search-field-error"]').exists()).toBe(false);
+    expect(wrapper.emitted('not-configured')).toBeUndefined();
+  });
+
+  it("keeps the API's explanation of a failed search under the field once the dropdown closes", async () => {
+    mockSearch.mockRejectedValue(
+      new ApiErrorResponseError('limited', { code: API_ERROR_CODES.unexpected, message: 'CoinGecko is rate limited' }),
+    );
+    const wrapper = mountForm();
+
+    await search({ wrapper, term: 'bit' });
+    expect(page.find('[role="listbox"] [data-testid="rate-source-coin-search-error"]').text()).toContain(
+      'CoinGecko is rate limited',
+    );
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await flushPromises();
+
+    expect(isDropdownOpen({ wrapper })).toBe(false);
+    expect(wrapper.get('[data-testid="rate-source-coin-search-field-error"]').text()).toBe('CoinGecko is rate limited');
   });
 });

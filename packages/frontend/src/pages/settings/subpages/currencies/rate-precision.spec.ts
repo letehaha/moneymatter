@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { rateDisplayOptions, roundRate } from './rate-precision';
+import { formatCustomRate, rateDisplayOptions, roundRate } from './rate-precision';
 
 describe('roundRate', () => {
   it('rounds an ISO rate to the given decimals', () => {
@@ -28,5 +28,12 @@ describe('rateDisplayOptions', () => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 6,
     });
+  });
+});
+
+describe('formatCustomRate', () => {
+  it('keeps the significant digits of a tiny rate and drops trailing zeros', () => {
+    expect(formatCustomRate({ value: 0.000000123456789 })).toBe('0.000000123456789');
+    expect(formatCustomRate({ value: 2 })).toBe('2');
   });
 });
