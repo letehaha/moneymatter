@@ -28,9 +28,9 @@ const foldWith = ({ assignments }: { assignments: FoldAssignment[] }) =>
   foldPlan({
     plan: { carryPolicy: 'floor' },
     periods: [
-      { id: 'jul', startDate: '2026-07-01', endDate: '2026-08-01' },
-      { id: 'aug', startDate: '2026-08-01', endDate: '2026-09-01' },
-      { id: 'sep', startDate: '2026-09-01', endDate: '2026-10-01' },
+      { id: 'jul', startDate: '2026-07-01', endDate: '2026-08-01', carryReset: false },
+      { id: 'aug', startDate: '2026-08-01', endDate: '2026-09-01', carryReset: false },
+      { id: 'sep', startDate: '2026-09-01', endDate: '2026-10-01', carryReset: false },
     ],
     lines: [
       {

@@ -12,6 +12,7 @@ import { listPeriods as _listPeriods } from '@services/budget-plans/list-periods
 import { restoreLine as _restoreLine } from '@services/budget-plans/restore-line';
 import { restorePlan as _restorePlan } from '@services/budget-plans/restore-plan';
 import { setAssignment as _setAssignment } from '@services/budget-plans/set-assignment';
+import { setCarryReset as _setCarryReset } from '@services/budget-plans/set-carry-reset';
 import { setPlanAccounts as _setPlanAccounts } from '@services/budget-plans/set-plan-accounts';
 import {
   addSuggestedLines as _addSuggestedLines,
@@ -364,6 +365,25 @@ export function setBudgetAssignment<R extends boolean | undefined = false>({
   return makeRequest<Awaited<ReturnType<typeof _setAssignment>>, R>({
     method: 'put',
     url: `/budget-plans/${planId}/periods/${periodId}/lines/${lineId}/assignment`,
+    payload,
+    raw,
+  });
+}
+
+export function setBudgetPeriodCarryReset<R extends boolean | undefined = false>({
+  planId,
+  periodId,
+  payload,
+  raw,
+}: {
+  planId: string;
+  periodId: string;
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _setCarryReset>>, R>({
+    method: 'put',
+    url: `/budget-plans/${planId}/periods/${periodId}/carry-reset`,
     payload,
     raw,
   });

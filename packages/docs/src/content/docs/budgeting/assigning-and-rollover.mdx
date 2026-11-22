@@ -1,6 +1,6 @@
 ---
 title: Assigning and rollover
-description: Give each line its amount for one period or from now on, go back to a line's usual amount, and choose what happens to leftovers and overspending when a period ends.
+description: Give each line its amount for one period or from now on, go back to a line's usual amount, choose what happens to leftovers and overspending when a period ends, and reset rollover to start a period fresh.
 sidebar:
   order: 3
 ---
@@ -77,6 +77,10 @@ Here's what a Groceries line with 400 assigned every month starts April with:
 
 A line using **Carry surplus and deficit** shows a **carries deficit** badge.
 
+<Aside type="tip" title="Want a clean slate?">
+To drop everything that carried into a period at once, use [Reset rollover](#reset-rollover).
+</Aside>
+
 ### Choose a rule for the whole budget
 
 You pick the rule when you [create the budget](/budgeting/start-budgeting/#create-your-budget), under **Rollover**. To change it later:
@@ -109,6 +113,44 @@ A period's rule decides what it takes over from the period before. For example, 
 ### Where money that doesn't roll over goes
 
 Money that isn't carried simply isn't counted any more. The next period starts from the new **Assigned** amount.
+
+## Reset rollover
+
+Sometimes you want a period to start clean: a new year, a new job, or a budget that drifted after a few messy months. **Reset rollover** makes every line start the period with only what you assign. Leftovers and overspending from earlier periods don't carry in, whatever the lines' rollover rules say.
+
+<Steps>
+
+1. Open the period you want to start fresh. It can be the current period, a past one or a future one.
+2. Click **Options** above the lines and choose **Reset rollover**.
+
+   <Screenshot
+     src="/screenshots/budgeting/reset-rollover-menu.png"
+     alt="The open Options menu on the budget, with Row bars, Pace hint and Manage layout, and Reset rollover at the bottom."
+     hint="On /budget for the seeded Household budget, current period, click Options above the grid and hover Reset rollover. Crop to the Options button and the open menu."
+   />
+
+3. Click **Reset** to confirm.
+
+   <Screenshot
+     src="/screenshots/budgeting/reset-rollover-dialog.png"
+     alt="The Reset rollover for this period? window explaining that every line starts the period with only what you assign, with Cancel and Reset buttons."
+     hint="On /budget, open Options → Reset rollover and don't confirm. Crop to the window."
+   />
+
+</Steps>
+
+For example, Groceries has 400 assigned every month and uses **Carry surplus**. October ended with 150 left, so November would start with 550. Reset rollover on November, and it starts with 400. December carries over whatever November ends with, as usual.
+
+What a reset changes, and what it leaves alone:
+
+- It applies to **every line**, lines with a goal included.
+- **Assigned** amounts, **Activity** and the lines' rollover rules stay as they are. In the [side panel](/budgeting/side-panel/#breakdown), **Carried over** shows 0 for that period.
+- Only the period you reset starts fresh. Later periods carry over from its new balance as usual.
+- It stays in place when earlier periods change. If you later add a forgotten October expense, November still starts fresh.
+
+### Undo a reset
+
+Open the same period, click **Options** and choose **Undo reset**. It takes effect right away, without asking. The period carries over again from the period before, using today's numbers.
 
 ## Related
 

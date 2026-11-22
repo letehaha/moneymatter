@@ -17,6 +17,7 @@ import type {
   CreateBudgetPlanResponse,
   SetBudgetLineGoalPayload,
   SetBudgetPlanAssignmentPayload,
+  SetBudgetPlanCarryResetPayload,
   SetBudgetPlanLayoutPayload,
 } from '@bt/shared/types';
 
@@ -128,6 +129,16 @@ export const setBudgetPlanAssignment = async ({
   payload: SetBudgetPlanAssignmentPayload;
 }): Promise<BudgetPlanPeriodView> =>
   api.put(`/budget-plans/${planId}/periods/${periodId}/lines/${lineId}/assignment`, payload);
+
+export const setBudgetPlanCarryReset = async ({
+  planId,
+  periodId,
+  payload,
+}: {
+  planId: string;
+  periodId: string;
+  payload: SetBudgetPlanCarryResetPayload;
+}): Promise<BudgetPlanPeriodView> => api.put(`/budget-plans/${planId}/periods/${periodId}/carry-reset`, payload);
 
 export const updateBudgetPlan = async ({
   planId,

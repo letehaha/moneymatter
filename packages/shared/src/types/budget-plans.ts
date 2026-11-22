@@ -130,6 +130,8 @@ export interface BudgetPlanPeriod {
   /** Exclusive. */
   endDate: string;
   isCurrent: boolean;
+  /** Every line starts this period with nothing carried in from earlier periods. */
+  carryReset: boolean;
 }
 
 export interface BudgetPlanPeriodViewLine {
@@ -295,6 +297,11 @@ export interface BudgetPlanScheduled {
   outflows: { total: number; count: number };
   inflows: { total: number; count: number };
   nextDate: string | null;
+}
+
+/** `false` undoes the reset. */
+export interface SetBudgetPlanCarryResetPayload {
+  reset: boolean;
 }
 
 export interface SetBudgetPlanAssignmentPayload {

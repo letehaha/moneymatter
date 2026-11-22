@@ -32,6 +32,16 @@
       "deleted": "Budget moved to trash",
       "deleteError": "Couldn't move the budget to trash"
     },
+    "carryReset": {
+      "action": "Reset rollover",
+      "undo": "Undo reset",
+      "confirmTitle": "Reset rollover for this period?",
+      "confirmDescription": "Every line starts this period with only what you assign. Leftovers and overspending from earlier periods don't carry in. You can undo this.",
+      "confirm": "Reset",
+      "resetDone": "Rollover reset",
+      "undone": "Reset undone",
+      "error": "Couldn't update the rollover"
+    },
     "lineCount": "{count} line | {count} lines",
     "trialNotice": {
       "active": "Early adopter trial: {count} day of budgeting left | Early adopter trial: {count} days of budgeting left",
