@@ -9,6 +9,7 @@
     "backToInvestments": "Retour aux investissements",
     "subtitle": "Aperçu du portefeuille",
     "actions": {
+      "openExternalUrl": "Open external link",
       "transfer": "Virement",
       "edit": "Modifier",
       "delete": "Supprimer",

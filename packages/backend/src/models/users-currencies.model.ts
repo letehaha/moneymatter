@@ -1,13 +1,39 @@
-import { RecordId } from '@bt/shared/types';
+import {
+  CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_DECIMALS_MIN,
+  type CoingeckoRateSourceConfig,
+  type CurrencyRateSource,
+  type HttpRateSourceConfig,
+  type PegRateSourceConfig,
+  type RecordId,
+} from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { IdColumn } from '@common/types/id-column';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { t } from '@i18n/index';
+import { UnexpectedError, ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
-import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  ForeignKey,
+  BelongsTo,
+  DataType,
+  AfterSave,
+  AfterDestroy,
+  DefaultScope,
+} from 'sequelize-typescript';
 
-import Currencies from './currencies.model';
+import Currencies, { NON_CURRENCY_CODES } from './currencies.model';
 import Users from './users.model';
 
+// The encrypted request headers of an HTTP rate source stay out of every ordinary read, so no
+// endpoint, serializer or backup can return them by accident. The services that dial the source
+// ask for them with `UsersCurrencies.unscoped()`.
+@DefaultScope(() => ({ attributes: { exclude: ['rateSourceHeadersEncrypted'] } }))
 @Table({
   timestamps: false,
   tableName: 'UsersCurrencies',
@@ -22,7 +48,7 @@ export default class UsersCurrencies extends Model {
   userId!: number;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: false, type: DataType.STRING(3) })
+  @Column({ allowNull: false, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   currencyCode!: string;
 
   @BelongsTo(() => Users, {
@@ -57,6 +83,61 @@ export default class UsersCurrencies extends Model {
     type: DataType.BOOLEAN,
   })
   isDefaultCurrency!: boolean;
+
+  /** Name of a custom currency as this user defines it; `null` on an ISO row. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(255) })
+  nameOverride!: string | null;
+
+  /** Symbol of a custom currency as this user defines it; `null` for none and on an ISO row. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(8) })
+  symbolOverride!: string | null;
+
+  /** Decimals of a custom currency as this user defines it; `null` on an ISO row, which keeps "Currencies"."digits". */
+  @Column({
+    allowNull: true,
+    defaultValue: null,
+    type: DataType.INTEGER,
+    validate: { min: CUSTOM_CURRENCY_DECIMALS_MIN, max: CUSTOM_CURRENCY_DECIMALS_MAX },
+  })
+  decimalsOverride!: number | null;
+
+  // The logo of a custom currency; always `null` on an ISO row.
+  @Column({ allowNull: true, type: DataType.STRING(253) })
+  logoDomain!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(16) })
+  logoInitials!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(7) })
+  logoColor!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(64) })
+  logoIcon!: string | null;
+
+  @Column({ allowNull: true, type: DataType.UUID })
+  logoImageId!: string | null;
+
+  /**
+   * Where the user's rates for a custom currency come from; the settings of each source are in
+   * `rateSourceConfig`. An ISO currency stays on `manual`: `liveRateUpdate` prices it.
+   */
+  @Column({ allowNull: false, defaultValue: 'manual', type: DataType.STRING(16) })
+  declare rateSource: CurrencyRateSource;
+
+  /** Settings of `rateSource`; `null` for `manual`. Written only by the rate-source endpoint. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.JSONB })
+  declare rateSourceConfig: PegRateSourceConfig | CoingeckoRateSourceConfig | HttpRateSourceConfig | null;
+
+  /** Request headers of an `http` source as one `encryptToken` blob (a JSON object); `null` when it sends none. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
+  declare rateSourceHeadersEncrypted: string | null;
+
+  // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
+  @AfterSave
+  @AfterDestroy
+  static invalidateDecimalsCacheForRow(instance: UsersCurrencies) {
+    invalidateCurrencyDecimalsCache({ userId: instance.userId, code: instance.currencyCode });
+  }
 }
 
 export async function getCurrencies({ userId, codes }: { userId: number; codes?: string[] }) {
@@ -129,7 +210,7 @@ export const addCurrency = async ({
   liveRateUpdate?: boolean;
   isDefaultCurrency?: boolean;
 }) => {
-  await findOrThrowNotFound({
+  const currency = await findOrThrowNotFound({
     query: Currencies.findByPk(currencyCode),
     message: 'Currency with provided code does not exist!',
   });
@@ -139,6 +220,18 @@ export const addCurrency = async ({
     raw: true,
   });
   if (existingCurrency) return existingCurrency;
+
+  if (currency.isCustom) {
+    throw new UnexpectedError({
+      message: `addCurrency cannot hold the custom currency ${currencyCode}; use createCustomCurrency or ensureUserCurrencyConnected`,
+    });
+  }
+
+  if (NON_CURRENCY_CODES.includes(currencyCode)) {
+    throw new ValidationError({
+      message: t({ key: 'csvImport.currencyNotSupported', variables: { currency: currencyCode } }),
+    });
+  }
 
   return UsersCurrencies.create(
     {

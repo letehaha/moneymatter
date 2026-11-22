@@ -1,4 +1,6 @@
+import type { CurrencyMeta } from './currencies';
 import type { EntityLogoFields, EntityLogoPayload } from './entity-logo';
+import type { Decimal } from './money';
 import type { RecordId } from './record-id';
 import type { ResourceShareInfo } from './sharing';
 import type { PAYMENT_TYPES } from './transactions';
@@ -99,14 +101,14 @@ export interface AccountExternalData {
     linkedAt: string; // ISO date string
     linkingStrategy: 'forward-only' | 'full-reconciliation';
     balanceReconciliation: {
-      systemBalance: number;
-      externalBalance: number;
-      difference: number;
+      systemBalance: Decimal;
+      externalBalance: Decimal;
+      difference: Decimal;
       adjustmentTransactionId: RecordId | null;
       /** Where the post-link residual goes. Absent means the opening-balance path. */
       residualTarget?: LinkResidualTarget;
-      /** Residual the post-link sync left unexplained, in cents, folded into the opening balance. */
-      absorbedResidual?: number;
+      /** Residual the post-link sync left unexplained, folded into the opening balance. */
+      absorbedResidual?: Decimal;
       /**
        * Set at link time for queue-synced providers, whose residual cannot be
        * measured until the worker persists the sync. The queue's completion
@@ -134,6 +136,7 @@ export interface AccountModel extends EntityLogoFields {
   currencyCode: string;
   userId: number;
   externalId?: RecordId;
+  externalUrl: string | null;
   status: ACCOUNT_STATUSES;
   excludeFromStats: boolean;
   bankDataProviderConnectionId?: RecordId;
@@ -146,11 +149,13 @@ export interface AccountModel extends EntityLogoFields {
   bankSeamAt: string | null;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
 }
 
 /**
- * Serialized account wire shape (DB → API): every monetary field is a decimal
- * (cents converted on the way out), `id`/`type`/`accountCategory` are plain
+ * Serialized account wire shape (DB → API): every monetary field is a decimal,
+ * `id`/`type`/`accountCategory` are plain
  * strings, and owner-only bank-link metadata is stripped for share recipients.
  * The single source of truth for both the backend serializer's return type and
  * the frontend loan/account response shapes, so the two can't drift.
@@ -170,6 +175,7 @@ export interface AccountApiResponse extends EntityLogoFields {
   currencyCode: string;
   userId: number;
   externalId: string | null;
+  externalUrl: string | null;
   status: ACCOUNT_STATUSES;
   excludeFromStats: boolean;
   bankDataProviderConnectionId: string | null;
@@ -182,6 +188,8 @@ export interface AccountApiResponse extends EntityLogoFields {
   needsRelink?: boolean;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
 }
 
 /**
@@ -233,6 +241,7 @@ export interface CreateAccountBody extends NullableBodyPayload, EntityLogoPayloa
   initialBalance: AccountModel['initialBalance'];
   creditLimit: AccountModel['creditLimit'];
   type?: AccountModel['type'];
+  externalUrl?: string | null;
 }
 
 export interface UpdateAccountBody extends NullableBodyPayload, EntityLogoPayload {
@@ -244,4 +253,5 @@ export interface UpdateAccountBody extends NullableBodyPayload, EntityLogoPayloa
   creditLimit?: AccountModel['creditLimit'];
   status?: ACCOUNT_STATUSES;
   excludeFromStats?: boolean;
+  externalUrl?: string | null;
 }

@@ -1,26 +1,26 @@
-import type { Cents, InvestmentContributionsPortfolioMeta } from '@bt/shared/types';
+import type { MinorUnits, InvestmentContributionsPortfolioMeta } from '@bt/shared/types';
 
-/** One portfolio's net contribution within a single bucket, in base-currency cents. */
-interface InvestmentContributionsPortfolioSliceCents {
+/** One portfolio's net contribution within a single bucket, in base-currency minor units. */
+interface InvestmentContributionsPortfolioSliceMinor {
   portfolioId: string;
   /** Signed: negative when the user withdrew more than they contributed this bucket. */
-  amount: Cents;
+  amount: MinorUnits;
 }
 
-/** Per-bucket result, all money in base-currency cents. */
-interface InvestmentContributionsBucketCents {
+/** Per-bucket result, all money in base-currency minor units. */
+interface InvestmentContributionsBucketMinor {
   periodStart: string;
   periodEnd: string;
   /** Sum of `byPortfolio` amounts across the in-scope portfolios this bucket. Signed. */
-  total: Cents;
+  total: MinorUnits;
   /** Only portfolios with a non-zero net this bucket (sparse). */
-  byPortfolio: InvestmentContributionsPortfolioSliceCents[];
+  byPortfolio: InvestmentContributionsPortfolioSliceMinor[];
   /** User-wide income minus expenses this bucket (transfers excluded). Not scoped. */
-  savingsNet: Cents;
+  savingsNet: MinorUnits;
 }
 
-export interface InvestmentContributionsResultCents {
-  buckets: InvestmentContributionsBucketCents[];
+export interface InvestmentContributionsResultMinor {
+  buckets: InvestmentContributionsBucketMinor[];
   /**
    * Active portfolios ordered largest mover first; the serializer forwards this untouched.
    * Typed off the wire contract rather than restated here to keep the two from drifting.

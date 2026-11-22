@@ -384,4 +384,86 @@ describe('InputField component', () => {
       expect(wrapper.find('input').element.value).toBe('');
     });
   });
+
+  describe('decimals prop', () => {
+    const typeInto = async ({ wrapper, value }: { wrapper: ReturnType<typeof mountComponent>; value: string }) => {
+      await wrapper.find('input').setValue(value);
+    };
+
+    it('cuts typed digits past the decimals', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 3 });
+
+      await typeInto({ wrapper, value: '1.23456' });
+
+      expect(wrapper.find('input').element.value).toBe('1.234');
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
+    });
+
+    it('does not limit precision when decimals is unset', async () => {
+      const wrapper = mountComponent({ type: 'number' });
+
+      await typeInto({ wrapper, value: '0.00040641' });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([0.00040641]);
+    });
+
+    it.each<[number, boolean]>([
+      [0, true],
+      [2, false],
+    ])('at %d decimals the decimal point key is blocked: %s', (decimals, blocked) => {
+      const wrapper = mountComponent({ type: 'number', decimals });
+      const event = new KeyboardEvent('keypress', { key: '.' });
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+      wrapper.find('input').element.dispatchEvent(event);
+
+      expect(preventDefaultSpy.mock.calls.length > 0).toBe(blocked);
+    });
+
+    it.each<[number | string | null, string]>([
+      [10.99, '10.99'],
+      ['10.99', '10.99'],
+      [null, ''],
+    ])('keeps %o and emits nothing when the decimals drop', async (modelValue, shown) => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue });
+
+      await wrapper.setProps({ decimals: 0 });
+
+      expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+      expect(wrapper.find('input').element.value).toBe(shown);
+    });
+
+    it.each<[number, string]>([
+      [2, '1.5e3'],
+      [0, '1.5e3'],
+    ])('at %d decimals parses pasted %s instead of slicing it', async (decimals, pasted) => {
+      const wrapper = mountComponent({ type: 'number', decimals });
+
+      await typeInto({ wrapper, value: pasted });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
+    });
+
+    it('cuts a pasted exponent value to the currency decimals', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2 });
+
+      await typeInto({ wrapper, value: '1.23456e1' });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([12.34]);
+      expect(wrapper.find('input').element.value).toBe('12.34');
+    });
+
+    it('never emits a non-finite number', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue: 5 });
+      const input = wrapper.find('input');
+      // A number input reports a value the browser cannot parse; force one past jsdom's sanitising.
+      Object.defineProperty(input.element, 'value', { configurable: true, get: () => '1.5e', set: () => {} });
+
+      await input.trigger('input');
+
+      const emitted = wrapper.emitted('update:modelValue') ?? [];
+      expect(emitted.every(([value]) => value === null || Number.isFinite(value))).toBe(true);
+      expect(emitted.at(-1)).toEqual([null]);
+    });
+  });
 });

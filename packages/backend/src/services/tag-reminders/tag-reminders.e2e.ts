@@ -15,6 +15,11 @@ import {
   shouldCheckReminderToday,
 } from './check-reminders';
 
+const thresholdOf = (reminder: { settings: unknown }) =>
+  (reminder.settings as { amountThreshold?: number }).amountThreshold;
+
+const payloadWith = (amountThreshold: number) => helpers.buildTagReminderPayload({ settings: { amountThreshold } });
+
 describe('Tag Reminders API', () => {
   describe('POST /tags/:tagId/reminders (createTagReminder)', () => {
     it('creates every reminder shape and rejects an exact duplicate', async () => {
@@ -266,6 +271,88 @@ describe('Tag Reminders API', () => {
       const untouched = await helpers.getReminderById({ tagId: tag.id, id: reminder.id, raw: true });
       expect(untouched.frequency).toBe(valid.frequency);
       expect(untouched.dayOfMonth).toBe(valid.dayOfMonth);
+    });
+  });
+
+  describe('amountThreshold in the base currency decimals', () => {
+    const runThresholdFlow = async ({
+      sent,
+      stored,
+      duplicateOf,
+      roundsToZero,
+      updateSent,
+      updateStored,
+    }: {
+      sent: number;
+      stored: number;
+      duplicateOf: number;
+      roundsToZero: number;
+      updateSent: number;
+      updateStored: number;
+    }) => {
+      const tag = await helpers.createTag({
+        payload: helpers.buildTagPayload({ name: 'Threshold Precision Tag' }),
+        raw: true,
+      });
+      const created = await helpers.createTagReminder({ tagId: tag.id, payload: payloadWith(sent), raw: true });
+      expect(thresholdOf(created)).toBe(stored);
+
+      // A threshold that rounds to the stored one is the same reminder.
+      const duplicate = await helpers.createTagReminder({
+        tagId: tag.id,
+        payload: payloadWith(duplicateOf),
+        raw: false,
+      });
+      expect(duplicate.statusCode).toBe(ERROR_CODES.ConflictError);
+
+      const tooSmall = await helpers.createTagReminder({
+        tagId: tag.id,
+        payload: payloadWith(roundsToZero),
+        raw: false,
+      });
+      expect(tooSmall.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const updateTooSmall = await helpers.updateTagReminder({
+        tagId: tag.id,
+        id: created.id,
+        payload: { settings: { amountThreshold: roundsToZero } },
+        raw: false,
+      });
+      expect(updateTooSmall.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const updated = await helpers.updateTagReminder({
+        tagId: tag.id,
+        id: created.id,
+        payload: { settings: { amountThreshold: updateSent } },
+        raw: true,
+      });
+      expect(thresholdOf(updated)).toBe(updateStored);
+    };
+
+    it('rounds half-up to 2 decimals for a 2-decimal base currency', async () => {
+      await runThresholdFlow({
+        sent: 100.125,
+        stored: 100.13,
+        duplicateOf: 100.129,
+        roundsToZero: 0.004,
+        updateSent: 250.555,
+        updateStored: 250.56,
+      });
+    });
+
+    it('rounds half-up to whole units for a JPY base currency', async () => {
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'JPY',
+        fn: () =>
+          runThresholdFlow({
+            sent: 1500.5,
+            stored: 1501,
+            duplicateOf: 1500.7,
+            roundsToZero: 0.4,
+            updateSent: 0.5,
+            updateStored: 1,
+          }),
+      });
     });
   });
 

@@ -1,5 +1,6 @@
 import { currencyCode, dateBound } from '@common/lib/zod/custom-types';
 import { ExchangeRateUnavailableError } from '@js/errors';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { getExchangeRatesForDate } from '@services/exchange-rates';
 import { getExchangeRate } from '@services/user-exchange-rate';
 
@@ -33,6 +34,8 @@ export const getExchangeRateTool = defineTool({
         })),
       };
     }
+
+    await assertCurrencyCodesVisible({ userId, codes: [from, to], allowedWithoutPlan: [from, to] });
 
     try {
       return await getExchangeRate({

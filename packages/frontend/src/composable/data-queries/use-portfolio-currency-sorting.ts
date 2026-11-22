@@ -28,7 +28,7 @@ export const usePortfolioCurrencySorting = (portfolioId: MaybeRefOrGetter<string
   });
 
   const sortedCurrencies = computed(() => {
-    const list = [...(currencies.value || [])];
+    const list = (currencies.value || []).filter((c) => !c.currency?.isCustom);
     return list.sort((a, b) => {
       const balA = balancesByCurrency.value.get(a.currencyCode) ?? 0;
       const balB = balancesByCurrency.value.get(b.currencyCode) ?? 0;
@@ -43,7 +43,7 @@ export const usePortfolioCurrencySorting = (portfolioId: MaybeRefOrGetter<string
     const code = currency.currency!.code;
     const balance = balancesByCurrency.value.get(currency.currencyCode);
     if (balance !== undefined && balance !== 0) {
-      return `${code} (${formatAmountByCurrencyCode(balance, currency.currencyCode)})`;
+      return `${code} (${formatAmountByCurrencyCode({ amount: balance, currencyCode: currency.currencyCode })})`;
     }
     return code;
   };

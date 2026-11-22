@@ -44,7 +44,7 @@ export const splitTransactionTool = defineTool({
       const splits = await manageSplits({
         transactionId: args.transactionId,
         userId,
-        categoryOwnerUserId: fetched.access.ownerUserId,
+        accountOwnerUserId: fetched.access.ownerUserId,
         splits: args.splits.map((s) => ({
           categoryId: s.categoryId,
           amount: Money.fromDecimal(s.amount),

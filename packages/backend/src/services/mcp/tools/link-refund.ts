@@ -1,6 +1,6 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
-import { atLeastOneCentAmountSchema } from '@controllers/transactions.controller/schemas';
+import { positiveAmountSchema } from '@controllers/transactions.controller/schemas';
 import { createSingleRefund } from '@services/tx-refunds/create-single-refund.service';
 import { z } from 'zod';
 
@@ -19,7 +19,7 @@ export const linkRefundTool = defineTool({
       .describe('ID of the original transaction being refunded. Pass null for a standalone refund'),
     refundTxId: recordId().describe('ID of the transaction that represents the refund'),
     splitId: z.string().optional().describe('UUID of a specific split on the original transaction this refund targets'),
-    amount: atLeastOneCentAmountSchema()
+    amount: positiveAmountSchema()
       .optional()
       .describe(
         "Share of the refund transaction (decimal, in the refund transaction's currency) that this link covers. Omit to link the whole refund. Required on every link when one refund covers several purchases.",

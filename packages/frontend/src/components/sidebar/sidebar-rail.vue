@@ -3,6 +3,7 @@ import ResponsiveHoverCard from '@/components/common/responsive-hover-card.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { Card } from '@/components/lib/ui/card';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { SLIDING_PILL_SURFACE, useSlidingIndicator } from '@/composable/use-sliding-indicator';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
@@ -37,6 +38,9 @@ import { useSidebarNavRoutes } from './use-nav-routes';
 import { useSidebarCollapsed } from './use-sidebar-collapsed';
 import UserMenu from './user-menu.vue';
 
+// `nav-item-active` marks the item the sliding pill sits behind.
+const railItemActive = 'nav-item-active hover:bg-transparent dark:hover:bg-hover';
+
 const { t } = useI18n();
 const route = useRoute();
 const { isCollapsed } = useSidebarCollapsed();
@@ -64,6 +68,13 @@ const {
 // The account lists inject this context; group open state lives in a module-level localStorage ref
 // inside the composable, so this instance and the docked sidebar's stay in sync.
 provide('accountGroupsContext', useActiveAccountGroups(accountGroups));
+
+const pillRef = ref<HTMLElement | null>(null);
+const { indicator } = useSlidingIndicator({
+  containerRef: computed(() => pillRef.value?.parentElement),
+  activeSelector: '.nav-item-active',
+  activeKey: () => route.name,
+});
 
 // One flyout at a time, closed on navigation so a clicked account doesn't leave it over the page.
 const openFlyoutKey = ref<string | null>(null);
@@ -182,16 +193,12 @@ const sectionItems = computed<RailSectionItem[]>(() => {
 <template>
   <Card class="bg-background dark:bg-card flex h-full w-16 flex-col rounded-none">
     <div class="flex h-14 shrink-0 items-center justify-center">
-      <div
-        class="bg-primary/10 text-primary-text flex size-8 items-center justify-center rounded-md text-sm font-semibold"
-        aria-hidden="true"
-      >
-        M
-      </div>
+      <img src="/img/logo.svg" alt="MoneyMatter" class="size-8" />
     </div>
 
     <div class="flex min-h-0 grow flex-col gap-3 px-3 pt-0 pb-3">
-      <nav class="grid gap-0.5">
+      <nav class="relative isolate grid gap-0.5">
+        <div ref="pillRef" v-bind="indicator" />
         <template v-for="item in navItems" :key="item.routeName">
           <ResponsiveHoverCard
             v-if="item.children"
@@ -200,12 +207,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
             @update:open="setFlyoutOpen({ key: item.routeName, open: $event })"
           >
             <RailIconTrigger :to="{ name: item.routeName }" :aria-label="item.label">
-              <ui-button
-                variant="ghost"
-                as="span"
-                size="icon"
-                :class="cn(item.active && 'bg-primary/10 hover:bg-primary/10')"
-              >
+              <ui-button variant="ghost" as="span" size="icon" :class="cn(item.active && railItemActive)">
                 <component :is="item.icon" :class="cn('size-4 shrink-0', item.active && 'text-primary-text')" />
               </ui-button>
             </RailIconTrigger>
@@ -225,10 +227,14 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                     variant="ghost"
                     as="span"
                     size="sm"
-                    :class="[
-                      'w-full justify-start gap-2 px-3',
-                      isChildActive({ child, isActive }) && 'bg-primary/10 hover:bg-primary/10 text-foreground',
-                    ]"
+                    :class="
+                      cn(
+                        'w-full justify-start gap-2 border px-3',
+                        isChildActive({ child, isActive })
+                          ? [SLIDING_PILL_SURFACE, 'text-foreground hover:bg-card dark:hover:bg-secondary']
+                          : 'border-transparent',
+                      )
+                    "
                   >
                     <component
                       :is="child.icon"
@@ -248,7 +254,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                 as="span"
                 size="icon"
                 :aria-label="item.label"
-                :class="cn((item.active ?? isActive) && 'bg-primary/10 hover:bg-primary/10')"
+                :class="cn((item.active ?? isActive) && railItemActive)"
               >
                 <component
                   :is="item.icon"

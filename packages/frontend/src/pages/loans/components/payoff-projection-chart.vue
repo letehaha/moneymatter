@@ -21,6 +21,7 @@
             <InputField
               :model-value="customPayment"
               type="number"
+              :decimals="decimals"
               :only-positive="true"
               :aria-label="$t('loans.detail.payoffChart.customPaymentLabel')"
               :placeholder="customPaymentPlaceholder"
@@ -163,6 +164,7 @@ import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-p
 import { useUpdateLoan } from '@/composable/data-queries/loans';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { formatDuration } from '@/js/helpers/format-duration';
 import { captureException } from '@/lib/sentry';
 import { refDebounced, useResizeObserver } from '@vueuse/core';
@@ -207,7 +209,9 @@ const balance = computed(() => outstandingAmount({ balance: props.loan.currentBa
 const apr = computed(() => props.loan.loanDetails.interestRate);
 const plannedPayment = computed(() => props.loan.loanDetails.plannedPayment);
 
-const formatCurrency = (amount: number) => formatAmountByCurrencyCode(amount, currencyCode.value);
+const decimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
+
+const formatCurrency = (amount: number) => formatAmountByCurrencyCode({ amount, currencyCode: currencyCode.value });
 
 const currencySymbol = computed(() => getCurrencySymbol(currencyCode.value));
 
@@ -220,6 +224,7 @@ const minimumPayment = computed<number | null>(() => {
     principal: props.loan.loanDetails.originalPrincipal,
     interestRate: apr.value,
     termMonths: props.loan.loanDetails.termMonths,
+    decimals: decimals.value,
   });
 });
 
@@ -256,7 +261,13 @@ const scenarioDefs = computed<ScenarioDef[]>(() => {
     ...def,
     scenario:
       def.payment != null && def.payment > 0
-        ? computePayoffScenario({ balance: balance.value, interestRate: apr.value, payment: def.payment, today })
+        ? computePayoffScenario({
+            balance: balance.value,
+            interestRate: apr.value,
+            payment: def.payment,
+            today,
+            decimals: decimals.value,
+          })
         : null,
   }));
 });
@@ -343,7 +354,7 @@ const comparisons = computed(() => {
 
     if (baseline) {
       const { savesInterest, costsInterest, faster, slower, sameInterest, sameTime, interestDelta, monthsDelta } =
-        comparePayoffScenarios({ scenario, baseline });
+        comparePayoffScenarios({ scenario, baseline, decimals: decimals.value });
 
       result.push({
         key,

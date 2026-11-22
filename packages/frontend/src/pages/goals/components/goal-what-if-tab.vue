@@ -70,7 +70,12 @@ const shareRows = computed(() =>
     const capacity = shareCapacity({ accountId: account.accountId });
     const isFixed = account.fixedAmount !== null;
     const share = isFixed ? null : Math.min(edits.value.shares[account.accountId] ?? 0, capacity?.max ?? FULL_SHARE);
-    const countedBase = accountGoalValue({ ...account, balance: account.currentBalance, sharePercent: share });
+    const countedBase = accountGoalValue({
+      ...account,
+      balance: account.currentBalance,
+      sharePercent: share,
+      decimals: insights.value.input.decimals,
+    });
     const counted = formatAmount(toGoalCurrency({ amount: countedBase, insights: insights.value }));
     let caption = t('goals.accountsDialog.counts', { amount: counted });
     if (isFixed) caption = t('goals.whatIf.shares.fixed', { amount: counted });

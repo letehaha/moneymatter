@@ -144,6 +144,15 @@ describe('Edit currency exchange rate controller', () => {
       expect(missingOpposite.statusCode).toEqual(ERROR_CODES.ValidationError);
     });
 
+    it('rejects removing one direction of a pair without its opposite', async () => {
+      const oneSided = await helpers.removeCurrencyExchangeRate({
+        pairs: [{ baseCode: 'USD', quoteCode: 'EUR' }],
+      });
+
+      expect(oneSided.statusCode).toEqual(ERROR_CODES.ValidationError);
+      expect((oneSided.body.response as unknown as { message: string }).message).toMatch(/opposite pair/);
+    });
+
     it('rejects editing and removing a pair set whose pairs are not exact inverses', async () => {
       const edit = await helpers.editCurrencyExchangeRate({
         pairs: [
@@ -266,6 +275,27 @@ describe('Edit currency exchange rate controller', () => {
     });
   });
 
+  it('converts new transactions at the edited and then removed custom rate', async () => {
+    const account = await createEurAccountWithIncome();
+    const createEur100 = async () => {
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id, amount: 100 }),
+        raw: true,
+      });
+      return Number(tx!.refAmount);
+    };
+    const marketRefAmount = await createEur100();
+
+    await helpers.editCurrencyExchangeRate({ pairs: buildCustomRatePairs(), raw: true });
+    expect(await createEur100()).toBe(100 * CUSTOM_EUR_TO_BASE);
+
+    await helpers.removeCurrencyExchangeRate({
+      pairs: buildCustomRatePairs().map(({ baseCode, quoteCode }) => ({ baseCode, quoteCode })),
+      raw: true,
+    });
+    expect(await createEur100()).toBe(marketRefAmount);
+  });
+
   /** A manual `INR → AED` rate re-prices every stored day of an INR account's balance history. */
   describe('Custom exchange rate and foreign-currency balance history', () => {
     afterEach(async () => {
@@ -279,21 +309,21 @@ describe('Edit currency exchange rate controller', () => {
       await setCustomRate({ inrToAed: CUSTOM_INR_TO_AED });
 
       const afterSet = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
-      expect(helpers.balanceCentsOn({ rows: afterSet, date: DEPOSIT_DATE })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * CUSTOM_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterSet, date: DEPOSIT_DATE })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * CUSTOM_INR_TO_AED,
       );
-      expect(helpers.balanceCentsOn({ rows: afterSet, date: TODAY })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * CUSTOM_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterSet, date: TODAY })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * CUSTOM_INR_TO_AED,
       );
 
       await setCustomRate({ inrToAed: EDITED_INR_TO_AED });
 
       const afterEdit = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
-      expect(helpers.balanceCentsOn({ rows: afterEdit, date: DEPOSIT_DATE })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * EDITED_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterEdit, date: DEPOSIT_DATE })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * EDITED_INR_TO_AED,
       );
-      expect(helpers.balanceCentsOn({ rows: afterEdit, date: TODAY })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * EDITED_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterEdit, date: TODAY })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * EDITED_INR_TO_AED,
       );
     });
 
@@ -313,11 +343,11 @@ describe('Edit currency exchange rate controller', () => {
 
       const rows = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
 
-      expect(helpers.balanceCentsOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * helpers.INR_TO_AED_AT_DEPOSIT,
+      expect(helpers.balanceOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * helpers.INR_TO_AED_AT_DEPOSIT,
       );
-      expect(helpers.balanceCentsOn({ rows, date: TODAY })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * helpers.INR_TO_AED_AFTER,
+      expect(helpers.balanceOn({ rows, date: TODAY })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * helpers.INR_TO_AED_AFTER,
       );
     });
   });

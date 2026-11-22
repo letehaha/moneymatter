@@ -8,6 +8,7 @@ import {
   LogoResolutionState,
   RecordId,
 } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
@@ -61,11 +62,11 @@ export default class Subscriptions extends Model {
   })
   transactionType!: TRANSACTION_TYPES;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare expectedAmount: Money | null;
 
   @Column({
-    type: DataType.STRING(3),
+    type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH),
     allowNull: true,
   })
   expectedCurrencyCode!: string | null;

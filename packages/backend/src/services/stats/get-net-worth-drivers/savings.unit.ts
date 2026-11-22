@@ -28,17 +28,17 @@ const buildTx = ({
 const buildPair = ({
   expenseTime,
   incomeTime,
-  cents,
+  minor,
   expenseInScope = true,
   incomeInScope = true,
 }: {
   expenseTime: string;
   incomeTime: string;
-  cents: number;
+  minor: number;
   expenseInScope?: boolean;
   incomeInScope?: boolean;
 }): CategoryRefundPair => ({
-  cents,
+  minor,
   expenseTime: new Date(expenseTime),
   incomeTime: new Date(incomeTime),
   expenseCategoryId: 'cat-expense',
@@ -54,6 +54,7 @@ const buckets = [JAN, FEB];
 describe('accumulateSavings', () => {
   it('sums income and expenses into their bucket', () => {
     const savings = accumulateSavings({
+      decimals: 2,
       transactions: [
         buildTx({ time: '2026-01-10T12:00:00.000', amount: 500, transactionType: TRANSACTION_TYPES.income }),
         buildTx({ time: '2026-01-20T12:00:00.000', amount: 200, transactionType: TRANSACTION_TYPES.expense }),
@@ -70,6 +71,7 @@ describe('accumulateSavings', () => {
     // Expenses accumulate as a positive magnitude, matching get-cash-flow — only
     // `net` carries the direction.
     const [january] = accumulateSavings({
+      decimals: 2,
       transactions: [
         buildTx({ time: '2026-01-10T12:00:00.000', amount: 80, transactionType: TRANSACTION_TYPES.expense }),
       ],
@@ -81,6 +83,7 @@ describe('accumulateSavings', () => {
 
   it('reports an overspent bucket as negative net', () => {
     const [january] = accumulateSavings({
+      decimals: 2,
       transactions: [
         buildTx({ time: '2026-01-10T12:00:00.000', amount: 100, transactionType: TRANSACTION_TYPES.income }),
         buildTx({ time: '2026-01-11T12:00:00.000', amount: 450, transactionType: TRANSACTION_TYPES.expense }),
@@ -93,6 +96,7 @@ describe('accumulateSavings', () => {
 
   it('counts transactions on either bucket edge', () => {
     const savings = accumulateSavings({
+      decimals: 2,
       transactions: [
         buildTx({ time: '2026-01-01T00:00:00.000', amount: 10, transactionType: TRANSACTION_TYPES.income }),
         buildTx({ time: '2026-01-31T23:59:59.999', amount: 20, transactionType: TRANSACTION_TYPES.income }),
@@ -105,6 +109,7 @@ describe('accumulateSavings', () => {
 
   it('ignores transactions outside every bucket', () => {
     const savings = accumulateSavings({
+      decimals: 2,
       transactions: [
         buildTx({ time: '2025-12-31T12:00:00.000', amount: 999, transactionType: TRANSACTION_TYPES.income }),
         buildTx({ time: '2026-03-01T12:00:00.000', amount: 999, transactionType: TRANSACTION_TYPES.income }),
@@ -119,14 +124,14 @@ describe('accumulateSavings', () => {
   });
 
   it('returns a zeroed entry per bucket when there are no transactions', () => {
-    const savings = accumulateSavings({ transactions: [], buckets });
+    const savings = accumulateSavings({ decimals: 2, transactions: [], buckets });
 
     expect(savings).toHaveLength(2);
     expect(savings[0]).toEqual({ income: 0, expenses: 0, net: 0 });
   });
 
   it('returns nothing when there are no buckets', () => {
-    expect(accumulateSavings({ transactions: [], buckets: [] })).toEqual([]);
+    expect(accumulateSavings({ decimals: 2, transactions: [], buckets: [] })).toEqual([]);
   });
 });
 
@@ -138,11 +143,12 @@ describe('accumulateSavings refund netting', () => {
   const sameMonthPair = {
     expenseTime: '2026-01-05T12:00:00.000',
     incomeTime: '2026-01-20T12:00:00.000',
-    cents: 12_000,
+    minor: 12_000,
   };
 
   it('subtracts a fully in-scope pair from both sides', () => {
     const [january] = accumulateSavings({
+      decimals: 2,
       transactions: spendAndRefund,
       buckets,
       refundPairs: [buildPair(sameMonthPair)],
@@ -153,6 +159,7 @@ describe('accumulateSavings refund netting', () => {
 
   it('nets only the income side when the expense half is out of scope', () => {
     const [january] = accumulateSavings({
+      decimals: 2,
       transactions: spendAndRefund,
       buckets,
       refundPairs: [buildPair({ ...sameMonthPair, expenseInScope: false })],
@@ -163,6 +170,7 @@ describe('accumulateSavings refund netting', () => {
 
   it('nets only the expense side when the income half is out of scope', () => {
     const [january] = accumulateSavings({
+      decimals: 2,
       transactions: spendAndRefund,
       buckets,
       refundPairs: [buildPair({ ...sameMonthPair, incomeInScope: false })],
@@ -173,6 +181,7 @@ describe('accumulateSavings refund netting', () => {
 
   it('nets each side in its own bucket', () => {
     const savings = accumulateSavings({
+      decimals: 2,
       transactions: [
         buildTx({ time: '2026-01-05T12:00:00.000', amount: 300, transactionType: TRANSACTION_TYPES.expense }),
         buildTx({ time: '2026-02-03T12:00:00.000', amount: 200, transactionType: TRANSACTION_TYPES.expense }),
@@ -180,7 +189,7 @@ describe('accumulateSavings refund netting', () => {
       ],
       buckets,
       refundPairs: [
-        buildPair({ expenseTime: '2026-01-05T12:00:00.000', incomeTime: '2026-02-10T12:00:00.000', cents: 12_000 }),
+        buildPair({ expenseTime: '2026-01-05T12:00:00.000', incomeTime: '2026-02-10T12:00:00.000', minor: 12_000 }),
       ],
     });
 
@@ -190,11 +199,52 @@ describe('accumulateSavings refund netting', () => {
 
   it('ignores a side dated outside every bucket', () => {
     const [january] = accumulateSavings({
+      decimals: 2,
       transactions: spendAndRefund,
       buckets,
       refundPairs: [buildPair({ ...sameMonthPair, expenseTime: '2025-12-20T12:00:00.000' })],
     });
 
     expect(january).toEqual({ income: 0, expenses: 30_000, net: -30_000 });
+  });
+});
+
+describe('accumulateSavings at the base currency decimals', () => {
+  const transactions = [
+    buildTx({ time: '2026-01-10T12:00:00.000', amount: 0.778, transactionType: TRANSACTION_TYPES.income }),
+    buildTx({ time: '2026-01-20T12:00:00.000', amount: 1.234, transactionType: TRANSACTION_TYPES.expense }),
+  ];
+
+  it('keeps the third decimal at 3 decimals', () => {
+    const [january] = accumulateSavings({ decimals: 3, transactions, buckets });
+
+    expect(january).toEqual({ income: 778, expenses: 1_234, net: -456 });
+  });
+
+  it('rounds to whole units at 0 decimals', () => {
+    const [january] = accumulateSavings({
+      decimals: 0,
+      transactions: [
+        buildTx({ time: '2026-01-10T12:00:00.000', amount: 1555.5, transactionType: TRANSACTION_TYPES.income }),
+        buildTx({ time: '2026-01-20T12:00:00.000', amount: 300.4, transactionType: TRANSACTION_TYPES.expense }),
+      ],
+      buckets,
+    });
+
+    // Each row rounds half-up to whole units before it is summed: 1555.5 -> 1556, 300.4 -> 300.
+    expect(january).toEqual({ income: 1_556, expenses: 300, net: 1_256 });
+  });
+
+  it('nets a refund pair handed over in the same minor units', () => {
+    const [january] = accumulateSavings({
+      decimals: 3,
+      transactions,
+      buckets,
+      refundPairs: [
+        buildPair({ expenseTime: '2026-01-20T12:00:00.000', incomeTime: '2026-01-10T12:00:00.000', minor: 500 }),
+      ],
+    });
+
+    expect(january).toEqual({ income: 278, expenses: 734, net: -456 });
   });
 });

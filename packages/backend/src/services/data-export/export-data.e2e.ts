@@ -401,6 +401,73 @@ describe('Data export (POST /user/data-export)', () => {
       expect(csvRow?.SplitDetails).toContain('Drinks: 5.00');
     });
 
+    it('writes split and refund amounts at the decimals of their currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
+      const kwdAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD', name: 'KWD wallet' }),
+        raw: true,
+      });
+      const jpyAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY', name: 'JPY wallet' }),
+        raw: true,
+      });
+      const food = await helpers.addCustomCategory({ name: 'Food', color: '#AABBCC', raw: true });
+      const drinks = await helpers.addCustomCategory({ name: 'Drinks', color: '#AABBDD', raw: true });
+
+      const [kwdTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: kwdAccount.id,
+          categoryId: food.id,
+          amount: 2,
+          transactionType: TRANSACTION_TYPES.expense,
+          note: 'KWD dinner',
+        }),
+        raw: true,
+      });
+      await helpers.updateTransaction({
+        id: kwdTx!.id,
+        payload: {
+          splits: [
+            { categoryId: food.id, amount: 1.234 },
+            { categoryId: drinks.id, amount: 0.766 },
+          ],
+        },
+        raw: true,
+      });
+
+      const [purchase] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: jpyAccount.id,
+          amount: 5000,
+          transactionType: TRANSACTION_TYPES.expense,
+          note: 'JPY purchase',
+        }),
+        raw: true,
+      });
+      const [refund] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: jpyAccount.id,
+          amount: 2000,
+          transactionType: TRANSACTION_TYPES.income,
+          note: 'JPY refund',
+        }),
+        raw: true,
+      });
+      await helpers.createSingleRefund({ originalTxId: purchase!.id, refundTxId: refund!.id, amount: 1500 }, true);
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('transactions.csv')! });
+
+      const splitRow = rows.find((r) => r.Note === 'KWD dinner');
+      expect(splitRow?.SplitDetails).toContain('Food: 1.234');
+      expect(splitRow?.SplitDetails).toContain('Drinks: 0.766');
+
+      const refundRow = rows.find((r) => r.Note === 'JPY refund');
+      expect(refundRow?.RefundOf).toContain('-5000 JPY');
+      expect(refundRow?.RefundOf).toContain('(1500 JPY)');
+    });
+
     it('renders refund linkage as a human-readable string in RefundOf column', async () => {
       const account = await helpers.createAccount({ raw: true });
       const purchase = await helpers.createTransaction({
@@ -716,6 +783,29 @@ describe('Data export (POST /user/data-export)', () => {
       expect(seeded).toBeDefined();
       expect(seeded?.LimitAmount).toBe('');
       expect(seeded?.LimitKind).toBe('spending');
+    });
+  });
+
+  describe('Portfolio cash balances', () => {
+    it('writes each cash balance at the decimals of its currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
+      const portfolio = await helpers.createPortfolio({ payload: { name: 'Cash portfolio' }, raw: true });
+      for (const [currencyCode, amount] of [
+        ['KWD', '1.234'],
+        ['JPY', '5000'],
+      ] as const) {
+        await helpers.directCashTransaction({
+          portfolioId: portfolio.id,
+          payload: { type: 'deposit', amount, currencyCode, date: '2025-06-15' },
+          raw: true,
+        });
+      }
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('portfolios.csv')! });
+
+      expect(rows.find((r) => r.Name === 'Cash portfolio')?.CashBalances).toBe('JPY: 5000 | KWD: 1.234');
     });
   });
 
@@ -1741,6 +1831,83 @@ describe('Data export (POST /user/data-export)', () => {
       expect(data.budget_periods.map((row) => row.periodStart)).toEqual(
         periods.slice(0, 4).map((period) => period.startDate),
       );
+    });
+
+    describe('plan currency decimals', () => {
+      /** Exports a one-line plan whose goal is 10.125 (or 10.12), assigned `assigned`, with `spent` on its category. */
+      const exportDecimalsPlan = async ({
+        currencyCode,
+        goal,
+        assigned,
+        spent,
+      }: {
+        currencyCode: string;
+        goal: number;
+        assigned: number;
+        spent: number;
+      }) => {
+        const account = await helpers.createAccount({
+          payload: helpers.buildAccountPayload({ currencyCode }),
+          raw: true,
+        });
+        const category = await helpers.addCustomCategory({ name: 'Plan decimals', color: '#111111', raw: true });
+        const { plan } = await helpers.createBudgetPlan({
+          payload: {
+            name: 'Decimals plan',
+            accountIds: [account.id],
+            epochDate: helpers.budgetPeriodStart({ monthsAgo: 0 }),
+          },
+          raw: true,
+        });
+        const [period] = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+        const line = await helpers.createBudgetPlanLine({
+          planId: plan.id,
+          payload: { name: 'Decimals line', categoryIds: [category.id], activeFrom: period!.startDate },
+          raw: true,
+        });
+        await helpers.setBudgetLineGoal({
+          planId: plan.id,
+          lineId: line.id,
+          payload: { frequency: 'every_period', behavior: 'budget_another', amount: goal },
+          raw: true,
+        });
+        await helpers.setBudgetAssignment({
+          planId: plan.id,
+          periodId: period!.id,
+          lineId: line.id,
+          payload: { scope: 'this_period', amount: assigned },
+          raw: true,
+        });
+        await helpers.createTransaction({
+          payload: {
+            ...helpers.buildTransactionPayload({
+              accountId: account.id,
+              categoryId: category.id,
+              amount: spent,
+              transactionType: TRANSACTION_TYPES.expense,
+            }),
+            time: `${period!.startDate}T12:00:00.000Z`,
+          },
+          raw: true,
+        });
+
+        return exportBudgets();
+      };
+
+      it('exports a KWD plan at 3 decimals', async () => {
+        const data = await helpers.asNewUserWithBaseCurrency({
+          currencyCode: 'KWD',
+          fn: () => exportDecimalsPlan({ currencyCode: 'KWD', goal: 10.125, assigned: 1.234, spent: 0.5 }),
+        });
+
+        expect(data.budget_lines[0]).toMatchObject({ goal: 'Budget another 10.125 every period', currency: 'KWD' });
+        expect(data.budget_periods[0]).toMatchObject({
+          assigned: 1.234,
+          spent: 0.5,
+          available: 0.734,
+          currency: 'KWD',
+        });
+      });
     });
 
     it('emits empty budget plan files for a user without plans', async () => {

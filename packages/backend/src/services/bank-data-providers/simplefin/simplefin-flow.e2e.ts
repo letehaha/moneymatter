@@ -289,12 +289,12 @@ describe('SimpleFIN Data Provider E2E', () => {
       });
 
       const { accounts } = await helpers.bankDataProviders.listExternalAccounts({ connectionId, raw: true });
-      const account = accounts[0]!;
+      const account = accounts.find((a: { externalId: string }) => a.externalId === SIMPLEFIN_ACCOUNT_1)!;
       expect(account).toHaveProperty('externalId');
       expect(account).toHaveProperty('name');
       expect(account).toHaveProperty('balance');
       expect(account.currency).toBe('USD');
-      expect(typeof account.balance).toBe('number');
+      expect(account.balance).toBe(1523.45);
       expect(account.metadata?.institutionDomain).toBe('testbank.example');
     });
 
@@ -731,6 +731,53 @@ describe('SimpleFIN Data Provider E2E', () => {
         currencyOverrides: { [SIMPLEFIN_ACCOUNT_1]: 'XAU' },
       });
       expect(failed.statusCode).toBe(ERROR_CODES.BadRequest);
+    });
+
+    describe('with a user-defined currency as the chosen one', () => {
+      const CUSTOM_CODE = 'BTC';
+
+      const connectWithOverride = async () => {
+        const connectionId = await connectSimplefin();
+        global.mswMockServer.use(
+          getSimplefinAccountsMock({ response: getMockedSimplefinAccountSet({ account1Currency: '' }) }),
+        );
+
+        return helpers.bankDataProviders.connectSelectedAccounts({
+          connectionId,
+          accountExternalIds: [SIMPLEFIN_ACCOUNT_1],
+          currencyOverrides: { [SIMPLEFIN_ACCOUNT_1]: CUSTOM_CODE },
+        });
+      };
+
+      it('rejects a custom currency the user does not hold', async () => {
+        const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
+        await helpers.asUser({
+          cookies: otherUser.cookies,
+          fn: () =>
+            helpers.createCustomCurrency({
+              payload: { code: CUSTOM_CODE, name: 'Bitcoin', decimals: 8, rate: { value: 60000 } },
+              raw: true,
+            }),
+        });
+
+        const failed = await connectWithOverride();
+
+        expect(failed.statusCode).toBe(ERROR_CODES.BadRequest);
+      });
+
+      it('connects the account in a custom currency the user holds', async () => {
+        const { id: userId } = await helpers.getUserInfo({ raw: true });
+        await helpers.createCustomCurrency({
+          payload: { code: CUSTOM_CODE, name: 'Bitcoin', decimals: 8, rate: { value: 60000 } },
+          raw: true,
+        });
+
+        const response = await connectWithOverride();
+
+        expect(response.statusCode).toBe(200);
+        const accounts = await Accounts.findAll({ where: { userId }, raw: true });
+        expect(accounts.map((account) => account.currencyCode)).toEqual([CUSTOM_CODE]);
+      });
     });
   });
 

@@ -3,7 +3,8 @@
  * This system allows users to connect multiple bank accounts from various providers
  * (Monobank, Enable Banking, etc.) in a unified, modular way.
  */
-import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, Cents, type DeactivationReason } from '@bt/shared/types';
+import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, type DeactivationReason } from '@bt/shared/types';
+import type { Money } from '@common/types/money';
 
 /**
  * Connection-metadata fields used by the shared auth-failure tracking in
@@ -78,7 +79,10 @@ export const PROVIDER_TO_ACCOUNT_TYPE: Record<BANK_PROVIDER_TYPE, ACCOUNT_TYPES>
 // ============================================================================
 
 /**
- * Bank account from external provider
+ * Bank account from external provider.
+ *
+ * Amounts are `Money` at the precision the bank reports: decimal-speaking providers keep the
+ * bank's decimal, Monobank converts its minor units.
  */
 export interface ProviderAccount {
   /** Provider's unique identifier for this account */
@@ -87,8 +91,10 @@ export interface ProviderAccount {
   name: string;
   /** Account type (e.g., 'debit', 'credit', 'savings') */
   type: string;
-  /** Current account balance (in cents); null when the provider could not report it */
-  balance: Cents | null;
+  /** Current account balance; null when the provider could not report it */
+  balance: Money | null;
+  /** Credit limit as a decimal at bank precision; absent means no limit */
+  creditLimit?: Money;
   /** Currency code (e.g., 'UAH', 'USD') */
   currency: string;
   /** Additional provider-specific data */

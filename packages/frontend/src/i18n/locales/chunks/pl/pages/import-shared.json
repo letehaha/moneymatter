@@ -17,7 +17,8 @@
         "categoryNameTooLong": "Category name \"{name}\" is too long ({length} characters); the maximum is {max}.",
         "payeeNameTooLong": "Payee name \"{name}\" is too long ({length} characters); the maximum is {max}.",
         "accountMappingMissing": "These accounts from the file have no mapping: {accounts}. Go back and map each of them.",
-        "linkedAccountNotFound": "The account linked to \"{account}\" no longer exists. Go back and choose another account or create a new one."
+        "linkedAccountNotFound": "The account linked to \"{account}\" no longer exists. Go back and choose another account or create a new one.",
+        "bankLinkChanged": "An account's bank link changed after the review. Go back to the review step and run it again."
       },
       "importResults": {
         "findTransfers": "Find transfers"
@@ -108,6 +109,8 @@
       "renameAria": "Rename mapping",
       "deleteAria": "Delete mapping",
       "confirmRenameAria": "Save name"
-    }
+    },
+    "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
+    "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day."
   }
 }

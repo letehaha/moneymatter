@@ -1,0 +1,26 @@
+[
+  {
+    "id": "01a1cf52-7d2b-748c-bbc4-046ed239e4df",
+    "name": "Groceries tracker",
+    "status": "active",
+    "startDate": null,
+    "endDate": null,
+    "rulesEnabled": false,
+    "rulesCleanup": true,
+    "rulesSyncedAt": null,
+    "archivePromptDismissed": false,
+    "logoDomain": null,
+    "logoInitials": null,
+    "logoColor": null,
+    "logoIcon": null,
+    "logoImageId": null,
+    "limitAmount": 50025,
+    "limitKind": "spending",
+    "aiEnabled": false,
+    "aiDescription": null,
+    "aiPreWindowDays": 60,
+    "aiScannedUntil": null,
+    "aiLastScannedAt": null,
+    "userId": 1
+  }
+]

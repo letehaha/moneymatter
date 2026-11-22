@@ -11,6 +11,7 @@ import {
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import { connection } from '@models/index';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 
@@ -155,6 +156,37 @@ describe('Goals CRUD', () => {
       expect((await helpers.createGoal({ payload })).statusCode).toBe(ERROR_CODES.ValidationError);
     }
     expect(await helpers.listGoals({ raw: true })).toEqual([]);
+  });
+
+  it('rejects an amount below the smallest unit of its currency with 422', async () => {
+    const savings = await createAccountOf({ accountCategory: ACCOUNT_CATEGORIES.saving });
+    const cash = await createAccountOf({ accountCategory: ACCOUNT_CATEGORIES.cash });
+    const accounts = [{ accountId: savings.id, sharePercent: 100 }];
+
+    const invalid: Partial<CreateGoalPayload>[] = [
+      { targetAmount: 0.001, accounts },
+      { plannedMonthly: 0.004, accounts },
+      {
+        targetAmount: 100,
+        accounts: [
+          { accountId: savings.id, fixedAmount: 100 },
+          { accountId: cash.id, fixedAmount: 0.001 },
+        ],
+      },
+    ];
+    for (const payload of invalid) {
+      expect((await helpers.createGoal({ payload })).statusCode).toBe(ERROR_CODES.ValidationError);
+    }
+    expect(await helpers.listGoals({ raw: true })).toEqual([]);
+
+    const goal = await helpers.createGoal({ payload: { accounts }, raw: true });
+    for (const payload of [{ targetAmount: 0.001 }, { plannedMonthly: 0.004 }]) {
+      expect((await helpers.updateGoal({ goalId: goal.id, payload })).statusCode).toBe(ERROR_CODES.ValidationError);
+    }
+    expect(await helpers.getGoal({ goalId: goal.id, raw: true })).toMatchObject({
+      targetAmount: 1000,
+      plannedMonthly: null,
+    });
   });
 
   it('rejects invalid update payloads with 422 and leaves the goal unchanged', async () => {
@@ -716,5 +748,101 @@ describe('Goal fixed amounts', () => {
     expect((await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: converted } })).statusCode).toBe(200);
     expectBelowTarget(await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: aboveConverted } }));
     expect((await helpers.getGoal({ goalId: goal.id, raw: true })).targetAmount).toBe(converted);
+  });
+});
+
+describe('Goal amounts at the currency decimals', () => {
+  it.each([
+    { label: '2-decimal', currencyCode: undefined, sent: [100.555, 10.005, 200.545], stored: [100.56, 10.01, 200.55] },
+    { label: 'JPY', currencyCode: 'JPY', sent: [1500.5, 100.4, 2000.5], stored: [1501, 100, 2001] },
+    { label: 'KWD', currencyCode: 'KWD', sent: [1500.1255, 0.001, 2.0005], stored: [1500.126, 0.001, 2.001] },
+  ])(
+    'rounds the amounts of a $label goal half-up to its decimals',
+    async ({
+      currencyCode,
+      sent: [targetAmount, plannedMonthly, updatedTarget],
+      stored: [storedTarget, storedMonthly, storedUpdatedTarget],
+    }) => {
+      const goal = await helpers.createGoal({
+        payload: { ...(currencyCode && { currencyCode }), targetAmount, plannedMonthly },
+        raw: true,
+      });
+      expect(goal).toMatchObject({
+        currencyCode: currencyCode ?? global.BASE_CURRENCY.code,
+        targetAmount: storedTarget,
+        plannedMonthly: storedMonthly,
+      });
+
+      const updated = await helpers.updateGoal({
+        goalId: goal.id,
+        payload: { targetAmount: updatedTarget },
+        raw: true,
+      });
+      expect(updated.targetAmount).toBe(storedUpdatedTarget);
+    },
+  );
+
+  it('rejects a share percent with three decimals on update', async () => {
+    const goal = await helpers.createGoal({ raw: true });
+    const accountId = goal.accounts[0]!.accountId;
+
+    const response = await helpers.updateGoal({
+      goalId: goal.id,
+      payload: { accounts: [{ accountId, sharePercent: 10.555 }] },
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await helpers.getGoal({ goalId: goal.id, raw: true })).accounts).toEqual(goal.accounts);
+  });
+
+  it("rounds a fixed amount to its account's currency", async () => {
+    const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
+
+    const goal = await helpers.createGoal({
+      payload: { targetAmount: 1, accounts: [{ accountId: account.id, fixedAmount: 1000.5 }] },
+      raw: true,
+    });
+
+    expect(goal.accounts[0]!.fixedAmount).toBe(1001);
+  });
+
+  it("rounds the stored amounts to the new currency's decimals when only the currency changes", async () => {
+    const goal = await helpers.createGoal({ payload: { targetAmount: 1000.55, plannedMonthly: 100.45 }, raw: true });
+
+    const updated = await helpers.updateGoal({ goalId: goal.id, payload: { currencyCode: 'JPY' }, raw: true });
+
+    expect(updated).toMatchObject({ currencyCode: 'JPY', targetAmount: 1001, plannedMonthly: 100 });
+  });
+
+  it('refuses a currency change that rounds a stored amount to nothing and leaves the goal unchanged', async () => {
+    const goal = await helpers.createGoal({ payload: { plannedMonthly: 0.4 }, raw: true });
+
+    const response = await helpers.updateGoal({ goalId: goal.id, payload: { currencyCode: 'JPY' } });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await helpers.getGoal({ goalId: goal.id, raw: true })).toMatchObject({
+      currencyCode: global.BASE_CURRENCY.code,
+      plannedMonthly: 0.4,
+    });
+  });
+
+  it('keeps a stored fixed amount as it is when a write does not send the shares', async () => {
+    const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
+    const goal = await helpers.createGoal({
+      payload: { targetAmount: 1, accounts: [{ accountId: account.id, fixedAmount: 1000 }] },
+      raw: true,
+    });
+    // A row converted from 100050 cents holds 1000.50 in a currency without minor units.
+    await connection.sequelize.query(`UPDATE "GoalAccounts" SET "fixedAmount" = 1000.5 WHERE "goalId" = :goalId`, {
+      replacements: { goalId: goal.id },
+    });
+
+    const retargeted = await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: 2 } });
+    expect(retargeted.statusCode).toBe(200);
+    await helpers.updateGoal({ goalId: goal.id, payload: { status: 'archived' }, raw: true });
+    const unarchived = await helpers.updateGoal({ goalId: goal.id, payload: { status: 'active' } });
+    expect(unarchived.statusCode).toBe(200);
+
+    expect((await helpers.getGoal({ goalId: goal.id, raw: true })).accounts[0]!.fixedAmount).toBe(1000.5);
   });
 });

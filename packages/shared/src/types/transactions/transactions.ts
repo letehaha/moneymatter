@@ -1,6 +1,7 @@
 import type { ACCOUNT_TYPES } from '../accounts';
 import type { EmbeddedCategoryModel } from '../categories';
 import type { CategorizationMeta } from '../categorization';
+import type { CurrencyMeta } from '../currencies';
 import type { ImportSource } from '../import-export/core';
 import { RecordId } from '../record-id';
 import type { TagModel } from '../tags';
@@ -131,6 +132,8 @@ export interface TransactionModel {
   refundedAmount?: number;
   /** Present on the list endpoint only; absent on create/update responses. */
   hasAttachments?: boolean;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them; list and detail reads. */
+  currencyMeta?: CurrencyMeta;
   isPlanned: boolean;
   /** Keeps the row out of the reports without removing it from the ledger. */
   excludeFromStats: boolean;

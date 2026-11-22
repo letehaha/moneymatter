@@ -43,6 +43,7 @@
     <div v-else-if="column === TABLE_COLUMN.amount" class="relative">
       <FormattedAmountField
         v-model="form.amount"
+        :decimals="amountDecimals"
         :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"
       />
       <div v-if="isMobile && form.amount !== null" class="absolute top-0 right-1 flex h-10 items-center">
@@ -154,6 +155,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAccountCategories } from '@/composable/data-queries/categories';
 import { useAccountAccess } from '@/composable/use-account-access';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useAccountsStore, useCategoriesStore } from '@/stores';
 import { findFormattedCategoryById } from '@/stores/categories/helpers';
 import type { RecordId, TransactionModel, UpdateTransactionBody } from '@bt/shared/types';
@@ -262,6 +264,10 @@ const form = reactive({
 watch(categories, (list) => {
   if (!form.category) form.category = findFormattedCategoryById(list, props.tx.categoryId);
 });
+
+const amountDecimals = computed(() =>
+  getCurrencyDecimals({ code: props.tx.currencyCode, meta: props.tx.currencyMeta }),
+);
 
 const body = computed(() => buildInlineEditBody({ column: props.column, form }));
 const seamDateError = computed(() =>

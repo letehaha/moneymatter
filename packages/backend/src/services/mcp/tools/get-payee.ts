@@ -1,4 +1,3 @@
-import { centsToApiDecimal } from '@common/types/money';
 import { getPayee } from '@services/payees';
 import { z } from 'zod';
 
@@ -29,7 +28,7 @@ export const getPayeeTool = defineTool({
         ? {
             payeeId: stats.payeeId,
             transactionCount: stats.transactionCount,
-            netFlowRef: centsToApiDecimal(stats.netFlowRefCents),
+            netFlowRef: stats.netFlowRef.toNumber(),
             firstSeenAt: stats.firstSeenAt,
             lastSeenAt: stats.lastSeenAt,
             topCategoryId: stats.topCategoryId,

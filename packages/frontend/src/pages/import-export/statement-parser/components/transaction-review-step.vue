@@ -153,7 +153,8 @@
                   class="ml-auto w-24 shrink-0 text-right font-mono text-xs font-medium"
                   :class="item.txType === 'expense' ? 'text-app-expense-color' : 'text-app-income-color'"
                 >
-                  {{ item.txType === 'expense' ? '-' : '+' }}{{ item.amount.toFixed(2) }}
+                  {{ item.txType === 'expense' ? '-' : '+'
+                  }}{{ toLocalCurrencyNumber(item.amount, { currency: amountCurrencyCode }) }}
                   <span v-if="item.originalAmount" class="text-muted-foreground block text-[10px] font-normal">
                     {{ item.originalAmount }}
                   </span>
@@ -206,6 +207,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
+import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import { useStatementParserStore } from '@/stores/statement-parser';
 import { ArrowLeftIcon, Loader2Icon } from '@lucide/vue';
 import { computed } from 'vue';
@@ -213,6 +215,8 @@ import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const store = useStatementParserStore();
+
+const amountCurrencyCode = computed(() => store.selectedAccount?.currencyCode ?? store.effectiveCurrency ?? undefined);
 
 // Count existing transactions that are not duplicates
 const existingTransactionsCount = computed(() => {
@@ -260,7 +264,7 @@ const timelineItems = computed((): TimelineItem[] => {
     const sourceFile = showSources.value ? store.transactionSources[index] : undefined;
     const originalAmount =
       tx.originalAmount !== undefined && tx.originalCurrencyCode
-        ? `${tx.originalAmount.toFixed(2)} ${tx.originalCurrencyCode}`
+        ? `${toLocalCurrencyNumber(tx.originalAmount, { currency: tx.originalCurrencyCode })} ${tx.originalCurrencyCode}`
         : undefined;
 
     if (duplicate) {

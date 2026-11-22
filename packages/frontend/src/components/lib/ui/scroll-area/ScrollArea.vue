@@ -43,7 +43,7 @@ defineExpose({ viewportRef });
   <ScrollAreaRoot :type="type" :class="cn('relative overflow-hidden', props.class)">
     <ScrollAreaViewport
       ref="viewportRef"
-      :class="cn('h-full w-full rounded-[inherit]', props.viewportClass)"
+      :class="cn('isolate h-full w-full rounded-[inherit]', props.viewportClass)"
       @scroll="scrollY"
     >
       <slot />

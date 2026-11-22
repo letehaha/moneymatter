@@ -1,11 +1,13 @@
-import type { CurrencyDisplayPreference } from '@bt/shared/types';
+import type { CurrencyDisplayPreference, CurrencyMeta } from '@bt/shared/types';
 import { ref } from 'vue';
+
+import { isIntlCurrencyCode, resolveCurrencyDisplay } from './currency-decimals';
 
 export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
 // Module-level so plain helpers, not just composables, follow the user's setting.
 export const currencyDisplayPreference = ref<CurrencyDisplayPreference>('symbol');
-export const numberFormatLocale = ref('en-US');
+const numberFormatLocale = ref('en-US');
 
 export function toLocalNumber(
   value: string | number | undefined | null,
@@ -23,57 +25,75 @@ export function toLocalNumber(
   return String(value);
 }
 
-// Fraction digits a fiat currency renders per ISO-4217/CLDR (KRW→0, USD→2, BHD→3),
-// clamped to 2 because Money stores cents (×100) so only 2 decimals are ever real.
-// Codes Intl rejects (malformed, e.g. a stray ticker from DB data) resolve to null so
-// callers can skip currency-styled formatting instead of crashing the render. Cached —
-// building an Intl formatter per render is costly.
-const currencyFractionDigitsCache = new Map<string, number | null>();
+const DISPLAY_SIGNIFICANT_DIGITS = 4;
+const DISPLAY_MIN_FRACTION_DIGITS = 2;
 
-function resolveCurrencyDigits(currency: string): number | null {
-  const cached = currencyFractionDigitsCache.get(currency);
-  if (cached !== undefined) return cached;
+const rendersAsPlainNumber = ({ code, display }: { code: string; display: CurrencyMeta }) =>
+  display.isCustom || !isIntlCurrencyCode({ code });
 
-  let digits: number | null;
-  try {
-    const cldrDigits = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).resolvedOptions().maximumFractionDigits;
-    digits = Math.min(cldrDigits ?? 2, 2);
-  } catch {
-    digits = null;
-  }
-
-  currencyFractionDigitsCache.set(currency, digits);
-  return digits;
-}
+/**
+ * Fraction digits of a custom currency's amount: 4 significant digits, never fewer than 2 decimals
+ * nor more than the currency carries, trailing zeros trimmed down to 2.
+ * 1 → "1.00", 1.23456789 → "1.235", 0.00012345 → "0.0001235", 1234.5678 → "1,234.57".
+ * `fullPrecision` keeps every digit the currency carries, still trimming trailing zeros.
+ */
+const getCustomFractionDigits = ({
+  value,
+  decimals,
+  fullPrecision = false,
+}: {
+  value: number;
+  decimals: number;
+  fullPrecision?: boolean;
+}): { minimumFractionDigits: number; maximumFractionDigits: number } => {
+  const minimumFractionDigits = Math.min(DISPLAY_MIN_FRACTION_DIGITS, decimals);
+  if (fullPrecision) return { minimumFractionDigits, maximumFractionDigits: decimals };
+  const abs = Math.abs(value);
+  if (!abs || !Number.isFinite(abs)) return { minimumFractionDigits, maximumFractionDigits: minimumFractionDigits };
+  const significantFractionDigits = DISPLAY_SIGNIFICANT_DIGITS - 1 - Math.floor(Math.log10(abs));
+  return {
+    minimumFractionDigits,
+    maximumFractionDigits: Math.min(decimals, Math.max(minimumFractionDigits, significantFractionDigits)),
+  };
+};
 
 function toLocalFiatCurrency(
   value: string | number | undefined | null,
-  options: Intl.NumberFormatOptions = {},
+  options: Intl.NumberFormatOptions & {
+    /** The owner's definition of the currency (carried by an account or transaction). */
+    meta?: CurrencyMeta | null;
+    /** Scale suffix ("k", "M"), placed after the number and before a custom currency's label. */
+    suffix?: string;
+    /** Every digit a custom currency carries instead of its shortened display. */
+    fullPrecision?: boolean;
+  } = {},
 ): string {
   if (value !== undefined && value !== null) {
-    const currency = options.currency || 'USD';
-    const currencyDigits = resolveCurrencyDigits(currency);
-    // Intl rejects the code — render a bare 2-decimal number with the code appended
-    // instead of letting toLocaleString throw a RangeError mid-render.
-    if (currencyDigits === null) {
+    const { meta, suffix = '', fullPrecision, ...intlOptions } = options;
+    const currency = intlOptions.currency || 'USD';
+    const display = resolveCurrencyDisplay({ code: currency, meta });
+    const currencyDigits = display.decimals;
+    // A custom code (or one Intl rejects as malformed) renders as a plain number plus its symbol
+    // or code, never in `Intl` currency style: Intl accepts any three letters ("SAT", "BTC") and
+    // would apply its own digits and a `¤` sign.
+    if (rendersAsPlainNumber({ code: currency, display })) {
+      const label = display.symbol || currency;
+      const digits = getCustomFractionDigits({ value: Number(value), decimals: currencyDigits, fullPrecision });
       return `${toLocalNumber(value, {
-        minimumFractionDigits: options.minimumFractionDigits ?? 2,
-        maximumFractionDigits: options.maximumFractionDigits ?? 2,
-        useGrouping: options.useGrouping ?? true,
-      })} ${currency}`;
+        minimumFractionDigits: intlOptions.minimumFractionDigits ?? digits.minimumFractionDigits,
+        maximumFractionDigits: intlOptions.maximumFractionDigits ?? digits.maximumFractionDigits,
+        useGrouping: intlOptions.useGrouping ?? true,
+      })}${suffix} ${label}`;
     }
-    return toLocalNumber(value, {
-      ...options,
-      minimumFractionDigits: options.minimumFractionDigits ?? currencyDigits,
-      maximumFractionDigits: options.maximumFractionDigits ?? currencyDigits,
+    return `${toLocalNumber(value, {
+      ...intlOptions,
+      minimumFractionDigits: intlOptions.minimumFractionDigits ?? currencyDigits,
+      maximumFractionDigits: intlOptions.maximumFractionDigits ?? currencyDigits,
       currency,
-      currencyDisplay: options.currencyDisplay ?? currencyDisplayPreference.value,
-      useGrouping: options.useGrouping ?? true,
+      currencyDisplay: intlOptions.currencyDisplay ?? currencyDisplayPreference.value,
+      useGrouping: intlOptions.useGrouping ?? true,
       style: 'currency',
-    });
+    })}${suffix}`;
   }
   return String(value);
 }
@@ -81,22 +101,31 @@ function toLocalFiatCurrency(
 /**
  * Bare amount (no symbol) with the fraction digits its currency uses — for the
  * "1,500 KRW" layout where the code is rendered separately. KRW → "1,500", USD →
- * "1,500.00". Unknown/non-ISO codes fall back to 2.
+ * "1,500.00", KWD → "1,500.000". Codes without registered decimals fall back to the
+ * ISO value, then to 2.
  */
 export function toLocalCurrencyNumber(
   value: string | number | undefined | null,
   options: Omit<Intl.NumberFormatOptions, 'style' | 'currency' | 'currencyDisplay'> & {
-    /** ISO-4217 code whose fraction digits to apply; only affects digits, never adds a symbol. */
+    /** Currency code whose fraction digits to apply; only affects digits, never adds a symbol. */
     currency?: string;
+    /** The owner's definition of the currency; its decimals win over the registered ones. */
+    meta?: CurrencyMeta | null;
     locale?: Intl.LocalesArgument;
+    /** Every digit a custom currency carries instead of its shortened display. */
+    fullPrecision?: boolean;
   } = {},
 ): string {
-  const { currency, ...numberOptions } = options;
-  const digits = resolveCurrencyDigits(currency || 'USD') ?? 2;
+  const { currency, meta, fullPrecision, ...numberOptions } = options;
+  const code = currency || 'USD';
+  const display = resolveCurrencyDisplay({ code, meta });
+  const digits = rendersAsPlainNumber({ code, display })
+    ? getCustomFractionDigits({ value: Number(value), decimals: display.decimals, fullPrecision })
+    : { minimumFractionDigits: display.decimals, maximumFractionDigits: display.decimals };
   return toLocalNumber(value, {
     ...numberOptions,
-    minimumFractionDigits: numberOptions.minimumFractionDigits ?? digits,
-    maximumFractionDigits: numberOptions.maximumFractionDigits ?? digits,
+    minimumFractionDigits: numberOptions.minimumFractionDigits ?? digits.minimumFractionDigits,
+    maximumFractionDigits: numberOptions.maximumFractionDigits ?? digits.maximumFractionDigits,
   });
 }
 
@@ -131,6 +160,7 @@ export function formatLargeNumber(
     // Solana lamports
     lamports?: boolean;
     isFiat?: boolean;
+    meta?: CurrencyMeta | null;
   } = {},
 ) {
   const suffixes = {
@@ -167,16 +197,21 @@ export function formatLargeNumber(
     suffix = suffixes.thousandSuffix;
   }
 
-  const formatterFunc = options.isFiat ? toLocalFiatCurrency : toLocalNumber;
-
   // Fraction digits here are scale digits ("₩12.35k" = ₩12,350), not currency sub-units,
   // so per-currency digit resolution deliberately doesn't apply.
-  const formatted = formatterFunc(localNumber / delimiter, {
+  const digits = {
     maximumFractionDigits: options.maximumFractionDigits ?? 2,
     minimumFractionDigits: options.minimumFractionDigits ?? 0,
-    currency: options.currency,
-  });
-  return `${formatted}${suffix}`;
+  };
+  if (options.isFiat)
+    return toLocalFiatCurrency(localNumber / delimiter, {
+      ...digits,
+      currency: options.currency,
+      meta: options.meta,
+      suffix,
+    });
+
+  return `${toLocalNumber(localNumber / delimiter, digits)}${suffix}`;
 }
 
 const COMPACT_SIGNIFICANT_DIGITS = 3;
@@ -202,13 +237,15 @@ const compactRoundingStep = (abs: number) => (abs >= 1e9 ? 1e7 : abs >= 1e6 ? 1e
 export const formatCompactUIAmount = ({
   amount,
   currency,
+  meta,
   from = 10_000,
 }: {
   amount: number;
   currency?: string;
+  meta?: CurrencyMeta | null;
   from?: number;
 }) => {
-  if (!(Math.abs(amount) >= from)) return formatUIAmount(amount, { currency });
+  if (!(Math.abs(amount) >= from)) return formatUIAmount(amount, { currency, meta });
 
   // Rounds before the suffix is picked, so 999,600 reads "₴1M" rather than "₴1000k".
   const step = compactRoundingStep(Math.abs(amount));
@@ -218,6 +255,7 @@ export const formatCompactUIAmount = ({
   return formatLargeNumber(rounded, {
     isFiat: true,
     currency,
+    meta,
     minimumFractionDigits: 0,
     maximumFractionDigits: abs >= 100_000 && abs < 1_000_000 ? 0 : 2,
   });
@@ -244,9 +282,15 @@ export function formatUIAmount(
   {
     currency,
     fractionDigits,
+    meta,
+    fullPrecision,
   }: {
     currency?: Intl.NumberFormatOptions['currency'];
     fractionDigits?: number;
+    /** The owner's definition of the currency; pass the account's `currencyMeta` for its amounts. */
+    meta?: CurrencyMeta | null;
+    /** Every digit a custom currency carries instead of its shortened display. */
+    fullPrecision?: boolean;
   } = {},
 ): string {
   if (!Number.isFinite(value)) return String(value);
@@ -254,7 +298,20 @@ export function formatUIAmount(
   // `|| 0` turns -0 into 0 so it doesn't render as "-$0.00".
   return toLocalFiatCurrency(value || 0, {
     currency,
+    meta,
+    fullPrecision,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });
 }
+
+/** An amount in an account's (or transaction's) currency, formatted by the owner's definition of it. */
+export const formatAccountAmount = ({
+  amount,
+  account,
+  fullPrecision,
+}: {
+  amount: number;
+  account: { currencyCode: string; currencyMeta?: CurrencyMeta | null };
+  fullPrecision?: boolean;
+}): string => formatUIAmount(amount, { currency: account.currencyCode, meta: account.currencyMeta, fullPrecision });

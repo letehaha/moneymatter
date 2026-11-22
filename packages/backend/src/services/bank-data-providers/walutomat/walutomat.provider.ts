@@ -193,7 +193,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
       externalId: externalIdFromCurrency(wallet.currency),
       name: `${wallet.currency} Wallet`,
       type: 'bank' as const,
-      balance: Money.fromDecimal(parseFloat(wallet.balanceAvailable)).toCents(),
+      balance: Money.fromDecimal(wallet.balanceAvailable),
       currency: wallet.currency,
       metadata: {
         balanceTotal: wallet.balanceTotal,
@@ -289,7 +289,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
           const balances = await client.getBalances();
           const wallet = balances.find((b) => b.currency === currency);
           if (wallet) {
-            const balanceMoney = Money.fromDecimal(parseFloat(wallet.balanceAvailable));
+            const balanceMoney = Money.fromDecimal(wallet.balanceAvailable);
             await writeBankBalanceWithHistory({ account, balance: balanceMoney });
           }
         } catch (error) {

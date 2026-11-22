@@ -49,19 +49,19 @@ const pnlClass = computed(() => {
         <div>
           <div class="text-muted-foreground text-xs">{{ $t('venture.metrics.costBasis') }}</div>
           <div class="mt-0.5 text-2xl font-medium tabular-nums">
-            {{ formatAmountByCurrencyCode(Number(metrics.costBasis), currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: Number(metrics.costBasis), currencyCode }) }}
           </div>
         </div>
         <div>
           <div class="text-muted-foreground text-xs">{{ $t('venture.metrics.currentValue') }}</div>
           <div class="mt-0.5 text-2xl font-medium tabular-nums">
-            {{ formatAmountByCurrencyCode(Number(metrics.currentValue), currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: Number(metrics.currentValue), currencyCode }) }}
           </div>
         </div>
         <div>
           <div class="text-muted-foreground text-xs">{{ $t('venture.metrics.totalDistributions') }}</div>
           <div class="mt-0.5 text-lg font-medium tabular-nums">
-            {{ formatAmountByCurrencyCode(Number(metrics.totalDistributions), currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: Number(metrics.totalDistributions), currencyCode }) }}
           </div>
         </div>
         <div>
@@ -69,7 +69,7 @@ const pnlClass = computed(() => {
           <div :class="['mt-0.5 flex items-center gap-1 text-lg font-medium tabular-nums', pnlClass]">
             <TrendingUpIcon v-if="pnlSign === 'profit'" class="size-4" />
             <TrendingDownIcon v-else-if="pnlSign === 'loss'" class="size-4" />
-            <span>{{ formatAmountByCurrencyCode(Number(metrics.pnlAbsolute), currencyCode) }}</span>
+            <span>{{ formatAmountByCurrencyCode({ amount: Number(metrics.pnlAbsolute), currencyCode }) }}</span>
             <span v-if="metrics.pnlPct" class="text-muted-foreground text-xs"
               >({{ formatFractionAsPercent(metrics.pnlPct) }})</span
             >

@@ -231,25 +231,25 @@ If a duplicate slips through anyway, or a pending payment stays pending for more
 Open the connection's page from the gear button (**Manage connection**) on the **Accounts** page. It shows:
 
 - the connection's name, whether it's **Active**, and when it was connected,
-- the **Total balance**, how many **Accounts** are connected and the **Last sync**,
+- the **Total balance**, how many **Accounts** are connected, how often it syncs (**Auto-Sync**) and the **Last sync**,
 - for Enable Banking, how many days of **Consent** are left,
 - the **Connected Accounts** list.
 
-The **Manage** menu at the top has **Rename connection** and **Disconnect Integration**.
+The **Manage** menu at the top has **Edit connection** and **Disconnect integration**.
 
 <Screenshot
   src="/screenshots/import/bank-connection-details.png"
-  alt="A bank connection's page showing the summary figures, the Connected Accounts list, and the Manage menu open with Rename connection and Disconnect Integration."
-  hint="Open /accounts/integrations/:connectionId for an active connection with 2–3 accounts. Open the Manage menu so Rename connection and Disconnect Integration show. Crop to the header, summary figures and the start of the Connected Accounts list."
+  alt="A bank connection's page showing the summary figures, the Connected Accounts list, and the Manage menu open with Edit connection and Disconnect integration."
+  hint="Open /accounts/integrations/:connectionId for an active connection with 2–3 accounts. Open the Manage menu so Edit connection and Disconnect integration show. Crop to the header, summary figures and the start of the Connected Accounts list."
 />
 
 ### Add more accounts from the same bank
 
 If your bank has accounts you didn't add at first, click **Connect remaining accounts** (or **Connect Accounts** if none are connected yet). In **Connect Remaining Accounts**, tick the ones you want and click **Connect Selected Accounts**. Accounts that are already in MoneyMatter are marked **Already connected**.
 
-### Rename a connection
+### Edit a connection
 
-Click **Manage** → **Rename connection**, enter a new **Connection Name** and click **Save**.
+Click **Manage** → **Edit connection**, or the pencil next to the connection's name. Change the **Connection name**, add or change an **External URL (optional)**, such as your bank's website, and click **Save**. When the connection has an external URL, a link button next to its name opens it.
 
 ## Reconnect a connection
 
@@ -285,7 +285,7 @@ For the other providers, a connection is switched off when the bank or service k
 <Steps>
 
 1. Open the connection's page.
-2. Click **Manage** → **Disconnect Integration**.
+2. Click **Manage** → **Disconnect integration**.
 3. Decide whether to tick **Also remove associated accounts**.
 4. Click **Disconnect**.
 

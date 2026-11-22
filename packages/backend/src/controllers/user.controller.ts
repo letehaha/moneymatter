@@ -1,6 +1,5 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
-import { currencyCode } from '@common/lib/zod/custom-types';
-import { removeExchangeRatePairsSchema } from '@controllers/currencies/exchange-rate-pairs.schema';
+import { isoCurrencyCode } from '@common/lib/zod/custom-types';
 import {
   deleteUserCurrencyBodySchema,
   editUserCurrencyBodySchema,
@@ -14,6 +13,7 @@ import { resolveEntitlements } from '@services/entitlements/resolve-entitlements
 import { startFeatureTrial as startFeatureTrialService } from '@services/entitlements/start-feature-trial.service';
 import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
 import * as userExchangeRates from '@services/user-exchange-rate';
+import { removeExchangeRatePairSchema } from '@services/user-exchange-rate/exchange-rate-pair-rules';
 import * as userService from '@services/user.service';
 import { deleteUser as deleteUserService } from '@services/user/delete-user.service';
 import {
@@ -149,7 +149,7 @@ export const getUserBaseCurrency = createController(z.object({}), async ({ user 
 export const setBaseUserCurrency = createController(
   z.object({
     body: z.object({
-      currencyCode: currencyCode(),
+      currencyCode: isoCurrencyCode(),
     }),
   }),
   async ({ user, body }) => {
@@ -196,7 +196,7 @@ export const getCurrenciesExchangeRates = createController(z.object({}), async (
 export const removeUserCurrencyExchangeRate = createController(
   z.object({
     body: z.object({
-      pairs: removeExchangeRatePairsSchema,
+      pairs: z.array(removeExchangeRatePairSchema).nonempty(),
     }),
   }),
   async ({ user, body }) => {

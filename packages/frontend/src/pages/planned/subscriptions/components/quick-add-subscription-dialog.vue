@@ -13,8 +13,10 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { usePrioritizedCurrencies } from '@/composable/data-queries/prioritized-currencies';
 import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subscriptions';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { helpers, required } from '@/js/helpers/validators';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
@@ -104,10 +106,13 @@ const selectedCurrency = computed(
   () => currencies.value.find((c) => c.code === form.value.expectedCurrencyCode) ?? null,
 );
 
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.expectedCurrencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
+
 const installmentTotalLabel = computed(() => {
   const { expectedAmount, maxOccurrences, expectedCurrencyCode } = form.value;
   if (!isInstallment.value || !expectedAmount || !maxOccurrences || !expectedCurrencyCode) return null;
-  return formatAmountByCurrencyCode(expectedAmount * maxOccurrences, expectedCurrencyCode);
+  return formatAmountByCurrencyCode({ amount: expectedAmount * maxOccurrences, currencyCode: expectedCurrencyCode });
 });
 
 const validationRules = computed(() => ({
@@ -120,6 +125,7 @@ const validationRules = computed(() => ({
         return value !== null && value > 0;
       },
     ),
+    currencyDecimal: helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value),
   },
   expectedCurrencyCode: {
     requiredWithAmount: helpers.withMessage(
@@ -258,6 +264,7 @@ const handleSubmit = () => {
         <InputField
           v-model.number="form.expectedAmount"
           type="number"
+          :decimals="amountDecimals"
           :label="$t('planned.subscriptions.form.amountLabel')"
           :placeholder="$t('planned.subscriptions.form.amountPlaceholder')"
           :error-message="getFieldErrorMessage('form.expectedAmount')"

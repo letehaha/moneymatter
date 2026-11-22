@@ -18,11 +18,16 @@
           :key="currency.id"
           :currency="currency"
           :accounts-count="usageMap[currency.currencyCode] ?? 0"
-          :expanded="expandedCurrencyCode === currency.currencyCode"
-          @toggle="toggleExpanded({ code: currency.currencyCode })"
-          @submit="collapseExpanded({ code: currency.currencyCode })"
+          @select="openCurrency({ currency })"
         />
       </div>
+
+      <CurrencyEditDialog
+        v-if="selectedCurrency"
+        v-model:open="isEditOpen"
+        :currency="selectedCurrency"
+        :accounts-count="usageMap[selectedCurrency.currencyCode] ?? 0"
+      />
 
       <div v-if="!hasAddedCurrencies" class="mt-4 flex flex-col items-center gap-1 py-6 text-center">
         <CoinsIcon class="text-muted-foreground/60 mb-1 size-8" aria-hidden="true" />
@@ -36,20 +41,26 @@
 <script setup lang="ts">
 import { loadUserCurrenciesExchangeRates } from '@/api/currencies';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { useCurrencyName } from '@/composable';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { useQuery } from '@tanstack/vue-query';
 import { CoinsIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
+import CurrencyEditDialog from './currency-edit-dialog.vue';
 import CurrencyListRow from './currency-list-row.vue';
 import { buildCurrencyUsageMap } from './currency-usage';
+import { roundRate } from './rate-precision';
 import { CurrencyWithExchangeRate } from './types';
+
+const RATE_DECIMALS = 4;
 
 const currenciesStore = useCurrenciesStore();
 const accountsStore = useAccountsStore();
-const { currencies } = storeToRefs(currenciesStore);
+const { currencies, baseCurrency } = storeToRefs(currenciesStore);
 const { accounts } = storeToRefs(accountsStore);
+const { getCurrencyName } = useCurrencyName();
 
 const { data: rates } = useQuery({
   queryKey: VUE_QUERY_CACHE_KEYS.exchangeRates,
@@ -66,14 +77,21 @@ const currenciesList = computed<CurrencyWithExchangeRate[]>(() =>
   currencies.value
     .map((item) => {
       const rate = (rates.value ?? []).find((i) => i.baseCode === item.currency?.code);
-      const quoteRate = Number(Number(1 / Number(rate?.rate)).toFixed(4));
+      const isCustomCurrency = Boolean(item.currency?.isCustom);
+      const value = Number(rate?.rate);
+      const code = item.currency?.code ?? '';
 
       return {
         ...item,
-        rate: Number(rate?.rate?.toFixed(4)),
+        // A custom currency carries the name its owner gave it; a translated ISO name could shadow it.
+        name: isCustomCurrency
+          ? (item.currency?.currency ?? code)
+          : getCurrencyName({ code, fallbackName: item.currency?.currency }),
+        isCustomCurrency,
+        rate: roundRate({ value, isCustom: isCustomCurrency, isoDecimals: RATE_DECIMALS }),
         custom: rate?.custom ?? false,
-        quoteCode: rate?.quoteCode ?? '',
-        quoteRate,
+        quoteCode: rate?.quoteCode ?? baseCurrency.value?.currencyCode ?? '',
+        quoteRate: roundRate({ value: 1 / value, isCustom: isCustomCurrency, isoDecimals: RATE_DECIMALS }),
       };
     })
     .sort((a, b) => Number(b.isDefaultCurrency) - Number(a.isDefaultCurrency)),
@@ -83,16 +101,16 @@ const hasAddedCurrencies = computed(() => currenciesList.value.some((currency) =
 
 const usageMap = computed(() => buildCurrencyUsageMap({ accounts: accounts.value ?? [] }));
 
-// Single-open accordion: expanding a row collapses whichever other row was open.
-const expandedCurrencyCode = ref<string | null>(null);
+// A snapshot, so a refresh that drops the currency can't unmount the dialog mid-close. While the
+// currency is listed, the dialog follows its refreshed data (a custom currency's editor stays open).
+const selectedSnapshot = ref<CurrencyWithExchangeRate | null>(null);
+const selectedCurrency = computed(
+  () => currenciesList.value.find((item) => item.id === selectedSnapshot.value?.id) ?? selectedSnapshot.value,
+);
+const isEditOpen = ref(false);
 
-const toggleExpanded = ({ code }: { code: string }) => {
-  expandedCurrencyCode.value = expandedCurrencyCode.value === code ? null : code;
-};
-
-const collapseExpanded = ({ code }: { code: string }) => {
-  if (expandedCurrencyCode.value === code) {
-    expandedCurrencyCode.value = null;
-  }
+const openCurrency = ({ currency }: { currency: CurrencyWithExchangeRate }) => {
+  selectedSnapshot.value = currency;
+  isEditOpen.value = true;
 };
 </script>

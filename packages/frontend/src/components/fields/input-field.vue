@@ -80,6 +80,7 @@ import { HTMLAttributes, computed, onMounted, ref, useAttrs, watch } from 'vue';
 
 import FieldError from './components/field-error.vue';
 import FieldLabel from './components/field-label.vue';
+import { limitAmountDecimals, limitDecimalDigits } from './utils/formatted-amount';
 
 enum MODEL_EVENTS {
   input = 'update:modelValue',
@@ -97,6 +98,12 @@ const props = withDefaults(
     errorPlacement?: 'inline' | 'absolute';
     inputFieldStyles?: HTMLAttributes['style'];
     onlyPositive?: boolean;
+    /**
+     * Caps the decimals a `number` input keeps (the amount's currency decimals): digits typed or
+     * pasted past the cap are dropped, and 0 drops the decimal point as well. A model value with more
+     * digits is kept for the form to reject. Unset keeps any precision.
+     */
+    decimals?: number;
     autofocus?: boolean;
     trailingIconCssClass?: string;
     leadingIconCssClass?: string;
@@ -172,6 +179,22 @@ watch(
   },
 );
 
+const limitDecimals = ({ raw }: { raw: string }): string => {
+  if (props.decimals === undefined) return raw;
+  // Pasted exponent notation ("1.5e3") is capped on its value, then shown as a plain number.
+  if (/e/i.test(raw)) {
+    const value = Number(raw);
+    return Number.isFinite(value) ? String(limitAmountDecimals({ value, decimals: props.decimals })) : raw;
+  }
+  return limitDecimalDigits({ raw, decimals: props.decimals });
+};
+
+const toFiniteNumber = ({ raw }: { raw: string }): number | null => {
+  if (raw === '') return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+};
+
 const onInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
 
@@ -179,8 +202,10 @@ const onInput = (event: Event) => {
 
   // For number inputs, preserve raw value to handle intermediate decimal states
   if (props.type === 'number') {
-    rawNumberInput.value = target.value;
-    const numValue = target.value === '' ? null : Number(target.value);
+    const limited = limitDecimals({ raw: target.value });
+    if (limited !== target.value) target.value = limited;
+    rawNumberInput.value = limited;
+    const numValue = toFiniteNumber({ raw: limited });
     if (props.modelValue === numValue) return;
     emits(MODEL_EVENTS.input, numValue);
   } else {
@@ -196,6 +221,10 @@ const onKeypress = (event: KeyboardEvent) => {
   if (props.type === 'number') {
     // Prevent scientific notation (e.g., 1e5)
     if (event.key === 'e' || event.key === 'E') {
+      event.preventDefault();
+    }
+    // A whole-number currency has no decimal point to type.
+    if (props.decimals === 0 && (event.key === '.' || event.key === ',')) {
       event.preventDefault();
     }
   }

@@ -31,13 +31,17 @@ const props = defineProps<{
   canManage: boolean;
 }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { deleteLine } = useTrackerLineMutations({ trackerId: () => props.tracker.id });
 
-const rows = computed(() => buildLineRows({ lines: props.tracker.lines, stats: props.stats }));
+const rows = computed(() =>
+  buildLineRows({ lines: props.tracker.lines, stats: props.stats, decimals: baseCurrencyDecimals.value }),
+);
 const otherSpent = computed(() => props.stats?.otherSpent ?? 0);
 const showOther = computed(() => otherSpent.value > 0);
-const totals = computed(() => buildLinesTotals({ rows: rows.value, otherSpent: otherSpent.value }));
+const totals = computed(() =>
+  buildLinesTotals({ rows: rows.value, otherSpent: otherSpent.value, decimals: baseCurrencyDecimals.value }),
+);
 
 const formatSpent = (amount: number) => formatBaseCurrency(amount ? -amount : 0);
 

@@ -1,6 +1,6 @@
 import { AI_FEATURE, AI_PROVIDER, type ExtractedInvoice, TRANSACTION_TYPES } from '@bt/shared/types';
 import type { Expect, MutuallyAssignable } from '@bt/shared/types/type-testing';
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
@@ -61,7 +61,7 @@ export const invoiceSchema = z.object({
   vendorName: z.string().trim().min(1),
   customerName: z.string().trim().min(1).nullable(),
   totalAmount: z.number().positive(),
-  currencyCode: currencyCode(),
+  currencyCode: isoCurrencyCode(),
   // `Date.parse` rolls "2026-02-30" over into March, which would then reach the date
   // window arithmetic as a day the invoice never carried.
   issueDate: z

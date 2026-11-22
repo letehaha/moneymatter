@@ -1,5 +1,6 @@
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTransactions } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
@@ -18,6 +19,8 @@ export default createController(schema, async ({ user, body }) => {
     transferIds: [...new Set(transferIds)],
   });
 
-  // Serialize: convert cents to decimal for API response
+  await attachTransactionCurrencyMeta({ transactions });
+
+  // Serialize: Money amounts to API decimals
   return { data: serializeTransactions(transactions) };
 });

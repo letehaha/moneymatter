@@ -137,11 +137,11 @@ function formatPercentage(percent: number): string {
           >
             <td class="border-border border-b px-3 py-2">{{ formatDate(row.date) }}</td>
             <td class="border-border border-b px-3 py-2 text-right font-medium">
-              {{ formatAmountByCurrencyCode(row.price, row.currency) }}
+              {{ formatAmountByCurrencyCode({ amount: row.price, currencyCode: row.currency }) }}
             </td>
             <td v-if="existingPrices" class="border-border border-b px-3 py-2 text-right">
               <template v-if="row.existingPrice !== null">
-                {{ formatAmountByCurrencyCode(row.existingPrice, row.currency) }}
+                {{ formatAmountByCurrencyCode({ amount: row.existingPrice, currencyCode: row.currency }) }}
               </template>
               <template v-else>
                 <span class="text-muted-foreground">{{

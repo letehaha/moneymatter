@@ -8,7 +8,7 @@ import { createTestingPinia } from '@pinia/testing';
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import * as dataMocks from '@tests/mocks';
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createI18n } from 'vue-i18n';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
@@ -121,7 +121,16 @@ const createAccountMock = vi.mocked(api.createAccount);
 describe('CreateAccountForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal('matchMedia', () => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
     createAccountMock.mockResolvedValue({} as Awaited<ReturnType<typeof api.createAccount>>);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe('1. User enters data — API is called with expected payload', () => {
@@ -405,6 +414,53 @@ describe('CreateAccountForm', () => {
       const payload = createAccountMock.mock.calls[0]![0];
       expect(payload).toEqual(expect.objectContaining({ logoInitials: 'MS', logoColor: '#7355be' }));
       expect(payload).not.toHaveProperty('logoDomain');
+    });
+  });
+
+  describe('8. External URL field', () => {
+    it('omits externalUrl from the payload when left blank', async () => {
+      const { wrapper } = await mountComponent();
+
+      const nameInput = wrapper.find<HTMLInputElement>('input:not([type="number"])');
+      await nameInput.setValue('Plain Checking');
+
+      const urlInput = wrapper.find<HTMLInputElement>('input[type="url"]');
+      await urlInput.setValue('   ');
+
+      await submitForm({ wrapper });
+
+      const payload = createAccountMock.mock.calls[0]![0];
+      expect(payload).not.toHaveProperty('externalUrl');
+    });
+
+    it('trims and sends externalUrl when a valid URL is entered', async () => {
+      const { wrapper } = await mountComponent();
+
+      const nameInput = wrapper.find<HTMLInputElement>('input:not([type="number"])');
+      await nameInput.setValue('Chase Checking');
+
+      const urlInput = wrapper.find<HTMLInputElement>('input[type="url"]');
+      await urlInput.setValue('  https://www.chase.com  ');
+
+      await submitForm({ wrapper });
+
+      const payload = createAccountMock.mock.calls[0]![0];
+      expect(payload).toEqual(expect.objectContaining({ externalUrl: 'https://www.chase.com' }));
+    });
+
+    it('blocks submit when an invalid externalUrl scheme is entered', async () => {
+      const { wrapper } = await mountComponent();
+
+      const nameInput = wrapper.find<HTMLInputElement>('input:not([type="number"])');
+      await nameInput.setValue('Unsafe URL Account');
+
+      const urlInput = wrapper.find<HTMLInputElement>('input[type="url"]');
+      await urlInput.setValue('javascript:alert(1)');
+
+      await wrapper.find('form').trigger('submit');
+      await wrapper.vm.$nextTick();
+
+      expect(createAccountMock).not.toHaveBeenCalled();
     });
   });
 });

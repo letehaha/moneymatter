@@ -18,6 +18,7 @@
         "updateError": "An error occured while trying to update account",
         "nameLabel": "Account name",
         "namePlaceholder": "Account name",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Transfer to portfolio",
         "editAccountName": "Edit account name",
         "save": "Save",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Adds one balance adjustment transaction dated today. Your past balances stay exactly as they are.",
         "residualOpeningLabel": "Change the starting balance",
         "residualOpeningDescription": "Moves the account's starting balance by the difference, so every past balance shifts too. Pick this if transactions are missing from the start of the history.",
-        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
+        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Details",
@@ -179,6 +182,12 @@
         "editDefaultPaymentType": "Edit default payment type",
         "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
         "defaultPaymentTypeUpdateError": "Failed to update default payment type",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Currency:",
         "main": "(main)",
         "exchangeRate": "Exchange rate:",

@@ -1,12 +1,12 @@
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
-import { dateString, currencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, isoCurrencyCode, externalUrl, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { logoFieldsShape, refineLogoFields } from '@controllers/common/logo-fields.schema';
 import { z } from 'zod';
 
 /** Body of `POST /investments/portfolios/:id/transfer`; the MCP `transfer_between_portfolios` tool reads its shape. */
 export const portfolioTransferBodySchema = z.object({
   toPortfolioId: recordId(),
-  currencyCode: currencyCode(),
+  currencyCode: isoCurrencyCode(),
   amount: positiveAmountString(),
   date: dateString(),
   description: z.string().nullable().optional(),
@@ -14,8 +14,8 @@ export const portfolioTransferBodySchema = z.object({
 
 /** Body of `POST /investments/portfolios/:id/exchange-currency`; the MCP `exchange_portfolio_currency` tool reads its shape. */
 export const exchangeCurrencyBodySchema = z.object({
-  fromCurrencyCode: currencyCode(),
-  toCurrencyCode: currencyCode(),
+  fromCurrencyCode: isoCurrencyCode(),
+  toCurrencyCode: isoCurrencyCode(),
   fromAmount: positiveAmountString(),
   toAmount: positiveAmountString(),
   date: dateString(),
@@ -32,7 +32,8 @@ export const createPortfolioBodyShape = {
   name: z.string().min(1, 'Portfolio name is required').max(100, 'Portfolio name must be 100 characters or less'),
   portfolioType: z.enum(PORTFOLIO_TYPE).default(PORTFOLIO_TYPE.investment),
   description: z.string().max(500, 'Description must be 500 characters or less').optional(),
-  displayCurrencyCode: currencyCode().nullable().optional(),
+  displayCurrencyCode: isoCurrencyCode().nullable().optional(),
+  externalUrl: externalUrl().nullish(),
   isEnabled: z.boolean().default(true),
 };
 
@@ -41,7 +42,8 @@ export const updatePortfolioBodyShape = {
   name: z.string().min(1).max(255).optional(),
   portfolioType: z.enum(PORTFOLIO_TYPE).optional(),
   description: z.string().nullable().optional(),
-  displayCurrencyCode: currencyCode().nullable().optional(),
+  displayCurrencyCode: isoCurrencyCode().nullable().optional(),
+  externalUrl: externalUrl().nullish(),
   isEnabled: z.boolean().optional(),
   ...logoFieldsShape,
 };

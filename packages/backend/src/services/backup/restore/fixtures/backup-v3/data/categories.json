@@ -1,0 +1,57 @@
+[
+  {
+    "id": "01a1cf52-7b18-70ce-95da-d09624ad6500",
+    "name": "Food & Drinks",
+    "key": "food",
+    "icon": "food-20-filled",
+    "color": "#e74c3c",
+    "type": "custom",
+    "parentId": null,
+    "userId": 1,
+    "applyDefaultTagsOnAiCategorization": false
+  },
+  {
+    "id": "01a1cf52-7b19-7231-864c-f1474fa83b4a",
+    "name": "Income",
+    "key": "income",
+    "icon": "wallet-20-filled",
+    "color": "#f1c40f",
+    "type": "custom",
+    "parentId": null,
+    "userId": 1,
+    "applyDefaultTagsOnAiCategorization": false
+  },
+  {
+    "id": "01a1cf52-7b19-7231-864c-f6c2b90f3a6b",
+    "name": "Other",
+    "key": "other",
+    "icon": "more-horizontal-20-filled",
+    "color": "#7f8c8d",
+    "type": "internal",
+    "parentId": null,
+    "userId": 1,
+    "applyDefaultTagsOnAiCategorization": false
+  },
+  {
+    "id": "01a1cf52-7bb3-733f-917b-24c01ef7ad0f",
+    "name": "Food",
+    "key": null,
+    "icon": null,
+    "color": "#202020",
+    "type": "custom",
+    "parentId": null,
+    "userId": 1,
+    "applyDefaultTagsOnAiCategorization": false
+  },
+  {
+    "id": "01a1cf52-7bbe-7396-b489-d4c15cfad9ef",
+    "name": "Rent",
+    "key": null,
+    "icon": null,
+    "color": "#303030",
+    "type": "custom",
+    "parentId": null,
+    "userId": 1,
+    "applyDefaultTagsOnAiCategorization": false
+  }
+]

@@ -185,6 +185,12 @@ export class LockedError extends CustomError {
   }
 }
 
+export class PlanRequiredError extends CustomError {
+  constructor({ code = API_ERROR_CODES.planRequired, message }: { code?: API_ERROR_CODES; message: string }) {
+    super(ERROR_CODES.PaymentRequired, code, message);
+  }
+}
+
 export class ClientUpdateRequiredError extends CustomError {
   constructor({ code = API_ERROR_CODES.clientUpdateRequired, message }: { code?: API_ERROR_CODES; message: string }) {
     super(ERROR_CODES.UpgradeRequired, code, message);

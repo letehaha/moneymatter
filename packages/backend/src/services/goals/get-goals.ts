@@ -1,5 +1,5 @@
 import { GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
-import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError } from '@js/errors';
 import { namespace } from '@models/connection';
@@ -81,19 +81,19 @@ const toGoalResponse = ({
   id: goal.id,
   name: goal.name,
   currencyCode: goal.currencyCode,
-  targetAmount: centsToApiDecimal(goal.targetAmount),
+  targetAmount: moneyToApiDecimal(goal.targetAmount),
   targetDate: goal.targetDate,
-  plannedMonthly: centsToApiDecimalOrNull(goal.plannedMonthly),
+  plannedMonthly: moneyToApiDecimalOrNull(goal.plannedMonthly),
   status: goal.status,
   achievedAt: goal.achievedAt ? goal.achievedAt.toISOString() : null,
-  achievedAmount: centsToApiDecimalOrNull(goal.achievedAmount),
+  achievedAmount: moneyToApiDecimalOrNull(goal.achievedAmount),
   sortOrder: goal.sortOrder,
   reachedHoldDays: goal.reachedHoldDays,
   ...serializeLogoFields({ entity: goal }),
   accounts: (goal.goalAccounts ?? []).map(({ accountId, sharePercent, fixedAmount }) => ({
     accountId,
     sharePercent,
-    fixedAmount: centsToApiDecimalOrNull(fixedAmount),
+    fixedAmount: moneyToApiDecimalOrNull(fixedAmount),
     fixedPosition: fixedAmount === null ? null : fixedRank({ heldFixedAmounts, goalId: goal.id, accountId }),
   })),
   insights,

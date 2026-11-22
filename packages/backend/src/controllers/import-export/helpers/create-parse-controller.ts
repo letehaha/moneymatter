@@ -16,8 +16,9 @@ export const fileContentParseSchema = z.object({
 type ParseBody<S extends z.ZodType> = z.infer<S> extends { body: infer B } ? B : never;
 
 /**
- * Builds a parse-stage controller: validate the request, run a synchronous
- * parser over the validated body, and return the parsed result in the response
+ * Builds a parse-stage controller: validate the request, run the parser over
+ * the validated body (and the caller's id, for parsers that recognise the
+ * user's own custom currencies), and return the parsed result in the response
  * envelope. Wallet and YNAB nest the value under `{ result }` (the default);
  * CSV returns it flat, so `wrap` is configurable.
  */
@@ -27,11 +28,11 @@ export function createParseController<S extends z.ZodType<RequestShape>, R>({
   wrap = (result: R) => ({ result }),
 }: {
   schema: S;
-  parse: (body: ParseBody<S>) => R;
+  parse: (body: ParseBody<S>, context: { userId: number }) => R | Promise<R>;
   wrap?: (result: R) => unknown;
 }) {
-  return createController(schema, async ({ body }) => {
-    const result = parse(body as ParseBody<S>);
+  return createController(schema, async ({ body, user }) => {
+    const result = await parse(body as ParseBody<S>, { userId: user.id });
     return { data: wrap(result) };
   });
 }

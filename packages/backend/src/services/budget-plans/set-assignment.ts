@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { SetBudgetPlanAssignmentPayload } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
@@ -33,6 +34,15 @@ const setAssignmentImpl = async ({
   timezone,
 }: SetAssignmentParams) => {
   const plan = await findPlan({ planId, userId, lock: true });
+  const money =
+    amount == null
+      ? amount
+      : await roundToCurrency({
+          money: Money.fromDecimal(amount),
+          userId,
+          currencyCode: plan.currencyCode,
+          mode: 'half-up',
+        });
   const { periods } = await ensureCurrentPeriods({ plan });
 
   const period = periods.find((entry) => entry.id === periodId);
@@ -52,14 +62,14 @@ const setAssignmentImpl = async ({
     carryPolicy: existing?.carryPolicy ?? null,
   };
 
-  if (amount !== undefined) {
-    if (amount === null) {
+  if (money !== undefined) {
+    if (money === null) {
       next[scope === 'from_here' ? 'baselineAmount' : 'overrideAmount'] = null;
     } else if (scope === 'from_here') {
-      next.baselineAmount = Money.fromDecimal(amount);
+      next.baselineAmount = money;
       next.overrideAmount = null;
     } else {
-      next.overrideAmount = Money.fromDecimal(amount);
+      next.overrideAmount = money;
     }
   }
 

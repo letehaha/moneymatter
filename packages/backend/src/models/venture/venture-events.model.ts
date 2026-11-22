@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
@@ -36,19 +37,19 @@ export default class VentureEvents extends Model {
   @Column({ type: DataType.DATEONLY, allowNull: false })
   eventDate!: string;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare grossAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare gpCarryAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare lpNetAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare refAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare navAfter: Money | null;
 
   @Column({ type: DataType.DECIMAL(10, 6), allowNull: true })
@@ -70,7 +71,7 @@ export default class VentureEvents extends Model {
 
   @ForeignKey(() => Currencies)
   @Index
-  @Column({ type: DataType.STRING(3), allowNull: false })
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), allowNull: false })
   currencyCode!: string;
 
   @Column({

@@ -1,3 +1,4 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_STATUSES,
@@ -7,9 +8,13 @@ import {
   PAYMENT_TYPES,
   RecordId,
 } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
+import { UnexpectedError } from '@js/errors';
+import { removeUndefinedKeys } from '@js/helpers';
 import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import Currencies from '@models/currencies.model';
@@ -33,6 +38,7 @@ interface AccountsAttributes {
   userId: number;
   externalId: string; // represents id from the original external system if exists
   externalData: AccountExternalData | null; // JSON of any addition fields
+  externalUrl: string | null;
   // cashbackType: string; // move to additionalFields that will represent non-unified data
   // maskedPan: string; // move to additionalFields
   // type: string; // move to additionalFields
@@ -70,26 +76,26 @@ export default class Accounts extends Model {
   @Column({ allowNull: false, type: DataType.STRING })
   name!: string;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare initialBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare refInitialBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare currentBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare refCurrentBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare creditLimit: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare refCreditLimit: Money;
 
   /** Native balance at the start of the bank seam day; null when the account has no seam. */
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare seamBalance: Money | null;
 
   @Column({
@@ -114,7 +120,7 @@ export default class Accounts extends Model {
   defaultPaymentType!: PAYMENT_TYPES | null;
 
   @ForeignKey(() => Currencies)
-  @Column({ type: DataType.STRING(3) })
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   currencyCode!: string;
 
   @ForeignKey(() => Users)
@@ -133,6 +139,12 @@ export default class Accounts extends Model {
     allowNull: true,
   })
   externalData!: AccountExternalData | null; // JSON of any addition fields
+
+  @Column({
+    type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH),
+    allowNull: true,
+  })
+  externalUrl!: string | null;
   // cashbackType: string;
   // maskedPan: string;
   // type: string;
@@ -249,6 +261,7 @@ export const getAccountById = async ({
 export interface CreateAccountPayload extends EntityLogoPayload {
   externalId?: AccountsAttributes['externalId'];
   externalData?: AccountsAttributes['externalData'];
+  externalUrl?: AccountsAttributes['externalUrl'];
   status?: AccountsAttributes['status'];
   excludeFromStats?: AccountsAttributes['excludeFromStats'];
   accountCategory: AccountsAttributes['accountCategory'];
@@ -270,14 +283,23 @@ export const createAccount = async ({
   excludeFromStats = false,
   ...rest
 }: CreateAccountPayload) => {
+  const { initialBalance, creditLimit } = await roundMoneyValues({
+    values: { initialBalance: rest.initialBalance, creditLimit: rest.creditLimit },
+    userId,
+    currencyCode: rest.currencyCode,
+    mode: 'half-up',
+  });
+
   const response = await Accounts.create({
     userId,
     type,
     status,
     excludeFromStats,
-    currentBalance: rest.initialBalance,
+    currentBalance: initialBalance,
     refCurrentBalance: rest.refInitialBalance,
     ...rest,
+    initialBalance,
+    creditLimit,
   });
 
   const account = await getAccountById({
@@ -306,12 +328,37 @@ export interface UpdateAccountByIdPayload extends EntityLogoPayload {
   status?: AccountsAttributes['status'];
   excludeFromStats?: AccountsAttributes['excludeFromStats'];
   externalData?: AccountsAttributes['externalData'];
+  externalUrl?: AccountsAttributes['externalUrl'];
 }
 
-export async function updateAccountById({ id, userId, ...payload }: UpdateAccountByIdPayload) {
+export async function updateAccountById({
+  id,
+  userId,
+  currencyCode,
+  ...payload
+}: UpdateAccountByIdPayload & {
+  /** The stored account currency, read from the row when omitted. Only rounds; it is never written. */
+  currencyCode?: AccountsAttributes['currencyCode'];
+}) {
   const where = { id, userId };
 
-  await Accounts.update(payload, { where });
+  const { initialBalance, currentBalance, creditLimit } = payload;
+  let rounded = {};
+
+  if (initialBalance !== undefined || currentBalance !== undefined || creditLimit !== undefined) {
+    const code = currencyCode ?? (await Accounts.findOne({ where, attributes: ['currencyCode'] }))?.currencyCode;
+
+    if (code) {
+      rounded = await roundMoneyValues({
+        values: { initialBalance, currentBalance, creditLimit },
+        userId,
+        currencyCode: code,
+        mode: 'half-up',
+      });
+    }
+  }
+
+  await Accounts.update({ ...payload, ...removeUndefinedKeys(rounded) }, { where });
 
   const account = await getAccountById(where);
 
@@ -327,6 +374,14 @@ export const isBankLinkedAccount = async ({ id }: { id: string }) => {
   const account = await Accounts.findByPk(id, { attributes: ['type'] });
 
   return Boolean(account) && account!.type !== ACCOUNT_TYPES.system;
+};
+
+/** Owner of the account, whose definition of its currency governs every amount on it. */
+export const getAccountOwnerUserId = async ({ id }: { id: string }): Promise<number> => {
+  const account = await Accounts.findByPk(id, { attributes: ['userId'] });
+  if (!account) throw new UnexpectedError({ message: `Account ${id} does not exist` });
+
+  return account.userId;
 };
 
 export const getAccountCurrency = async ({ userId, id }: { userId: number; id: string }) => {

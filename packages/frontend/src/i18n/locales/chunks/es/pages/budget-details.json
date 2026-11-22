@@ -72,8 +72,8 @@
           "averagePerDay": "Promedio por día",
           "firstTransaction": "Primera transacción",
           "lastTransaction": "Última transacción",
-          "transactions": "Transactions",
-          "avgAmount": "avg {amount}",
+          "transactions": "Transacciones",
+          "avgAmount": "Máx.: {amount}",
           "biggestDay": "Mejor día",
           "shareOfTotal": "{percent}% del total"
         },
@@ -81,7 +81,7 @@
         "categoriesCount": "{count} categoría | {count} categorías",
         "byCurrency": "Por moneda",
         "asPaid": "como pagada",
-        "timeline": "Timeline",
+        "timeline": "Cronología",
         "todayMarker": "hoy {date}",
         "timelineAria": "Gasto acumulativo en el tiempo con barras por período",
         "limitLabel": "{amount} restantes",
@@ -90,14 +90,14 @@
           "cumulative": "Gasto, acumulativo",
           "earnedCumulative": "Ganado, acumulativo",
           "evenPace": "Ritmo constante hasta el límite",
-          "projection": "Projection",
+          "projection": "Proyección",
           "daily": "Por día",
           "weekly": "Por semana",
           "monthly": "Por mes"
         },
         "topPayees": "Principales beneficiarios",
         "bySpend": "por gasto",
-        "noPayee": "No payee",
+        "noPayee": "Sin beneficiario",
         "txCount": "{count} tx"
       },
       "sharing": {

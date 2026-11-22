@@ -598,10 +598,11 @@ describe('Monobank Data Provider E2E', () => {
       const expected = await calculateRefAmount({
         amount: Money.fromCents(creditLimitCents),
         userId: created!.userId,
+        definitionOwnerUserId: created!.userId,
         date: new Date(),
         baseCode: 'UAH',
       });
-      expect(refCreditLimitCents).toEqualRefValue(expected.toCents());
+      expect(created!.refCreditLimit.toNumber()).toEqualRefValue(expected.toNumber());
     });
 
     it('should set refCreditLimit = 0 when the account has no credit limit', async () => {

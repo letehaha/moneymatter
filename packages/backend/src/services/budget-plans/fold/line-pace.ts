@@ -20,7 +20,7 @@ const median = ({ values }: { values: number[] }): number => {
 
 export interface PriorPeriodSpend {
   days: number;
-  /** Cents, expense positive, by day offset from the period start. */
+  /** Minor units, expense positive, by day offset from the period start. */
   spend: { offset: number; amount: number }[];
 }
 
@@ -50,7 +50,7 @@ export const schedulePercent = ({
   funded,
   fraction,
 }: {
-  /** Cents, expense positive. */
+  /** Minor units, expense positive. */
   occurrences: { date: string; amount: number }[];
   today: string;
   funded: number;

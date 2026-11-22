@@ -1,68 +1,63 @@
 <template>
-  <DesktopOnlyTooltip
-    :content="$t('settings.currencies.delete.disabledTooltip')"
-    :disabled="!isDeletionDisabled"
-    content-class-name="max-w-[320px]"
+  <p
+    v-if="accountsCount > 0"
+    class="text-muted-foreground max-w-56 text-right text-sm"
+    data-testid="delete-currency-blocked"
   >
-    <!-- Disabled native buttons don't fire pointer events, so the tooltip trigger
-    (merged onto this child via as-child) needs a non-disabled wrapper to hover on. -->
-    <span class="inline-flex">
-      <Button
-        variant="soft-destructive"
-        size="sm"
-        class="whitespace-nowrap"
-        :disabled="isDeletionDisabled || isFormDisabled"
-        @click="openConfirm"
-      >
-        <Trash2Icon class="size-4" />
-        <span class="hidden @[450px]/currencies:inline">{{ $t('settings.currencies.delete.button') }}</span>
-        <span class="@[450px]/currencies:hidden">{{ $t('settings.currencies.delete.buttonShort') }}</span>
-      </Button>
-    </span>
-  </DesktopOnlyTooltip>
+    {{ $t('settings.currencies.dialog.footer.deleteBlocked', { count: accountsCount }, accountsCount) }}
+  </p>
+  <Button
+    v-else
+    variant="soft-destructive"
+    size="sm"
+    class="whitespace-nowrap"
+    :disabled="isFormDisabled"
+    data-testid="delete-currency"
+    @click="openConfirm"
+  >
+    <Trash2Icon class="size-4" />
+    <span class="hidden @[450px]/currencies:inline">{{ $t('settings.currencies.delete.button') }}</span>
+    <span class="@[450px]/currencies:hidden">{{ $t('settings.currencies.delete.buttonShort') }}</span>
+  </Button>
 
   <ResponsiveAlertDialog
     v-model:open="isConfirmOpen"
     :confirm-label="$t('settings.currencies.delete.button')"
     confirm-variant="destructive"
-    :confirm-disabled="isFormDisabled || blockerGroups.length > 0"
+    :confirm-disabled="isFormDisabled || blockers.length > 0"
     @confirm="deleteCurrency"
   >
     <template #title>{{ $t('settings.currencies.delete.confirmTitle') }}</template>
     <template #description>
       <span class="grid gap-2">
         <span class="block">{{ $t('settings.currencies.delete.description') }}</span>
-        <span v-if="!blockerGroups.length" class="text-warning-text block">
+        <span v-if="!blockers.length" class="text-warning-text block">
           <TriangleAlertIcon class="inline size-4 align-text-bottom" />
           {{ $t('settings.currencies.delete.foreignAmountsWarning') }}
         </span>
       </span>
     </template>
 
-    <div v-if="blockerGroups.length" class="grid gap-2 text-sm">
+    <div v-if="blockers.length" class="grid gap-2 text-sm">
       <p class="text-destructive-text font-medium">{{ $t('settings.currencies.delete.inUse.title') }}</p>
-      <ul class="grid gap-1">
-        <li v-for="group in blockerGroups" :key="group.type">
-          <span class="font-medium">{{ group.label }}:</span> {{ group.names }}
-        </li>
-      </ul>
+      <CurrencyBlockerList :blockers="blockers" />
     </div>
   </ResponsiveAlertDialog>
 </template>
 
 <script setup lang="ts">
-import { deleteUserCurrency } from '@/api/currencies';
+import { deleteCustomCurrency, deleteUserCurrency } from '@/api/currencies';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
-import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { ApiErrorResponseError } from '@/js/errors';
 import { API_ERROR_CODES, type CurrencyInUseBlocker, type CurrencyInUseDetails } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
 import { Trash2Icon, TriangleAlertIcon } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import CurrencyBlockerList from '../currency-blocker-list.vue';
 import { CurrencyWithExchangeRate } from '../types';
 
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
@@ -71,7 +66,8 @@ const { t } = useI18n();
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
   isFormDisabled: boolean;
-  isDeletionDisabled: boolean;
+  /** Accounts using the currency; any blocks the delete. */
+  accountsCount: number;
 }>();
 
 const emit = defineEmits<{
@@ -82,33 +78,6 @@ const emit = defineEmits<{
 const isConfirmOpen = ref(false);
 const blockers = ref<CurrencyInUseBlocker[]>([]);
 
-const BLOCKER_LABEL_KEYS: Record<CurrencyInUseBlocker['type'], string> = {
-  account: 'settings.currencies.delete.inUse.types.account',
-  portfolio: 'settings.currencies.delete.inUse.types.portfolio',
-  holding: 'settings.currencies.delete.inUse.types.holding',
-  portfolioCash: 'settings.currencies.delete.inUse.types.portfolioCash',
-  portfolioTransfer: 'settings.currencies.delete.inUse.types.portfolioTransfer',
-  investmentTransaction: 'settings.currencies.delete.inUse.types.investmentTransaction',
-  subscription: 'settings.currencies.delete.inUse.types.subscription',
-  transactionTemplate: 'settings.currencies.delete.inUse.types.transactionTemplate',
-  budget: 'settings.currencies.delete.inUse.types.budget',
-  goal: 'settings.currencies.delete.inUse.types.goal',
-  ventureDeal: 'settings.currencies.delete.inUse.types.ventureDeal',
-};
-
-const blockerGroups = computed(() => {
-  const namesByType = new Map<CurrencyInUseBlocker['type'], string[]>();
-  for (const blocker of blockers.value) {
-    const name = blocker.trashed ? `${blocker.name} ${t('settings.currencies.delete.inUse.trashed')}` : blocker.name;
-    namesByType.set(blocker.type, [...(namesByType.get(blocker.type) ?? []), name]);
-  }
-  return [...namesByType].map(([type, names]) => ({
-    type,
-    label: t(BLOCKER_LABEL_KEYS[type]),
-    names: names.join(', '),
-  }));
-});
-
 const openConfirm = () => {
   blockers.value = [];
   isConfirmOpen.value = true;
@@ -117,7 +86,9 @@ const openConfirm = () => {
 const { mutate: deleteCurrency } = useMutation({
   mutationFn: () => {
     emit('trigger-disabled', true);
-    return deleteUserCurrency(props.currency.currencyCode);
+    return props.currency.isCustomCurrency
+      ? deleteCustomCurrency({ code: props.currency.currencyCode })
+      : deleteUserCurrency(props.currency.currencyCode);
   },
   onSuccess: () => {
     addSuccessNotification(t('settings.currencies.delete.successfullyDeleted'));

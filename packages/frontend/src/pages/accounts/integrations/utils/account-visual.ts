@@ -62,10 +62,7 @@ export function formatIbanCompact({ iban }: { iban: string }): string {
 
 export function getAccountSecondaryMeta({ metadata }: { metadata?: Record<string, unknown> }): {
   iban: string | null;
-  creditLimitCents: number | null;
 } {
   const iban = typeof metadata?.iban === 'string' && metadata.iban ? metadata.iban : null;
-  const rawLimit = metadata?.creditLimit;
-  const creditLimitCents = typeof rawLimit === 'number' && rawLimit > 0 ? rawLimit : null;
-  return { iban, creditLimitCents };
+  return { iban };
 }

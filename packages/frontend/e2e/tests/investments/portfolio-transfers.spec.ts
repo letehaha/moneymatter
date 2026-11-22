@@ -103,7 +103,6 @@ test.describe('Portfolio Transfers', () => {
     await pickDialogSelect({ page, nth: 0, optionName: /account/i });
 
     await pickDialogSelect({ page, nth: 2, optionName: testAccount.name });
-    await pickDialogSelect({ page, nth: 3, optionName: CURRENCY });
 
     await page.getByRole('dialog').locator('input[type="number"]').fill('50');
 

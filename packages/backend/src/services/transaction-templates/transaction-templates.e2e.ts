@@ -7,6 +7,7 @@ import {
 } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import { connection } from '@models/connection';
 import * as helpers from '@tests/helpers';
 
 const buildPayload = (overrides: Partial<CreateTransactionTemplateBody> = {}): CreateTransactionTemplateBody => ({
@@ -64,6 +65,81 @@ describe('Transaction templates', () => {
       expect(salary!.transactionType).toBe(TRANSACTION_TYPES.income);
       expect(salary!.amount).toBeNull();
       expect(salary!.tagIds).toEqual([]);
+    });
+  });
+
+  describe('amount precision', () => {
+    it('stores a pinned amount at the decimals of the account currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY', 'KWD'], raw: true });
+      const jpyAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY' }),
+        raw: true,
+      });
+      const kwdAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD' }),
+        raw: true,
+      });
+
+      const jpy = await helpers.createTransactionTemplate({
+        payload: buildPayload({ name: 'Rent', amount: 42.6, accountId: jpyAccount.id }),
+        raw: true,
+      });
+      const kwd = await helpers.createTransactionTemplate({
+        payload: buildPayload({ name: 'Fuel', amount: 1.2345, accountId: kwdAccount.id }),
+        raw: true,
+      });
+
+      expect(jpy.amount).toBe(43);
+      expect(kwd.amount).toBe(1.235);
+    });
+
+    it('keeps a stored amount that has more decimals than its currency on a name-only edit', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
+      const jpyAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY' }),
+        raw: true,
+      });
+      const template = await helpers.createTransactionTemplate({
+        payload: buildPayload({ name: 'Rent', amount: 1500, accountId: jpyAccount.id }),
+        raw: true,
+      });
+      // A template migrated from 150050 cents holds 1500.50 in a currency without minor units.
+      await connection.sequelize.query(`UPDATE "TransactionTemplates" SET "amount" = 1500.5 WHERE "id" = :id`, {
+        replacements: { id: template.id },
+      });
+
+      const renamed = await helpers.updateTransactionTemplate({
+        id: template.id,
+        payload: { name: 'Monthly rent' },
+        raw: true,
+      });
+
+      expect(renamed.name).toBe('Monthly rent');
+      expect(renamed.amount).toBe(1500.5);
+    });
+
+    it('rounds the stored amount again when only the account changes', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY', 'KWD'], raw: true });
+      const kwdAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD' }),
+        raw: true,
+      });
+      const jpyAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY' }),
+        raw: true,
+      });
+      const template = await helpers.createTransactionTemplate({
+        payload: buildPayload({ name: 'Fuel', amount: 1.235, accountId: kwdAccount.id }),
+        raw: true,
+      });
+
+      const moved = await helpers.updateTransactionTemplate({
+        id: template.id,
+        payload: { accountId: jpyAccount.id },
+        raw: true,
+      });
+
+      expect(moved.amount).toBe(1);
     });
   });
 

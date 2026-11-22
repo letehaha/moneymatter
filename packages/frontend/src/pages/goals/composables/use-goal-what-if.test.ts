@@ -65,6 +65,7 @@ const input: GoalMathInput = {
   targetAmount: 5000,
   targetDate: '2028-10-20',
   plannedMonthly: null,
+  decimals: 2,
 };
 
 const insights = { input, rateToBase: 2 };
@@ -187,7 +188,7 @@ const buildGoal = (overrides: Partial<GoalWithInsights> = {}): GoalWithInsights 
     buildShare({ accountId: id('a'), sharePercent: 60 }),
     buildShare({ accountId: id('b'), sharePercent: 50 }),
   ],
-  insights: { ...computeGoalProgress(input), input, rateToBase: 1, baseCurrencyCode: 'UAH' },
+  insights: { ...computeGoalProgress(input), input, rateToBase: 1, goalDecimals: 2, baseCurrencyCode: 'UAH' },
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-10-01T00:00:00.000Z',
   logoDomain: null,

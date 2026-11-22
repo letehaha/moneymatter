@@ -3,10 +3,12 @@ import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
+import { getAccountOwnerUserId } from '@models/accounts.model';
 import * as RefundTransactions from '@models/refund-transactions.model';
 import * as TransactionSplits from '@models/transaction-splits.model';
 import * as Transactions from '@models/transactions.model';
 import { assertNotInPayment } from '@services/transactions/payment-legs';
+import { roundPositiveAmount } from '@services/transactions/round-positive-amount';
 import { Op, UniqueConstraintError } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
@@ -80,6 +82,17 @@ export const createSingleRefund = withTransaction(
         });
       }
 
+      // The share is an entered amount in the refund transaction's currency, so it rounds half-up to that
+      // currency's decimals (the account owner's definition); one that rounds to nothing is rejected.
+      let share = amount;
+      if (amount) {
+        share = await roundPositiveAmount({
+          money: amount,
+          userId: await getAccountOwnerUserId({ id: refundTx.accountId }),
+          currencyCode: refundTx.currencyCode,
+        });
+      }
+
       const duplicateLink = await RefundTransactions.default.findOne({
         where: { refundTxId, originalTxId, userId },
       });
@@ -93,7 +106,7 @@ export const createSingleRefund = withTransaction(
         refundTxId,
         userId,
         splitId,
-        amount: amount && amount.equals(refundTx.amount.abs()) ? null : amount,
+        amount: share && share.equals(refundTx.amount.abs()) ? null : share,
       }).catch((error) => {
         if (error instanceof UniqueConstraintError) {
           throw new ValidationError({ message: t({ key: 'transactions.refunds.duplicateLink' }) });

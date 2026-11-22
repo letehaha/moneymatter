@@ -3,6 +3,7 @@ import {
   UNREALIZED_LOSS_ALERT_DEFAULTS,
   type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
+import { getConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
@@ -57,6 +58,9 @@ const checkUser = async ({ userId, config }: { userId: number; config: AlertConf
   const percentThreshold = config.percentThreshold ?? UNREALIZED_LOSS_ALERT_DEFAULTS.percentThreshold;
   const amountThreshold = config.amountThreshold ?? UNREALIZED_LOSS_ALERT_DEFAULTS.amountThreshold;
   const portfolios = await Portfolios.findAll({ where: { userId }, attributes: ['id', 'name'] });
+  const baseCurrency = await UsersCurrencies.getBaseCurrency({ userId });
+  if (!baseCurrency) throw new Error(`User ${userId} has no base currency`);
+  const baseCurrencyCode = baseCurrency.currency.code;
 
   const candidates: AlertedHolding[] = [];
   const recovered: Holdings[] = [];
@@ -84,7 +88,18 @@ const checkUser = async ({ userId, config }: { userId: number; config: AlertConf
       const lossPercent = -Number(value.unrealizedGainPercent ?? 0);
       const lossAmount =
         value.baseRate !== undefined
-          ? calculateRefAmountFromParams({ amount: gain, rate: value.baseRate }).negate().toNumber()
+          ? calculateRefAmountFromParams({
+              amount: gain,
+              rate: value.baseRate,
+              ...(await getConversionDecimals({
+                userId,
+                definitionOwnerUserId: userId,
+                baseCode: value.currencyCode,
+                quoteCode: baseCurrencyCode,
+              })),
+            })
+              .negate()
+              .toNumber()
           : null;
       // Both thresholds are at least 1, so crossing implies a loss.
       const crosses = lossPercent >= percentThreshold || (lossAmount !== null && lossAmount >= amountThreshold);
@@ -111,9 +126,7 @@ const checkUser = async ({ userId, config }: { userId: number; config: AlertConf
   }
 
   if (!candidates.length) return 0;
-  const baseCurrency = await UsersCurrencies.getBaseCurrency({ userId });
-  if (!baseCurrency) throw new Error(`User ${userId} has no base currency`);
-  return latchAndNotify({ userId, currencyCode: baseCurrency.currency.code, candidates });
+  return latchAndNotify({ userId, currencyCode: baseCurrencyCode, candidates });
 };
 
 export const checkUnrealizedLossAlerts = async () => {

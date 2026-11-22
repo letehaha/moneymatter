@@ -73,20 +73,20 @@ Aus demselben Grund passt bei Fremdwährungsbeständen die Differenz aus Einnahm
 
 ## Nutze einen eigenen Kurs nur, wenn du einen festen Kurs willst
 
-Der Kurs deiner Bank entspricht selten dem Marktkurs, daher willst du vielleicht deinen eigenen eingeben. Geh zu **Einstellungen** → **Währungen**, klapp die Zeile der Währung auf, deaktiviere **Live-Aktualisierung**, gib den Kurs in eines der beiden Felder ein und klicke auf **Speichern**.
+Der Kurs deiner Bank entspricht selten dem Marktkurs, daher willst du vielleicht deinen eigenen eingeben. Geh zu **Einstellungen** → **Währungen**, klicke auf die Zeile der Währung, schalte **Live-Kurs** aus, gib den Kurs in eines der beiden Felder ein und klicke auf **Kurs speichern**.
 
-![Eine aufgeklappte PLN-Zeile auf der Seite „Currencies“ mit deaktiviertem „Live update“, einem eingegebenen eigenen Kurs von 0.25 und dem Button „Save“](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
+![Der PLN-Dialog auf der Seite „Currencies“ mit ausgeschaltetem „Live rate“, einem eingegebenen eigenen Kurs von 0.25 und dem Button „Save rate“](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
 
 Du bekommst einen Kurs pro Währung, ohne Datum:
 
 - Neue Transaktionen und jede Transaktion, die du bearbeitest und speicherst, verwenden ihn – auch wenn sie aus dem letzten Jahr stammen. Bereits gespeicherte Transaktionen behalten ihre Basisbeträge, bis du sie bearbeitest.
 - Salden wechseln sofort nach dem Speichern zu diesem Kurs. Bei manuell geführten Konten berechnet MoneyMatter außerdem den gesamten Saldoverlauf mit diesem Kurs neu, sodass das Diagramm für diese Währung nicht mehr dem Markt folgt.
 
-Ich würde **Live-Aktualisierung** für die meisten Währungen eingeschaltet lassen. Du kannst keinen Kurs pro Zahlung festlegen, und eine Umbuchung erfasst ohnehin den tatsächlichen Kurs jedes Umtauschs. Um zurückzuwechseln, aktiviere **Live-Aktualisierung** wieder und klicke auf **Speichern**.
+Ich würde **Live-Kurs** für die meisten Währungen eingeschaltet lassen. Du kannst keinen Kurs pro Zahlung festlegen, und eine Umbuchung erfasst ohnehin den tatsächlichen Kurs jedes Umtauschs. Um zurückzuwechseln, schalte **Live-Kurs** wieder ein und bestätige mit **Live-Kurs verwenden**.
 
 ## Wenn du in ein anderes Land ziehst
 
-Wenn sich die Währung ändert, in der du denkst, wechselst du deine Basiswährung und behältst deine Daten. Geh zu **Einstellungen** → **Währungen** und füge die neue Währung hinzu, falls sie nicht aufgeführt ist. Klapp dann ihre Zeile auf, klicke auf **Als Basiswährung festlegen** und bestätige.
+Wenn sich die Währung ändert, in der du denkst, wechselst du deine Basiswährung und behältst deine Daten. Geh zu **Einstellungen** → **Währungen** und füge die neue Währung hinzu, falls sie nicht aufgeführt ist. Klicke dann auf ihre Zeile, danach auf **Als Basiswährung festlegen** und bestätige.
 
 MoneyMatter berechnet jede Transaktion zum Marktkurs ihres Datums neu und rechnet Salden zum heutigen Kurs um. Deine ursprünglichen Beträge bleiben so, wie du sie eingegeben hast. Bevor du anfängst:
 

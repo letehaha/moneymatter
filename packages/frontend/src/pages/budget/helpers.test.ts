@@ -45,6 +45,7 @@ import {
   PACE_TOLERANCE,
   paceCaptionNumbers,
   paceStateOf,
+  panelPaceOf,
   lineIdsWithHistory,
   pickTakeBackLine,
   scheduledForLines,
@@ -646,14 +647,24 @@ describe('buildPoolAssignPayload', () => {
   const baseline = { assigned: 100.1, assignedSource: 'baseline' as const, carryPolicy: 'floor' as const };
 
   it.each(['baseline', 'override'] as const)('adds the amount to a %s line for this period only', (assignedSource) => {
-    expect(buildPoolAssignPayload({ line: { ...baseline, assignedSource }, amount: 0.2 })).toEqual({
+    expect(buildPoolAssignPayload({ line: { ...baseline, assignedSource }, amount: 0.2, decimals: 2 })).toEqual({
       scope: 'this_period',
       amount: 100.3,
     });
   });
 
   it.each([null, 0, -10])('returns null for amount %s', (amount) => {
-    expect(buildPoolAssignPayload({ line: baseline, amount })).toBeNull();
+    expect(buildPoolAssignPayload({ line: baseline, amount, decimals: 2 })).toBeNull();
+  });
+
+  it.each<[number, number, number, number]>([
+    [3, 10.125, 0.25, 10.375],
+    [0, 1500, 250, 1750],
+  ])('adds at %d base currency decimals: %d + %d = %d', (decimals, assigned, amount, expected) => {
+    expect(buildPoolAssignPayload({ line: { ...baseline, assigned }, amount, decimals })).toEqual({
+      scope: 'this_period',
+      amount: expected,
+    });
   });
 });
 
@@ -668,7 +679,7 @@ describe('buildPoolTakeBackPayload', () => {
   it.each(['baseline', 'override'] as const)(
     'takes the amount off a %s line for this period only',
     (assignedSource) => {
-      expect(buildPoolTakeBackPayload({ line: { ...baseline, assignedSource }, amount: 0.2 })).toEqual({
+      expect(buildPoolTakeBackPayload({ line: { ...baseline, assignedSource }, amount: 0.2, decimals: 2 })).toEqual({
         scope: 'this_period',
         amount: 100.1,
       });
@@ -676,15 +687,27 @@ describe('buildPoolTakeBackPayload', () => {
   );
 
   it('takes the whole assigned down to 0', () => {
-    expect(buildPoolTakeBackPayload({ line: baseline, amount: 100.3 })).toEqual({ scope: 'this_period', amount: 0 });
+    expect(buildPoolTakeBackPayload({ line: baseline, amount: 100.3, decimals: 2 })).toEqual({
+      scope: 'this_period',
+      amount: 0,
+    });
   });
 
   it.each([null, 0, -10, 100.31])('returns null for amount %s', (amount) => {
-    expect(buildPoolTakeBackPayload({ line: baseline, amount })).toBeNull();
+    expect(buildPoolTakeBackPayload({ line: baseline, amount, decimals: 2 })).toBeNull();
   });
 
   it('returns null when the pool counts none of the assigned', () => {
-    expect(buildPoolTakeBackPayload({ line: { ...baseline, poolAssigned: 0 }, amount: 10 })).toBeNull();
+    expect(buildPoolTakeBackPayload({ line: { ...baseline, poolAssigned: 0 }, amount: 10, decimals: 2 })).toBeNull();
+  });
+
+  it.each<[number, number, number, number]>([
+    [3, baseline.assigned, 0.105, 100.195],
+    [0, 1500, 250, 1250],
+  ])('takes off at %d base currency decimals: %d - %d = %d', (decimals, assigned, amount, expected) => {
+    expect(
+      buildPoolTakeBackPayload({ line: { ...baseline, assigned, poolAssigned: assigned }, amount, decimals }),
+    ).toEqual({ scope: 'this_period', amount: expected });
   });
 });
 
@@ -1565,12 +1588,13 @@ describe('sumLineTotals', () => {
           { carriedIn: 10, assigned: 100, activity: -40, available: 60 },
           { carriedIn: 0, assigned: 50, activity: -80, available: -30 },
         ],
+        decimals: 2,
       }),
     ).toEqual({ carriedIn: 10, assigned: 150, activity: -120, available: 30 });
   });
 
   it('returns zeros for no lines', () => {
-    expect(sumLineTotals({ lines: [] })).toEqual({ carriedIn: 0, assigned: 0, activity: 0, available: 0 });
+    expect(sumLineTotals({ lines: [], decimals: 2 })).toEqual({ carriedIn: 0, assigned: 0, activity: 0, available: 0 });
   });
 
   it('rounds float residue to a positive zero', () => {
@@ -1581,8 +1605,24 @@ describe('sumLineTotals', () => {
         { ...line, available: 20.2 },
         { ...line, available: -30.3 },
       ],
+      decimals: 2,
     });
     expect(Object.is(available, 0)).toBe(true);
+  });
+
+  it.each<[number, 'available' | 'assigned', number, number, number]>([
+    [3, 'available', 1.234, 2.345, 3.579],
+    [0, 'assigned', 1500, 2501, 4001],
+  ])('at %d base currency decimals sums %s: %d + %d = %d', (decimals, field, first, second, expected) => {
+    const line = { carriedIn: 0, assigned: 0, activity: 0, available: 0 };
+    const totals = sumLineTotals({
+      lines: [
+        { ...line, [field]: first },
+        { ...line, [field]: second },
+      ],
+      decimals,
+    });
+    expect(totals[field]).toBe(expected);
   });
 });
 
@@ -1653,18 +1693,18 @@ describe('layoutStateFrom / buildLayoutPayload', () => {
 
 describe('paceStateOf', () => {
   it('is over whenever the line is overspent, pace or not', () => {
-    expect(paceStateOf({ spentPercent: 120, expectedPercent: 90, isOver: true })).toBe('over');
-    expect(paceStateOf({ spentPercent: 120, expectedPercent: null, isOver: true })).toBe('over');
+    expect(paceStateOf({ spentPercent: 120, expectedPercent: 90, available: -1 })).toBe('over');
+    expect(paceStateOf({ spentPercent: 120, expectedPercent: null, available: -1 })).toBe('over');
   });
 
   it('has no state without a pace', () => {
-    expect(paceStateOf({ spentPercent: 90, expectedPercent: null, isOver: false })).toBeNull();
+    expect(paceStateOf({ spentPercent: 90, expectedPercent: null, available: 0 })).toBeNull();
   });
 
   it('is ahead only past the tolerance', () => {
-    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE, expectedPercent: 40, isOver: false })).toBe('ok');
-    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE + 0.1, expectedPercent: 40, isOver: false })).toBe('ahead');
-    expect(paceStateOf({ spentPercent: 10, expectedPercent: 40, isOver: false })).toBe('ok');
+    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE, expectedPercent: 40, available: 0 })).toBe('ok');
+    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE + 0.1, expectedPercent: 40, available: 0 })).toBe('ahead');
+    expect(paceStateOf({ spentPercent: 10, expectedPercent: 40, available: 0 })).toBe('ok');
   });
 });
 
@@ -1738,6 +1778,28 @@ describe('linePaceOf', () => {
     expect(linePaceOf({ line: line({ activity: -250, pace: { basis: 'history', expectedPercent: 40 } }) }).state).toBe(
       'over',
     );
+  });
+});
+
+describe('panelPaceOf', () => {
+  const period = { startDate: '2026-09-01', endDate: '2026-10-01' };
+  const now = new Date(2026, 8, 15);
+
+  it('is over when something was spent with nothing funded', () => {
+    const figures = { carriedIn: 0, assigned: 0, activity: -20, available: -20 };
+    expect(panelPaceOf({ figures, period, pace: null, now }).state).toBe('over');
+  });
+
+  it('is over when a carried-in deficit leaves the line overspent', () => {
+    const figures = { carriedIn: -50, assigned: 100, activity: -80, available: -30 };
+    const pace = { expectedPercent: 70, basisLabel: 'usual' as const };
+    expect(panelPaceOf({ figures, period, pace, now }).state).toBe('over');
+  });
+
+  it('is ahead when a funded line spends past the expected share', () => {
+    const figures = { carriedIn: 0, assigned: 200, activity: -120, available: 80 };
+    const pace = { expectedPercent: 40, basisLabel: 'usual' as const };
+    expect(panelPaceOf({ figures, period, pace, now })).toMatchObject({ spent: 120, total: 200, state: 'ahead' });
   });
 });
 

@@ -20,7 +20,7 @@ export const setBudgetPlanAssignmentTool = defineTool({
       'from_here: the amount becomes the baseline from this period on and clears this period override. this_period: the amount is an override for this one period only. It only affects amount',
     ),
     amount: setAssignmentBodyFields.amount.describe(
-      'Amount to assign in the plan currency, 0 or more, as many decimal places as the plan currency has. null clears it for the scope (the baseline for from_here, the override for this_period). Omit to leave it unchanged',
+      'Amount to assign in the plan currency, 0 or more, rounded half-up to the plan currency decimals. null clears it for the scope (the baseline for from_here, the override for this_period). Omit to leave it unchanged',
     ),
     carryPolicy: setAssignmentBodyFields.carryPolicy.describe(
       'How an unspent or overspent balance carries into the next period: floor, signed or none, for this line and period. null clears it back to the plan default. Omit to leave it unchanged',

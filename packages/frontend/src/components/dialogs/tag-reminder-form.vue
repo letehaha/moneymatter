@@ -26,10 +26,10 @@
       <InputField
         v-model="form.amountThreshold"
         type="number"
+        :decimals="baseCurrencyDecimals"
         :label="$t('settings.tags.reminders.form.amountThreshold')"
         :placeholder="$t('settings.tags.reminders.form.amountThresholdPlaceholder')"
         min="0"
-        step="0.01"
       />
       <p class="text-muted-foreground text-xs">
         {{ $t('settings.tags.reminders.form.amountThresholdHint') }}
@@ -129,6 +129,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/lib/ui/select';
 import { Switch } from '@/components/lib/ui/switch';
 import { useNotificationCenter } from '@/components/notification-center';
+import { useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
 import { useOnboardingStore } from '@/stores/onboarding';
 import {
@@ -147,6 +148,8 @@ const props = defineProps<{
   tagId: string;
   reminder?: TagReminderModel;
 }>();
+
+const { baseCurrencyDecimals } = useFormatCurrency();
 
 const emit = defineEmits<{
   saved: [reminder: TagReminderModel];

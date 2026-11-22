@@ -106,11 +106,17 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { t } = useI18n();
 
 const balanceDisplay = computed(() =>
-  formatAmountByCurrencyCode(outstandingAmount({ balance: props.loan.currentBalance }), props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: outstandingAmount({ balance: props.loan.currentBalance }),
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const originalPrincipalDisplay = computed(() =>
-  formatAmountByCurrencyCode(props.loan.loanDetails.originalPrincipal, props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: props.loan.loanDetails.originalPrincipal,
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const aprDisplay = computed(() => `${props.loan.loanDetails.interestRate.toFixed(2)}%`);
@@ -118,13 +124,13 @@ const aprDisplay = computed(() => `${props.loan.loanDetails.interestRate.toFixed
 const monthlyDisplay = computed(() => {
   const planned = props.loan.loanDetails.plannedPayment;
   if (planned === null) return '—';
-  return formatAmountByCurrencyCode(planned, props.loan.currencyCode);
+  return formatAmountByCurrencyCode({ amount: planned, currencyCode: props.loan.currencyCode });
 });
 
 const interestRemainingDisplay = computed(() => {
   const interest = props.loan.projection.totalInterestRemaining;
   if (interest === null) return '—';
-  return formatAmountByCurrencyCode(interest, props.loan.currencyCode);
+  return formatAmountByCurrencyCode({ amount: interest, currencyCode: props.loan.currencyCode });
 });
 
 const { progressBarWidth, payoffDateDisplay } = useLoanProjectionDisplay({

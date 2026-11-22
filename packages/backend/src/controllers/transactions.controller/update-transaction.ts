@@ -2,6 +2,7 @@ import { Money } from '@common/types/money';
 import { createController } from '@controllers/helpers/controller-factory';
 import { removeUndefinedKeys } from '@js/helpers';
 import { deserializePaymentLegs, serializeTransactionTuple } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import * as transactionsService from '@services/transactions';
 import { type UpdateTransactionParams } from '@services/transactions/types';
 import { z } from 'zod';
@@ -117,7 +118,9 @@ export default createController(schema, async ({ user, params, body }) => {
     ...(paymentLegs !== undefined ? { paymentLegs: paymentLegs && deserializePaymentLegs({ legs: paymentLegs }) } : {}),
   });
 
-  // Serialize: convert cents to decimal for API response
+  await attachTransactionCurrencyMeta({ transactions });
+
+  // Serialize: Money amounts to API decimals
   // updateTransaction returns [baseTx, oppositeTx?] tuple
   return { data: serializeTransactionTuple(transactions) };
 });

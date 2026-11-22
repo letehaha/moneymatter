@@ -165,18 +165,21 @@ const createInvestmentTransactionImpl = async (params: CreateTxParams) => {
     calculateRefAmount({
       amount: Money.fromDecimal(amountInSettlement),
       userId,
+      definitionOwnerUserId: userId,
       date,
       baseCode: settlement.settlementCurrencyCode,
     }),
     calculateRefAmount({
       amount: Money.fromDecimal(priceInSettlement),
       userId,
+      definitionOwnerUserId: userId,
       date,
       baseCode: settlement.settlementCurrencyCode,
     }),
     calculateRefAmount({
       amount: Money.fromDecimal(settlement.settlementFees),
       userId,
+      definitionOwnerUserId: userId,
       date,
       baseCode: settlement.settlementCurrencyCode,
     }),

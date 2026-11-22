@@ -19,7 +19,10 @@ import { connection } from '@models/index';
 import Users from '@models/users.model';
 import { extractCookies, listAutomations, listGoals, makeAuthRequest, makeRequest } from '@tests/helpers';
 import { clearMockSession, registerMockSession } from '@tests/mocks/better-auth';
+import Big from 'big.js';
 
+import { DEMO_CONFIG } from './demo-config';
+import { getDemoTemplate } from './demo-template-cache.service';
 import { DEMO_ACCOUNT_GROUPS } from './seed-account-groups.service';
 import { allDemoPayeeMerchants } from './template/merchants';
 
@@ -1143,18 +1146,18 @@ describe('Demo Mode', () => {
 
       // For each cash account, verify currentBalance = initialBalance + sum of transactions
       for (const account of cashAccounts) {
-        // Get all transactions for this account directly via SQL to get raw cents
+        // Get all transactions for this account directly via SQL; DECIMAL columns come back as strings
         const [txRows] = await connection.sequelize.query(
           `SELECT "transactionType", amount FROM "Transactions" WHERE "accountId" = :accountId`,
           { replacements: { accountId: account.id } },
         );
 
-        const txSum = (txRows as { transactionType: string; amount: number }[]).reduce((sum, tx) => {
+        const txSum = (txRows as { transactionType: string; amount: string }[]).reduce((sum, tx) => {
           if (tx.transactionType === TRANSACTION_TYPES.income) {
-            return sum + tx.amount;
+            return sum.plus(tx.amount);
           }
-          return sum - tx.amount;
-        }, 0);
+          return sum.minus(tx.amount);
+        }, new Big(0));
 
         // Get raw account balance values from DB
         const [accountRows] = await connection.sequelize.query(
@@ -1162,8 +1165,8 @@ describe('Demo Mode', () => {
           { replacements: { id: account.id } },
         );
 
-        const rawAccount = (accountRows as { currentBalance: number; initialBalance: number }[])[0]!;
-        expect(rawAccount.currentBalance).toBe(rawAccount.initialBalance + txSum);
+        const rawAccount = (accountRows as { currentBalance: string; initialBalance: string }[])[0]!;
+        expect(new Big(rawAccount.currentBalance).eq(new Big(rawAccount.initialBalance).plus(txSum))).toBe(true);
       }
 
       // Verify Balances records exist
@@ -1181,13 +1184,31 @@ describe('Demo Mode', () => {
       const mainChecking = accountsRes.find((a: { name: string }) => a.name === 'Main Checking');
       expect(mainChecking).toBeDefined();
 
+      // The config and the template speak cents; the stored amounts are decimals.
+      const mainCheckingConfig = DEMO_CONFIG.accounts.find((a) => a.key === 'main_checking')!;
+      expect(new Big(mainChecking.initialBalance).eq(new Big(mainCheckingConfig.initialBalance).div(100))).toBe(true);
+
+      const sample = getDemoTemplate().transactions.find((tx) => tx.accountKey === 'main_checking' && tx.amount > 0)!;
+      expect(sample).toBeDefined();
+      const [sampleRows] = await connection.sequelize.query(
+        `SELECT id FROM "Transactions" WHERE "accountId" = :accountId AND note = :note AND amount = :amount`,
+        {
+          replacements: {
+            accountId: mainChecking.id,
+            note: sample.note,
+            amount: new Big(sample.amount).div(100).toFixed(),
+          },
+        },
+      );
+      expect(sampleRows.length).toBeGreaterThanOrEqual(1);
+
       // Get the latest balance record for this account
       const [latestBalanceRows] = await connection.sequelize.query(
         `SELECT amount FROM "Balances" WHERE "accountId" = :accountId ORDER BY date DESC LIMIT 1`,
         { replacements: { accountId: mainChecking.id } },
       );
 
-      const latestBalance = (latestBalanceRows as { amount: number }[])[0];
+      const latestBalance = (latestBalanceRows as { amount: string }[])[0];
       expect(latestBalance).toBeDefined();
 
       // Get refCurrentBalance from the account
@@ -1196,11 +1217,11 @@ describe('Demo Mode', () => {
         { replacements: { id: mainChecking.id } },
       );
 
-      const refCurrentBalance = (mainCheckingRows as { refCurrentBalance: number }[])[0]!.refCurrentBalance;
+      const refCurrentBalance = (mainCheckingRows as { refCurrentBalance: string }[])[0]!.refCurrentBalance;
 
       // The latest balance record should match the account's refCurrentBalance
       // (since main checking is in USD which is the base currency)
-      expect(latestBalance!.amount).toBe(refCurrentBalance);
+      expect(new Big(latestBalance!.amount).eq(new Big(refCurrentBalance))).toBe(true);
     }, 60000);
   });
 

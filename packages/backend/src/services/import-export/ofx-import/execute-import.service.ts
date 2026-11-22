@@ -24,6 +24,10 @@ import {
   linkedAccountIdByName,
   loadSeamStarts,
 } from '@services/import-export/core/bank-seam';
+import {
+  getAccountDecimals,
+  roundToAccountDecimals,
+} from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
@@ -198,6 +202,9 @@ async function executeOfxImportImpl({
   });
   await assertBankLinksUnchanged({ userId, accountIds: capturedAccountIds, seamStartByAccountId });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
+  // Every amount is rounded to its account currency's decimals before it is written and tallied, so
+  // the tally that `finalize` undoes is what the rows stored.
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: accountIdByKey.values() });
   const plannedAccountIds = await selectAccountsWithPlannedRows({
     accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
   });
@@ -240,7 +247,7 @@ async function executeOfxImportImpl({
     }
 
     try {
-      const amount = Money.fromDecimal(tx.amount).abs();
+      const amount = roundToAccountDecimals({ decimalsByAccountId, accountId, amount: tx.amount }).abs();
       const result = await createTransaction({
         userId,
         accountId,

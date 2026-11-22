@@ -99,13 +99,16 @@ const { t } = useI18n();
 const DATE_FORMAT = 'MMM yyyy';
 
 const repaidDisplay = computed(() =>
-  formatAmountByCurrencyCode(props.loan.loanDetails.originalPrincipal, props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: props.loan.loanDetails.originalPrincipal,
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const interestPaidDisplay = computed(() => {
   const estimatedInterestPaid = props.loan.projection.estimatedInterestPaid;
   if (estimatedInterestPaid === null) return '—';
-  return formatAmountByCurrencyCode(estimatedInterestPaid, props.loan.currencyCode);
+  return formatAmountByCurrencyCode({ amount: estimatedInterestPaid, currencyCode: props.loan.currencyCode });
 });
 
 const openedDisplay = computed(() => formatDate(parseISO(props.loan.loanDetails.startDate), DATE_FORMAT));

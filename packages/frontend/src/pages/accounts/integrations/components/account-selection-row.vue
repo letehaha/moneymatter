@@ -96,6 +96,6 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
 const formattedBalance = computed(() =>
   needsCurrency.value
     ? toLocalNumber(props.account.balance, { maximumFractionDigits: 2 })
-    : formatAmountByCurrencyCode(props.account.balance, props.account.currency),
+    : formatAmountByCurrencyCode({ amount: props.account.balance, currencyCode: props.account.currency }),
 );
 </script>

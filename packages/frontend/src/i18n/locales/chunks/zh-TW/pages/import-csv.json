@@ -134,7 +134,9 @@
           "noErrors": "No errors",
           "balanceWarningTitle": "Account balances may be out of sync",
           "balanceWarningBody": "The transactions were imported, but some account balances could not be updated afterwards. Review these accounts and adjust their balances manually if needed."
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Map columns",

@@ -7,7 +7,6 @@ import Categories from '@models/categories.model';
 import {
   MAX_SPLITS_PER_TRANSACTION,
   MAX_SPLIT_NOTE_LENGTH,
-  MIN_SPLIT_AMOUNT,
   SPLIT_ERROR_CODES,
   SplitInput,
   SplitValidationError,
@@ -23,6 +22,8 @@ interface ValidateSplitsParams {
    */
   categoryOwnerUserId: number;
   transferNature?: TRANSACTION_TRANSFER_NATURE;
+  /** Smallest amount a split may hold: one unit of the transaction currency's last decimal. */
+  minSplitAmount: Money;
 }
 
 /**
@@ -34,6 +35,7 @@ const validateSplits = async ({
   transactionAmount,
   categoryOwnerUserId,
   transferNature,
+  minSplitAmount,
 }: ValidateSplitsParams): Promise<SplitValidationError[]> => {
   const errors: SplitValidationError[] = [];
 
@@ -99,10 +101,10 @@ const validateSplits = async ({
         });
       }
       // Check minimum amount
-      else if (split.amount.lessThan(MIN_SPLIT_AMOUNT)) {
+      else if (split.amount.lessThan(minSplitAmount)) {
         errors.push({
           field: `${fieldPrefix}.amount`,
-          message: t({ key: 'transactions.splits.amountTooSmall', variables: { min: MIN_SPLIT_AMOUNT.toNumber() } }),
+          message: t({ key: 'transactions.splits.amountTooSmall', variables: { min: minSplitAmount.toNumber() } }),
           code: SPLIT_ERROR_CODES.SPLIT_AMOUNT_TOO_SMALL,
         });
       }

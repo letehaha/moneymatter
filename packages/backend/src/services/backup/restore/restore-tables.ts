@@ -1,7 +1,8 @@
 import type { BackupRestoreWarning } from '@bt/shared/types';
 import { DEACTIVATION_REASON } from '@bt/shared/types';
-import Currencies from '@models/currencies.model';
+import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
 import { encryptCredentials } from '@services/bank-data-providers/utils/credential-encryption';
+import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
 import { syncRefundLinkedFlags } from '@services/tx-refunds/sync-refund-linked-flags';
 import type { Transaction } from 'sequelize';
@@ -13,6 +14,7 @@ import { buildInsertRecord, runBulkInsert } from './bulk-insert';
 import type { ParsedArchive } from './load-archive';
 import { type GuardedFk, buildGuardedReferenceMap, guardRowReferences } from './owned-reference-guard';
 import { remapEmbeddedReferences } from './remap-embedded-references';
+import { type CustomCurrencyDefinition } from './resolve-custom-currencies';
 
 type Row = Record<string, unknown>;
 
@@ -22,8 +24,10 @@ type TableProgressCallback = (params: { tier: number; table: string; insertedRow
 interface InsertContext {
   targetUserId: number;
   securitiesRemap: Map<string, string>;
-  /** Currency codes that exist on the target instance. */
+  /** Currency codes a restored row may name: the ISO seed plus the custom codes this backup defines. */
   currencyCodes: Set<string>;
+  /** Definitions of the backup's custom currencies, keyed by code. */
+  customDefinitions: Map<string, CustomCurrencyDefinition>;
   /** Guarded FK columns per backup file name, derived from model metadata. */
   guardedFkMap: Map<string, GuardedFk[]>;
   /** Per-table backup id → final id map, keyed by DB target table name. A guarded
@@ -33,6 +37,16 @@ interface InsertContext {
   transaction: Transaction;
   warnings: BackupRestoreWarning[];
 }
+
+/** The attributes of a table whose column is a foreign key to `Currencies`. */
+const getCurrencyCodeAttributes = ({ def }: { def: BackupTableDef }): string[] => {
+  const table = String(def.model.getTableName());
+  const columns = new Set(CURRENCY_CODE_COLUMNS.filter((spec) => spec.table === table).map((spec) => spec.column));
+
+  return Object.entries(def.model.getAttributes())
+    .filter(([, attribute]) => attribute.field !== undefined && columns.has(attribute.field))
+    .map(([attrName]) => attrName);
+};
 
 const hasColumn = ({ plan, field }: { plan: TableColumnPlan; field: string }): boolean =>
   plan.columns.some((c) => c.field === field);
@@ -60,6 +74,21 @@ function buildRowOverrides({
   if (hasColumn({ plan, field: 'securityId' }) && typeof row.securityId === 'string') {
     const resolved = ctx.securitiesRemap.get(row.securityId);
     if (resolved) overrides.securityId = resolved;
+  }
+
+  // The validated definition replaces the archive's override and rate-source columns; an ISO row
+  // carries none and no logo either. Every row gets every key, keeping the batch's column set uniform.
+  if (def.fileName === 'users-currencies') {
+    const definition = ctx.customDefinitions.get(String(row.currencyCode));
+    overrides.nameOverride = definition?.name ?? null;
+    overrides.symbolOverride = definition?.symbol ?? null;
+    overrides.decimalsOverride = definition?.decimals ?? null;
+    for (const key of LOGO_FIELD_KEYS) overrides[key] = definition ? (row[key] ?? null) : null;
+
+    overrides.rateSource = definition?.rateSourceSetting.rateSource ?? 'manual';
+    overrides.rateSourceConfig = definition?.rateSourceSetting.rateSourceConfig ?? null;
+    // The request headers never travel: the user enters them again.
+    overrides.rateSourceHeadersEncrypted = null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and
@@ -142,6 +171,8 @@ async function insertTable({
     }
   }
 
+  const currencyAttributes = getCurrencyCodeAttributes({ def });
+
   // Self-ref columns are validated in the second pass, not here — exclude them.
   const guardedFks = (ctx.guardedFkMap.get(def.fileName) ?? []).filter((fk) => !selfRefColumns.includes(fk.attrName));
 
@@ -167,8 +198,8 @@ async function insertTable({
   for (const row of rows) {
     const overrides = buildRowOverrides({ def, plan, row, ctx });
 
-    // Skip a row whose currency isn't seeded on the target (users-currencies).
-    if (def.requireSeededCurrency && !ctx.currencyCodes.has(String(row.currencyCode))) {
+    // Another user's custom code passes the foreign key, but this user would hold no definition of it.
+    if (currencyAttributes.some((attrName) => row[attrName] != null && !ctx.currencyCodes.has(String(row[attrName])))) {
       droppedCurrencyCount += 1;
       continue;
     }
@@ -200,7 +231,7 @@ async function insertTable({
 
     // A logo blob has one owner row, which deletes it on edit or delete, so every
     // restored row gets its own copy. Rollback orphans are left to the orphan sweep.
-    if (hasColumn({ plan, field: 'logoImageId' }) && row.logoImageId != null) {
+    if (hasColumn({ plan, field: 'logoImageId' }) && row.logoImageId != null && overrides.logoImageId !== null) {
       const id = String(row.logoImageId);
       overrides.logoImageId = isUuid(id) ? await copyLogoImageIfPresent({ id }) : null;
     }
@@ -309,6 +340,8 @@ export async function insertRestoreTables({
   analysis,
   targetUserId,
   securitiesRemap,
+  currencyCodes,
+  customDefinitions,
   transaction,
   onProgress,
 }: {
@@ -316,6 +349,8 @@ export async function insertRestoreTables({
   analysis: ArchiveAnalysis;
   targetUserId: number;
   securitiesRemap: Map<string, string>;
+  currencyCodes: Set<string>;
+  customDefinitions: Map<string, CustomCurrencyDefinition>;
   transaction: Transaction;
   onProgress?: TableProgressCallback;
 }): Promise<{
@@ -327,15 +362,11 @@ export async function insertRestoreTables({
   const insertedByTable: Record<string, number> = {};
   const insertedIds = new Map<string, Map<string, string>>();
 
-  const needsCurrency = (archive.data.get('users-currencies')?.length ?? 0) > 0;
-  const currencyRows = needsCurrency
-    ? ((await Currencies.findAll({ attributes: ['code'], raw: true })) as unknown as Array<{ code: string }>)
-    : [];
-
   const ctx: InsertContext = {
     targetUserId,
     securitiesRemap,
-    currencyCodes: new Set(currencyRows.map((r) => r.code)),
+    currencyCodes,
+    customDefinitions,
     guardedFkMap: buildGuardedReferenceMap(),
     insertedIds,
     transaction,

@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { normalizeExternalUrl, validateOptionalExternalUrl } from '@/common/utils/external-url';
 import DisplayCurrencySelect from '@/components/fields/display-currency-select.vue';
+import ExternalUrlField from '@/components/fields/external-url-field.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import InputField from '@/components/fields/input-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
@@ -40,6 +42,7 @@ const form = reactive({
   portfolioType: PORTFOLIO_TYPE.investment as PORTFOLIO_TYPE,
   description: '',
   displayCurrencyCode: null as string | null,
+  externalUrl: '',
 });
 
 watch(
@@ -50,6 +53,7 @@ watch(
       form.portfolioType = p.portfolioType;
       form.description = p.description ?? '';
       form.displayCurrencyCode = p.displayCurrencyCode ?? null;
+      form.externalUrl = p.externalUrl ?? '';
     }
   },
   { immediate: true },
@@ -62,10 +66,12 @@ const isSubmitDisabled = computed(
     props.disabled ||
     updateMutation.isPending.value ||
     !form.name.trim() ||
+    validateOptionalExternalUrl({ value: form.externalUrl }) !== null ||
     (form.name.trim() === props.portfolio.name &&
       form.portfolioType === props.portfolio.portfolioType &&
       (form.description ?? '') === (props.portfolio.description ?? '') &&
-      form.displayCurrencyCode === (props.portfolio.displayCurrencyCode ?? null)),
+      form.displayCurrencyCode === (props.portfolio.displayCurrencyCode ?? null) &&
+      normalizeExternalUrl({ value: form.externalUrl }) === (props.portfolio.externalUrl ?? null)),
 );
 
 const onSubmit = async () => {
@@ -76,6 +82,7 @@ const onSubmit = async () => {
       portfolioType: form.portfolioType,
       description: form.description?.trim() || undefined,
       displayCurrencyCode: form.displayCurrencyCode,
+      externalUrl: normalizeExternalUrl({ value: form.externalUrl }),
     });
 
     addNotification({
@@ -124,6 +131,13 @@ const onSubmit = async () => {
       v-model="form.description"
       :label="$t('forms.portfolioSettings.descriptionLabel')"
       :placeholder="$t('forms.portfolioSettings.descriptionPlaceholder')"
+      :disabled="updateMutation.isPending.value || disabled"
+    />
+
+    <ExternalUrlField
+      v-model="form.externalUrl"
+      :label="$t('forms.portfolioSettings.externalUrlLabel')"
+      :placeholder="$t('forms.portfolioSettings.externalUrlPlaceholder')"
       :disabled="updateMutation.isPending.value || disabled"
     />
 

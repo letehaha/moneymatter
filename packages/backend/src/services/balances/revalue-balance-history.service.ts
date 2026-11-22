@@ -1,6 +1,7 @@
 import { ACCOUNT_TYPES, isDedicatedFlowAccountCategory, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { ExchangeRateUnavailableError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
@@ -22,6 +23,7 @@ import {
   type SeamAccount,
 } from '@services/accounts/seam';
 import { withTransaction } from '@services/common/with-transaction';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import {
   buildDailyPairRateResolver,
   type DailyPairRateResolver,
@@ -29,6 +31,8 @@ import {
   toDayKey,
 } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
+import { loadCustomCurrencyDailyQuote } from '@services/user-exchange-rate/resolve-custom-pair-rate';
+import Big from 'big.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { QueryTypes } from 'sequelize';
 import { v7 as uuidv7 } from 'uuid';
@@ -52,14 +56,14 @@ export const isRevaluedAccount = ({
   !isDedicatedFlowAccountCategory(account.accountCategory) &&
   account.currencyCode !== baseCurrencyCode;
 
-const signedCentsSql = `SUM(CASE WHEN "transactionType" = '${TRANSACTION_TYPES.income}' THEN "amount" ELSE -"amount" END)`;
+const signedAmountSql = `SUM(CASE WHEN "transactionType" = '${TRANSACTION_TYPES.income}' THEN "amount" ELSE -"amount" END)`;
 
 /** `excludeTransactionId` drops a row a BeforeDestroy hook is removing, which still exists then. */
 const excludeSql = ({ excludeTransactionId }: { excludeTransactionId?: string }) =>
   excludeTransactionId ? ` AND "id" <> :excludeTransactionId` : '';
 
-const sumCents = ({ dailyDeltas }: { dailyDeltas: Map<string, number> }) =>
-  [...dailyDeltas.values()].reduce((sum, cents) => sum + cents, 0);
+const sumDeltas = ({ dailyDeltas }: { dailyDeltas: Map<string, Money> }) =>
+  [...dailyDeltas.values()].reduce((sum, delta) => sum.add(delta), Money.zero());
 
 const lockAccountHistory = async ({ accountId }: { accountId: string }) => {
   // Two rebuilds of the same account would otherwise interleave their writes and
@@ -117,17 +121,17 @@ const loadDailyNativeDeltas = async ({
   from?: Date;
   toExclusive: Date;
   excludeTransactionId?: string;
-}): Promise<Map<string, number>> => {
+}): Promise<Map<string, Money>> => {
   const rows = (await connection.sequelize.query(
     `SELECT to_char(date_trunc('day', "time" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS "day",
-            ${signedCentsSql}::bigint AS "cents"
+            ${signedAmountSql} AS "signedSum"
        FROM real_transactions
       WHERE "accountId" = :accountId${from ? ` AND "time" >= :from` : ''} AND "time" < :toExclusive${excludeSql({ excludeTransactionId })}
       GROUP BY 1`,
     { type: QueryTypes.SELECT, replacements: { accountId, from, toExclusive, excludeTransactionId } },
-  )) as { day: string; cents: string | number }[];
+  )) as { day: string; signedSum: string }[];
 
-  return new Map(rows.map((row) => [row.day, Number(row.cents)]));
+  return new Map(rows.map((row) => [row.day, Money.fromDecimal(row.signedSum)]));
 };
 
 /** Delete before insert: a day the rebuild no longer emits must not survive and be
@@ -142,7 +146,7 @@ const writeBalanceRows = async ({
   accountId: string;
   fromDay: string;
   beforeDay?: string;
-  rows: { date: string; amount: number }[];
+  rows: { date: string; amount: Money }[];
 }): Promise<void> => {
   if (!rows.length) return;
 
@@ -155,7 +159,7 @@ const writeBalanceRows = async ({
   const values = rows.map((row, index) => {
     replacements[`id${index}`] = uuidv7();
     replacements[`date${index}`] = row.date;
-    replacements[`amount${index}`] = row.amount;
+    replacements[`amount${index}`] = toMoneyColumnValue({ money: row.amount });
     return `(:id${index}, :accountId, :date${index}, :amount${index}, NOW(), NOW())`;
   });
 
@@ -168,22 +172,26 @@ const writeBalanceRows = async ({
   );
 };
 
-/** Each day's rate to the owner's base currency, or null when the pair has no stored rate. */
-const buildRateForDay = async ({
+type RatedAccount = Pick<Accounts, 'id' | 'userId' | 'currencyCode'>;
+
+/** Each day's rate of an ISO currency to the owner's base currency, or null when the pair has no stored rate. */
+const buildIsoRateForDay = async ({
   account,
+  currencyCode,
   baseCurrencyCode,
   from,
   to,
 }: {
-  account: Accounts;
+  account: RatedAccount;
+  currencyCode: string;
   baseCurrencyCode: string;
   from: Date;
   to: Date;
 }): Promise<DailyPairRateResolver | null> => {
-  if (account.currencyCode === baseCurrencyCode) return () => 1;
+  if (currencyCode === baseCurrencyCode) return () => 1;
 
   const userCurrency = (await UsersCurrencies.findOne({
-    where: { userId: account.userId, currencyCode: account.currencyCode },
+    where: { userId: account.userId, currencyCode },
     attributes: ['liveRateUpdate'],
     raw: true,
   })) as { liveRateUpdate: boolean | null } | null;
@@ -194,14 +202,14 @@ const buildRateForDay = async ({
     (
       await resolveCustomRate({
         userId: account.userId,
-        pair: { baseCode: account.currencyCode, quoteCode: baseCurrencyCode },
+        pair: { baseCode: currencyCode, quoteCode: baseCurrencyCode },
         liveRateUpdate: userCurrency?.liveRateUpdate ?? null,
       })
     )?.rate ?? null;
   if (flatCustomRate !== null) return () => flatCustomRate;
 
   const resolveRate = await buildDailyPairRateResolver({
-    baseCode: account.currencyCode,
+    baseCode: currencyCode,
     quoteCode: baseCurrencyCode,
     from,
     to,
@@ -210,7 +218,7 @@ const buildRateForDay = async ({
   if (!resolveRate) {
     logger.warn('No stored exchange rate for pair; account left untouched', {
       accountId: account.id,
-      pair: `${account.currencyCode}/${baseCurrencyCode}`,
+      pair: `${currencyCode}/${baseCurrencyCode}`,
     });
   }
 
@@ -218,14 +226,56 @@ const buildRateForDay = async ({
 };
 
 /**
+ * Each day's rate to the owner's base currency, or null when the pair has no stored rate. A custom
+ * currency is priced the way its transactions are: its peg or dated rate in its ISO quote that day,
+ * times that quote's daily rate to the base.
+ */
+export const buildRateForDay = async ({
+  account,
+  baseCurrencyCode,
+  from,
+  to,
+}: {
+  account: RatedAccount;
+  baseCurrencyCode: string;
+  from: Date;
+  to: Date;
+}): Promise<DailyPairRateResolver | null> => {
+  if (account.currencyCode === baseCurrencyCode) return () => 1;
+  if (!(await includesCustomCurrencyCode({ codes: [account.currencyCode] }))) {
+    return buildIsoRateForDay({ account, currencyCode: account.currencyCode, baseCurrencyCode, from, to });
+  }
+
+  const quotes = await loadCustomCurrencyDailyQuote({ userId: account.userId, code: account.currencyCode });
+  if (!quotes) {
+    logger.error('Custom currency has no rate; account left untouched', { accountId: account.id });
+    return null;
+  }
+
+  const isoRateByQuote = new Map<string, DailyPairRateResolver | null>();
+  for (const quoteCode of quotes.quoteCodes) {
+    isoRateByQuote.set(
+      quoteCode,
+      await buildIsoRateForDay({ account, currencyCode: quoteCode, baseCurrencyCode, from, to }),
+    );
+  }
+
+  return (dayKey) => {
+    const quote = quotes.quoteOn(dayKey);
+    const isoRate = quote ? isoRateByQuote.get(quote.quoteCode)?.(dayKey) : null;
+    return quote && isoRate != null ? new Big(quote.rate).times(isoRate).toNumber() : null;
+  };
+};
+
+/**
  * Daily rows from `gridStart` through `gridEnd`: native units held that day × that
  * day's rate. Sparse: a row only where the value moves, plus the first day and
  * `pinnedDayKey`. Null when a day has no rate.
  */
-const buildDailyRows = ({
+const buildDailyRows = async ({
   account,
   baseCurrencyCode,
-  openingCents,
+  openingBalance,
   gridStart,
   gridEnd,
   dailyDeltas,
@@ -234,21 +284,22 @@ const buildDailyRows = ({
 }: {
   account: Accounts;
   baseCurrencyCode: string;
-  openingCents: number;
+  openingBalance: Money;
   gridStart: Date;
   gridEnd: Date;
-  dailyDeltas: Map<string, number>;
+  dailyDeltas: Map<string, Money>;
   rateForDay: DailyPairRateResolver;
   pinnedDayKey?: string;
-}): { date: string; amount: number }[] | null => {
+}): Promise<{ date: string; amount: Money }[] | null> => {
   const startKey = toDayKey(gridStart);
-  let nativeCents = openingCents;
-  let lastEmitted: number | null = null;
-  const rows: { date: string; amount: number }[] = [];
+  const baseDecimals = await getCurrencyDecimals({ userId: account.userId, code: baseCurrencyCode });
+  let nativeBalance = openingBalance;
+  let lastEmitted = null as Money | null;
+  const rows: { date: string; amount: Money }[] = [];
 
   for (let time = +gridStart; time <= +gridEnd; time += MS_PER_DAY) {
     const dayKey = toDayKey(new Date(time));
-    nativeCents += dailyDeltas.get(dayKey) ?? 0;
+    nativeBalance = nativeBalance.add(dailyDeltas.get(dayKey) ?? Money.zero());
 
     const rate = rateForDay(dayKey);
     if (rate == null) {
@@ -260,13 +311,13 @@ const buildDailyRows = ({
       return null;
     }
 
-    const cents = roundHalfToEven(nativeCents * rate);
+    const amount = nativeBalance.multiply(rate).roundHalfEven(baseDecimals);
     // The chart forward-fills, so a day repeating the previous value carries no
     // information. The pinned day always gets a row so the series tracks its rate.
-    if (cents === lastEmitted && dayKey !== startKey && dayKey !== pinnedDayKey) continue;
+    if (lastEmitted?.equals(amount) && dayKey !== startKey && dayKey !== pinnedDayKey) continue;
 
-    lastEmitted = cents;
-    rows.push({ date: dayKey, amount: cents });
+    lastEmitted = amount;
+    rows.push({ date: dayKey, amount });
   }
 
   return rows;
@@ -366,17 +417,17 @@ const rebuildPreSeamHistoryImpl = async ({
     toExclusive: seamStart,
     excludeTransactionId,
   });
-  const initialBalance = seamBalance.subtract(Money.fromCents(sumCents({ dailyDeltas })));
+  const initialBalance = seamBalance.subtract(sumDeltas({ dailyDeltas }));
 
   const rateForDay = baseCurrency
     ? await buildRateForDay({ account, baseCurrencyCode: baseCurrency.currencyCode, from: gridStart, to: gridEnd })
     : null;
   const rows =
     baseCurrency && rateForDay
-      ? buildDailyRows({
+      ? await buildDailyRows({
           account,
           baseCurrencyCode: baseCurrency.currencyCode,
-          openingCents: initialBalance.toCents(),
+          openingBalance: initialBalance,
           gridStart,
           gridEnd,
           dailyDeltas,
@@ -453,10 +504,10 @@ const revalueBalanceHistoryImpl = async ({
     toExclusive: new Date(+gridEnd + MS_PER_DAY),
   });
 
-  const rows = buildDailyRows({
+  const rows = await buildDailyRows({
     account,
     baseCurrencyCode: baseCurrency.currencyCode,
-    openingCents: account.initialBalance.toCents(),
+    openingBalance: account.initialBalance,
     gridStart,
     gridEnd,
     dailyDeltas,
@@ -514,7 +565,7 @@ export const stampSeamBalance = withTransaction(async ({ accountId }: { accountI
 
   const preSeamDeltas = await loadDailyNativeDeltas({ accountId, toExclusive: linkDayStart });
   await Accounts.update(
-    { seamBalance: account.initialBalance.add(Money.fromCents(sumCents({ dailyDeltas: preSeamDeltas }))) },
+    { seamBalance: account.initialBalance.add(sumDeltas({ dailyDeltas: preSeamDeltas })) },
     { where: { id: accountId } },
   );
   forgetSeamAccount({ accountId });

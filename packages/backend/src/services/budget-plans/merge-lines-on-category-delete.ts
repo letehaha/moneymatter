@@ -1,4 +1,5 @@
 import { RecordId } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import BudgetAssignments from '@models/budget-assignments.model';
@@ -13,7 +14,7 @@ import { archiveLineFrom } from './archive-line';
 import { DateRange, clipRange, covers, rangesIntersect, subtractRanges, toRange } from './date-ranges';
 import { lockPlansByIds } from './find-plan';
 import { MergeWrite, mergeLineAmounts } from './fold/merge-line-amounts';
-import { AssignmentAmounts, assignmentCents, isEmptyAssignment } from './fold/resolve-assigned';
+import { AssignmentAmounts, assignmentMinorUnits, isEmptyAssignment } from './fold/resolve-assigned';
 import { ensurePeriods, loadPeriods } from './periods/ensure-periods';
 import { boundaryAtOrBefore } from './periods/period-enumerator';
 import { ownerCategories } from './validate-line-categories';
@@ -57,9 +58,10 @@ const mergePlanLines = async ({
   const currentStart = boundaryAtOrBefore({ plan, date: today });
   const startById = new Map<string, string>(periods.map((period) => [period.id, toUtcDateString(period.startDate)]));
 
-  const [assignments, { byId }] = await Promise.all([
+  const [assignments, { byId }, decimals] = await Promise.all([
     BudgetAssignments.findAll({ where: { lineId: { [Op.in]: lineIds } } }),
     ownerCategories({ userId: plan.userId }),
+    getCurrencyDecimals({ userId: plan.userId, code: plan.currencyCode }),
   ]);
 
   const replacementPath = new Set(
@@ -154,7 +156,7 @@ const mergePlanLines = async ({
 
   for (const row of assignments) {
     instances.set(`${row.lineId}:${row.periodId}`, row);
-    rowsOf({ lineId: row.lineId }).set(row.periodId, assignmentCents(row));
+    rowsOf({ lineId: row.lineId }).set(row.periodId, assignmentMinorUnits({ row, decimals }));
   }
 
   const periodIdsOf = ({ lineId }: { lineId: string }): string[] =>
@@ -176,8 +178,10 @@ const mergePlanLines = async ({
       }
 
       const values = {
-        baselineAmount: row.baselineAmount === null ? null : Money.fromCents(row.baselineAmount),
-        overrideAmount: row.overrideAmount === null ? null : Money.fromCents(row.overrideAmount),
+        baselineAmount:
+          row.baselineAmount === null ? null : Money.fromMinorUnits({ value: row.baselineAmount, decimals }),
+        overrideAmount:
+          row.overrideAmount === null ? null : Money.fromMinorUnits({ value: row.overrideAmount, decimals }),
         carryPolicy: row.carryPolicy,
       };
       if (existing) await existing.update(values);

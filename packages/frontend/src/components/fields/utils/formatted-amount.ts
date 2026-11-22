@@ -4,6 +4,8 @@
  * All parsing uses a canonical '.'; the component normalizes locale separators in/out.
  */
 
+import { DEFAULT_CURRENCY_DECIMALS } from '@/js/helpers/currency-decimals';
+
 interface AmountSeparators {
   decimal: string;
   group: string;
@@ -20,8 +22,9 @@ export const getAmountSeparators = (): AmountSeparators => {
 
 /**
  * Splits typed input into a numeric value + fragment (the decimal tail a Number
- * round-trip would lose, e.g. "1234." or "2.00"). Decimals cap at 2 digits — extra
- * typed precision is dropped rather than letting model and display diverge.
+ * round-trip would lose, e.g. "1234." or "2.00"). Decimals cap at `decimals` digits —
+ * extra typed precision is dropped rather than letting model and display diverge. With
+ * `decimals` 0 the decimal separator and everything after it is dropped.
  *
  * `groupSeparator`, when given, is stripped before the decimal separator gets
  * canonicalized to '.'. This matters for locales (de-DE, es-ES, ...) whose
@@ -34,10 +37,12 @@ export const parseAmountInput = ({
   raw,
   decimalSeparator,
   groupSeparator = '',
+  decimals: maxDecimals = DEFAULT_CURRENCY_DECIMALS,
 }: {
   raw: string;
   decimalSeparator: string;
   groupSeparator?: string;
+  decimals?: number;
 }): { fragment: string; numeric: number | null } => {
   const withoutGroups = groupSeparator ? raw.split(groupSeparator).join('') : raw;
   const canonical = decimalSeparator === '.' ? withoutGroups : withoutGroups.split(decimalSeparator).join('.');
@@ -49,28 +54,51 @@ export const parseAmountInput = ({
 
   if (collapsed === '' || collapsed === '.') return { fragment: '', numeric: null };
 
-  const hasDot = collapsed.includes('.');
+  const hasDot = maxDecimals > 0 && collapsed.includes('.');
   const [intPart = '', decRaw = ''] = collapsed.split('.');
-  const decimals = decRaw.slice(0, 2);
-  const normalized = hasDot ? `${intPart}.${decimals}` : intPart;
+  const decimalDigits = decRaw.slice(0, maxDecimals);
+  const normalized = hasDot ? `${intPart}.${decimalDigits}` : intPart;
+
+  // Zero decimals leave nothing of a pasted ".5" once the fraction is dropped.
+  if (normalized === '') return { fragment: '', numeric: null };
 
   let fragment = '';
   if (hasDot) {
-    if (decimals === '') {
+    if (decimalDigits === '') {
       fragment = '.';
     } else {
-      const significant = decimals.replace(/0+$/, '');
+      const significant = decimalDigits.replace(/0+$/, '');
       if (significant === '') {
         // All-zero decimals ("2.00"): the numeric value drops the dot too.
-        fragment = `.${decimals}`;
-      } else if (significant.length < decimals.length) {
-        fragment = decimals.slice(significant.length);
+        fragment = `.${decimalDigits}`;
+      } else if (significant.length < decimalDigits.length) {
+        fragment = decimalDigits.slice(significant.length);
       }
     }
   }
 
   const numeric = Number(normalized);
   return { fragment, numeric: Number.isNaN(numeric) ? null : numeric };
+};
+
+/**
+ * Keeps at most `decimals` digits after the '.' of a plain number string; 0 drops the '.'
+ * as well. Exponent notation ("1.5e3") comes back unchanged: slicing it would cut the exponent.
+ */
+export const limitDecimalDigits = ({ raw, decimals }: { raw: string; decimals: number }): string => {
+  const dot = raw.indexOf('.');
+  if (dot === -1 || /e/i.test(raw)) return raw;
+  return decimals === 0 ? raw.slice(0, dot) : raw.slice(0, dot + 1 + decimals);
+};
+
+/**
+ * Cuts a number to `decimals` digits the way typing does: extra digits are dropped, not
+ * rounded. A value only `String` writes in exponent notation (below 1e-6) is rounded instead.
+ */
+export const limitAmountDecimals = ({ value, decimals }: { value: number; decimals: number }): number => {
+  const raw = String(value);
+  if (/e/i.test(raw)) return Number(value.toFixed(decimals));
+  return Number(limitDecimalDigits({ raw, decimals }));
 };
 
 const isCaretAnchorChar = ({ char, decimalSeparator }: { char: string; decimalSeparator: string }): boolean =>

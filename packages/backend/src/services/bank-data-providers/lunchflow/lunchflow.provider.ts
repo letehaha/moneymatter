@@ -1,6 +1,6 @@
 import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BANK_PROVIDER_TYPE, Cents } from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
@@ -148,11 +148,11 @@ export class LunchFlowProvider extends BaseBankDataProvider {
 
     const accounts = activeAccounts.reduce<ProviderAccount[]>((result, account, index) => {
       const balanceResult = balanceResults[index]!;
-      let balance: Cents | null = null;
+      let balance: Money | null = null;
       // Use account-level currency as fallback; balance response takes precedence
       let currency = account.currency || '';
       if (balanceResult.status === 'fulfilled') {
-        balance = Money.fromDecimal(balanceResult.value.balance.amount).toCents();
+        balance = Money.fromDecimal(balanceResult.value.balance.amount);
         currency = balanceResult.value.balance.currency || currency;
       } else {
         const reason =

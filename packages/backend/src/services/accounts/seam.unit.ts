@@ -7,7 +7,7 @@ jest.mock('@i18n/index', () => ({
 }));
 
 /* eslint-disable import/first */
-import { ACCOUNT_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, asDecimal } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 
 import {
@@ -20,12 +20,17 @@ import {
 
 const SEAM_ACCOUNT = {
   type: ACCOUNT_TYPES.lunchflow,
-  seamBalance: Money.fromCents(120_000),
+  seamBalance: Money.fromDecimal(1200),
   externalData: {
     bankConnection: {
       linkedAt: '2026-11-10T15:30:00.000Z',
       linkingStrategy: 'forward-only' as const,
-      balanceReconciliation: { systemBalance: 0, externalBalance: 0, difference: 0, adjustmentTransactionId: null },
+      balanceReconciliation: {
+        systemBalance: asDecimal(0),
+        externalBalance: asDecimal(0),
+        difference: asDecimal(0),
+        adjustmentTransactionId: null,
+      },
     },
   },
 };

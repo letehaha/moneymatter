@@ -25,12 +25,14 @@ Some features need a key or an account of your own. They stay off until you set 
 | ------------------------------ | ----------------------------------------------------------------------------------- |
 | Bank connections               | Your own account with the provider. See [Bank connections](/import/bank-connections/). |
 | AI features                    | Your own AI key, or a model running on your own network.                            |
-| Crypto prices                  | A CoinGecko API key.                                                                |
+| Crypto prices and CoinGecko rates | A CoinGecko API key (`COINGECKO_API_KEY`). It also enables the CoinGecko [rate source](/settings/rate-sources/#coingecko) for custom currencies. |
 | Email (invitations, verification, password reset) | A Resend API key. Without it, you share invitation links by hand and the **Forgot password?** link is hidden. |
 | Google or GitHub sign-in       | Your own OAuth app with that provider.                                              |
 | Payee logos                    | A logo.dev key.                                                                     |
 
 The [environment reference](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/environment-reference.md) lists every setting.
+
+Custom currencies can also take their rate from your own web service (the [HTTP rate source](/settings/rate-sources/#http)). On a self-hosted install that needs no setting, and the outbound checks are looser than on the cloud: the address may use `http` and may point at a server on your own network. Redirects, the 5-second timeout and the 256 KB size limit still apply.
 
 On the cloud, hosting, updates, security patches and these data feeds are handled for you. See [Plans and billing](/settings/plans-and-billing/).
 

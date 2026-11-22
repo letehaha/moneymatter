@@ -6,11 +6,10 @@ import {
   TRANSACTION_TYPES,
   isTwoLegTransfer,
 } from '@bt/shared/types';
-import { currencyCode, recordId } from '@common/lib/zod/custom-types';
-import { Money } from '@common/types/money';
+import { currencyCode, externalUrl, recordId } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
-// Amount fields carry decimals (e.g. 100.50); callers convert them to cents after validation.
+// Amount fields carry decimals (e.g. 100.50); services round them to the currency's decimals.
 
 // Zero is allowed: a register entry can exist without ever moving money (a
 // Microsoft Money voided cheque), and such rows must stay editable.
@@ -19,10 +18,6 @@ export const nonNegativeAmountSchema = () => z.number().nonnegative('Amount must
 // For amounts that carry no meaning at zero: a transfer leg that moves nothing,
 // a fee that costs nothing, a split that holds no share of its parent.
 export const positiveAmountSchema = () => z.number().positive('Amount must be greater than 0');
-
-// For amounts stored in a cents column that rejects zero: 0.004 passes `positive` but rounds to 0.
-export const atLeastOneCentAmountSchema = () =>
-  positiveAmountSchema().refine((amount) => Money.fromDecimal(amount).toCents() > 0, 'Amount must be at least 0.01');
 
 // A year below 2000 is always a fat-fingered date ("26" for 2026): no ledger
 // predates 2000, and such dates poison exchange-rate lookups.
@@ -67,11 +62,7 @@ export const locationSchema = z.object({
 });
 
 const transactionDetailFieldsSchema = {
-  externalUrl: z
-    .url('Invalid URL')
-    .max(2048, 'The URL must not exceed 2048 characters.')
-    .regex(/^https?:\/\//i, 'Only http(s) URLs are allowed')
-    .nullish(),
+  externalUrl: externalUrl().nullish(),
   externalReference: z.string().max(255, 'The reference must not exceed 255 characters.').nullish(),
   location: locationSchema.nullish(),
 };
@@ -92,7 +83,7 @@ export const createTransactionBodyShape = {
   transferNature: z.enum(TRANSACTION_TRANSFER_NATURE),
   refundForTxId: recordId().optional(),
   refundForSplitId: recordId().optional(),
-  refundForAmount: atLeastOneCentAmountSchema().optional(),
+  refundForAmount: positiveAmountSchema().optional(),
   splits: z.array(splitSchema).max(10, 'Maximum 10 splits allowed').optional(),
   tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').optional(),
   payeeId: payeeIdSchema(),
@@ -232,7 +223,7 @@ export const updateTransactionBodyShape = {
   categoryId: recordId().optional(),
   transferNature: z.enum(TRANSACTION_TRANSFER_NATURE).optional(),
   refundedByTxIds: z
-    .array(z.union([recordId(), z.object({ txId: recordId(), amount: atLeastOneCentAmountSchema().nullish() })]))
+    .array(z.union([recordId(), z.object({ txId: recordId(), amount: positiveAmountSchema().nullish() })]))
     .nullish(),
   refundsTxId: recordId().nullish(),
   refundsSplitId: recordId().nullish(),
@@ -241,7 +232,7 @@ export const updateTransactionBodyShape = {
       z.object({
         txId: recordId(),
         splitId: recordId().nullish(),
-        amount: atLeastOneCentAmountSchema().nullish(),
+        amount: positiveAmountSchema().nullish(),
       }),
     )
     .min(1)

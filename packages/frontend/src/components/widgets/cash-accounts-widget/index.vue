@@ -38,7 +38,7 @@ const { isAppInitialized } = storeToRefs(useRootStore());
 const accountsStore = useAccountsStore();
 const { activeAccounts, isAccountsFetched, isAccountsError } = storeToRefs(accountsStore);
 const { baseCurrencyCode, includeCreditLimit, sumBaseBalance } = useBaseBalanceTotals();
-const { formatBaseCurrency, formatAmountByCurrencyCode, formatCompactAmount } = useFormatCurrency();
+const { formatBaseCurrency, formatAccountAmount, formatCompactAmount } = useFormatCurrency();
 
 const cashAccounts = computed(() => activeAccounts.value.filter((account) => isCashAccount({ account })));
 
@@ -275,7 +275,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
               {{ formatBaseCurrency(row.displayRefBalance) }}
             </span>
             <span v-if="row.account.currencyCode !== baseCurrencyCode" class="text-muted-foreground text-xs">
-              {{ formatAmountByCurrencyCode(row.displayBalance, row.account.currencyCode) }}
+              {{ formatAccountAmount({ amount: row.displayBalance, account: row.account }) }}
             </span>
           </span>
         </router-link>

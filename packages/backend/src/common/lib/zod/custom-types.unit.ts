@@ -1,7 +1,15 @@
 import { describe, expect, it } from '@jest/globals';
 import { z } from 'zod';
 
-import { dateBound, dateRange, withDateOrder } from './custom-types';
+import {
+  boundedDecimalAmount,
+  currencyCode,
+  dateBound,
+  dateRange,
+  externalUrl,
+  isoCurrencyCode,
+  withDateOrder,
+} from './custom-types';
 
 describe('dateBound', () => {
   describe("precision 'date' (default)", () => {
@@ -207,5 +215,93 @@ describe('withDateOrder', () => {
     it('still enforces ordering when both bounds are present', () => {
       expect(schema.safeParse({ startDate: '2025-02-01', endDate: '2025-01-01' }).success).toBe(false);
     });
+  });
+});
+
+describe('currencyCode', () => {
+  const schema = currencyCode();
+
+  it.each([
+    ['USD', 'USD'],
+    ['usd', 'USD'],
+    ['  eur ', 'EUR'],
+    ['USDT', 'USDT'],
+    ['btc', 'BTC'],
+    ['SAT', 'SAT'],
+    ['1INCH', '1INCH'],
+    ['AB', 'AB'],
+    ['ABCDEFGHIJKLMNOP', 'ABCDEFGHIJKLMNOP'],
+  ])('accepts %p as %p', (input, expected) => {
+    expect(schema.parse(input)).toBe(expected);
+  });
+
+  it.each([
+    ['empty', ''],
+    ['one character', 'A'],
+    ['seventeen characters', 'ABCDEFGHIJKLMNOPQ'],
+    ['a hyphen', 'US-D'],
+    ['a space inside', 'US D'],
+    ['a dot', 'U.S'],
+    ['a non-latin letter', 'ДОЛ'],
+  ])('rejects %s', (_label, input) => {
+    expect(schema.safeParse(input).success).toBe(false);
+  });
+
+  it('does not check ISO 4217 membership, because existence is a service check', () => {
+    expect(schema.parse('zzz')).toBe('ZZZ');
+  });
+});
+
+describe('isoCurrencyCode', () => {
+  const schema = isoCurrencyCode();
+
+  it('accepts and uppercases an ISO 4217 code', () => {
+    expect(schema.parse(' jpy ')).toBe('JPY');
+  });
+
+  it.each(['ZZZ', 'USDT', 'BTC', 'US', ''])('rejects %p, which is not an ISO 4217 code', (input) => {
+    expect(schema.safeParse(input).success).toBe(false);
+  });
+});
+
+describe('boundedDecimalAmount', () => {
+  it.each([5e-7, 1e-8, 0.00000123, 1e-18, 12.5, 0])('accepts %p', (value) => {
+    expect(boundedDecimalAmount().safeParse(value).success).toBe(true);
+  });
+
+  it.each([1e-19, 1.5e-18])('rejects %p, which has more than 18 decimals', (value) => {
+    expect(boundedDecimalAmount().safeParse(value).success).toBe(false);
+  });
+});
+
+describe('externalUrl', () => {
+  const schema = externalUrl();
+  const nullishSchema = externalUrl().nullish();
+
+  it('accepts http and https URLs including uppercase scheme and 2048-char length', () => {
+    expect(schema.safeParse('https://example.com/portal').success).toBe(true);
+    expect(schema.safeParse('http://localhost:8080/login').success).toBe(true);
+    expect(schema.safeParse('HTTPS://BANK.EXAMPLE/auth').success).toBe(true);
+
+    const prefix = 'https://example.com/';
+    const exactMax = prefix + 'a'.repeat(2048 - prefix.length);
+    expect(exactMax).toHaveLength(2048);
+    expect(schema.safeParse(exactMax).success).toBe(true);
+  });
+
+  it('supports null and undefined when wrapped with .nullish()', () => {
+    expect(nullishSchema.safeParse(null).success).toBe(true);
+    expect(nullishSchema.safeParse(undefined).success).toBe(true);
+  });
+
+  it.each([
+    { label: 'ftp scheme', value: 'ftp://example.com/file' },
+    { label: 'javascript scheme', value: 'javascript:alert(1)' },
+    { label: 'empty string', value: '' },
+    { label: 'non-URL string', value: 'not-a-url' },
+    { label: 'URL exceeding 2048 characters', value: `https://example.com/${'a'.repeat(2049)}` },
+  ])('rejects $label', ({ value }) => {
+    expect(schema.safeParse(value).success).toBe(false);
+    expect(nullishSchema.safeParse(value).success).toBe(false);
   });
 });

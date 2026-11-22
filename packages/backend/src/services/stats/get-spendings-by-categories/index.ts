@@ -35,9 +35,11 @@ interface GetSpendingsByCategoriesParams extends StatsScopeFilters {
   excludedCategoryIds?: string[];
   /** Drops pending planned rows, leaving only money that actually moved. */
   excludePlanned?: boolean;
+  /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
+  decimals: number;
 }
 
-const loadCategoryAllocations = async (params: GetSpendingsByCategoriesParams) => {
+const loadCategoryAllocations = async ({ decimals, ...params }: GetSpendingsByCategoriesParams) => {
   const transactions = await getExpensesHistory(params);
 
   // Split distribution + refund netting is shared with the pivot report; this service only
@@ -46,6 +48,7 @@ const loadCategoryAllocations = async (params: GetSpendingsByCategoriesParams) =
     computeCategoryAllocations({
       transactions,
       applyRefunds: true,
+      decimals,
       refundSide: params.transactionType,
     }),
     getAccessibleCategoryMap({ userId: params.userId }),
@@ -255,11 +258,11 @@ function groupAllocations({
 
     const existing = result[groupId];
     if (existing) {
-      existing.amount += leg.cents;
+      existing.amount += leg.minor;
     } else {
       const groupCategory = categoryMap.get(groupId);
       result[groupId] = {
-        amount: leg.cents,
+        amount: leg.minor,
         name: groupCategory ? groupCategory.name : 'Unknown',
         color: groupCategory ? groupCategory.color : '#000000',
       };
@@ -271,11 +274,11 @@ function groupAllocations({
     const groupId = getGroupId(leg.categoryId);
     if (groupId === null) continue;
 
-    // `leg.cents` is already negative. A group refunded past its own spend reports 0 — the response carries
+    // `leg.minor` is already negative. A group refunded past its own spend reports 0 — the response carries
     // expense magnitudes, and a negative one renders as an invisible donut slice that still
     // drags the centre total down.
     const existing = result[groupId];
-    if (existing) existing.amount = Math.max(0, existing.amount + leg.cents);
+    if (existing) existing.amount = Math.max(0, existing.amount + leg.minor);
   }
 
   return result;

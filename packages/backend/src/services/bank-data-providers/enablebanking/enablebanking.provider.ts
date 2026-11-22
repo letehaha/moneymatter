@@ -9,8 +9,9 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -87,6 +88,15 @@ import {
 } from './utils/transaction-metadata';
 
 const getRedirectUrl = () => process.env.ENABLE_BANKING_REDIRECT_URL || `${FRONTEND_BASE_URL}/bank-callback`;
+
+/** A bank-reported decimal amount, or null when it is not a plain decimal. */
+const parseBalanceAmount = ({ amount }: { amount: string }): Money | null => {
+  try {
+    return Money.fromDecimal(amount);
+  } catch {
+    return null;
+  }
+};
 
 /**
  * Enable Banking provider implementation
@@ -547,18 +557,28 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             balances: balancesForLog({ balances }),
           });
 
-          const balanceFloat = primaryBalance?.balance_amount ? parseFloat(primaryBalance.balance_amount.amount) : null;
+          const balanceAmount = primaryBalance?.balance_amount
+            ? parseBalanceAmount({ amount: primaryBalance.balance_amount.amount })
+            : null;
+          if (primaryBalance?.balance_amount && !balanceAmount) {
+            logger.warn('Enable Banking balance ignored: unparsable amount', {
+              connectionId,
+              accountId,
+              identificationHash: details.identification_hash,
+              amount: primaryBalance.balance_amount.amount,
+            });
+          }
           const creditLimitCurrencyMatches = Boolean(
             details.currency &&
             details.credit_limit?.currency &&
             details.credit_limit.currency.toUpperCase() === details.currency.toUpperCase(),
           );
-          const creditLimitFloat = parseFloat(details.credit_limit?.amount ?? '');
-          const creditLimitCents =
-            creditLimitCurrencyMatches && Number.isFinite(creditLimitFloat) && creditLimitFloat > 0
-              ? Money.fromDecimal(creditLimitFloat).toCents()
-              : 0;
-          if (details.credit_limit && (!creditLimitCurrencyMatches || !Number.isFinite(creditLimitFloat))) {
+          const creditLimitAmount = details.credit_limit
+            ? parseBalanceAmount({ amount: details.credit_limit.amount })
+            : null;
+          const creditLimit =
+            creditLimitCurrencyMatches && creditLimitAmount?.isPositive() ? creditLimitAmount : Money.zero();
+          if (details.credit_limit && (!creditLimitCurrencyMatches || !creditLimitAmount)) {
             logger.info(
               creditLimitCurrencyMatches
                 ? 'Enable Banking credit limit ignored: unparsable amount'
@@ -580,18 +600,18 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               `Account ${details.account_id?.iban?.slice(-4) || accountId.slice(-4)}`,
             type: 'debit' as const, // Enable Banking doesn't distinguish, default to debit
             balance:
-              balanceFloat === null
+              balanceAmount === null
                 ? null
                 : correctInvertedSavingsBalance({
-                    balance: Money.fromDecimal(balanceFloat),
+                    balance: balanceAmount,
                     cashAccountType: details.cash_account_type,
-                    creditLimitCents,
-                  }).toCents(),
+                    creditLimit,
+                  }),
+            creditLimit,
             // Empty/missing currency → ISO "XXX" (no currency), so connect
             // requires an explicit user choice instead of failing downstream.
             currency: details.currency?.toUpperCase() || NO_CURRENCY_CODE,
             metadata: {
-              creditLimit: creditLimitCents,
               iban: details.account_id?.iban,
               product: details.product,
               accountServicer: details.account_servicer?.name,
@@ -663,8 +683,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     return importable.map((tx) => {
       const isExpense = tx.credit_debit_indicator === CreditDebitIndicator.DBIT;
-      const amountFloat = parseFloat(tx.transaction_amount.amount);
-      const amountSystemAmount = Money.fromDecimal(amountFloat).toCents();
       const merchantName = (isExpense ? tx.creditor?.name : tx.debtor?.name) || 'Unknown';
 
       // Generate unique hash from transaction data
@@ -675,9 +693,19 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       const transactionDateString = getTransactionDateString({ tx });
       const transactionDate = transactionDateString ? new Date(transactionDateString) : new Date();
 
+      let amount: Money;
+      try {
+        amount = Money.fromDecimal(tx.transaction_amount.amount);
+      } catch (error) {
+        throw new Error(
+          `Enable Banking transaction ${uniqueId} on account ${accountExternalIdForHash}: unparsable amount "${tx.transaction_amount.amount}"`,
+          { cause: error },
+        );
+      }
+
       return {
         externalId: uniqueId,
-        amount: amountSystemAmount,
+        amount,
         currency: tx.transaction_amount.currency,
         date: transactionDate,
         description: deriveNoteFromRaw({ rawTransaction: tx }),
@@ -823,9 +851,12 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           // A skipped pending payload returns as BOOK on a later sync. Rows stored while
           // the setting was on still get booked or revoked through the matcher below.
           const { importPendingBankTransactions } = await getUserSettings({ userId: connection.userId });
-          const providerTransactions = importPendingBankTransactions
+          // Rounded once here so matching and the stored row see the same amount.
+          const amountDecimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
+          const importable = importPendingBankTransactions
             ? fetchedTransactions
             : fetchedTransactions.filter((tx) => !isPendingPayload(tx));
+          const providerTransactions = importable.map((tx) => ({ ...tx, amount: tx.amount.round(amountDecimals) }));
 
           // Sort transactions by date (ascending) so the last transaction for each day
           // will have the correct end-of-day balance in balance_after_transaction.
@@ -1064,7 +1095,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               originalId: tx.externalId,
               note: tx.description,
               externalReference: getReferenceNumber({ externalData: tx.metadata }),
-              amount: Money.fromCents(Math.abs(tx.amount)), // Ensure positive value
+              amount: tx.amount.abs(),
               time: tx.date,
               externalData: {
                 ...tx.metadata,
@@ -1192,6 +1223,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     let unresolvedDays = 0;
     let ratelessDays = 0;
+    const decimals = await getCurrencyDecimals({ userId: account.userId, code: account.currencyCode });
     // The days before a forward-only link belong to the account's manual history.
     const linkDayStart = getLinkDayStart({ externalData: account.externalData });
 
@@ -1202,6 +1234,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       const dayRows = rowsByBookingDate.get(bookingDate)!;
       const ladder: ClosingBalanceRow[] = [];
       const rowsById = new Map<string, Transactions>();
+      const balanceAfterById = new Map<string, Money>();
       let dayHasUnusableRow = false;
 
       for (const row of dayRows) {
@@ -1210,26 +1243,31 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         if (isPreBookingStatus({ status: getRawTransactionStatus({ externalData: row.externalData }) })) continue;
 
         const balanceAfter = (row.externalData as { balanceAfter?: AmountType } | null)?.balanceAfter;
-        const balanceDecimal = balanceAfter ? Number.parseFloat(balanceAfter.amount) : Number.NaN;
+        const balanceAmount = balanceAfter ? parseBalanceAmount({ amount: balanceAfter.amount }) : null;
 
         // A booked row the ladder cannot use is a missing rung, and a day with a
         // hole in it has no determinable close: the rows either side of the hole
         // no longer rule each other out, so a mid-day row can end up looking like
         // the day's last.
-        if (!balanceAfter || balanceAfter.currency !== row.currencyCode || !Number.isFinite(balanceDecimal)) {
+        if (!balanceAfter || balanceAfter.currency !== row.currencyCode || !balanceAmount) {
           dayHasUnusableRow = true;
           break;
         }
 
-        const signedCents =
-          row.transactionType === TRANSACTION_TYPES.income ? row.amount.toCents() : -row.amount.toCents();
-
-        ladder.push({
-          id: row.id,
-          balanceAfterCents: Math.round(balanceDecimal * 100),
-          deltaCents: signedCents,
-        });
+        try {
+          const amountMinorUnits = row.amount.toMinorUnits({ decimals });
+          ladder.push({
+            id: row.id,
+            balanceAfterMinorUnits: balanceAmount.toMinorUnits({ decimals }),
+            deltaMinorUnits: row.transactionType === TRANSACTION_TYPES.income ? amountMinorUnits : -amountMinorUnits,
+          });
+        } catch {
+          // A balance beyond the safe minor-unit range is as unusable as a missing one.
+          dayHasUnusableRow = true;
+          break;
+        }
         rowsById.set(row.id, row);
+        balanceAfterById.set(row.id, balanceAmount);
       }
 
       const closingRowId = dayHasUnusableRow ? null : findClosingRowId({ rows: ladder });
@@ -1242,9 +1280,9 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       if (!date || (linkDayStart && date < linkDayStart)) continue;
 
       const closingRow = rowsById.get(closingRowId)!;
-      const closingBalance = (closingRow.externalData as { balanceAfter?: AmountType } | null)!.balanceAfter!;
+      const closingBalance = balanceAfterById.get(closingRowId)!;
 
-      let refBalance: Money;
+      let convertedBalance: Money;
       try {
         const exchangeRateData = await getExchangeRate({
           userId: closingRow.userId,
@@ -1252,9 +1290,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           baseCode: closingRow.currencyCode,
           quoteCode: closingRow.refCurrencyCode,
         });
-        refBalance = Money.fromDecimal(
-          roundHalfToEven(Number.parseFloat(closingBalance.amount) * exchangeRateData.rate * 100) / 100,
-        );
+        convertedBalance = closingBalance.multiply(exchangeRateData.rate);
       } catch {
         // A day with no rate on record is one day of chart, and this pass runs
         // late enough that throwing would discard every transaction the sync just
@@ -1263,6 +1299,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         ratelessDays++;
         continue;
       }
+
+      const refBalance = convertedBalance.roundHalfEven(
+        await getCurrencyDecimals({ userId: closingRow.userId, code: closingRow.refCurrencyCode }),
+      );
 
       await Balances.updateAccountBalance({ accountId: account.id, date, refBalance });
     }
@@ -1341,7 +1381,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   // Balance Operations
   // ============================================================================
 
-  private async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
+  private async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance | null> {
     const credentials = await this.getValidatedCredentials(connectionId);
 
     if (!credentials.sessionId) {
@@ -1363,11 +1403,18 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       throw new NotFoundError({ message: t({ key: 'bankDataProviders.enableBanking.noBalanceInfo' }) });
     }
 
-    const balanceFloat = parseFloat(balance.balance_amount.amount);
-    const balanceSystemAmount = Money.fromDecimal(balanceFloat).toCents();
+    const amount = parseBalanceAmount({ amount: balance.balance_amount.amount });
+    if (!amount) {
+      logger.warn('Enable Banking balance ignored: unparsable amount', {
+        connectionId,
+        accountExternalId,
+        amount: balance.balance_amount.amount,
+      });
+      return null;
+    }
 
     return {
-      amount: balanceSystemAmount,
+      amount,
       currency: balance.balance_amount.currency,
       asOf: balance.reference_date ? new Date(balance.reference_date) : new Date(),
     };
@@ -1383,6 +1430,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     account: Accounts;
   }): Promise<void> {
     const balance = await this.fetchBalance(connectionId, apiUid);
+    if (!balance) return;
     const rawAccountData = (account.externalData as Record<string, unknown> | null)?.rawAccountData as
       | EnableBankingAccount
       | undefined;
@@ -1390,9 +1438,9 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     await writeBankBalanceWithHistory({
       account,
       balance: correctInvertedSavingsBalance({
-        balance: Money.fromCents(balance.amount),
+        balance: balance.amount,
         cashAccountType: rawAccountData?.cash_account_type,
-        creditLimitCents: account.creditLimit.toCents(),
+        creditLimit: account.creditLimit,
       }),
     });
   }
@@ -1617,7 +1665,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     const isBooked = getRawTransactionStatus({ externalData: tx.metadata }) === TransactionStatus.BOOK;
     const incomingRaw = getRawTransaction({ externalData: tx.metadata });
-    const sameMoney = { amount: Math.abs(tx.amount), transactionType };
+    const sameMoney = { amount: toMoneyColumnValue({ money: tx.amount.abs() }), transactionType };
 
     // A bank can reuse one entry_reference for a card capture and the release of its unused hold, so a booked
     // payload only matches a pending row, or one whose amount and direction (or stored booked payload's) agree.

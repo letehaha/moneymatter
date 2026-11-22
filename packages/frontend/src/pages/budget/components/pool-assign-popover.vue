@@ -13,7 +13,7 @@ import { buildPoolAssignPayload, groupLines } from '../helpers';
 
 const props = defineProps<{ planId: string; view: BudgetPlanPeriodView; prominent?: boolean }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { baseCurrencyDecimals, formatBaseCurrency } = useFormatCurrency();
 
 const isOpen = ref(false);
 const lineId = ref<string | null>(null);
@@ -35,7 +35,9 @@ watch(isOpen, (open) => {
 });
 
 const payload = computed(() =>
-  selectedLine.value ? buildPoolAssignPayload({ line: selectedLine.value, amount: amount.value }) : null,
+  selectedLine.value
+    ? buildPoolAssignPayload({ line: selectedLine.value, amount: amount.value, decimals: baseCurrencyDecimals.value })
+    : null,
 );
 
 const { isPending, mutate } = useSetAssignment({
@@ -78,6 +80,7 @@ const submit = () => {
       />
 
       <FormattedAmountField
+        :decimals="baseCurrencyDecimals"
         :model-value="amount"
         :label="$t('budgetPlans.pool.amountLabel')"
         :placeholder="$t('budgetPlans.assign.amountPlaceholder')"

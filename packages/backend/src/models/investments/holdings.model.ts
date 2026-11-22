@@ -65,7 +65,7 @@ export default class Holdings extends Model {
    * Changes in quantity are driven by investment transactions such as buying or
    * selling shares of the security.
    */
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare quantity: Money;
 
   /**
@@ -88,10 +88,10 @@ export default class Holdings extends Model {
    * It needs to be recalculated when there are new investment transactions that
    * affect the quantity or value of holding.
    */
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare costBasis: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refCostBasis: Money;
 
   @Column({ type: DataType.STRING, allowNull: false, defaultValue: 'USD' })

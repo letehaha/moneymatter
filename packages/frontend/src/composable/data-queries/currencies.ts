@@ -6,10 +6,35 @@ import {
   setBaseUserCurrency,
 } from '@/api/currencies';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { getCurrencyDecimals, roundToDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import { CurrencyModel, UserExchangeRatesModel } from '@bt/shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed } from 'vue';
+
+/**
+ * Converts between two currencies via the shared base rate: A→B = A.rate / B.rate,
+ * rounded to the target currency's decimals. Null when a rate is missing.
+ */
+export const convertWithRates = ({
+  amount,
+  from,
+  to,
+  ratesMap,
+}: {
+  amount: number;
+  from: string;
+  to: string;
+  ratesMap: Record<string, Pick<UserExchangeRatesModel, 'rate'> | undefined>;
+}): number | null => {
+  if (from === to) return amount;
+  const fromRate = ratesMap[from]?.rate;
+  const toRate = ratesMap[to]?.rate;
+  if (!fromRate || !toRate) return null;
+  const converted = (amount * fromRate) / toRate;
+  if (!Number.isFinite(converted)) return null;
+  return roundToDecimals({ value: converted, decimals: getCurrencyDecimals({ code: to }) });
+};
 
 /**
  * Query for fetching all system currencies
@@ -104,20 +129,9 @@ export const useExchangeRates = (queryOptions = {}) => {
     ),
   );
 
-  /**
-   * Converts between two currencies via the shared base rate: A→B = A.rate / B.rate,
-   * rounded to 2 decimals. Returns null while loading or a rate is missing — treat as
-   * "unavailable", not zero.
-   */
-  const convert = ({ amount, from, to }: { amount: number; from: string; to: string }): number | null => {
-    if (from === to) return amount;
-    const fromRate = ratesMap.value[from]?.rate;
-    const toRate = ratesMap.value[to]?.rate;
-    if (!fromRate || !toRate) return null;
-    const converted = (amount * fromRate) / toRate;
-    if (!Number.isFinite(converted)) return null;
-    return Math.round(converted * 100) / 100;
-  };
+  /** Returns null while loading or a rate is missing — treat as "unavailable", not zero. */
+  const convert = ({ amount, from, to }: { amount: number; from: string; to: string }): number | null =>
+    convertWithRates({ amount, from, to, ratesMap: ratesMap.value });
 
   return {
     ...query,

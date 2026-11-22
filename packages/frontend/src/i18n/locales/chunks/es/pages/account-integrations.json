@@ -311,19 +311,19 @@
           "step2": "Crea una aplicación personal (o abre una existente) — conecta tus cuentas bancarias en Akahu primero.",
           "step3": "Copie el token de acceso de usuario y el token de ID de la aplicación y pegue ambos en los campos anteriores."
         },
-        "backButton": "Back",
-        "connectingButton": "Connecting...",
-        "connectButton": "Connect",
-        "loadingAccounts": "Loading accounts...",
-        "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",
-        "importingButton": "Importing...",
-        "importButton": "Import {count} account(s)",
-        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
-        "skipButton": "Skip",
-        "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
+        "backButton": "Atrás",
+        "connectingButton": "Conectando...",
+        "connectButton": "Conectado",
+        "loadingAccounts": "Cargando cuentas...",
+        "accountsPreviewHint": "Se encontraron {count} cuenta(s). Se importarán todas las cuentas.",
+        "importingButton": "Importando...",
+        "importButton": "Importar {count} cuenta(s)",
+        "importSuccess": "Cuentas {count} conectadas. Las transacciones se sincronizan en segundo plano.",
+        "skipButton": "Omitir",
+        "skipTooltip": "Omita la importación para conectar solo cuentas específicas más tarde, o para volver a vincular cuentas existentes desde su configuración.",
         "errors": {
           "connectFailed": "Error al conectar con Akahu",
-          "importFailed": "Failed to import accounts"
+          "importFailed": "Error al importar las cuentas"
         }
       },
       "notifications": {
@@ -372,6 +372,7 @@
           "syncFailed": "Error al iniciar la sincronización"
         },
         "actions": {
+          "openExternalUrl": "Open external link",
           "renameButton": "Renombrar conexión",
           "disconnectButton": "Desconectar integración",
           "manage": "Gestionar"
@@ -431,6 +432,8 @@
           "title": "Editar nombre de la conexión",
           "description": "Asigne un nombre personalizado a su conexión para identificarla fácilmente.",
           "label": "Nombre de la conexión",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Guardando...",
           "save": "Guardar"
         },

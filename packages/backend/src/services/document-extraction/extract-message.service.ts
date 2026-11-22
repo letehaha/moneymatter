@@ -1,5 +1,5 @@
 import { AI_FEATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import { AI_MAX_OUTPUT_TOKENS, aiCallGuards, createAIClient, describeMissingAiConfiguration } from '@services/ai';
@@ -184,7 +184,7 @@ export async function extractMessage({
     isTransaction: true,
     transactionType,
     amount,
-    currencyCode: currencyCode().safeParse(answer.currencyCode).data ?? null,
+    currencyCode: isoCurrencyCode().safeParse(answer.currencyCode).data ?? null,
     merchant: answer.merchant?.trim() || null,
     cardHint,
     suggestedAccountId,

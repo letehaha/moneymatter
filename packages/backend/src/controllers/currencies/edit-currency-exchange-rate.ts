@@ -1,15 +1,11 @@
 import { createController } from '@controllers/helpers/controller-factory';
 import * as userExchangeRates from '@services/user-exchange-rate';
+import { editExchangeRatePairSchema } from '@services/user-exchange-rate/exchange-rate-pair-rules';
 import { z } from 'zod';
 
-import { setExchangeRatePairsSchema } from './exchange-rate-pairs.schema';
-
+// The pair rules (no pair against itself, every pair with its opposite) are enforced by the service.
 const schema = z.object({
-  body: z
-    .object({
-      pairs: setExchangeRatePairsSchema,
-    })
-    .strict(),
+  body: z.object({ pairs: z.array(editExchangeRatePairSchema).nonempty() }).strict(),
 });
 
 export default createController(schema, async ({ user, body }) => {

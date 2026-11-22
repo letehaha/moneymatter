@@ -11,8 +11,8 @@ interface WholeTxRefund {
   payeeId: string | null;
   /** Tag ids of that same leg. Empty when the caller didn't request tags or it had none. */
   tagIds: string[];
-  /** Refund magnitude in integer cents (base currency); callers subtract it. */
-  refundCents: number;
+  /** Refund magnitude in integer minor units of the base currency; callers subtract it. */
+  refundMinor: number;
   /** Date of the leg on the requested side, so the reduction lands in that leg's own bucket. */
   time: Date;
 }
@@ -34,10 +34,13 @@ export const resolveWholeTxRefunds = async ({
   transactions,
   needTags,
   side,
+  decimals,
 }: {
   transactions: { id: string; refundLinked: boolean }[];
   needTags: boolean;
   side: TRANSACTION_TYPES;
+  /** Decimals of the base currency: the scale the refund magnitudes are at. */
+  decimals: number;
 }): Promise<WholeTxRefund[]> => {
   const txIdsWithRefunds = transactions.filter((tx) => tx.refundLinked).map((tx) => tx.id);
   if (txIdsWithRefunds.length === 0) return [];
@@ -85,7 +88,7 @@ export const resolveWholeTxRefunds = async ({
     result.push({
       payeeId: sideTx.payeeId,
       tagIds: needTags ? (sideTx.tags ?? []).map((tag) => tag.id) : [],
-      refundCents: refundShareRefAmount({ link: refund, refundTx }).toCents(),
+      refundMinor: refundShareRefAmount({ link: refund, refundTx, decimals }).toMinorUnits({ decimals }),
       time: new Date(sideTx.time),
     });
   }

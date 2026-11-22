@@ -30,6 +30,14 @@ jest.mock('@services/user-exchange-rate/get-exchange-rate.service', () => ({
   __esModule: true,
   resolveCustomRate: jest.fn(),
 }));
+jest.mock('@services/user-exchange-rate/resolve-custom-pair-rate', () => ({
+  __esModule: true,
+  loadCustomCurrencyDailyQuote: jest.fn(),
+}));
+jest.mock('@services/currencies/custom-currency-codes', () => ({
+  __esModule: true,
+  includesCustomCurrencyCode: async () => false,
+}));
 jest.mock('@js/utils', () => ({
   __esModule: true,
   logger: { error: jest.fn(), info: jest.fn(), warn: jest.fn(), debug: jest.fn() },
@@ -43,7 +51,7 @@ import { runWithBalanceRevalueBatch, schedulePreSeamRebuild } from './revalue-ba
 
 const SEAM_ACCOUNT = {
   type: ACCOUNT_TYPES.lunchflow,
-  seamBalance: Money.fromCents(120_000),
+  seamBalance: Money.fromDecimal(1200),
   externalData: {
     bankConnection: {
       linkedAt: '2026-11-10T15:30:00.000Z',

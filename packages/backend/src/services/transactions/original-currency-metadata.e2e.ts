@@ -32,6 +32,26 @@ const expectRejectedBy = ({ response, rule }: { response: unknown; rule: string 
 
 describe('Transaction original-currency metadata', () => {
   describe('POST /transactions', () => {
+    it('rounds the original amount to the decimals of the original currency', async () => {
+      const account = await helpers.createAccount({ raw: true });
+
+      const inJpy = await createTx({
+        accountId: account.id,
+        amount: 30,
+        originalAmount: 5000.55,
+        originalCurrencyCode: 'JPY',
+      });
+      const inKwd = await createTx({
+        accountId: account.id,
+        amount: 30,
+        originalAmount: 5.12345,
+        originalCurrencyCode: 'KWD',
+      });
+
+      expect(inJpy.originalAmount).toBe(5001);
+      expect(inKwd.originalAmount).toBe(5.123);
+    });
+
     it('stores the pair as decimals, defaults it to null and never connects the currency', async () => {
       const account = await helpers.createAccount({ raw: true });
 
@@ -39,16 +59,16 @@ describe('Transaction original-currency metadata', () => {
         accountId: account.id,
         amount: 30,
         originalAmount: 5000.55,
-        originalCurrencyCode: 'JPY',
+        originalCurrencyCode: 'CHF',
       });
 
       expect(created.originalAmount).toBe(5000.55);
-      expect(created.originalCurrencyCode).toBe('JPY');
+      expect(created.originalCurrencyCode).toBe('CHF');
 
       const fetched = await helpers.getTransactionById({ id: created.id, raw: true });
 
       expect(fetched!.originalAmount).toBe(5000.55);
-      expect(fetched!.originalCurrencyCode).toBe('JPY');
+      expect(fetched!.originalCurrencyCode).toBe('CHF');
 
       const withoutPair = await createTx({ accountId: account.id, amount: 30 });
 
@@ -56,7 +76,7 @@ describe('Transaction original-currency metadata', () => {
       expect(withoutPair.originalCurrencyCode).toBeNull();
 
       const connectedCurrencies = await helpers.getUserCurrencies();
-      expect(connectedCurrencies.some((item) => item.currencyCode === 'JPY')).toBe(false);
+      expect(connectedCurrencies.some((item) => item.currencyCode === 'CHF')).toBe(false);
     });
 
     it('rejects half a pair, an unknown currency and the pair on a transfer', async () => {

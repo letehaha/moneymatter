@@ -185,7 +185,7 @@ This imports your records from the Wallet app, including transfers between your 
 - Transactions with their category and payee.
 - **Labels become tags.** A record with several labels gets several tags.
 - **Transfers**: Wallet stores a transfer as two records. MoneyMatter pairs them into one [transfer](/transfers-and-refunds/how-transfers-work/) when they have the same date and time, are in different accounts, and their amounts are within 1% of each other.
-- A transfer record without a partner is imported as an [Out of Wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction (money moved to or from somewhere you don't track in MoneyMatter).
+- A transfer record without a partner is imported as an [Out of wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction (money moved to or from somewhere you don't track in MoneyMatter).
 
 ### Good to know
 
@@ -219,7 +219,7 @@ This reads the .mny file that Microsoft Money saves on your computer. To see wha
 - **Account types**: banking, credit card, cash, asset and liability accounts. Investment and loan accounts are skipped, with a warning.
 - **Accounts without a currency** in the file are treated as USD, with a warning. The importer can't change this. If an account isn't really in USD, skip it on **Map data**.
 - **Split transactions**: each line of the split is imported as its own transaction.
-- **Transfers** are imported once, as a [transfer](/transfers-and-refunds/how-transfers-work/) between both accounts. If the other account isn't in the file (for example an investment or loan account), that side becomes an [Out of Wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction.
+- **Transfers** are imported once, as a [transfer](/transfers-and-refunds/how-transfers-work/) between both accounts. If the other account isn't in the file (for example an investment or loan account), that side becomes an [Out of wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction.
 - **Voided transactions** are left out unless you tick the box. If you include them, they're imported with an amount of zero and tagged "Void", keeping their date, payee, category, memo and cheque number. Microsoft Money never counted them in your balance, so neither does MoneyMatter.
 
 ### Good to know

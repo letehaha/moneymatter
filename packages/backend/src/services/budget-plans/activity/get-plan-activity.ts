@@ -1,4 +1,5 @@
 import { RecordId } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlans from '@models/budget-plans.model';
@@ -12,7 +13,7 @@ import { FoldActivityRow } from '../fold/fold-plan';
 interface RawActivityRow {
   periodId: RecordId;
   categoryId: RecordId | null;
-  /** Cents. SUM over BIGINT returns numeric, which pg hands back as a string. */
+  /** Decimal string: a SUM over the DECIMAL ref amounts, which pg hands back as text. */
   activity: string;
   dayOffset?: number;
 }
@@ -27,12 +28,15 @@ const queryActivity = async ({
   from,
   until,
   byDay,
+  decimals,
   timezone,
 }: {
   plan: BudgetPlans;
   from: string | Date;
   until: string | Date;
   byDay: boolean;
+  /** The plan currency's decimals. */
+  decimals: number;
   timezone: string;
 }): Promise<RawActivityRow[]> => {
   const dayOffset = `(x."time" AT TIME ZONE :timezone)::date - p."startDate"`;
@@ -79,25 +83,26 @@ const queryActivity = async ({
       FROM units u
     ),
     link_spans AS (
-      -- Rounded once per link, as refundShareRefAmount does, so plan and stats net the same cents.
+      -- Rounded once per link at the plan currency decimals, as refundShareRefAmount does, so plan and
+      -- stats net the same amount.
       SELECT l.*, SUM(l."share") OVER (PARTITION BY l."refundTxId" ORDER BY l.id) AS "linkEnd"
       FROM (
         SELECT r.id, r."refundTxId", r."originalTxId", r."splitId", r.amount,
-               COALESCE(ROUND(s."refAmount" * r.amount::numeric / NULLIF(s."amount", 0)), 0) AS "share"
+               COALESCE(ROUND(s."refAmount" * r.amount / NULLIF(s."amount", 0), :decimals), 0) AS "share"
         FROM "RefundTransactions" r JOIN scoped s ON s.id = r."refundTxId"
       ) l
     ),
     unit_shares AS (
-      -- With F(x, y) = ROUND(x * y / total) over running unit (x) and link (y) totals, a cell is
-      -- F's difference over its box: each link's cells sum to its share, and no unit gives more than it holds.
+      -- With F(x, y) = ROUND(x * y / total) at those decimals over running unit (x) and link (y) totals, a
+      -- cell is F's difference over its box: each link's cells sum to its share, and no unit gives more than it holds.
       SELECT u."txId", u."splitId", u."time", u."transactionType", u."categoryId", u."refAmount",
              r."originalTxId", r."splitId" AS "refundSplitId",
              CASE WHEN r.amount IS NULL THEN u."refAmount"
                   ELSE COALESCE(
-                      ROUND(u."unitEnd"::numeric * r."linkEnd" / u."unitsTotal")
-                    - ROUND((u."unitEnd" - u."refAmount")::numeric * r."linkEnd" / u."unitsTotal")
-                    - ROUND(u."unitEnd"::numeric * (r."linkEnd" - r."share") / u."unitsTotal")
-                    + ROUND((u."unitEnd" - u."refAmount")::numeric * (r."linkEnd" - r."share") / u."unitsTotal"),
+                      ROUND(u."unitEnd" * r."linkEnd" / u."unitsTotal", :decimals)
+                    - ROUND((u."unitEnd" - u."refAmount") * r."linkEnd" / u."unitsTotal", :decimals)
+                    - ROUND(u."unitEnd" * (r."linkEnd" - r."share") / u."unitsTotal", :decimals)
+                    + ROUND((u."unitEnd" - u."refAmount") * (r."linkEnd" - r."share") / u."unitsTotal", :decimals),
                   0) END AS "shareRefAmount",
              r.amount IS NOT NULL AS "isPartial"
       FROM unit_spans u
@@ -141,6 +146,7 @@ const queryActivity = async ({
         until: toUtcDateString(until),
         poolFrom: plan.poolFrom ? toUtcDateString(plan.poolFrom) : null,
         timezone,
+        decimals,
       },
     },
   );
@@ -148,7 +154,7 @@ const queryActivity = async ({
 };
 
 /**
- * Signed cents per period x category, on the stats scope rules plus "the
+ * Signed minor units (at `decimals`) per period x category, on the stats scope rules plus "the
  * account is in this plan". Expense is negative, income positive, so a line's
  * activity is usually <= 0. From `poolFrom` on, transfers crossing the plan
  * boundary and uncategorised money (`categoryId` NULL) count too; before it,
@@ -160,20 +166,23 @@ const queryActivity = async ({
 export const getPlanActivity = async ({
   plan,
   periods,
+  decimals,
   timezone,
 }: {
   plan: BudgetPlans;
   periods: BudgetPeriods[];
+  /** The plan currency's decimals. */
+  decimals: number;
   timezone: string;
 }): Promise<FoldActivityRow[]> => {
   const lastEnd = periods.at(-1)?.endDate;
   if (!lastEnd) return [];
 
-  const rows = await queryActivity({ plan, from: plan.epochDate, until: lastEnd, byDay: false, timezone });
+  const rows = await queryActivity({ plan, from: plan.epochDate, until: lastEnd, byDay: false, decimals, timezone });
   return rows.map((row) => ({
     periodId: row.periodId,
     categoryId: row.categoryId,
-    activity: Number(row.activity),
+    activity: Money.fromDecimal(row.activity).toMinorUnits({ decimals }),
   }));
 };
 
@@ -185,10 +194,13 @@ export const getPlanActivity = async ({
 export const getPlanDailyActivity = async ({
   plan,
   periods,
+  decimals,
   timezone,
 }: {
   plan: BudgetPlans;
   periods: BudgetPeriods[];
+  /** The plan currency's decimals. */
+  decimals: number;
   timezone: string;
 }): Promise<PlanDailyActivityRow[]> => {
   const first = periods[0];
@@ -202,12 +214,13 @@ export const getPlanDailyActivity = async ({
     from: start > epoch ? start : epoch,
     until: last.endDate,
     byDay: true,
+    decimals,
     timezone,
   });
   return rows.map((row) => ({
     periodId: row.periodId,
     categoryId: row.categoryId,
-    activity: Number(row.activity),
+    activity: Money.fromDecimal(row.activity).toMinorUnits({ decimals }),
     dayOffset: Number(row.dayOffset),
   }));
 };

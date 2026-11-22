@@ -10,6 +10,8 @@ import { NotificationType, useNotificationCenter } from '@/components/notificati
 import { getErrorMessage } from '@/common/utils/error-message';
 import { fractionToPercentInput, isPercentInputValid, percentInputToFraction } from '@/common/utils/percentage';
 import { isPositiveDecimal } from '@/common/utils/validators';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useCreateVentureDeal, useUpdateVentureDeal } from '@/composable/data-queries/venture/deals';
 import { useVenturePlatforms } from '@/composable/data-queries/venture/platforms';
 import { useCurrenciesStore } from '@/stores';
@@ -39,7 +41,7 @@ const { data: platformsData } = useVenturePlatforms();
 const platforms = computed<VenturePlatformModel[]>(() => platformsData.value?.data ?? []);
 
 const currenciesStore = useCurrenciesStore();
-const userCurrencies = computed(() => currenciesStore.currencies);
+const userCurrencies = computed(() => currenciesStore.currencies.filter((c) => !c.currency?.isCustom));
 
 const NO_PLATFORM = '__none__';
 
@@ -106,9 +108,15 @@ watch(
 
 const isPending = computed(() => createMutation.isPending.value || updateMutation.isPending.value);
 
+const currencyDecimal = useCurrencyDecimalRule({ decimals: () => getCurrencyDecimals({ code: form.currencyCode }) });
+const decimalError = ({ value }: { value: unknown }) =>
+  currencyDecimal.isValid(value) ? undefined : currencyDecimal.message.value;
+
 const isFormValid = computed(
   () =>
     form.name.trim().length > 0 &&
+    currencyDecimal.isValid(form.principal) &&
+    currencyDecimal.isValid(form.entryFee) &&
     form.currencyCode.length === 3 &&
     isPositiveDecimal(form.principal) &&
     form.investmentDate instanceof Date &&
@@ -240,10 +248,11 @@ const onSubmit = async () => {
       <InputField
         v-model="form.principal"
         type="number"
-        step="0.01"
+        :decimals="getCurrencyDecimals({ code: form.currencyCode })"
         :label="$t('venture.deals.form.principalLabel')"
         :disabled="isPending"
         :error="!isPositiveDecimal(form.principal) && $t('venture.deals.form.principalInvalid')"
+        :error-message="decimalError({ value: form.principal })"
       >
         <template #label-after>
           <HintIcon :content="$t('venture.deals.form.principalHint')" />
@@ -252,10 +261,11 @@ const onSubmit = async () => {
       <InputField
         v-model="form.entryFee"
         type="number"
-        step="0.01"
+        :decimals="getCurrencyDecimals({ code: form.currencyCode })"
         :label="$t('venture.deals.form.entryFeeLabel')"
         :placeholder="$t('venture.deals.form.entryFeeAutoHint')"
         :disabled="isPending"
+        :error-message="decimalError({ value: form.entryFee })"
       >
         <template #label-after>
           <HintIcon :content="$t('venture.deals.form.entryFeeHint')" />

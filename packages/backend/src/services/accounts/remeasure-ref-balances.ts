@@ -27,6 +27,7 @@ const remeasureAccountRefBalances = withTransaction(
       // currency and rate resolution (connected-currency, custom rates) runs
       // against the owner.
       userId: account.userId,
+      definitionOwnerUserId: account.userId,
       amount: account.currentBalance,
       baseCode: account.currencyCode,
       date: new Date(),
@@ -36,6 +37,7 @@ const remeasureAccountRefBalances = withTransaction(
       ? Money.zero()
       : await calculateRefAmount({
           userId: account.userId,
+          definitionOwnerUserId: account.userId,
           amount: account.creditLimit,
           baseCode: account.currencyCode,
           date: new Date(),
@@ -74,9 +76,19 @@ const remeasureAccountRefBalances = withTransaction(
  * it counts-and-continues. The designed missing-rate error is not a
  * `DatabaseError`, so it always counts-and-continues.
  */
-export async function remeasureRefBalances({ userId }: { userId?: number } = {}): Promise<RefBalanceRemeasureResult> {
+export async function remeasureRefBalances({
+  userId,
+  currencyCodes,
+}: {
+  userId?: number;
+  /** Narrows the sweep to accounts held in these currencies. */
+  currencyCodes?: string[];
+} = {}): Promise<RefBalanceRemeasureResult> {
   const accounts = await Accounts.findAll({
-    where: userId === undefined ? {} : { userId },
+    where: {
+      ...(userId === undefined ? {} : { userId }),
+      ...(currencyCodes ? { currencyCode: currencyCodes } : {}),
+    },
   });
 
   // Ambient transaction here means the caller (custom-rate edit/remove) wraps the

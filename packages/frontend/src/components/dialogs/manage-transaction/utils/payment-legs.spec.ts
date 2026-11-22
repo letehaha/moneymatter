@@ -1,9 +1,11 @@
+import { registerCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { type AccountModel, type RecordId, type TransactionModel } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import type { FormPaymentLeg } from '../types';
 import {
   formLegsToPaymentLegs,
+  getPaymentLegExcessDecimals,
   getPaymentRowAmounts,
   hasPaymentParts,
   isPaymentLegIncomplete,
@@ -115,19 +117,43 @@ describe('payment legs helpers', () => {
           { account: null, amount: null },
         ],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(100);
-    expect(sumPaymentRows({ mainAmount: null, legs: [], mainCurrencyCode: 'EUR' })).toBe(0);
+    expect(sumPaymentRows({ mainAmount: null, legs: [], mainCurrencyCode: 'EUR', decimals: 2 })).toBe(0);
   });
 
-  it('rounds the total to cents', () => {
+  it('trims float noise off the total', () => {
     expect(
       sumPaymentRows({
         mainAmount: 10.1,
         legs: [{ account: voucher, amount: 20.2, currencyCode: 'EUR' }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(30.3);
+  });
+
+  it('keeps the third decimal of a 3-decimal main currency', () => {
+    expect(
+      sumPaymentRows({
+        mainAmount: 1.005,
+        legs: [{ account: voucher, amount: 2.001, currencyCode: 'KWD' }],
+        mainCurrencyCode: 'KWD',
+        decimals: 3,
+      }),
+    ).toBe(3.006);
+  });
+
+  it('sums whole units for a 0-decimal main currency', () => {
+    expect(
+      sumMainWithCreatedLegs({
+        mainAmount: 1500,
+        legs: [{ account: voucher, amount: 2501, currencyCode: 'JPY' }],
+        mainCurrencyCode: 'JPY',
+        decimals: 0,
+      }),
+    ).toBe(4001);
   });
 
   it('sums a cross-currency leg by its share in the main currency', () => {
@@ -136,6 +162,7 @@ describe('payment legs helpers', () => {
         mainAmount: 70,
         legs: [linkedCashLeg, { account: voucher, amount: 10, currencyCode: 'EUR', paymentAmount: 999 }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(110);
     expect(
@@ -143,6 +170,7 @@ describe('payment legs helpers', () => {
         mainAmount: 70,
         legs: [{ ...linkedCashLeg, paymentAmount: null }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(70);
   });
@@ -153,23 +181,39 @@ describe('payment legs helpers', () => {
         mainAmount: 70,
         legs: [savedLeg, linkedCashLeg, { account: voucher, amount: 5, currencyCode: 'EUR' }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(105);
-    expect(sumMainWithCreatedLegs({ mainAmount: 70, legs: [linkedCashLeg], mainCurrencyCode: 'EUR' })).toBe(70);
+    expect(
+      sumMainWithCreatedLegs({ mainAmount: 70, legs: [linkedCashLeg], mainCurrencyCode: 'EUR', decimals: 2 }),
+    ).toBe(70);
   });
 
   describe('setPaymentLegAmount', () => {
     const savedCashLeg: FormPaymentLeg = { ...linkedCashLeg, isLinked: false };
 
     it('scales a user-set share by the new amount at the same rate', () => {
-      expect(setPaymentLegAmount({ leg: savedCashLeg, amount: 70, mainCurrencyCode: 'EUR', convert })).toMatchObject({
+      expect(
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 70, mainCurrencyCode: 'EUR', decimals: 2, convert }),
+      ).toMatchObject({
         amount: 70,
         paymentAmount: 60,
         isPaymentAmountEdited: true,
       });
       expect(
-        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', convert }).paymentAmount,
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals: 2, convert })
+          .paymentAmount,
       ).toBe(8.57);
+    });
+
+    it.each<[number, number]>([
+      [3, 8.571],
+      [0, 9],
+    ])('rounds a scaled share to %d main currency decimals: %d', (decimals, expected) => {
+      expect(
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals, convert })
+          .paymentAmount,
+      ).toBe(expected);
     });
 
     it('prefills an untouched share from the market rate', () => {
@@ -178,21 +222,30 @@ describe('payment legs helpers', () => {
           leg: { account: cash, amount: 10, currencyCode: 'USD', paymentAmount: 9.2 },
           amount: 35,
           mainCurrencyCode: 'EUR',
+          decimals: 2,
           convert,
         }).paymentAmount,
       ).toBe(32.18);
     });
 
     it('drops back to the market rate once the amount is cleared', () => {
-      const cleared = setPaymentLegAmount({ leg: savedCashLeg, amount: null, mainCurrencyCode: 'EUR', convert });
+      const cleared = setPaymentLegAmount({
+        leg: savedCashLeg,
+        amount: null,
+        mainCurrencyCode: 'EUR',
+        decimals: 2,
+        convert,
+      });
       expect(cleared).toMatchObject({ amount: null, paymentAmount: null, isPaymentAmountEdited: false });
-      expect(setPaymentLegAmount({ leg: cleared, amount: 35, mainCurrencyCode: 'EUR', convert }).paymentAmount).toBe(
-        32.18,
-      );
+      expect(
+        setPaymentLegAmount({ leg: cleared, amount: 35, mainCurrencyCode: 'EUR', decimals: 2, convert }).paymentAmount,
+      ).toBe(32.18);
     });
 
     it('only changes the amount of a same-currency leg', () => {
-      expect(setPaymentLegAmount({ leg: savedLeg, amount: 25, mainCurrencyCode: 'EUR', convert })).toMatchObject({
+      expect(
+        setPaymentLegAmount({ leg: savedLeg, amount: 25, mainCurrencyCode: 'EUR', decimals: 2, convert }),
+      ).toMatchObject({
         amount: 25,
         paymentAmount: 30,
       });
@@ -279,6 +332,31 @@ describe('payment legs helpers', () => {
     expect(isPaymentLegIncomplete({ leg: { ...linkedCashLeg, paymentAmount: null }, mainCurrencyCode: 'USD' })).toBe(
       false,
     );
+  });
+
+  it("flags a leg amount with more decimals than the leg's currency", () => {
+    const leg = { account: cash, amount: 10.99, currencyCode: 'JPY' };
+
+    expect(getPaymentLegExcessDecimals({ leg, mainCurrencyCode: 'EUR' })).toBe(0);
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, currencyCode: 'USD' }, mainCurrencyCode: 'EUR' })).toBeNull();
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, currencyCode: undefined }, mainCurrencyCode: 'JPY' })).toBe(0);
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, isLinked: true }, mainCurrencyCode: 'EUR' })).toBeNull();
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, amount: null }, mainCurrencyCode: 'EUR' })).toBeNull();
+  });
+
+  it("checks a shared account's leg against the owner's decimals, not the viewer's", () => {
+    resetCurrencyDecimals();
+    registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+    const ownerSat = {
+      ...cash,
+      currencyCode: 'SAT',
+      currencyMeta: { decimals: 8, symbol: null, isCustom: true },
+    } as AccountModel;
+    const leg = { account: ownerSat, amount: 0.5, currencyCode: 'SAT' };
+
+    expect(getPaymentLegExcessDecimals({ leg, mainCurrencyCode: 'EUR' })).toBeNull();
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, account: null }, mainCurrencyCode: 'EUR' })).toBe(0);
+    resetCurrencyDecimals();
   });
 
   it('detects a multi-account transaction', () => {

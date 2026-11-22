@@ -61,7 +61,7 @@ export default class Vehicles extends Model {
   })
   vehicleClass!: VEHICLE_CLASS;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare purchasePrice: Money;
 
   @Column({
@@ -70,7 +70,7 @@ export default class Vehicles extends Model {
   })
   purchaseDate!: string;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare valueAnchor: Money | null;
 
   @Column({

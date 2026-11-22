@@ -933,3 +933,55 @@ describe('Multi-account payments: guards and cleanup', () => {
     expect((await legsOf({ accountId: plain!.id }))[0]!.paymentType).toBe(PAYMENT_TYPES.creditCard);
   });
 });
+
+const paymentAmountOf = async ({ legAccountId }: { legAccountId: string }) => {
+  const [main] = (await helpers.getTransactions({ raw: true }))!.filter((tx) => tx.paymentParts);
+  return main!.paymentParts!.find((part) => part.accountId === legAccountId)!.paymentAmount;
+};
+
+describe('Multi-account payments: amounts at the currency decimals', () => {
+  it.each([
+    { currencyCode: 'USD', mainAmount: 20, paymentAmount: 10.129, expected: 10.13 },
+    { currencyCode: 'JPY', mainAmount: 3000, paymentAmount: 1500.5, expected: 1501 },
+  ])(
+    "rounds a leg's payment amount $paymentAmount half-up to $expected on a $currencyCode main row",
+    async ({ currencyCode, mainAmount, paymentAmount, expected }) => {
+      const main = await helpers.createAccountIn({ currencyCode, initialBalance: 1000 });
+      const [aedLeg] = await createManualAccounts({ count: 1 });
+
+      await createPayment({
+        mainAccountId: main.id,
+        amount: mainAmount,
+        legs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount }],
+      });
+
+      expect(await paymentAmountOf({ legAccountId: aedLeg!.id })).toBe(expected);
+    },
+  );
+
+  it('rejects a payment amount that rounds to zero, and a leg amount that rounds to zero', async () => {
+    const usdMain = await helpers.createAccountIn({ currencyCode: 'USD', initialBalance: 1000 });
+    const [aedLeg] = await createManualAccounts({ count: 1 });
+    const jpyLeg = await helpers.createAccountIn({ currencyCode: 'JPY', initialBalance: 1000 });
+
+    const zeroShare = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: usdMain.id,
+        amount: 20,
+        paymentLegs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount: 0.004 }],
+      }),
+    });
+    expect(zeroShare.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const zeroLeg = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: usdMain.id,
+        amount: 20,
+        paymentLegs: [{ accountId: jpyLeg.id, amount: 0.4, paymentAmount: 1 }],
+      }),
+    });
+    expect(zeroLeg.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
+  });
+});

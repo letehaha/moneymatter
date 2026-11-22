@@ -1,5 +1,5 @@
 import { SUBSCRIPTION_LINK_STATUS, SUBSCRIPTION_PERIOD_STATUSES, SUBSCRIPTION_TYPES } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimalOrNull } from '@common/types/money';
 import Categories from '@models/categories.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -133,6 +133,39 @@ export const scheduleDatesInRange = ({
   });
 };
 
+/**
+ * `scheduleDatesInRange` per subscription id, without the due dates of its skipped periods.
+ * ponytail: exact date match, so a skipped period left off the schedule by a frequency change or
+ * a backward reschedule still counts. Match the nearest occurrence if that matters.
+ */
+export const unskippedScheduleDates = async ({
+  subscriptions,
+  from,
+  until,
+}: {
+  subscriptions: Subscriptions[];
+  from: string;
+  until: string;
+}): Promise<Map<string, string[]>> => {
+  const periods = subscriptions.length
+    ? await SubscriptionPeriods.findAll({
+        where: {
+          subscriptionId: { [Op.in]: subscriptions.map((subscription) => subscription.id) },
+          status: SUBSCRIPTION_PERIOD_STATUSES.skipped,
+          dueDate: { [Op.gte]: from, [Op.lt]: until },
+        },
+        attributes: ['subscriptionId', 'dueDate'],
+      })
+    : [];
+  const skipped = new Set(periods.map((period) => `${period.subscriptionId}|${period.dueDate}`));
+  return new Map(
+    subscriptions.map((subscription) => [
+      subscription.id,
+      scheduleDatesInRange({ subscription, from, until }).filter((date) => !skipped.has(`${subscription.id}|${date}`)),
+    ]),
+  );
+};
+
 interface GetUpcomingPaymentsParams {
   userId: number;
   limit?: number;
@@ -160,7 +193,7 @@ export const getUpcomingPayments = async ({ userId, limit = 5, type }: GetUpcomi
         subscriptionId: plain.id,
         subscriptionName: plain.name,
         ...serializeLogoFields({ entity: plain }),
-        expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+        expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
         expectedCurrencyCode: plain.expectedCurrencyCode,
         transactionType: plain.transactionType,
         nextPaymentDate: nextPaymentDate({ subscription: plain }),

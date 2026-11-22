@@ -80,7 +80,7 @@
               </span>
               <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span class="text-3xl font-semibold tracking-tight tabular-nums @md/vehicle:text-5xl">
-                  {{ formatAmountByCurrencyCode(vehicle.account?.currentBalance ?? 0, currencyCode) }}
+                  {{ formatAmountByCurrencyCode({ amount: vehicle.account?.currentBalance ?? 0, currencyCode }) }}
                 </span>
                 <span
                   class="inline-flex items-center gap-1 text-sm font-medium tabular-nums"
@@ -90,14 +90,14 @@
                     :is="depreciationDirection === 'down' ? ArrowDownRightIcon : ArrowUpRightIcon"
                     class="size-4"
                   />
-                  {{ formatAmountByCurrencyCode(Math.abs(depreciationAmount), currencyCode) }}
+                  {{ formatAmountByCurrencyCode({ amount: Math.abs(depreciationAmount), currencyCode }) }}
                   <span class="text-muted-foreground font-normal">
                     ({{ depreciationDirection === 'down' ? '-' : '+' }}{{ Math.abs(depreciationPercent).toFixed(1) }}%)
                   </span>
                 </span>
               </div>
               <span v-if="showRefValue" class="text-muted-foreground text-sm tabular-nums">
-                ≈ {{ formatAmountByCurrencyCode(refCurrentBalance, baseCurrencyCode) }}
+                ≈ {{ formatAmountByCurrencyCode({ amount: refCurrentBalance, currencyCode: baseCurrencyCode }) }}
               </span>
               <span class="text-muted-foreground text-xs">
                 {{ $t('pages.vehicleDetails.sinceAcquired', { date: formatDisplayDate(vehicle.purchaseDate) }) }}
@@ -114,10 +114,10 @@
             {{ $t('pages.vehicleDetails.purchasePrice') }}
           </div>
           <div class="mt-2 text-2xl font-semibold tabular-nums">
-            {{ formatAmountByCurrencyCode(vehicle.purchasePrice, currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: vehicle.purchasePrice, currencyCode }) }}
           </div>
           <div v-if="showRefValue" class="text-muted-foreground mt-0.5 text-xs tabular-nums">
-            ≈ {{ formatAmountByCurrencyCode(refPurchasePrice, baseCurrencyCode) }}
+            ≈ {{ formatAmountByCurrencyCode({ amount: refPurchasePrice, currencyCode: baseCurrencyCode }) }}
           </div>
           <div class="text-muted-foreground mt-1 text-xs">{{ formatDisplayDate(vehicle.purchaseDate) }}</div>
         </div>
@@ -128,14 +128,17 @@
           </div>
           <div class="mt-2 flex items-baseline gap-2 text-2xl font-semibold tabular-nums">
             <span :class="depreciationDirection === 'down' ? 'text-app-expense-color' : 'text-app-income-color'">
-              {{ formatAmountByCurrencyCode(Math.abs(depreciationAmount), currencyCode) }}
+              {{ formatAmountByCurrencyCode({ amount: Math.abs(depreciationAmount), currencyCode }) }}
             </span>
             <span class="text-muted-foreground text-sm font-normal">
               {{ Math.abs(depreciationPercent).toFixed(1) }}%
             </span>
           </div>
           <div v-if="showRefValue" class="text-muted-foreground mt-0.5 text-xs tabular-nums">
-            ≈ {{ formatAmountByCurrencyCode(Math.abs(refDepreciationAmount), baseCurrencyCode) }}
+            ≈
+            {{
+              formatAmountByCurrencyCode({ amount: Math.abs(refDepreciationAmount), currencyCode: baseCurrencyCode })
+            }}
           </div>
           <div class="text-muted-foreground mt-1 text-xs">
             {{ $t('pages.vehicleDetails.depreciationCadence', { years: ownedYears.toFixed(1) }) }}
@@ -147,10 +150,10 @@
             {{ $t('pages.vehicleDetails.projectedFiveYear') }}
           </div>
           <div class="mt-2 text-2xl font-semibold tabular-nums">
-            {{ formatAmountByCurrencyCode(projectedFiveYearValue, currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: projectedFiveYearValue, currencyCode }) }}
           </div>
           <div v-if="showRefValue" class="text-muted-foreground mt-0.5 text-xs tabular-nums">
-            ≈ {{ formatAmountByCurrencyCode(refProjectedFiveYearValue, baseCurrencyCode) }}
+            ≈ {{ formatAmountByCurrencyCode({ amount: refProjectedFiveYearValue, currencyCode: baseCurrencyCode }) }}
           </div>
           <div class="text-muted-foreground mt-1 text-xs">
             {{
@@ -203,16 +206,18 @@
           <DetailRow :label="$t('pages.vehicleDetails.salvageFloor')">
             <span class="tabular-nums">{{ vehicle.salvageFloorPct }}%</span>
             <span class="text-muted-foreground ml-2 text-xs">
-              ≈ {{ formatAmountByCurrencyCode(salvageFloorValue, currencyCode) }}
+              ≈ {{ formatAmountByCurrencyCode({ amount: salvageFloorValue, currencyCode }) }}
               <span v-if="showRefValue">
-                ({{ formatAmountByCurrencyCode(refSalvageFloorValue, baseCurrencyCode) }})
+                ({{ formatAmountByCurrencyCode({ amount: refSalvageFloorValue, currencyCode: baseCurrencyCode }) }})
               </span>
             </span>
           </DetailRow>
           <DetailRow v-if="vehicle.valueAnchor !== null" :label="$t('pages.vehicleDetails.lastOverride')">
-            <span class="tabular-nums">{{ formatAmountByCurrencyCode(vehicle.valueAnchor, currencyCode) }}</span>
+            <span class="tabular-nums">{{
+              formatAmountByCurrencyCode({ amount: vehicle.valueAnchor, currencyCode })
+            }}</span>
             <span v-if="showRefValue && refValueAnchor !== null" class="text-muted-foreground ml-2 text-xs">
-              ≈ {{ formatAmountByCurrencyCode(refValueAnchor, baseCurrencyCode) }}
+              ≈ {{ formatAmountByCurrencyCode({ amount: refValueAnchor, currencyCode: baseCurrencyCode }) }}
             </span>
             <span class="text-muted-foreground ml-2 text-xs">
               {{ formatDisplayDate(vehicle.valueAnchorDate ?? vehicle.purchaseDate) }}

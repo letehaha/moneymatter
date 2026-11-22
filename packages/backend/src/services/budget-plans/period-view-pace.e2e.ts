@@ -17,8 +17,8 @@ const elapsedPercent = ({ period }: { period: Period }) => {
   return (day / totalDays) * 100;
 };
 
-const setup = async () => {
-  const account = await helpers.createAccount({ raw: true });
+const setup = async ({ currencyCode = global.BASE_CURRENCY.code }: { currencyCode?: string } = {}) => {
+  const account = await helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode }), raw: true });
   const { plan } = await helpers.createBudgetPlan({
     payload: { accountIds: [account.id], epochDate: helpers.budgetPeriodStart({ monthsAgo: 3 }) },
     raw: true,
@@ -65,17 +65,19 @@ const spendOnFirstDay = ({
   accountId,
   categoryId,
   period,
+  amount = 100,
 }: {
   accountId: RecordId;
   categoryId: RecordId;
   period: Period;
+  amount?: number;
 }) =>
   helpers.createTransaction({
     payload: {
       ...helpers.buildTransactionPayload({
         accountId,
         categoryId,
-        amount: 100,
+        amount,
         transactionType: TRANSACTION_TYPES.expense,
       }),
       time: new Date(Date.parse(`${period.startDate}T12:00:00.000Z`)).toISOString(),
@@ -100,6 +102,24 @@ describe('Budget plan period view: line pace', () => {
     });
   });
 
+  it('reads the history of a KWD plan at 3 decimals, where fils-sized spending still counts', async () => {
+    const pace = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const { account, planId, periods, prior, current, addLine, fund } = await setup({ currencyCode: 'KWD' });
+        const { category, line } = await addLine({ name: 'Snacks', sortOrder: 0, activeFrom: periods[0]!.startDate });
+        await fund({ lineId: line.id, period: periods[0]!, amount: 1 });
+        for (const period of prior.slice(-2)) {
+          await spendOnFirstDay({ accountId: account.id, categoryId: category.id, period, amount: 0.004 });
+        }
+        return paceOf({ planId, period: current, lineId: line.id });
+      },
+    });
+
+    // At 2 decimals 0.004 is no spend at all, which would fall back to time elapsed.
+    expect(pace).toEqual({ basis: 'history', expectedPercent: 100 });
+  });
+
   it('uses the schedule for a new line whose only payment fell due on the first day', async () => {
     const { account, planId, current, addLine, fund } = await setup();
     const { category, line } = await addLine({ name: 'Gym', sortOrder: 0, activeFrom: current.startDate });
@@ -120,6 +140,61 @@ describe('Budget plan period view: line pace', () => {
 
     expect(pace?.basis).toBe('schedule');
     expect(pace!.expectedPercent).toBeGreaterThanOrEqual(20);
+    expect(Math.abs(pace!.expectedPercent - (20 + 0.8 * elapsedPercent({ period: current })))).toBeLessThanOrEqual(
+      0.01,
+    );
+  });
+
+  it('ignores a skipped subscription period and falls back to time elapsed', async () => {
+    const { account, planId, current, addLine, fund } = await setup();
+    const { category, line } = await addLine({ name: 'Gym', sortOrder: 0, activeFrom: current.startDate });
+    await fund({ lineId: line.id, period: current, amount: 100 });
+    const subscription = await helpers.createSubscription({
+      name: 'Gym',
+      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+      startDate: current.startDate,
+      dueDate: current.startDate,
+      accountId: account.id,
+      categoryId: category.id,
+      expectedAmount: 20,
+      expectedCurrencyCode: global.BASE_CURRENCY_CODE,
+      raw: true,
+    });
+    const { periods } = await helpers.getSubscriptionPeriods({ id: subscription.id, raw: true });
+    const due = periods.find((period) => period.dueDate === current.startDate)!;
+    await helpers.skipSubscriptionPeriod({ id: subscription.id, periodId: due.id, raw: true });
+
+    const pace = await paceOf({ planId, period: current, lineId: line.id });
+
+    expect(pace?.basis).toBe('even');
+    expect(Math.abs(pace!.expectedPercent - elapsedPercent({ period: current }))).toBeLessThanOrEqual(0.01);
+  });
+
+  it('keeps the payment of another subscription on the same line when one is skipped', async () => {
+    const { account, planId, current, addLine, fund } = await setup();
+    const { category, line } = await addLine({ name: 'Gym', sortOrder: 0, activeFrom: current.startDate });
+    await fund({ lineId: line.id, period: current, amount: 100 });
+    const subscribe = ({ name }: { name: string }) =>
+      helpers.createSubscription({
+        name,
+        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+        startDate: current.startDate,
+        dueDate: current.startDate,
+        accountId: account.id,
+        categoryId: category.id,
+        expectedAmount: 20,
+        expectedCurrencyCode: global.BASE_CURRENCY_CODE,
+        raw: true,
+      });
+    await subscribe({ name: 'Gym' });
+    const skipped = await subscribe({ name: 'Pool' });
+    const { periods } = await helpers.getSubscriptionPeriods({ id: skipped.id, raw: true });
+    const due = periods.find((period) => period.dueDate === current.startDate)!;
+    await helpers.skipSubscriptionPeriod({ id: skipped.id, periodId: due.id, raw: true });
+
+    const pace = await paceOf({ planId, period: current, lineId: line.id });
+
+    expect(pace?.basis).toBe('schedule');
     expect(Math.abs(pace!.expectedPercent - (20 + 0.8 * elapsedPercent({ period: current })))).toBeLessThanOrEqual(
       0.01,
     );

@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimalOrNull } from '@common/types/money';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
 import Payees from '@models/payees.model';
@@ -66,7 +66,7 @@ export async function transformTransactionTemplates({ userId }: { userId: number
       name: template.name,
       type: template.transactionType,
       // Without an account the stored amount has no currency, so it is not exported.
-      amount: template.accountId ? centsToApiDecimalOrNull(template.amount) : null,
+      amount: template.accountId ? moneyToApiDecimalOrNull(template.amount) : null,
       currency: template.accountId ? (accountCurrencyById.get(String(template.accountId)) ?? '') : '',
       account: resolveRelationName({
         id: template.accountId,

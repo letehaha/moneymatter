@@ -23,6 +23,7 @@ import { authorizeTrackerAccess } from './authorize-tracker-access';
 import { saveTrackerRules } from './rules/save-tracker-rules';
 import { assertSmartTrackingConfig } from './smart-tracking/assert-smart-tracking-config';
 import { enqueueTrackerScan, getTrackerScanState } from './smart-tracking/tracker-scan-queue';
+import { roundTrackerLimit } from './utils/round-tracker-limit';
 
 interface EditTrackerPayload extends EntityLogoWritePayload {
   id: RecordId;
@@ -100,7 +101,13 @@ export const editTracker = withTransaction(
       stored: tracker,
     });
 
-    await tracker.update({ ...removeUndefinedKeys(fields), ...logoPatch, ...(rescan && { aiScannedUntil: null }) });
+    const limitAmount = await roundTrackerLimit({ ownerUserId, limitAmount: fields.limitAmount });
+
+    await tracker.update({
+      ...removeUndefinedKeys({ ...fields, limitAmount }),
+      ...logoPatch,
+      ...(rescan && { aiScannedUntil: null }),
+    });
     if (aiTurnedOn) {
       await startFeatureTrial({ userId: ownerUserId, feature: AI_FEATURE_ENTITLEMENTS[AI_FEATURE.trackerMatching] });
     }

@@ -15,7 +15,7 @@ export const createGoalTool = defineTool({
   input: {
     name: goalFieldsShape.name.describe('Goal name'),
     currencyCode: goalFieldsShape.currencyCode.describe(
-      "ISO 4217 code of the target currency, e.g. USD. Usually the user's base currency",
+      "Target currency: an ISO 4217 code (e.g. USD) or one of the user's custom currencies. Usually the user's base currency",
     ),
     targetAmount: goalFieldsShape.targetAmount.describe('Target as a decimal amount in currencyCode (e.g. 5000.00)'),
     targetDate: goalFieldsShape.targetDate.describe('Optional deadline (yyyy-MM-dd)'),

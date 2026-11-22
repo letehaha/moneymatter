@@ -6,8 +6,8 @@ import {
   CurrencyOptionValue,
   TagOptionValue,
   TransactionTypeOptionValue,
-  asCents,
 } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
@@ -123,7 +123,8 @@ export async function parseValidRows({
     // Parse amount
     const amountStr = row[amountIndex]?.trim() || '';
     const parsedAmount = parseAmount(amountStr);
-    if (parsedAmount === null) {
+    const amount = parsedAmount === null ? null : Money.fromDecimal(parsedAmount);
+    if (amount === null) {
       errors.push(t({ key: 'csvImport.invalidAmount', variables: { amountStr } }));
     }
 
@@ -164,7 +165,7 @@ export async function parseValidRows({
     // Determine transaction type
     let transactionType: 'income' | 'expense' = 'expense';
     if (columnMapping.transactionType.option === TransactionTypeOptionValue.amountSign) {
-      transactionType = parsedAmount !== null && parsedAmount >= 0 ? 'income' : 'expense';
+      transactionType = amount !== null && !amount.isNegative() ? 'income' : 'expense';
     } else if (transactionTypeIndex !== -1) {
       const typeValue = row[transactionTypeIndex]?.trim() || '';
       const typeOption = columnMapping.transactionType;
@@ -198,7 +199,7 @@ export async function parseValidRows({
       validRows.push({
         rowIndex,
         date: instant.toISOString(),
-        amount: asCents(Math.abs(parsedAmount!)), // Store absolute value in cents, sign determined by transactionType
+        amount: amount!.abs().toNumber(), // Absolute decimal, sign determined by transactionType
         description,
         payeeName,
         categoryName,

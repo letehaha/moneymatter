@@ -12,6 +12,7 @@ import { Label } from '@/components/lib/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import { Switch } from '@/components/lib/ui/switch';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import {
@@ -70,6 +71,7 @@ const props = defineProps<{
 const isOpen = defineModel<boolean>('open', { required: true });
 
 const { t } = useI18n();
+const { baseCurrencyDecimals } = useFormatCurrency();
 const { format } = useDateLocale();
 const { goalText } = useGoalText();
 
@@ -241,6 +243,7 @@ const submit = () => {
 
       <div class="grid gap-1">
         <FormattedAmountField
+          :decimals="baseCurrencyDecimals"
           :model-value="state.amount"
           class="[&_input]:text-right"
           :label="amountLabel"
@@ -324,6 +327,7 @@ const submit = () => {
         </div>
         <FormattedAmountField
           v-if="state.hasStopAtBalance"
+          :decimals="baseCurrencyDecimals"
           :model-value="state.stopAtBalance"
           class="[&_input]:text-right"
           :placeholder="$t('budgetPlans.goals.amountPlaceholder')"
@@ -343,6 +347,7 @@ const submit = () => {
         </div>
         <FormattedAmountField
           v-if="state.hasFundingCap"
+          :decimals="baseCurrencyDecimals"
           :model-value="state.fundingCap"
           class="[&_input]:text-right"
           :placeholder="$t('budgetPlans.goals.amountPlaceholder')"

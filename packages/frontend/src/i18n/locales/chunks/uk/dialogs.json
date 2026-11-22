@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "Опис (необов'язково)",
         "descriptionPlaceholder": "Короткий опис цього портфеля...",
+        "externalUrlLabel": "Зовнішнє посилання (необов'язково)",
+        "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Створити портфель",
         "submitButtonLoading": "Створення..."
       },

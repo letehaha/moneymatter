@@ -26,6 +26,7 @@ import { createBudgetPlanTool } from './tools/create-budget-plan';
 import { createBudgetPlanGroupTool } from './tools/create-budget-plan-group';
 import { createBudgetPlanLineTool } from './tools/create-budget-plan-line';
 import { createCategoryTool } from './tools/create-category';
+import { createCustomCurrencyTool } from './tools/create-custom-currency';
 import { createGoalTool } from './tools/create-goal';
 import { createHoldingTool } from './tools/create-holding';
 import { createInvestmentTransactionTool } from './tools/create-investment-transaction';
@@ -54,6 +55,7 @@ import { deleteBudgetPlanGroupTool } from './tools/delete-budget-plan-group';
 import { deleteBudgetPlanLineTool } from './tools/delete-budget-plan-line';
 import { deleteBudgetPlanLineGoalTool } from './tools/delete-budget-plan-line-goal';
 import { deleteCategoryTool } from './tools/delete-category';
+import { deleteCustomCurrencyTool } from './tools/delete-custom-currency';
 import { deleteExchangeRatesTool } from './tools/delete-exchange-rates';
 import { deleteGoalTool } from './tools/delete-goal';
 import { deleteHoldingTool } from './tools/delete-holding';
@@ -96,6 +98,7 @@ import { getCashFlowTool } from './tools/get-cash-flow';
 import { getCategoriesTool } from './tools/get-categories';
 import { getCategoryTransactionCountTool } from './tools/get-category-transaction-count';
 import { getCumulativeStatsTool } from './tools/get-cumulative-stats';
+import { getCurrencyRateHistoryTool } from './tools/get-currency-rate-history';
 import { getEarliestTransactionDateTool } from './tools/get-earliest-transaction-date';
 import { getExchangeRateTool } from './tools/get-exchange-rate';
 import { getExpensesForPeriodTool } from './tools/get-expenses-for-period';
@@ -162,6 +165,7 @@ import { linkTransferTool } from './tools/link-transfer';
 import { listBankConnectionsTool } from './tools/list-bank-connections';
 import { listBudgetPlanPeriodsTool } from './tools/list-budget-plan-periods';
 import { listBudgetPlansTool } from './tools/list-budget-plans';
+import { listCustomCurrenciesTool } from './tools/list-custom-currencies';
 import { listImportBatchesTool } from './tools/list-import-batches';
 import { listPortfolioTransfersTool } from './tools/list-portfolio-transfers';
 import { listShareInvitationsTool } from './tools/list-share-invitations';
@@ -193,16 +197,19 @@ import { restoreBudgetPlanTool } from './tools/restore-budget-plan';
 import { restorePortfolioTool } from './tools/restore-portfolio';
 import { restoreRemovedTransactionsTool } from './tools/restore-removed-transactions';
 import { revertSubscriptionPeriodTool } from './tools/revert-subscription-period';
+import { searchCoingeckoCoinsTool } from './tools/search-coingecko-coins';
 import { searchSecuritiesTool } from './tools/search-securities';
 import { searchTransactionsTool } from './tools/search-transactions';
 import { setBudgetPlanAccountsTool } from './tools/set-budget-plan-accounts';
 import { setBudgetPlanAssignmentTool } from './tools/set-budget-plan-assignment';
 import { setBudgetPlanLineGoalTool } from './tools/set-budget-plan-line-goal';
+import { setCurrencyRateSourceTool } from './tools/set-currency-rate-source';
 import { setExchangeRatesTool } from './tools/set-exchange-rates';
 import { setPortfolioTransferAdjustmentTool } from './tools/set-portfolio-transfer-adjustment';
 import { skipSubscriptionPeriodTool } from './tools/skip-subscription-period';
 import { snoozeBudgetPlanLineGoalTool } from './tools/snooze-budget-plan-line-goal';
 import { splitTransactionTool } from './tools/split-transaction';
+import { testCurrencyRateSourceTool } from './tools/test-currency-rate-source';
 import { toggleSubscriptionActiveTool } from './tools/toggle-subscription-active';
 import { transferAccountToPortfolioTool } from './tools/transfer-account-to-portfolio';
 import { transferBetweenPortfoliosTool } from './tools/transfer-between-portfolios';
@@ -220,6 +227,7 @@ import { updateBudgetPlanTool } from './tools/update-budget-plan';
 import { updateBudgetPlanGroupTool } from './tools/update-budget-plan-group';
 import { updateBudgetPlanLineTool } from './tools/update-budget-plan-line';
 import { updateCategoryTool } from './tools/update-category';
+import { updateCustomCurrencyTool } from './tools/update-custom-currency';
 import { updateGoalTool } from './tools/update-goal';
 import { updateInvestmentTransactionTool } from './tools/update-investment-transaction';
 import { updateLoanTool } from './tools/update-loan';
@@ -272,6 +280,7 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   createBudgetPlanLineTool,
   createBudgetPlanTool,
   createCategoryTool,
+  createCustomCurrencyTool,
   createGoalTool,
   createHoldingTool,
   createInvestmentTransactionTool,
@@ -300,6 +309,7 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   deleteBudgetPlanLineTool,
   deleteBudgetPlanTool,
   deleteCategoryTool,
+  deleteCustomCurrencyTool,
   deleteExchangeRatesTool,
   deleteGoalTool,
   deleteHoldingTool,
@@ -342,6 +352,7 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   getCategoriesTool,
   getCategoryTransactionCountTool,
   getCumulativeStatsTool,
+  getCurrencyRateHistoryTool,
   getEarliestTransactionDateTool,
   getExchangeRateTool,
   getExpensesForPeriodTool,
@@ -408,6 +419,7 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   listBankConnectionsTool,
   listBudgetPlanPeriodsTool,
   listBudgetPlansTool,
+  listCustomCurrenciesTool,
   listImportBatchesTool,
   listPortfolioTransfersTool,
   listShareInvitationsTool,
@@ -439,16 +451,19 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   restorePortfolioTool,
   restoreRemovedTransactionsTool,
   revertSubscriptionPeriodTool,
+  searchCoingeckoCoinsTool,
   searchSecuritiesTool,
   searchTransactionsTool,
   setBudgetPlanAccountsTool,
   setBudgetPlanAssignmentTool,
   setBudgetPlanLineGoalTool,
+  setCurrencyRateSourceTool,
   setExchangeRatesTool,
   setPortfolioTransferAdjustmentTool,
   skipSubscriptionPeriodTool,
   snoozeBudgetPlanLineGoalTool,
   splitTransactionTool,
+  testCurrencyRateSourceTool,
   toggleSubscriptionActiveTool,
   transferAccountToPortfolioTool,
   transferBetweenPortfoliosTool,
@@ -466,6 +481,7 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   updateBudgetPlanLineTool,
   updateBudgetPlanTool,
   updateCategoryTool,
+  updateCustomCurrencyTool,
   updateGoalTool,
   updateInvestmentTransactionTool,
   updateLoanTool,

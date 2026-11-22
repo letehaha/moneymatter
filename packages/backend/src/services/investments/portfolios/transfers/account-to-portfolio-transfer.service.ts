@@ -6,6 +6,7 @@ import Portfolios from '@models/investments/portfolios.model';
 import * as Transactions from '@models/transactions.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { updatePortfolioBalance } from '@services/investments/portfolios/balances';
+import { roundPositiveAmount } from '@services/transactions/round-positive-amount';
 
 import {
   assertAccountNotBankLinked,
@@ -43,13 +44,21 @@ const accountToPortfolioTransferImpl = async ({
   await findPortfolioOrThrow({ portfolioId, userId, role: 'destination' });
   await findCurrencyOrThrow({ currencyCode });
 
-  const txAmount = Money.fromDecimal(amount);
+  const txAmount = await roundPositiveAmount({ money: Money.fromDecimal(amount), userId, currencyCode });
+  const roundedAmount = txAmount.toDecimalString(10);
   const refCurrencyCode = await getUserBaseCurrencyCode({ userId });
-  const refAmount = await computeRefAmount({ amount, currencyCode, userId, date, baseCurrencyCode: refCurrencyCode });
+  const refAmount = await computeRefAmount({
+    amount: roundedAmount,
+    currencyCode,
+    userId,
+    date,
+    baseCurrencyCode: refCurrencyCode,
+  });
 
   // Create expense Transaction on the account
   const newTx = await Transactions.createTransaction({
     userId,
+    definitionOwnerUserId: userId,
     amount: txAmount,
     refAmount,
     transactionType: TRANSACTION_TYPES.expense,
@@ -70,7 +79,7 @@ const accountToPortfolioTransferImpl = async ({
     toPortfolioId: portfolioId,
     fromPortfolioId: null,
     toAccountId: null,
-    amount,
+    amount: roundedAmount,
     refAmount,
     currencyCode,
     date,
@@ -83,8 +92,8 @@ const accountToPortfolioTransferImpl = async ({
     userId,
     portfolioId,
     currencyCode,
-    availableCashDelta: amount,
-    totalCashDelta: amount,
+    availableCashDelta: roundedAmount,
+    totalCashDelta: roundedAmount,
   });
 
   return transfer.reload({

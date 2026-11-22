@@ -25,7 +25,7 @@ This is why a number can move in one place and not the other. A transfer or a ba
 |---|---|---|
 | **Expense** and **Income** transactions | Counted | Change the balance |
 | Transfers between your own accounts | Not counted, except loan payments (an expense) | One account goes down, the other goes up |
-| **Out of Wallet** transfers | Not counted | Change the balance |
+| **Out of wallet** transfers | Not counted | Change the balance |
 | Balance adjustments | Not counted | Change the balance |
 | Linked refunds | Subtracted from the original purchase, not counted as new income | Change the balance |
 | Split transactions | Each part counts under its own category | The whole amount changes the balance |
@@ -50,12 +50,12 @@ For example, you move 500 EUR from your current account to your savings account.
 
 For more on how transfers are recorded, see [How transfers work](/transfers-and-refunds/how-transfers-work/).
 
-### Out of Wallet transfers
+### Out of wallet transfers
 
-An **Out of Wallet** transfer moves money to or from somewhere you don't track in MoneyMatter. It is also left out of income and expenses. It still changes the account's balance, so your balance and net worth go down (or up) while your expenses don't.
+An **Out of wallet** transfer moves money to or from somewhere you don't track in MoneyMatter. It is also left out of income and expenses. It still changes the account's balance, so your balance and net worth go down (or up) while your expenses don't.
 
 <Aside type="tip" title="Is it really spending?">
-If money left for good, for example you paid a friend back for dinner, record it as an **Expense** instead of an **Out of Wallet** transfer. Only expenses show up in your spending.
+If money left for good, for example you paid a friend back for dinner, record it as an **Expense** instead of an **Out of wallet** transfer. Only expenses show up in your spending.
 </Aside>
 
 ### Balance adjustments
@@ -76,7 +76,7 @@ When you [link a refund](/transfers-and-refunds/refunds/) to the original transa
 
 Each side of a refund pair is netted in its own period. The purchase is taken off expenses in the period it happened, and the refund is taken off income in the period it arrived. A side is netted only when its transaction is inside the dates and filters you're looking at.
 
-This is the same in every report: the **Cash Flow** widget and report, **Monthly Comparison**, the summary cards, **Cumulative Progress**, **Pivot**, and the spending-by-category views such as **Expenses Structure** and **Category Breakdown**.
+This is the same in every report: the **Cash Flow** widget and report, **Trends Comparison** (the total, **Category breakdown** and both **Over time** modes), **Pivot**, and the spending-by-category views such as **Expenses Structure**.
 
 Here's an example. You spend 100 EUR on January 10, and a 30 EUR refund linked to it arrives on February 5.
 
@@ -140,7 +140,7 @@ See [Manage accounts](/accounts/manage-accounts/) for more on archiving.
 
 In [General settings](/settings/general-settings/#count-categories-as-savings), **Count categories as savings** lets you pick categories that mean "money I set aside" rather than "money I spent". Money in these categories and their subcategories is left out of both income and expenses, so it counts as savings instead.
 
-This applies to cash-flow numbers only: the **Cash Flow** widget, the **Cash Flow** report (where its flow diagram shows that money as a savings destination) and the **Monthly Comparison** chart in **Trends Comparison**. The spending breakdowns (the **Expenses Structure** and **Categories Watchlist** widgets, **Trends Comparison**'s summary and **Category Breakdown**, and **Pivot**) still show that money as spending.
+This applies to cash-flow numbers only: the **Cash Flow** widget, the **Cash Flow** report (where its flow diagram shows that money as a savings destination) and the **Per period** chart under **Over time** in **Trends Comparison**. Everything else still shows that money as spending: the **Expenses Structure** and **Categories Watchlist** widgets, the total, **Category breakdown** and **Cumulative** chart in **Trends Comparison**, and **Pivot**.
 
 For example, you earn 3,000 EUR and spend 2,000 EUR, and 500 EUR of that goes to a savings category.
 
@@ -154,11 +154,12 @@ For example, you earn 3,000 EUR and spend 2,000 EUR, and 500 EUR of that goes to
 All stats are shown in your [base currency](/settings/base-currency-and-currencies/).
 
 - Each transaction is converted when you save it, using the exchange rate for the transaction's date. Reports use that converted amount, so a past expense doesn't change when rates move later.
-- If a currency has a custom rate (its **Live update** switch is off), that rate is used for every date.
+- If a currency has a custom rate (its **Live rate** switch is off), that rate is used for every date.
 - If no rate exists for the exact day, the most recent rate MoneyMatter has is used instead.
 - Editing a transaction converts it again, at the rate for its current date.
 - Changing a custom rate re-values the balances of accounts in that currency, but not the transactions you already recorded.
 - Changing your base currency recalculates every transaction at the exchange rate for its own date.
+- A [custom currency](/settings/custom-currencies/) has no market rate. Its transactions use the rate from its [rate source](/settings/rate-sources/) on their own date, and are valued again when that rate or source changes.
 
 ### Why net worth moves with exchange rates
 
@@ -194,8 +195,8 @@ Planned transactions haven't happened yet, so they never change a balance. Repor
 
 - Dashboard widgets that show income and expenses count them by default. Each widget has an **Include planned transactions** switch in its settings.
 - The **Balance trend** widget shows them as a dashed projection past today. It does this when the period reaches today and the line is set to **Total** or **Accounts**. The projection is on by default; switch off **Include planned transactions** in the widget's settings to hide it.
-- The **Cash Flow** report and the **Monthly Comparison** and **Category Breakdown** charts in **Trends Comparison** always count them.
-- The **Trends Comparison** summary and **Cumulative Progress**, **Pivot** and **Net Worth Drivers** never count them.
+- The **Cash Flow** report always counts them. So do the total, **Category breakdown** and the **Per period** chart in **Trends Comparison**.
+- The **Cumulative** chart in **Trends Comparison**, **Pivot** and **Net Worth Drivers** never count them.
 
 That's why two numbers on the same page can differ when you have planned transactions in the period.
 

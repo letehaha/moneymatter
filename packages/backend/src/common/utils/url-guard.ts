@@ -17,7 +17,7 @@ type FetchInit = Parameters<typeof globalThis.fetch>[1];
 
 // Local development points at LLMs on the developer's own machine. Tests run with
 // NODE_ENV=test, so the guard stays on there.
-function isGuardBypassed(): boolean {
+export function isGuardBypassed(): boolean {
   return isSelfHost() || process.env.NODE_ENV === 'development';
 }
 

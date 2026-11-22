@@ -15,11 +15,14 @@ export const getTrackerSpendingStatsTool = defineTool({
     trackerId: recordId().describe('ID of the tracker to retrieve spending stats for'),
   },
   run: async ({ userId, args }) => {
-    const [spendingStats, stats] = await Promise.all([
+    const [spending, trackerStats] = await Promise.all([
       getTrackerSpendingStats({ userId, trackerId: args.trackerId }),
       getTrackerStats({ userId, trackerId: args.trackerId }),
     ]);
 
-    return { ...serializeTrackerSpendingStats(spendingStats), ...serializeTrackerStats(stats) };
+    return {
+      ...serializeTrackerSpendingStats(spending),
+      ...serializeTrackerStats(trackerStats),
+    };
   },
 });

@@ -13,12 +13,18 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
 
 const formattedActualAmount = computed(() => {
   if (props.payload.actualAmount === undefined) return '';
-  return formatAmountByCurrencyCode(props.payload.actualAmount, props.payload.currencyCode || 'USD');
+  return formatAmountByCurrencyCode({
+    amount: props.payload.actualAmount,
+    currencyCode: props.payload.currencyCode || 'USD',
+  });
 });
 
 const formattedThresholdAmount = computed(() => {
   if (props.payload.thresholdAmount === undefined) return '';
-  return formatAmountByCurrencyCode(props.payload.thresholdAmount, props.payload.currencyCode || 'USD');
+  return formatAmountByCurrencyCode({
+    amount: props.payload.thresholdAmount,
+    currencyCode: props.payload.currencyCode || 'USD',
+  });
 });
 
 const message = computed(() => {

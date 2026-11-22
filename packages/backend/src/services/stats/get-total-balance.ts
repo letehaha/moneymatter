@@ -1,4 +1,6 @@
-import { getBalanceHistory } from './get-balance-history';
+import { type MinorUnits, asMinorUnits } from '@bt/shared/types';
+
+import { getBalanceHistoryRows } from './get-balance-history';
 import { getCreditLimitAdjustment } from './get-credit-limit-adjustment';
 
 /**
@@ -12,23 +14,28 @@ import { getCreditLimitAdjustment } from './get-credit-limit-adjustment';
  * @param {number} params.userId - The ID of the user for whom the total balance is to be fetched.
  * @param {string} params.date - The date in 'yyyy-mm-dd' format for which the total balance is to be calculated.
  * @param {boolean} [params.includeCreditLimit] - Whether to subtract credit limits from the total.
- * @returns {Promise<number>} - Total balance for asked date (in cents).
+ * @param {number} params.decimals - Decimals of the base currency: the scale of the result.
+ * @returns {Promise<MinorUnits>} - Total balance for asked date (in minor units of the base currency).
  */
 export const getTotalBalance = async ({
   userId,
   date,
   includeCreditLimit = false,
+  decimals,
 }: {
   userId: number;
   date: string;
   includeCreditLimit?: boolean;
-}): Promise<number> => {
+  decimals: number;
+}): Promise<MinorUnits> => {
   const [balancesForDate, creditLimitSum] = await Promise.all([
-    getBalanceHistory({ userId, accountScope: 'accessible', from: date, to: date }),
-    includeCreditLimit ? getCreditLimitAdjustment({ userId, accountScope: 'accessible' }) : Promise.resolve(0),
+    getBalanceHistoryRows({ userId, accountScope: 'accessible', from: date, to: date, decimals }),
+    includeCreditLimit
+      ? getCreditLimitAdjustment({ userId, accountScope: 'accessible', decimals })
+      : Promise.resolve(0),
   ]);
 
-  const totalBalance = balancesForDate.reduce((acc, value) => (acc += value.amount.toCents()), 0);
+  const totalBalance = balancesForDate.reduce((acc, row) => acc + row.amount, 0);
 
-  return totalBalance - creditLimitSum;
+  return asMinorUnits(totalBalance - creditLimitSum);
 };

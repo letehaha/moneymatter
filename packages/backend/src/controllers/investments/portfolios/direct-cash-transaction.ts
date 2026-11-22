@@ -1,4 +1,4 @@
-import { currencyCode, dateString, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, isoCurrencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { directCashTransaction } from '@services/investments/portfolios/transfers';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ const schema = z.object({
   body: z.object({
     type: z.enum(['deposit', 'withdrawal']),
     amount: positiveAmountString(),
-    currencyCode: currencyCode(),
+    currencyCode: isoCurrencyCode(),
     date: dateString(),
     description: z.string().nullable().optional(),
     isAdjustment: z.boolean().optional(),

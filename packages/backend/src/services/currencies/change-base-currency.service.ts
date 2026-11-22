@@ -9,12 +9,16 @@ import {
   type RecalculateResult,
   RESOURCE_TYPES,
 } from '@bt/shared/types';
+import {
+  assertMoneyWithinMinorUnitRange,
+  getConversionDecimals,
+  getCurrencyDecimals,
+} from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
-import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
-import { captureException } from '@js/utils/sentry';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import BudgetPlans from '@models/budget-plans.model';
@@ -25,6 +29,7 @@ import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Portfolios from '@models/investments/portfolios.model';
 import LoanDetails from '@models/loan-details.model';
 import ResourceShares from '@models/resource-shares.model';
+import TransactionSplits from '@models/transaction-splits.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import UserSettings from '@models/user-settings.model';
@@ -32,6 +37,7 @@ import { getBaseCurrency, updateCurrencies } from '@models/users-currencies.mode
 import { isRevaluedAccount, revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
+import { clearRefAmountCache } from '@services/ref-amount-cache';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import { Op, QueryTypes, Transaction as SequelizeTransaction } from 'sequelize';
 
@@ -49,6 +55,7 @@ import { Op, QueryTypes, Transaction as SequelizeTransaction } from 'sequelize';
  * Transactions.refAmount
  * Transactions.refCurrencyCode
  * Transactions.refCommissionRate
+ * TransactionSplits.refAmount
  * 3. Holdings
  * Holdings.refCostBasis
  * 4. InvestmentTransaction
@@ -131,11 +138,11 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
     ResourceShares.count({
       where: {
         [Op.or]: [{ ownerUserId: userId }, { sharedWithUserId: userId }],
-        resourceType: RESOURCE_TYPES.account,
+        resourceType: [RESOURCE_TYPES.account, RESOURCE_TYPES.tracker],
         acceptedAt: { [Op.not]: null },
       },
     }),
-    // Budgeted amounts are cents in the plan's stamped currency, so a silent
+    // Budgeted amounts are plain numbers in the plan's stamped currency, so a silent
     // switch would turn 300 UAH into 300 EUR. A soft-deleted plan (excluded by
     // the paranoid scope) doesn't lock: restore compares `currencyCode` instead.
     BudgetPlans.count({ where: { userId } }),
@@ -190,9 +197,9 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
 /**
  * Rewrites every `ref*` amount the user owns into the new base currency inside one
  * atomic DB transaction, flips the `UsersCurrencies` default, and clears the
- * `ref_amount:{userId}:*` cache. Re-runs {@link validateBaseCurrencyChange} first
- * (in-job re-check), then sweeps the eight tables in order, invoking `onProgress`
- * before each so the running job reports its current step.
+ * user's ref-amount cache. Re-runs {@link validateBaseCurrencyChange} first (in-job re-check),
+ * then sweeps the eight tables in order, invoking `onProgress` before each so the running job
+ * reports its current step.
  *
  * Foreign-currency accounts' balance history is rebuilt after that transaction
  * commits: a rebuild inside it would still read the old base currency.
@@ -309,7 +316,7 @@ export async function changeBaseCurrencyImpl({
     });
 
     // Cached ref_amount values were computed against the OLD base — drop them.
-    await clearUserCache(userId);
+    await clearRefAmountCache({ userId });
 
     logger.info(`Base currency change completed for user ${userId}`);
 
@@ -348,8 +355,23 @@ const localCalculateRefAmount = async ({
     ...exchangeRateParams,
     date: new Date(exchangeRateParams.date),
   });
+  const decimals = await getConversionDecimals({
+    userId: exchangeRateParams.userId,
+    definitionOwnerUserId: exchangeRateParams.userId,
+    baseCode: exchangeRateParams.baseCode,
+    quoteCode: exchangeRateParams.quoteCode,
+  });
 
-  return calculateRefAmountFromParams({ amount, rate, useFloorAbs });
+  const refAmount = calculateRefAmountFromParams({ amount, rate, useFloorAbs, ...decimals });
+  if (useFloorAbs !== false) {
+    assertMoneyWithinMinorUnitRange({
+      money: refAmount,
+      decimals: decimals.quoteDecimals,
+      code: exchangeRateParams.quoteCode,
+    });
+  }
+
+  return refAmount;
 };
 
 /**
@@ -408,7 +430,61 @@ async function rebuildTransactions(params: {
     await tx.save({ transaction, hooks: false });
   }
 
+  await rebuildSplitRefAmounts({ userId, newCurrencyCode, transactions, transaction });
+
   return transactions.length;
+}
+
+/**
+ * Derives each split's refAmount from its parent's new refAmount, so the primary leg
+ * (`tx.refAmount - Σ splits`) stays non-negative: a split never takes more than what
+ * the parent has left after the splits before it.
+ */
+async function rebuildSplitRefAmounts({
+  userId,
+  newCurrencyCode,
+  transactions,
+  transaction,
+}: {
+  userId: number;
+  newCurrencyCode: string;
+  transactions: Transactions[];
+  transaction: SequelizeTransaction;
+}): Promise<void> {
+  const splits = await TransactionSplits.findAll({
+    attributes: ['id', 'transactionId', 'amount'],
+    include: [{ model: Transactions, attributes: [], where: { userId }, paranoid: false, required: true }],
+    order: [
+      ['transactionId', 'ASC'],
+      ['id', 'ASC'],
+    ],
+    transaction,
+  });
+  if (!splits.length) return;
+
+  const txById = new Map(transactions.map((tx) => [tx.id, tx]));
+  const decimals = await getCurrencyDecimals({ userId, code: newCurrencyCode });
+  const allocatedByTxId = new Map<string, Money>();
+  const updates: { id: string; amount: Money }[] = [];
+
+  for (const split of splits) {
+    const tx = txById.get(split.transactionId);
+    if (!tx || tx.amount.isZero()) continue;
+
+    const scaled = (
+      tx.currencyCode === newCurrencyCode
+        ? split.amount
+        : split.amount.multiply(tx.refAmount.toString()).divide(tx.amount.toString())
+    ).roundHalfEven(decimals);
+    const allocated = allocatedByTxId.get(tx.id) ?? Money.zero();
+    const remaining = tx.refAmount.subtract(allocated);
+    const refAmount = scaled.greaterThan(remaining) ? remaining : scaled;
+
+    allocatedByTxId.set(tx.id, allocated.add(refAmount));
+    updates.push({ id: split.id, amount: refAmount });
+  }
+
+  await writeMoneyColumn({ table: 'TransactionSplits', column: 'refAmount', rows: updates, transaction });
 }
 
 /**
@@ -560,11 +636,15 @@ async function recalculateLoanDetails(params: {
 
 const ROWS_PER_UPDATE = 500;
 
-async function writeBalanceAmounts({
+async function writeMoneyColumn({
+  table,
+  column,
   rows,
   transaction,
 }: {
-  rows: { id: string; amountCents: number }[];
+  table: 'Balances' | 'TransactionSplits';
+  column: 'amount' | 'refAmount';
+  rows: { id: string; amount: Money }[];
   transaction: SequelizeTransaction;
 }): Promise<void> {
   for (let offset = 0; offset < rows.length; offset += ROWS_PER_UPDATE) {
@@ -572,13 +652,13 @@ async function writeBalanceAmounts({
     const replacements: Record<string, unknown> = {};
     const values = chunk.map((row, index) => {
       replacements[`id${index}`] = row.id;
-      replacements[`amount${index}`] = row.amountCents;
-      return `(:id${index}::uuid, :amount${index}::bigint)`;
+      replacements[`amount${index}`] = toMoneyColumnValue({ money: row.amount });
+      return `(:id${index}::uuid, :amount${index}::numeric)`;
     });
 
     await Transactions.sequelize!.query(
-      `UPDATE "Balances" AS b
-          SET "amount" = v.amount, "updatedAt" = NOW()
+      `UPDATE "${table}" AS b
+          SET "${column}" = v.amount${table === 'Balances' ? ', "updatedAt" = NOW()' : ''}
          FROM (VALUES ${values.join(', ')}) AS v(id, amount)
         WHERE b."id" = v.id`,
       { replacements, transaction },
@@ -644,7 +724,13 @@ async function rebuildBalances(params: {
     transaction,
   });
 
-  const updates: { id: string; amountCents: number }[] = [];
+  const updates: { id: string; amount: Money }[] = [];
+  const decimals = await getConversionDecimals({
+    userId,
+    definitionOwnerUserId: userId,
+    baseCode: oldCurrencyCode,
+    quoteCode: newCurrencyCode,
+  });
 
   for (const balance of balances) {
     const rate = resolveRate?.(toDayKey(balance.date)) ?? null;
@@ -657,13 +743,14 @@ async function rebuildBalances(params: {
             quoteCode: newCurrencyCode,
             date: balance.date,
           })
-        : calculateRefAmountFromParams({ amount: balance.amount, rate });
+        : calculateRefAmountFromParams({ amount: balance.amount, rate, ...decimals });
+    assertMoneyWithinMinorUnitRange({ money: newAmount, decimals: decimals.quoteDecimals, code: newCurrencyCode });
 
-    updates.push({ id: balance.id, amountCents: newAmount.toCents() });
+    updates.push({ id: balance.id, amount: newAmount });
     totalBalancesRecalculated++;
   }
 
-  await writeBalanceAmounts({ rows: updates, transaction });
+  await writeMoneyColumn({ table: 'Balances', column: 'amount', rows: updates, transaction });
 
   return { totalBalancesRecalculated, revaluedAccountIds };
 }
@@ -902,12 +989,18 @@ async function convertFireSettingsAmounts({
     quoteCode: newCurrencyCode,
     date: new Date(),
   });
+  const decimals = await getConversionDecimals({
+    userId,
+    definitionOwnerUserId: userId,
+    baseCode: oldCurrencyCode,
+    quoteCode: newCurrencyCode,
+  });
   const convert = ({ fire: settings }: { fire: FireSettings }): FireSettings => {
     const converted = { ...settings };
     for (const key of FIRE_AMOUNT_KEYS) {
       const value = settings[key];
       if (value == null) continue;
-      converted[key] = calculateRefAmountFromParams({ amount: Money.fromDecimal(value), rate }).toNumber();
+      converted[key] = calculateRefAmountFromParams({ amount: Money.fromDecimal(value), rate, ...decimals }).toNumber();
     }
     return converted;
   };
@@ -918,32 +1011,4 @@ async function convertFireSettingsAmounts({
     fireHistory: fireHistory?.map((entry) => ({ ...entry, fire: convert({ fire: entry.fire }) })),
   };
   await userSettings.save({ transaction });
-}
-
-/**
- * Clears Redis cache entries for ref_amount calculations.
- * After changing base currency, all cached ref_amount values are invalid
- * because they were calculated with the OLD base currency.
- *
- * Uses Redis SCAN to safely iterate and delete all ref_amount keys for this user.
- */
-async function clearUserCache(userId: number): Promise<void> {
-  logger.info(`Clearing ref_amount cache for user ${userId}`);
-
-  try {
-    const cache = new CacheClient({ logPrefix: 'clearUserCache' });
-
-    // Delete all ref_amount cache keys for this user using pattern matching
-    // Pattern: ref_amount:${userId}:*
-    const pattern = `ref_amount:${userId}:*`;
-    await cache.delete(pattern, true); // isPattern=true triggers SCAN-based deletion
-
-    logger.info(`Successfully cleared ref_amount cache for user ${userId}`);
-  } catch (error) {
-    // Stale ref_amount cache after a base change silently serves old-base values
-    // until each key's TTL. Never throws (the recalc already committed), but the
-    // failure must be visible, so it goes to Sentry as well as the logs.
-    logger.error({ message: `Error clearing cache for user ${userId}`, error: error as Error });
-    captureException({ error, context: { scope: 'change-base-currency:clearUserCache', userId } });
-  }
 }

@@ -1,32 +1,31 @@
+import type { ConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+
+/**
+ * Investment figures reach the API as two-decimal display strings whatever the currency, so their
+ * conversions round to 2 on purpose instead of looking the decimals up.
+ */
+export const INVESTMENT_CONVERSION_DECIMALS: ConversionDecimals = { baseDecimals: 2, quoteDecimals: 2 };
 
 export const calculateRefAmountFromParams = ({
   amount,
   rate,
   useFloorAbs = true,
+  baseDecimals,
+  quoteDecimals,
 }: {
   amount: Money;
   rate: number;
-  // Investments use DECIMAL columns and need full decimal precision instead of integer cents.
+  // Investments keep the full decimal precision of the product instead of rounding it.
   useFloorAbs?: boolean;
-}): Money => {
+} & ConversionDecimals): Money => {
   if (!useFloorAbs) {
-    // Investments are stored as DECIMAL columns - preserve full precision via Money arithmetic
-    // instead of round-tripping through integer cents (which both loses precision and would
-    // throw when amountCents * rate produces a fractional result like 128479.5).
+    // Investments are stored as DECIMAL columns - preserve full precision via Money arithmetic.
     return amount.multiply(rate);
   }
 
-  const amountCents = amount.toCents();
-  const isNegative = amountCents < 0;
-
-  // Use Banker's Rounding (round half to even) per IEEE 754 and IFRS/GAAP standards.
-  // This minimizes cumulative rounding bias in bidirectional currency conversions (e.g., USD → EUR → USD).
-  // Since amounts are stored as integers (cents * 100), rounding still produces integers
-  // but with better reversibility and compliance with accounting standards.
-  const refAmount = amountCents === 0 ? 0 : roundHalfToEven(Math.abs(amountCents) * rate);
-  const finalAmount = isNegative ? refAmount * -1 : refAmount;
-
-  return Money.fromCents(finalAmount);
+  // Banker's rounding (round half to even) per IEEE 754 and IFRS/GAAP standards. It minimizes
+  // cumulative rounding bias in bidirectional currency conversions (e.g., USD → EUR → USD) and is
+  // symmetric around zero, so the sign needs no special handling.
+  return amount.round(baseDecimals).multiply(rate).roundHalfEven(quoteDecimals);
 };

@@ -9,7 +9,7 @@ export const getPortfolioTool = defineTool({
   toolset: 'investments',
   access: 'read',
   description:
-    'Read one portfolio by id: name, portfolio type (investment/retirement/savings/other), description, enabled state and creation date. Use get_portfolio_summary for its values and gains.',
+    'Read one portfolio by id: name, portfolio type (investment/retirement/savings/other), description, externalUrl, enabled state and creation date. Use get_portfolio_summary for its values and gains.',
   input: {
     portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
   },

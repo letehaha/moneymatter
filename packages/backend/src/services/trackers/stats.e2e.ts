@@ -649,4 +649,81 @@ describe('Get tracker stats', () => {
       expect(stats.otherSpent).toBe(0);
     });
   });
+
+  describe('Base currency decimals', () => {
+    it.each([
+      { kind: 'manual', expense: 1.234, limit: 10.125 },
+      { kind: 'category', expense: 1.234, limit: 10.125 },
+    ])(
+      'reports a $kind tracker of a $expense expense against a $limit limit at KWD decimals',
+      async ({ kind, expense, limit }) => {
+        const currencyCode = 'KWD';
+        const seedAndRead = async () => {
+          await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+          const account = await helpers.createAccount({
+            payload: helpers.buildAccountPayload({ currencyCode }),
+            raw: true,
+          });
+          const category = await helpers.addCustomCategory({ name: 'Precision', color: '#AABBCC', raw: true });
+          const [tx] = await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id,
+              categoryId: category.id,
+              amount: expense,
+              transactionType: TRANSACTION_TYPES.expense,
+              time: '2025-06-15T10:00:00Z',
+            }),
+            raw: true,
+          });
+          const tracker =
+            kind === 'manual'
+              ? await helpers.createTracker({ name: 'precision-manual', limitAmount: limit, raw: true })
+              : await helpers.createTracker({
+                  name: 'precision-category',
+                  rulesEnabled: true,
+                  categoryIds: [category.id],
+                  startDate: '2025-06-01T00:00:00Z',
+                  endDate: '2025-06-30T23:59:59Z',
+                  limitAmount: limit,
+                  raw: true,
+                });
+          if (kind === 'manual') {
+            await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx.id] } });
+          }
+          return (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+        };
+
+        const stats = await helpers.asNewUserWithBaseCurrency({ currencyCode, fn: seedAndRead });
+
+        expect(stats.summary.actualExpense).toBe(expense);
+        expect(stats.summary.balance).toBe(-expense);
+        expect(stats.summary.actualIncome).toBe(0);
+        expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((expense / limit) * 100).toFixed(2));
+      },
+    );
+  });
+
+  describe('Cross-user isolation', () => {
+    it('answers 404 to a user with no claim on the tracker, on every read route', async () => {
+      const category = await helpers.addCustomCategory({ name: 'Isolation', color: '#AABBCC', raw: true });
+      const categoryBudget = await helpers.createTracker({
+        name: 'isolated-category',
+        rulesEnabled: true,
+        categoryIds: [category.id],
+        raw: true,
+      });
+      const manualBudget = await helpers.createTracker({ name: 'isolated-manual', raw: true });
+
+      const stranger = await helpers.signUpSecondUser();
+      await helpers.asUser({
+        cookies: stranger.cookies,
+        fn: async () => {
+          for (const id of [categoryBudget.id, manualBudget.id]) {
+            expect((await helpers.getTrackerById({ id, raw: false })).statusCode).toBe(ERROR_CODES.NotFoundError);
+            expect((await helpers.getTrackerStats({ id, raw: false })).statusCode).toBe(ERROR_CODES.NotFoundError);
+          }
+        },
+      });
+    });
+  });
 });

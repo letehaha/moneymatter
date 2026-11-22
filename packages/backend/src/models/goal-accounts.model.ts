@@ -33,7 +33,7 @@ export default class GoalAccounts extends Model {
   }
 
   /** In the account's currency. */
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare fixedAmount: Money | null;
 
   /** Set with `fixedAmount`. */

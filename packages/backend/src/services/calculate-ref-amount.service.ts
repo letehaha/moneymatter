@@ -1,20 +1,16 @@
+import { getConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
-import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
 import * as Currencies from '@models/currencies.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 
 import { calculateRefAmountFromParams } from './calculate-ref-amount.utils';
 import { withTransaction } from './common/with-transaction';
-
-const refAmountCache = new CacheClient<string>({
-  logPrefix: 'calculateRefAmountImpl',
-  ttl: 3600, // 1 hour
-  parseJson: true,
-});
+import { buildRefAmountCacheKey, refAmountCache, serializeRefAmountCacheValue } from './ref-amount-cache';
 
 /**
  * Calculates the reference amount for the provided currencies and parameters.
@@ -31,14 +27,13 @@ const refAmountCache = new CacheClient<string>({
  * @returns {Promise<number>} The reference amount after conversion, or the original amount if the base currency is the user's default or the same as the quote currency.
  * @throws {Error} Throws an error if the exchange rate cannot be fetched or the transaction fails.
  * @example
- * const refAmount = await calculateRefAmount({ amount: 100, userId: 42, baseCode: 'USD', quoteCode: 'EUR' });
- * const refAmountForDefaultUserCurrency = await calculateRefAmount({ amount: 100, userId: 42, baseCode: 'USD' });
+ * const refAmount = await calculateRefAmount({ amount: 100, userId: 42, definitionOwnerUserId: 42, baseCode: 'USD', quoteCode: 'EUR' });
+ * const refAmountForDefaultUserCurrency = await calculateRefAmount({ amount: 100, userId: 42, definitionOwnerUserId: 42, baseCode: 'USD' });
  */
 async function calculateRefAmountImpl(params: Params): Promise<Money> {
-  const { baseCode, quoteCode, userId, amount, bypassCache = false } = params;
+  const { baseCode, quoteCode, userId, amount, bypassCache = false, definitionOwnerUserId } = params;
 
-  const dateStr = new Date(params.date).toISOString().split('T')[0];
-  const amountCents = amount.toCents();
+  const dateStr = new Date(params.date).toISOString().split('T')[0]!;
 
   try {
     // Resolve the quote currency BEFORE building the cache key: when `quoteCode` is
@@ -70,20 +65,31 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
       });
     }
 
-    const cacheKey = `ref_amount:${userId}:${amountCents}:${baseCode}:${resolvedQuoteCode}:${dateStr}`;
+    // A custom conversion depends on the definition owner's decimals, which the cache key does not
+    // carry, so it is never cached.
+    const involvesCustomCurrency = await includesCustomCurrencyCode({ codes: [baseCode, resolvedQuoteCode] });
+    const useCache = !bypassCache && !involvesCustomCurrency;
 
-    if (!bypassCache) {
+    const cacheKey = buildRefAmountCacheKey({
+      userId,
+      amount,
+      baseCode,
+      quoteCode: resolvedQuoteCode,
+      dateStr,
+    });
+
+    if (useCache) {
       const cachedAmount = await refAmountCache.read(cacheKey);
 
       if (cachedAmount !== null) {
-        return Money.fromCents(parseInt(cachedAmount, 10));
+        return Money.fromDecimal(cachedAmount);
       }
     }
 
     // If baseCode equals the resolved quote currency, no conversion is needed.
     if (resolvedQuoteCode === baseCode) {
-      if (!bypassCache) {
-        await refAmountCache.write({ key: cacheKey, value: amountCents.toString() });
+      if (useCache) {
+        await refAmountCache.write({ key: cacheKey, value: serializeRefAmountCacheValue({ amount }) });
       }
       return amount;
     }
@@ -96,13 +102,20 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
       bypassCache,
     });
 
-    const finalAmount = calculateRefAmountFromParams({ amount, rate: result.rate });
+    const decimals = await getConversionDecimals({
+      userId,
+      baseCode,
+      quoteCode: resolvedQuoteCode,
+      definitionOwnerUserId,
+    });
 
-    // Cache the final result as cents. Skipped under `bypassCache` (see its doc):
+    const finalAmount = calculateRefAmountFromParams({ amount, rate: result.rate, ...decimals });
+
+    // Cache the final result as an exact decimal string. Skipped under `bypassCache` (see its doc):
     // a write-back inside an uncommitted rate-write transaction would poison the
     // cache on rollback.
-    if (!bypassCache) {
-      await refAmountCache.write({ key: cacheKey, value: finalAmount.toCents().toString() });
+    if (useCache) {
+      await refAmountCache.write({ key: cacheKey, value: serializeRefAmountCacheValue({ amount: finalAmount }) });
     }
 
     return finalAmount;
@@ -118,7 +131,13 @@ export { calculateRefAmountFromParams } from './calculate-ref-amount.utils';
 
 type Params = {
   amount: Money;
+  /** User whose base currency and rates drive the conversion. */
   userId: number;
+  /**
+   * Whose definition of `baseCode` rounds the amount before it converts: the account owner for an
+   * amount on an account, `userId` for the user's own entities.
+   */
+  definitionOwnerUserId: number;
   date: Date | string;
   baseCode: string;
   quoteCode?: string;

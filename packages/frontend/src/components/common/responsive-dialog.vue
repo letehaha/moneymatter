@@ -33,23 +33,38 @@ const props = withDefaults(
      * accessible labels with no surrounding header spacing, instead of a styled visible header.
      * Use when the content owns its own visible heading but Radix still needs a DialogTitle. */
     srOnlyHeader?: boolean;
-    /** When false, nothing closes the dialog but the parent flipping `open`: ESC, outside
-     * click and drawer swipe are ignored. For app-locking progress that must run to the end. */
+    /** When false, nothing closes the dialog but the parent flipping `open`: ESC, outside click
+     * and the close button emit `dismiss-blocked` instead, drawer swipe is inert, and the slot
+     * `close` and `closeWhen` do nothing. For app-locking progress, or a draft the parent confirms. */
     dismissible?: boolean;
   }>(),
   { dismissible: true },
 );
 
-const emit = defineEmits(['update:open', 'open-auto-focus']);
+const emit = defineEmits<{
+  'update:open': [value: boolean];
+  'open-auto-focus': [event: Event];
+  'dismiss-blocked': [];
+}>();
 
 const isOpen = useVModel(props, 'open', emit, { passive: true });
 
 const setOpen = (open: boolean) => {
-  if (!open && !props.dismissible) return;
+  if (!open && !props.dismissible) {
+    emit('dismiss-blocked');
+    return;
+  }
   isOpen.value = open;
 };
 
-const close = () => setOpen(false);
+// A non-dismissible vaul drawer cancels an outside press or ESC without emitting `update:open`.
+const onDrawerDismissAttempt = () => {
+  if (!props.dismissible) emit('dismiss-blocked');
+};
+
+const close = () => {
+  if (props.dismissible) isOpen.value = false;
+};
 
 useCloseDialogWhen({ when: () => !!props.closeWhen, close });
 </script>
@@ -84,6 +99,8 @@ useCloseDialogWhen({ when: () => !!props.closeWhen, close });
           drawerContentClass,
         ]"
         @open-auto-focus="(event: Event) => emit('open-auto-focus', event)"
+        @pointer-down-outside="onDrawerDismissAttempt"
+        @escape-key-down="onDrawerDismissAttempt"
       >
         <template v-if="props.srOnlyHeader">
           <Drawer.DrawerTitle class="sr-only">

@@ -1,10 +1,11 @@
-import { isWithinReachedHold, toGoalCurrency } from '@bt/shared/goals/goal-math';
+import { isWithinReachedHold } from '@bt/shared/goals/goal-math';
 import {
   type GoalModel,
   type GoalReachedNotificationPayload,
   NOTIFICATION_TYPES,
   type RecordId,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
@@ -83,9 +84,13 @@ const syncGoalAchievement = async ({
     try {
       if (goal.insights.status === 'reached') {
         if (goal.achievedAt) continue;
-        const achievedAmount = Money.fromDecimal(
-          toGoalCurrency({ amount: goal.insights.currentValue, rateToBase: goal.insights.rateToBase }),
-        );
+        // The base-currency value converted to the goal currency, rounded once half-even to its decimals.
+        const achievedAmount = await roundToCurrency({
+          money: Money.fromDecimal(goal.insights.currentValue).divide(goal.insights.rateToBase),
+          userId,
+          currencyCode: goal.currencyCode,
+          mode: 'half-even',
+        });
         if (await latchGoal({ userId, goal, achievedAt: now, achievedAmount })) {
           goal.achievedAt = now.toISOString();
           goal.achievedAmount = achievedAmount.toNumber();

@@ -6,6 +6,7 @@ import {
   VEHICLE_CLASS,
   asDecimal,
 } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { describe, expect, it } from '@jest/globals';
 import Accounts from '@models/accounts.model';
 import { connection } from '@models/connection';
@@ -31,17 +32,34 @@ const writeBalanceRow = async ({ accountId, date, cents }: { accountId: string; 
     `INSERT INTO "Balances" ("id", "accountId", "date", "amount", "createdAt", "updatedAt")
      VALUES (:id, :accountId, :date, :amount, NOW(), NOW())
      ON CONFLICT ("accountId", "date") DO UPDATE SET "amount" = EXCLUDED."amount"`,
-    { replacements: { id: uuidv7(), accountId, date: dayKey(date), amount: cents } },
+    {
+      replacements: {
+        id: uuidv7(),
+        accountId,
+        date: dayKey(date),
+        amount: Money.fromDecimal(cents / 100).toDecimalString(18),
+      },
+    },
   );
 };
 
 const readBalanceRow = async ({ accountId, date }: { accountId: string; date: Date }): Promise<number | null> => {
   const [row] = (await connection.sequelize.query(
-    `SELECT "amount"::bigint AS "cents" FROM "Balances" WHERE "accountId" = :accountId AND "date" = :date`,
+    `SELECT ROUND("amount" * 100)::bigint AS "cents" FROM "Balances" WHERE "accountId" = :accountId AND "date" = :date`,
     { type: QueryTypes.SELECT, replacements: { accountId, date: dayKey(date) } },
   )) as { cents: string }[];
 
   return row ? Number(row.cents) : null;
+};
+
+/** The stored DECIMAL as written, for assertions on the exact value at the base currency's decimals. */
+const readBalanceAmount = async ({ accountId, date }: { accountId: string; date: Date }): Promise<Money | null> => {
+  const [row] = (await connection.sequelize.query(
+    `SELECT "amount" FROM "Balances" WHERE "accountId" = :accountId AND "date" = :date`,
+    { type: QueryTypes.SELECT, replacements: { accountId, date: dayKey(date) } },
+  )) as { amount: string }[];
+
+  return row ? Money.fromDecimal(row.amount) : null;
 };
 
 const LUNCHFLOW_EXTERNAL_ACCOUNT_ID = 1001;
@@ -142,7 +160,9 @@ describe('Nightly balance revalue sweep', () => {
 
   it('re-values today for a foreign-currency bank account the provider did not sync', async () => {
     const today = new Date();
-    await helpers.seedUsdExchangeRates({ date: today, ratesPerUsd: { AED: helpers.AED_PER_USD } });
+    // 1000.5 USD × 2.25 = 2251.125 AED: a tie at the base currency's 2 decimals, which half-even
+    // rounds down to 2251.12 where half-up would give 2251.13 and no rounding would keep 2251.125.
+    await helpers.seedUsdExchangeRates({ date: today, ratesPerUsd: { AED: 2.25 } });
 
     const account = await connectBankAccount({ currency: 'USD' });
     await writeBalanceRow({ accountId: account.id, date: today, cents: CORRUPTED_CENTS });
@@ -151,9 +171,8 @@ describe('Nightly balance revalue sweep', () => {
 
     expect(result.totalProcessed).toBe(1);
     expect(result.successfulUpdates).toBe(1);
-    expect(await readBalanceRow({ accountId: account.id, date: today })).toBe(
-      account.currentBalance.toCents() * helpers.AED_PER_USD,
-    );
+    expect(account.currentBalance.toNumber()).toBe(BANK_BALANCE);
+    expect((await readBalanceAmount({ accountId: account.id, date: today }))?.toDecimalString(3)).toBe('2251.120');
   });
 
   it('rebuilds the days before the seam of a linked manual account and leaves the seam day on alone', async () => {

@@ -6,6 +6,8 @@ import isPlainObject from 'lodash/isPlainObject';
 
 import { BACKUP_TABLES, type BackupFileName } from '../registry';
 import { sha256Hex } from '../sha256';
+import { FIRST_DECIMAL_MONEY_FORMAT_VERSION, assertDecimalMoney, convertV1MoneyToDecimal } from './convert-v1-money';
+import { fillUserRateEffectiveDates, forceKnownUserRateSources } from './fill-user-rate-effective-dates';
 import { normalizeLegacyArchive } from './normalize-legacy-archive';
 
 const BACKUP_FILE_NAMES = BACKUP_TABLES.map((t) => t.fileName);
@@ -125,7 +127,8 @@ function assertRowArray({ value, path }: { value: unknown; path: string }): Row[
 
 /**
  * Decode the base64 zip, verify the manifest's format version and every file's
- * SHA-256, then parse each data/reference file. Throws a 422 `ValidationError`
+ * SHA-256, then parse each data/reference file (converting a version 1 archive's cents to
+ * decimals). Throws a 422 `ValidationError`
  * with a human-readable reason on any structural failure (unreadable zip,
  * oversized contents, missing manifest, unsupported version, checksum mismatch,
  * malformed JSON) — the whole restore is rejected before it can touch the user's
@@ -240,6 +243,16 @@ export async function loadBackupArchive({
     }
     data.set(name, assertRowArray({ value, path }));
   }
+
+  // Older archives store money as integer cents; every later step expects decimals.
+  if (formatVersion < FIRST_DECIMAL_MONEY_FORMAT_VERSION) {
+    convertV1MoneyToDecimal({ data });
+  }
+  assertDecimalMoney({ data });
+
+  // Rates saved before they were dated carry no day to start from.
+  fillUserRateEffectiveDates({ data });
+  forceKnownUserRateSources({ data });
 
   const referenceByName = new Map<string, Row[]>();
   for (const name of BACKUP_REFERENCE_FILE_NAMES) {

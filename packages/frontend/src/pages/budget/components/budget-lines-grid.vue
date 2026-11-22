@@ -148,7 +148,7 @@ const [DefineGoalStatus, GoalStatus] = createReusableTemplate<{
 const { t } = useI18n();
 const queryClient = useQueryClient();
 const { addSuccessNotification, addInfoNotification } = useNotificationCenter();
-const { formatBaseCurrency, formatShortBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency, formatShortBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { goalText } = useGoalText();
 
 const archivedLineIds = computed(() => new Set(props.archivedLines.map((line) => line.id)));
@@ -211,7 +211,7 @@ const sections = computed(() => {
     ungrouped,
     groups: groups.map((section) => ({
       ...section,
-      totals: sumLineTotals({ lines: section.lines }),
+      totals: sumLineTotals({ lines: section.lines, decimals: baseCurrencyDecimals.value }),
     })),
   };
 });

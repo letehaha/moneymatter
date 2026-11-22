@@ -13,7 +13,7 @@ import {
 } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
-import { roundCurrency } from '@services/import-export/core/round-currency';
+import { removeFloatDrift } from '@services/import-export/core/remove-float-drift';
 import { parse } from 'csv-parse/sync';
 
 import { interpretBudgetBakersWalletType, isBudgetBakersWalletTransferCategory } from './localized-values';
@@ -188,7 +188,7 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
     // The zero guard prevents IEEE-754 negative zero (-0) when `amount` is 0:
     // `-1 * 0 === -0`, which fails strict-equality checks against +0.
     const signed = type === 'Expense' ? -amount : amount;
-    const signedAmount = roundCurrency({ n: signed === 0 ? 0 : signed });
+    const signedAmount = removeFloatDrift({ n: signed === 0 ? 0 : signed });
 
     const currency = (record['currency'] ?? '').trim();
     const paymentType = (record['payment_type'] ?? '').trim();
@@ -418,7 +418,7 @@ function collectAccounts({ legs }: { legs: ParsedLeg[] }): BudgetBakersWalletPar
       netImportedAmount: 0,
     };
     existing.transactionCount += 1;
-    existing.netImportedAmount = roundCurrency({ n: existing.netImportedAmount + leg.signedAmount });
+    existing.netImportedAmount = removeFloatDrift({ n: existing.netImportedAmount + leg.signedAmount });
     byName.set(leg.accountName, existing);
   }
 

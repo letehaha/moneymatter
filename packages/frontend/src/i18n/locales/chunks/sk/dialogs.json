@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "Popis (voliteľný)",
         "descriptionPlaceholder": "Krátky popis tohto portfólia...",
+        "externalUrlLabel": "Externá URL (voliteľná)",
+        "externalUrlPlaceholder": "https://spojenie.priklad.com",
         "submitButton": "Vytvoriť portfólio",
         "submitButtonLoading": "Vytváranie..."
       },

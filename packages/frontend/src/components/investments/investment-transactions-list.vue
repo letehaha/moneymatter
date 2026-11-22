@@ -193,18 +193,18 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll<InvestmentTransa
                     </div>
                     <div v-else-if="column.id === INVESTMENT_TX_COLUMN.price" class="text-right tabular-nums">
                       {{
-                        formatAmountByCurrencyCode(
-                          parseFloat(transactions[virtualRow.index]!.price as string),
-                          transactions[virtualRow.index]!.security!.currencyCode,
-                        )
+                        formatAmountByCurrencyCode({
+                          amount: parseFloat(transactions[virtualRow.index]!.price as string),
+                          currencyCode: transactions[virtualRow.index]!.security!.currencyCode,
+                        })
                       }}
                     </div>
                     <div v-else-if="column.id === INVESTMENT_TX_COLUMN.fees" class="text-right tabular-nums">
                       {{
-                        formatAmountByCurrencyCode(
-                          parseFloat(transactions[virtualRow.index]!.fees as string),
-                          transactions[virtualRow.index]!.security!.currencyCode,
-                        )
+                        formatAmountByCurrencyCode({
+                          amount: parseFloat(transactions[virtualRow.index]!.fees as string),
+                          currencyCode: transactions[virtualRow.index]!.security!.currencyCode,
+                        })
                       }}
                     </div>
                     <div
@@ -212,10 +212,10 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll<InvestmentTransa
                       class="text-right font-medium tabular-nums"
                     >
                       {{
-                        formatAmountByCurrencyCode(
-                          parseFloat(transactions[virtualRow.index]!.amount as string),
-                          transactions[virtualRow.index]!.security!.currencyCode,
-                        )
+                        formatAmountByCurrencyCode({
+                          amount: parseFloat(transactions[virtualRow.index]!.amount as string),
+                          currencyCode: transactions[virtualRow.index]!.security!.currencyCode,
+                        })
                       }}
                     </div>
                     <div v-else-if="column.id === INVESTMENT_TX_COLUMN.note" class="min-w-0">
@@ -240,10 +240,10 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll<InvestmentTransa
                       class="text-right tabular-nums"
                     >
                       {{
-                        formatAmountByCurrencyCode(
-                          parseFloat(transactions[virtualRow.index]!.settlementAmount),
-                          transactions[virtualRow.index]!.settlementCurrencyCode,
-                        )
+                        formatAmountByCurrencyCode({
+                          amount: parseFloat(transactions[virtualRow.index]!.settlementAmount),
+                          currencyCode: transactions[virtualRow.index]!.settlementCurrencyCode,
+                        })
                       }}
                     </div>
                     <div v-else-if="column.id === INVESTMENT_TX_COLUMN.settlementCurrency" class="text-left">
@@ -251,10 +251,10 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll<InvestmentTransa
                     </div>
                     <div v-else-if="column.id === INVESTMENT_TX_COLUMN.settlementFees" class="text-right tabular-nums">
                       {{
-                        formatAmountByCurrencyCode(
-                          parseFloat(transactions[virtualRow.index]!.settlementFees),
-                          transactions[virtualRow.index]!.settlementCurrencyCode,
-                        )
+                        formatAmountByCurrencyCode({
+                          amount: parseFloat(transactions[virtualRow.index]!.settlementFees),
+                          currencyCode: transactions[virtualRow.index]!.settlementCurrencyCode,
+                        })
                       }}
                     </div>
                     <div v-else-if="column.id === INVESTMENT_TX_COLUMN.settlementRate" class="text-right tabular-nums">

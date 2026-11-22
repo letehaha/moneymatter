@@ -134,7 +134,9 @@
           "noErrors": "Bez chýb",
           "balanceWarningTitle": "Zostatky účtov nemusia byť zosúladené",
           "balanceWarningBody": "Transakcie boli importované, no zostatky niektorých účtov sa následne nepodarilo aktualizovať. Skontrolujte tieto účty a v prípade potreby upravte ich zostatky ručne."
-        }
+        },
+        "bankSeamRecalculateHint": "Účty prepojené s bankou si ponechávajú zostatok, ktorý nahlási ich banka, preto sa ich toto nastavenie netýka.",
+        "bankSeamRecalculateAllHint": "Počiatočný zostatok sa pri účtoch prepojených s bankou prepočítava automaticky."
       },
       "columnMapping": {
         "stepTitle": "Priradiť stĺpce",

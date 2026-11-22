@@ -134,7 +134,9 @@
           "noErrors": "Keine Fehler",
           "balanceWarningTitle": "Kontosalden könnten fehlerhaft sein",
           "balanceWarningBody": "Die Transaktionen wurden importiert, aber einige Kontosalden konnten danach nicht aktualisiert werden. Überprüfe diese Konten und passe ihre Salden bei Bedarf manuell an.v"
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Spalten zuordnen",

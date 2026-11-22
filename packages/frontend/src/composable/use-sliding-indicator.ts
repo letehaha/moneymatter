@@ -3,6 +3,9 @@ import { type Ref, computed, onScopeDispose, ref, watch } from 'vue';
 
 const SLIDE_MS = 200;
 const INDICATOR_ATTR = 'data-sliding-indicator';
+/** The pill's look, for elements that show the same active state without sliding. */
+export const SLIDING_PILL_SURFACE =
+  'border-border bg-card dark:border-input dark:bg-secondary shadow-sm dark:shadow-none';
 const SIDES = ['top', 'left', 'width', 'height'] as const;
 
 interface IndicatorRect {
@@ -117,7 +120,8 @@ export function useSlidingIndicator({
     style: rect.value ?? undefined,
     class: [
       'pointer-events-none absolute -z-1 origin-top-left',
-      'border-border bg-card dark:border-input dark:bg-secondary rounded-md border shadow-sm dark:shadow-none',
+      'rounded-md border',
+      SLIDING_PILL_SURFACE,
       !rect.value && 'hidden',
       isActiveMissing.value && 'opacity-0',
     ],

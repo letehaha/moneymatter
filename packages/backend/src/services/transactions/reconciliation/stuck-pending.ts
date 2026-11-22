@@ -35,7 +35,7 @@ const toMatchRow = ({ tx }: { tx: Transactions }): StuckPendingMatchRow => ({
   accountId: tx.accountId,
   transactionType: tx.transactionType,
   time: tx.time,
-  amountCents: tx.amount.toCents(),
+  amount: tx.amount,
   payeeId: tx.payeeId,
   merchantName: typeof tx.externalData?.merchantName === 'string' ? tx.externalData.merchantName : null,
 });

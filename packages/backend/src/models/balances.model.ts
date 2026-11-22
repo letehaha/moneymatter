@@ -5,10 +5,10 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   RecordId,
 } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
-import { MoneyField } from '@common/types/money-column';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { MoneyField, toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
 import { getLinkDayStart, isBeforeSeamStart } from '@services/accounts/seam';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
@@ -46,7 +46,7 @@ export default class Balances extends Model {
    * specific date.
    * `amount` is in the BASE currency. So it represents a `refAmount` (`refBalance`)
    */
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare amount: Money;
 
   @ForeignKey(() => Accounts)
@@ -55,18 +55,6 @@ export default class Balances extends Model {
 
   @BelongsTo(() => Accounts)
   account!: Accounts;
-
-  // Method to calculate the total balance across all accounts
-  static async getTotalBalance({ userId }: { userId: number }): Promise<number> {
-    const userAccounts = await Accounts.findAll({ where: { userId: userId } });
-    const accountIds = userAccounts.map((account) => account.id);
-
-    const result = await Balances.sum('amount', {
-      where: { accountId: accountIds },
-    });
-
-    return result || 0;
-  }
 
   // Method to retrieve total balance history for specified dates and accounts
   static async getTotalBalanceHistory(payload: GetTotalBalanceHistoryPayload): Promise<Balances[]> {
@@ -257,7 +245,10 @@ export default class Balances extends Model {
             baseCode: data.currencyCode,
             quoteCode: data.refCurrencyCode,
           });
-          const refBalance = Money.fromCents(roundHalfToEven(balance * exchangeRateData.rate));
+          // Monobank reports the balance in minor units (cents) of the account currency.
+          const refBalance = Money.fromCents(balance)
+            .multiply(exchangeRateData.rate)
+            .roundHalfEven(await getCurrencyDecimals({ userId: data.userId, code: data.refCurrencyCode }));
 
           await this.updateAccountBalance({ accountId, date, refBalance });
         }
@@ -449,7 +440,7 @@ export default class Balances extends Model {
 
     // Update the amount of all balances for the account that come after the date
     await this.update(
-      { amount: Balances.sequelize!.literal(`amount + ${amount.toCents()}`) },
+      { amount: Balances.sequelize!.literal(`amount + (${toMoneyColumnValue({ money: amount })})`) },
       {
         where: {
           accountId,
@@ -488,7 +479,7 @@ export default class Balances extends Model {
 
       // Update history for all the records related to that account
       await this.update(
-        { amount: Balances.sequelize!.literal(`amount + ${diff.toCents()}`) },
+        { amount: Balances.sequelize!.literal(`amount + (${toMoneyColumnValue({ money: diff })})`) },
         {
           where: { accountId },
         },
@@ -523,7 +514,7 @@ export default class Balances extends Model {
        WHERE "accountId" = :accountId AND "date" = :date`,
       {
         replacements: {
-          delta: delta.toCents(),
+          delta: toMoneyColumnValue({ money: delta }),
           accountId,
           date,
         },
@@ -573,7 +564,7 @@ export default class Balances extends Model {
           id: uuidv7(),
           accountId,
           date: normalizedDate,
-          amount: refBalance.toCents(),
+          amount: toMoneyColumnValue({ money: refBalance }),
         },
       },
     );

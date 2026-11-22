@@ -2,6 +2,8 @@ import { type Feature, type GoalModel, USER_ROLES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
+import { RateLimitService } from '@services/common/rate-limit.service';
+import type { UserRateLimit } from '@services/common/user-rate-limits';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { FEATURE_NOT_IN_PLAN_MESSAGE, hasFeature } from '@services/entitlements/feature-trial.service';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
@@ -95,6 +97,27 @@ export async function assertBaseCurrencyUnlocked({ userId }: { userId: number })
 
   if (locked) {
     throw new Error(t({ key: 'currencies.baseCurrencyChangeInProgress' }));
+  }
+}
+
+/**
+ * Draws one call from a per-user budget the REST middleware also enforces, and refuses the call
+ * when the budget is spent. Redis being down lets the call through (`checkRateLimit` resolves
+ * `allowed: true` then) unless `failClosed`, matching the route's own limiter.
+ */
+export async function enforceUserRateLimit({
+  userId,
+  limit,
+  failClosed = false,
+}: {
+  userId: number;
+  limit: UserRateLimit;
+  failClosed?: boolean;
+}): Promise<void> {
+  const result = await RateLimitService.checkRateLimit(limit.key({ userId }), limit.windowSeconds, limit.maxAttempts);
+
+  if (!result.allowed || (failClosed && result.serviceUnavailable)) {
+    throw new Error(t({ key: 'middleware.tooManyRequests' }));
   }
 }
 

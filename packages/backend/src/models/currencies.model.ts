@@ -1,7 +1,20 @@
+import { MAX_CURRENCY_DECIMALS } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
-import { Table, Column, Model, BelongsToMany, DataType } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  BelongsToMany,
+  DataType,
+  AfterSave,
+  AfterDestroy,
+  AfterBulkUpdate,
+  AfterBulkDestroy,
+} from 'sequelize-typescript';
 
 import UsersCurrencies from './users-currencies.model';
 import Users from './users.model';
@@ -15,7 +28,7 @@ export default class Currencies extends Model {
   @Column({
     allowNull: false,
     primaryKey: true,
-    type: DataType.STRING(3),
+    type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH),
   })
   code!: string;
 
@@ -31,11 +44,16 @@ export default class Currencies extends Model {
   })
   digits!: number;
 
+  /** ISO 4217 numeric code. `null` on custom currencies, so they never match an ISO numeric lookup. */
   @Column({
-    allowNull: false,
+    allowNull: true,
     type: DataType.INTEGER,
   })
-  number!: number;
+  number!: number | null;
+
+  /** `true` for a user-defined code, `false` for the ISO 4217 seed. */
+  @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
+  isCustom!: boolean;
 
   @BelongsToMany(() => Users, {
     as: 'users',
@@ -44,7 +62,32 @@ export default class Currencies extends Model {
 
   @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
   isDisabled!: boolean;
+
+  // Cached decimals (`getCurrencyDecimals`) derive from `digits`, so any change to a row drops them.
+  @AfterSave
+  @AfterDestroy
+  static invalidateDecimalsCacheForRow(instance: Currencies) {
+    invalidateCurrencyDecimalsCache({ code: instance.code });
+  }
+
+  @AfterBulkUpdate
+  @AfterBulkDestroy
+  static invalidateDecimalsCacheForBulk() {
+    invalidateCurrencyDecimalsCache();
+  }
 }
+
+/**
+ * The global row of a custom code. It is only the foreign-key target and carries no user's
+ * definition: each holder's `UsersCurrencies` row is the definition.
+ */
+export const customCurrencyStub = ({ code }: { code: string }) => ({
+  code,
+  currency: code,
+  digits: MAX_CURRENCY_DECIMALS,
+  number: null,
+  isCustom: true,
+});
 
 /**
  * ISO 4217 codes that are not actual currencies (precious metals, testing codes, supranational
@@ -54,6 +97,10 @@ export default class Currencies extends Model {
  * feeds the exchange-rate sync's coverage checks: treating them as expected would make full coverage
  * permanently unreachable (no provider quotes them), defeating the ApiLayer early-stop and making
  * the coverage alerts fire on every sync.
+ *
+ * User-defined codes (`isCustom`) are excluded for the same reason, and because they are private to
+ * their owners: a custom code must never be listed to other users or counted as a provider-coverage
+ * target.
  */
 export const NON_CURRENCY_CODES = [
   'XAU', // Gold
@@ -82,6 +129,7 @@ export const NON_CURRENCY_CODES = [
 export const getAllCurrencies = async () => {
   const currencies = await Currencies.findAll({
     where: {
+      isCustom: false,
       isDisabled: { [Op.not]: true },
       code: { [Op.notIn]: NON_CURRENCY_CODES },
     },
