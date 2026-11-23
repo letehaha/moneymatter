@@ -10,11 +10,12 @@ import {
   FoldedPeriodView,
   foldPlan,
 } from './fold-plan';
+import { foldPool } from './fold-pool';
 
 const PERIODS: FoldPeriod[] = [
-  { id: 'jul', startDate: '2026-07-01', endDate: '2026-08-01' },
-  { id: 'aug', startDate: '2026-08-01', endDate: '2026-09-01' },
-  { id: 'sep', startDate: '2026-09-01', endDate: '2026-10-01' },
+  { id: 'jul', startDate: '2026-07-01', endDate: '2026-08-01', carryReset: false },
+  { id: 'aug', startDate: '2026-08-01', endDate: '2026-09-01', carryReset: false },
+  { id: 'sep', startDate: '2026-09-01', endDate: '2026-10-01', carryReset: false },
 ];
 
 const FOOD: FoldCategory = { id: 'food', parentId: null };
@@ -77,6 +78,18 @@ const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): FoldedPeriod
 
 const amounts = (views: FoldedPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.assigned));
 const available = (views: FoldedPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.available));
+const carried = (views: FoldedPeriodView[]) => views.map((view) => view.lines[0]!.carriedIn);
+const RESET_AUGUST = PERIODS.map((period) => ({ ...period, carryReset: period.id === 'aug' }));
+const fromLinesInAugust = ({ julySpend, periods }: { julySpend: number; periods: FoldPeriod[] }) =>
+  foldPool({
+    periods: fold({
+      plan: { carryPolicy: 'signed' },
+      periods,
+      assignments: [row({ baselineAmount: 100 })],
+      activityRows: [spent({ periodId: 'jul', amount: julySpend })],
+    }),
+    openingCash: 1000,
+  })[1]!.flow.fromLines;
 
 describe('foldPlan amounts', () => {
   it('recurs a baseline into later periods with no rows', () => {
@@ -394,5 +407,37 @@ describe('foldPlan unbudgeted and header', () => {
 
   it('flags the period today falls into', () => {
     expect(fold().map((view) => view.period.isCurrent)).toEqual([false, false, true]);
+  });
+});
+
+describe('foldPlan carry reset', () => {
+  it('starts every line of a reset period with nothing carried in, then carries on from there', () => {
+    const views = fold({
+      plan: { carryPolicy: 'floor' },
+      periods: RESET_AUGUST,
+      assignments: [row({ baselineAmount: 100 })],
+    });
+
+    expect(carried(views)).toEqual([0, 0, 100]);
+    expect(available(views)).toEqual([[100], [100], [200]]);
+    expect(views.map((view) => view.period.carryReset)).toEqual([false, true, false]);
+  });
+
+  it('wipes a signed deficit too', () => {
+    const views = fold({
+      plan: { carryPolicy: 'signed' },
+      periods: RESET_AUGUST,
+      assignments: [row({ baselineAmount: 100 })],
+      activityRows: [spent({ periodId: 'jul', amount: 250 })],
+    });
+
+    expect(available(views)).toEqual([[-150], [100], [200]]);
+    expect(views[1]!.header.totalCarriedIn).toBe(0);
+  });
+
+  it('hands the wiped surplus or deficit to the pool as fromLines', () => {
+    expect(fromLinesInAugust({ julySpend: 40, periods: PERIODS })).toBe(0);
+    expect(fromLinesInAugust({ julySpend: 40, periods: RESET_AUGUST })).toBe(60);
+    expect(fromLinesInAugust({ julySpend: 250, periods: RESET_AUGUST })).toBe(-150);
   });
 });

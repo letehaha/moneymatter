@@ -39,6 +39,7 @@
       "noteReplace": "задати примітку",
       "noteAppend": "додати в кінець",
       "notePrepend": "додати на початок",
+      "excludeFromStats": "виключено зі статистики",
       "note": {
         "containsAny": "примітка містить",
         "notContainsAny": "примітка не містить",
@@ -112,6 +113,7 @@
       "set_payee": "Задати отримувача",
       "add_tags": "Додати теги",
       "set_note": "Задати примітку",
+      "exclude_from_stats": "Виключити зі статистики",
       "noteMode": {
         "replace": "Замінити",
         "append": "Додати в кінець",

@@ -418,7 +418,7 @@ describe('POST /automations/:id/apply', () => {
     expect(row?.payeeLocked).toBe(true);
   });
 
-  it('hides a row from the preview once its tags, payee and note all carry the rule result', async () => {
+  it('hides a row from the preview once its tags, payee, note and stats flag all carry the rule result', async () => {
     const idOf = await importRows({ descriptions: ['uber one', 'uber two'] });
     const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'commute' }), raw: true });
     const payee = await helpers.createPayee({ payload: helpers.buildPayeePayload({ name: 'Uber BV' }), raw: true });
@@ -427,15 +427,36 @@ describe('POST /automations/:id/apply', () => {
         { type: 'add_tags', tagIds: [tag.id as RecordId] },
         { type: 'set_payee', payeeId: payee.id },
         { type: 'set_note', mode: 'append', value: 'checked' },
+        { type: 'exclude_from_stats' },
       ],
     });
 
     await helpers.applyAutomationToHistory({ id: rule.id, payload: { transactionIds: [idOf('uber one')] }, raw: true });
+    expect((await txByNote('uber one checked'))?.excludeFromStats).toBe(true);
 
     const result = await helpers.previewAutomation({ payload: { automationId: rule.id }, raw: true });
 
     expect(result.matchedCount).toBe(1);
     expect(result.matches.map((tx) => tx.note)).toEqual(['uber two']);
+  });
+
+  it('hides an already excluded row from an exclude-only preview and skips it on apply', async () => {
+    const idOf = await importRows({ descriptions: ['uber one', 'uber two'] });
+    await helpers.updateTransaction({ id: idOf('uber one'), payload: { excludeFromStats: true }, raw: true });
+    const rule = await uberRule({ actions: [{ type: 'exclude_from_stats' }] });
+
+    const preview = await helpers.previewAutomation({ payload: { automationId: rule.id }, raw: true });
+    expect(preview).toMatchObject({ matchedCount: 1, settledCount: 1 });
+    expect(preview.matches.map((tx) => tx.note)).toEqual(['uber two']);
+
+    const result = await helpers.applyAutomationToHistory({
+      id: rule.id,
+      payload: { transactionIds: [idOf('uber one'), idOf('uber two')] },
+      raw: true,
+    });
+
+    expect(result).toMatchObject({ appliedCount: 1, skippedIds: [idOf('uber one')] });
+    expect((await txByNote('uber two'))?.excludeFromStats).toBe(true);
   });
 
   it('hides a manually categorized row from a category-only preview but lists it for a mixed rule', async () => {

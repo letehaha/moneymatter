@@ -225,6 +225,7 @@ describe('buildAutomationChips', () => {
           { type: 'add_tags', tagIds: [id('t1'), id('t2')] },
           { type: 'set_payee', payeeId: id('p1') },
           { type: 'set_note', mode: 'append', value: 'from automation' },
+          { type: 'exclude_from_stats' },
         ],
       }),
     );
@@ -240,6 +241,7 @@ describe('buildAutomationChips', () => {
         labelKey: 'automations.chips.noteAppend',
         value: 'from automation',
       },
+      { kind: 'excludeFromStats' },
     ]);
   });
 

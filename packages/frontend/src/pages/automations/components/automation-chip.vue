@@ -14,6 +14,7 @@ import {
   CalendarIcon,
   CircleAlertIcon,
   CoinsIcon,
+  EyeOffIcon,
   FileTextIcon,
   LandmarkIcon,
   LayersIcon,
@@ -133,6 +134,11 @@ const tagStyle = computed(() => {
       <DesktopOnlyTooltip :content="chip.value" only-when-truncated>
         <span class="max-w-[24ch] truncate">&ldquo;{{ chip.value }}&rdquo;</span>
       </DesktopOnlyTooltip>
+    </template>
+
+    <template v-else-if="chip.kind === 'excludeFromStats'">
+      <EyeOffIcon :class="iconClass" />
+      <span>{{ $t('automations.chips.excludeFromStats') }}</span>
     </template>
 
     <template v-else-if="isMissingRef">

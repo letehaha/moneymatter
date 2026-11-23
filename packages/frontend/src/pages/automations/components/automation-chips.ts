@@ -33,7 +33,8 @@ export type AutomationChip =
     }
   | { kind: 'dayOfMonth'; value: string }
   | { kind: 'ref'; refType: AutomationRefType; id: RecordId; negated: boolean }
-  | { kind: 'note'; labelKey: string; value: string };
+  | { kind: 'note'; labelKey: string; value: string }
+  | { kind: 'excludeFromStats' };
 
 type AutomationRulePreview = Pick<TransactionAutomationModel, 'conditions' | 'actions'>;
 
@@ -150,6 +151,8 @@ const buildActionChips = ({ action }: { action: AutomationAction }): AutomationC
           value: action.value,
         },
       ];
+    case 'exclude_from_stats':
+      return [{ kind: 'excludeFromStats' }];
   }
 };
 

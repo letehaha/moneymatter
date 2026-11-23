@@ -112,6 +112,7 @@ export const actionsSchema = z
         mode: z.enum(AUTOMATION_NOTE_MODES),
         value: z.string().trim().min(1).max(AUTOMATION_LIMITS.maxNoteLength),
       }),
+      z.object({ type: z.literal('exclude_from_stats') }),
     ]),
   )
   .min(1)

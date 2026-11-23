@@ -9,6 +9,8 @@ import { expandCategoryIdsWithDescendants, getAncestorIds } from '@services/cate
 import { Op } from 'sequelize';
 
 import { DateRange, clipRange, rangesIntersect, subtractRanges, toRange } from './date-ranges';
+import { lineOwnerResolver, periodMembership } from './fold/fold-plan';
+import { loadLines } from './periods/ensure-periods';
 
 /**
  * The plan owner's own categories, not `getAccessibleCategoryMap`: that one also
@@ -22,6 +24,21 @@ export const ownerCategories = async ({ userId }: { userId: number }) => {
   });
 
   return { categories, byId: new Map(categories.map((category) => [category.id, category])) };
+};
+
+/** The plan's lines and the category-to-line resolver for the period starting at `start`. */
+export const loadLineOwnerResolver = async ({ plan, start }: { plan: BudgetPlans; start: string }) => {
+  const [lines, { byId }, lineCategories] = await Promise.all([
+    loadLines({ planId: plan.id }),
+    ownerCategories({ userId: plan.userId }),
+    BudgetLineCategories.findAll({ include: [{ model: BudgetLines, attributes: [], where: { planId: plan.id } }] }),
+  ]);
+  const ownerOf = lineOwnerResolver({
+    membership: periodMembership({ lines, lineCategories, start }).membership,
+    byId,
+  });
+
+  return { lines, ownerOf };
 };
 
 /** The categories the plan's lines hold over any part of `range`; an archived line still owns the periods inside its lifetime. */

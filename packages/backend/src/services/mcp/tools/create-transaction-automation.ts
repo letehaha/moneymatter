@@ -11,7 +11,7 @@ export const createTransactionAutomationTool = defineTool({
   toolset: 'automations',
   access: 'write',
   description:
-    'Create a transaction automation rule that categorizes, tags, sets a payee, or edits the note of matching transactions. The rule is appended last in evaluation order and only fires for newly synced or imported bank transactions that are not transfers and not planned; existing transactions are never changed retroactively. Preview the conditions with preview_transaction_automation first.',
+    'Create a transaction automation rule for matching transactions: categorize, tag, set a payee, edit the note, or exclude from stats. The rule is appended last in evaluation order and only fires for newly synced or imported bank transactions that are not transfers and not planned; existing transactions are never changed retroactively. Preview the conditions with preview_transaction_automation first.',
   input: {
     name: z
       .string()

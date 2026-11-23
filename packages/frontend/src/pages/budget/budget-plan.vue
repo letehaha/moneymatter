@@ -15,6 +15,7 @@ import {
 } from '@/components/common/dropdown-menu';
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import ResizeHandle from '@/components/common/resize-handle.vue';
+import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/lib/ui/collapsible';
@@ -38,8 +39,10 @@ import {
   PanelRightOpenIcon,
   PieChartIcon,
   PlusIcon,
+  RotateCcwIcon,
   Settings2Icon,
   SlidersHorizontalIcon,
+  Undo2Icon,
 } from '@lucide/vue';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { createReusableTemplate, onKeyStroke, useElementSize } from '@vueuse/core';
@@ -64,6 +67,7 @@ import PlanSettingsSheet from './components/plan-settings-sheet.vue';
 import { ROW_BAR_MODES, type RowBarMode, useGridDisplayOptions } from './composables/use-grid-display-options';
 import { useLineSelection } from './composables/use-line-selection';
 import { useFrameLayout } from './composables/use-panel-layout';
+import { useSetCarryReset } from './composables/use-set-carry-reset';
 import {
   amountToneClass,
   goalPeriodUnit,
@@ -89,6 +93,7 @@ const lineToEdit = ref<Pick<BudgetPlanLineEntry, 'id' | 'name' | 'groupId' | 'ca
 const lineGroupId = ref<string | null>(null);
 const lineCategoryIds = ref<string[]>([]);
 const isLayoutOpen = ref(false);
+const isCarryResetOpen = ref(false);
 const isPanelSheetOpen = ref(false);
 const frameRef = ref<HTMLElement | null>(null);
 // The desktop stats strip wraps at some widths, so everything sticking below it reads its measured height.
@@ -178,6 +183,15 @@ const {
   enabled: computed(() => Boolean(selectedPeriodId.value)),
   placeholderData: keepPreviousData,
 });
+
+const { isPending: isSavingCarryReset, mutate: saveCarryReset } = useSetCarryReset({
+  onSuccess: () => {
+    isCarryResetOpen.value = false;
+  },
+});
+const isCarryResetLocked = computed(() => !view.value || isViewPlaceholder.value || isSavingCarryReset.value);
+const setCarryReset = ({ reset }: { reset: boolean }) =>
+  saveCarryReset({ planId: planId.value, periodId: view.value!.period.id, payload: { reset } });
 
 const isPlanMissing = computed(
   () => isResourceMissingError(planError.value) || isResourceMissingError(periodsError.value),
@@ -378,6 +392,19 @@ const openLineDialog = ({
             <DropdownMenuItem @select="isLayoutOpen = true">
               <LayoutListIcon class="size-4" />
               {{ $t('budgetPlans.options.manageLayout') }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              v-if="view?.period.carryReset"
+              :disabled="isCarryResetLocked"
+              @select="setCarryReset({ reset: false })"
+            >
+              <Undo2Icon class="size-4" />
+              {{ $t('budgetPlans.carryReset.undo') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem v-else :disabled="isCarryResetLocked" @select="isCarryResetOpen = true">
+              <RotateCcwIcon class="size-4" />
+              {{ $t('budgetPlans.carryReset.action') }}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -657,6 +684,7 @@ const openLineDialog = ({
                   <BudgetSidePanel
                     v-if="plan"
                     :plan-id="planId"
+                    :account-ids="plan.accountIds"
                     :cadence="plan.plan.cadence"
                     :unit="goalUnit"
                     :view="view"
@@ -763,6 +791,7 @@ const openLineDialog = ({
               <BudgetSidePanel
                 v-if="view && plan"
                 :plan-id="planId"
+                :account-ids="plan.accountIds"
                 :cadence="plan.plan.cadence"
                 :unit="goalUnit"
                 :view="view"
@@ -813,6 +842,7 @@ const openLineDialog = ({
               <BudgetSidePanel
                 drawer
                 :plan-id="planId"
+                :account-ids="plan.accountIds"
                 :cadence="plan.plan.cadence"
                 :unit="goalUnit"
                 :view="view"
@@ -882,6 +912,16 @@ const openLineDialog = ({
       />
 
       <PlanSettingsSheet v-if="plan" v-model:open="isSettingsOpen" :plan="plan" />
+
+      <ResponsiveAlertDialog
+        v-model:open="isCarryResetOpen"
+        :confirm-label="$t('budgetPlans.carryReset.confirm')"
+        :confirm-disabled="isSavingCarryReset"
+        @confirm="setCarryReset({ reset: true })"
+      >
+        <template #title>{{ $t('budgetPlans.carryReset.confirmTitle') }}</template>
+        <template #description>{{ $t('budgetPlans.carryReset.confirmDescription') }}</template>
+      </ResponsiveAlertDialog>
     </div>
   </PageWrapper>
 </template>

@@ -1,3 +1,4 @@
+import { AUTOMATION_LIMITS } from '@bt/shared/types';
 import { actionsSchema, conditionsSchema } from '@services/transaction-automations/zod-schemas';
 
 export const automationConditionsInput = conditionsSchema.describe(
@@ -23,11 +24,12 @@ export const automationConditionsInput = conditionsSchema.describe(
 
 export const automationActionsInput = actionsSchema.describe(
   [
-    'Actions applied when the conditions match. 1-4 actions, each type at most once.',
+    `Actions applied when the conditions match. 1-${AUTOMATION_LIMITS.maxActions} actions, each type at most once.`,
     '- { "type": "set_category", "categoryId": "<uuid>" }',
     '- { "type": "add_tags", "tagIds": ["<uuid>"] } with 1-20 tag ids',
     '- { "type": "set_payee", "payeeId": "<uuid>" }',
     '- { "type": "set_note", "mode": "replace" | "append" | "prepend", "value": "<text, max 200 chars>" }',
+    '- { "type": "exclude_from_stats" } hides the transaction from stats',
     'Every referenced category, tag, and payee must belong to the user, otherwise the call is rejected.',
   ].join('\n'),
 );

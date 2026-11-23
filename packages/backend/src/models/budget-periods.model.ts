@@ -27,6 +27,9 @@ export default class BudgetPeriods extends Model {
   @Column({ type: DataType.DATEONLY, allowNull: false })
   endDate!: string;
 
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
+  carryReset!: boolean;
+
   declare createdAt: Date;
   declare updatedAt: Date;
 

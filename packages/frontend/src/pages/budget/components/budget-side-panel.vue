@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { loadBudgetPlanScheduled, loadBudgetPlanTrends } from '@/api/budget-plans';
+import { loadBudgetLineTransactions, loadBudgetPlanScheduled, loadBudgetPlanTrends } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
@@ -15,49 +15,66 @@ import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import type { BudgetPlanCadence, BudgetPlanPeriodView, BudgetPlanPeriodViewLine } from '@bt/shared/types';
 import {
+  ArrowUpDownIcon,
   CalculatorIcon,
   CalendarCheckIcon,
   CalendarClockIcon,
   ChartColumnIcon,
   GaugeIcon,
+  ReceiptTextIcon,
+  SigmaIcon,
   TargetIcon,
   XIcon,
 } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
-import { type Component, computed } from 'vue';
+import { type Component, computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import {
   type GoalPeriodUnit,
   type PanelContext,
+  type ScheduledCoverage,
   aggregatePace,
   amountToneClass,
   formatPeriodLabel,
   isPastPeriod,
+  lineAverages,
+  scheduledCoverage,
   scheduledForLines,
   sumLineTotals,
   TREND_PERIOD_COUNT,
+  TRENDS_FETCH_COUNT,
 } from '../helpers';
+import PanelAveragesSection from './panel-averages-section.vue';
 import PanelBreakdownSection from './panel-breakdown-section.vue';
 import PanelCoverageSection from './panel-coverage-section.vue';
 import PanelGoalSection from './panel-goal-section.vue';
 import PanelGoalsSection from './panel-goals-section.vue';
 import PanelPaceSection from './panel-pace-section.vue';
 import PanelScheduledSection from './panel-scheduled-section.vue';
-import { type PanelSection, usePanelSections } from '../composables/use-panel-sections';
+import PanelTransactionsSection from './panel-transactions-section.vue';
+import {
+  PANEL_SECTION_TITLES,
+  type PanelSection,
+  usePanelSectionLayout,
+  usePanelSections,
+} from '../composables/use-panel-sections';
+import ArrangePanelDialog from './arrange-panel-dialog.vue';
 import PanelTrendSection from './panel-trend-section.vue';
 
 type SectionEntry = {
   key: PanelSection;
-  titleKey: string;
   icon: Component;
   component: Component;
   iconClass?: string;
   props?: Record<string, unknown>;
   hidden?: boolean;
+  summary?: string;
 };
 
 const props = defineProps<{
   planId: string;
+  accountIds: string[];
   cadence: BudgetPlanCadence;
   unit: GoalPeriodUnit;
   view: BudgetPlanPeriodView;
@@ -68,9 +85,12 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ close: []; selectLine: [lineId: string] }>();
 
+const { t } = useI18n();
 const { formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { locale } = useDateLocale();
 const openSections = usePanelSections({ drawer: props.drawer });
+const layout = usePanelSectionLayout();
+const isArrangeOpen = ref(false);
 
 const line = computed(() => (props.lines.length === 1 ? props.lines[0] : undefined));
 const lineIds = computed(() => props.lines.map((entry) => entry.lineId));
@@ -87,7 +107,7 @@ const isPast = computed(() => isPastPeriod({ period: props.view.period }));
 
 const trendsQuery = useQuery({
   queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetPlanTrends, props.planId, periodId.value]),
-  queryFn: () => loadBudgetPlanTrends({ planId: props.planId, until: periodId.value, count: TREND_PERIOD_COUNT }),
+  queryFn: () => loadBudgetPlanTrends({ planId: props.planId, until: periodId.value, count: TRENDS_FETCH_COUNT }),
 });
 
 const scheduledQuery = useQuery({
@@ -96,15 +116,70 @@ const scheduledQuery = useQuery({
   enabled: computed(() => !isPast.value),
 });
 
-const { data: trends } = trendsQuery;
+const lineTransactionsQuery = useQuery({
+  queryKey: computed(() => [
+    ...VUE_QUERY_CACHE_KEYS.budgetPlanLineTransactions,
+    props.planId,
+    periodId.value,
+    line.value?.lineId,
+  ]),
+  queryFn: () =>
+    loadBudgetLineTransactions({ planId: props.planId, periodId: periodId.value, lineId: line.value!.lineId }),
+  enabled: computed(
+    () => Boolean(line.value) && openSections.value.transactions && !layout.value.hidden.includes('transactions'),
+  ),
+});
+
+const { data: allTrends } = trendsQuery;
+const trends = computed(() =>
+  allTrends.value ? { periods: allTrends.value.periods.slice(-TREND_PERIOD_COUNT) } : undefined,
+);
+const averages = computed(() =>
+  line.value && allTrends.value
+    ? lineAverages({
+        periods: allTrends.value.periods,
+        lineId: line.value.lineId,
+        decimals: baseCurrencyDecimals.value,
+      })
+    : null,
+);
 const { data: scheduledData } = scheduledQuery;
 
-const failedQueries = computed(() => [trendsQuery, scheduledQuery].filter((query) => query.isError.value));
+const failedQueries = computed(() =>
+  [trendsQuery, scheduledQuery, lineTransactionsQuery].filter((query) => query.isError.value),
+);
 const isRetrying = computed(() => failedQueries.value.some((query) => query.isFetching.value));
 const retryFailed = () => failedQueries.value.forEach((query) => query.refetch());
 
 const scheduled = computed(() =>
   scheduledData.value ? scheduledForLines({ scheduled: scheduledData.value, lineIds: lineIds.value }) : undefined,
+);
+
+const coverageByLine = computed(() => {
+  const items = scheduledData.value?.items;
+  if (!items) return new Map<string, ScheduledCoverage>();
+  return new Map(
+    props.view.lines.map((entry) => [
+      entry.lineId,
+      scheduledCoverage({
+        items: items.filter((item) => item.lineId === entry.lineId),
+        available: entry.available,
+        decimals: baseCurrencyDecimals.value,
+      }),
+    ]),
+  );
+});
+const lineCoverage = computed(() => (line.value ? coverageByLine.value.get(line.value.lineId) : undefined));
+const shortLines = computed(() =>
+  props.lines.length
+    ? []
+    : props.view.lines.flatMap((entry) => {
+        const coverage = coverageByLine.value.get(entry.lineId);
+        const bill = coverage?.bills.find((candidate) => candidate.status === 'short');
+        return coverage && bill
+          ? [{ lineId: entry.lineId, name: entry.name, short: coverage.short, bill: bill.item }]
+          : [];
+      }),
 );
 
 const context = computed<PanelContext>(() => ({
@@ -124,16 +199,26 @@ const sections = computed(() => {
   const all: SectionEntry[] = [
     {
       key: 'breakdown',
-      titleKey: 'budgetPlans.panel.breakdown',
       icon: CalculatorIcon,
       iconClass: 'bg-app-savings-color/15 text-app-savings-color',
       component: PanelBreakdownSection,
     },
     {
+      key: 'transactions',
+      icon: ReceiptTextIcon,
+      component: PanelTransactionsSection,
+      props: {
+        line: line.value,
+        accountIds: props.accountIds,
+        data: lineTransactionsQuery.data.value,
+        isLoading: lineTransactionsQuery.isPending.value,
+      },
+      hidden: !line.value || lineTransactionsQuery.isError.value,
+    },
+    {
       key: 'coverage',
       icon: CalendarCheckIcon,
       iconClass: 'bg-automation-when/15 text-automation-when',
-      titleKey: 'budgetPlans.panel.nextPeriodCoverage',
       component: PanelCoverageSection,
       props: { coverage: props.view.coverage },
       hidden: props.lines.length > 0 || !props.view.coverage,
@@ -142,22 +227,31 @@ const sections = computed(() => {
       key: 'scheduled',
       icon: CalendarClockIcon,
       iconClass: 'bg-account-cash/15 text-account-cash',
-      titleKey: 'budgetPlans.panel.scheduled',
       component: PanelScheduledSection,
+      props: {
+        detail: line.value && lineCoverage.value ? { line: line.value, coverage: lineCoverage.value } : undefined,
+        shortLines: shortLines.value,
+      },
+      summary: shortLines.value.length ? t('budgetPlans.panel.notCovered.count', shortLines.value.length) : undefined,
       hidden: isPast.value || !scheduled.value || (props.lines.length > 0 && !scheduled.value.items.length),
     },
     {
       key: 'trend',
       icon: ChartColumnIcon,
-      titleKey: 'budgetPlans.panel.trend.title',
       component: PanelTrendSection,
       hidden: !hasTrends,
+    },
+    {
+      key: 'averages',
+      icon: SigmaIcon,
+      component: PanelAveragesSection,
+      props: { line: line.value, averages: averages.value },
+      hidden: !line.value || !averages.value,
     },
     {
       key: 'pace',
       icon: GaugeIcon,
       iconClass: 'bg-warning-text/15 text-warning-text',
-      titleKey: 'budgetPlans.panel.pace',
       component: PanelPaceSection,
       hidden: !props.view.period.isCurrent,
     },
@@ -165,7 +259,6 @@ const sections = computed(() => {
       key: 'goals',
       icon: TargetIcon,
       iconClass: 'bg-success-text/15 text-success-text',
-      titleKey: 'budgetPlans.panel.goals',
       component: PanelGoalsSection,
       props: { goals: props.view.goals, lines: props.view.lines },
       hidden: props.lines.length > 0 || !props.view.goals,
@@ -174,13 +267,15 @@ const sections = computed(() => {
       key: 'goal',
       icon: TargetIcon,
       iconClass: 'bg-success-text/15 text-success-text',
-      titleKey: 'budgetPlans.panel.goal',
       component: PanelGoalSection,
       props: { line: line.value },
       hidden: !line.value,
     },
   ];
-  return all.filter((section) => !section.hidden);
+  const { order, hidden } = layout.value;
+  return all
+    .filter((section) => !section.hidden && !hidden.includes(section.key))
+    .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
 });
 </script>
 
@@ -204,6 +299,16 @@ const sections = computed(() => {
       </div>
       <div class="flex shrink-0 items-center gap-1">
         <slot name="actions" />
+        <DesktopOnlyTooltip :content="$t('budgetPlans.panel.arrange.title')">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            :aria-label="$t('budgetPlans.panel.arrange.title')"
+            @click="isArrangeOpen = true"
+          >
+            <ArrowUpDownIcon class="size-4" />
+          </Button>
+        </DesktopOnlyTooltip>
         <DesktopOnlyTooltip v-if="lines.length && !drawer" :content="$t('budgetPlans.panel.closeLine')">
           <Button variant="ghost" size="icon-sm" :aria-label="$t('budgetPlans.panel.closeLine')" @click="emit('close')">
             <XIcon class="size-4" />
@@ -216,13 +321,21 @@ const sections = computed(() => {
 
     <div
       v-if="lines.length"
-      class="border-border bg-muted/40 flex min-w-0 flex-wrap items-center justify-between gap-x-3 rounded-xl border px-4 py-3"
+      :class="
+        cn(
+          'flex min-w-0 flex-wrap items-center justify-between gap-x-3 rounded-xl border px-4 py-3',
+          lineCoverage?.short ? 'border-warning/40 bg-warning/10' : 'border-border bg-muted/40',
+        )
+      "
     >
       <p class="text-muted-foreground text-xs font-medium tracking-wider uppercase">
         {{ $t('budgetPlans.grid.available') }}
       </p>
       <p :class="cn('text-2xl font-bold tabular-nums', amountToneClass({ amount: figures.available }))">
         {{ formatBaseCurrency(figures.available) }}
+      </p>
+      <p v-if="lineCoverage?.short" class="text-warning-text w-full text-sm font-medium tabular-nums">
+        {{ $t('budgetPlans.panel.notCovered.shortForScheduled', { amount: formatBaseCurrency(lineCoverage.short) }) }}
       </p>
     </div>
 
@@ -238,9 +351,10 @@ const sections = computed(() => {
 
     <SidePanelSections variant="cards">
       <SidePanelSection v-for="section in sections" :key="section.key" v-model:open="openSections[section.key]">
-        <SidePanelSectionTrigger :icon="section.icon" :icon-class="section.iconClass">{{
-          $t(section.titleKey)
-        }}</SidePanelSectionTrigger>
+        <SidePanelSectionTrigger :icon="section.icon" :icon-class="section.iconClass">
+          {{ $t(PANEL_SECTION_TITLES[section.key]) }}
+          <template v-if="section.summary" #summary>{{ section.summary }}</template>
+        </SidePanelSectionTrigger>
         <SidePanelSectionContent>
           <component
             :is="section.component"
@@ -260,5 +374,7 @@ const sections = computed(() => {
         </Button>
       </div>
     </Callout>
+
+    <ArrangePanelDialog v-model:open="isArrangeOpen" />
   </div>
 </template>

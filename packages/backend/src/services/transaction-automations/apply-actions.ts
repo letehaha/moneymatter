@@ -99,6 +99,10 @@ export const applyActions = async ({
           note: buildNote({ current: transaction.note ?? '', mode: action.mode, value: action.value }),
         });
         break;
+      case 'exclude_from_stats':
+        if (transaction.excludeFromStats) continue;
+        await Transactions.updateTransactionById({ id: transaction.id, userId, excludeFromStats: true });
+        break;
       default:
         action satisfies never;
     }

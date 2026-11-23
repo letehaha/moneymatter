@@ -1,5 +1,6 @@
 import { ACCOUNT_CATEGORIES } from './accounts';
 import { RecordId } from './record-id';
+import type { TransactionModel } from './transactions';
 
 export const BUDGET_PLAN_CADENCES = ['days', 'months', 'semi_monthly'] as const;
 export type BudgetPlanCadence = (typeof BUDGET_PLAN_CADENCES)[number];
@@ -130,6 +131,8 @@ export interface BudgetPlanPeriod {
   /** Exclusive. */
   endDate: string;
   isCurrent: boolean;
+  /** Every line starts this period with nothing carried in from earlier periods. */
+  carryReset: boolean;
 }
 
 export interface BudgetPlanPeriodViewLine {
@@ -295,6 +298,19 @@ export interface BudgetPlanScheduled {
   outflows: { total: number; count: number };
   inflows: { total: number; count: number };
   nextDate: string | null;
+}
+
+/** GET /budget-plans/:planId/periods/:periodId/lines/:lineId/transactions */
+export interface BudgetPlanLineTransactions<TTransaction = TransactionModel> {
+  /** Transactions with a non-zero net on the line in the period, across all pages; counts only what the endpoint can return. */
+  total: number;
+  /** Newest first, at most `limit`. */
+  transactions: TTransaction[];
+}
+
+/** `false` undoes the reset. */
+export interface SetBudgetPlanCarryResetPayload {
+  reset: boolean;
 }
 
 export interface SetBudgetPlanAssignmentPayload {

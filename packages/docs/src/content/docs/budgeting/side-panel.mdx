@@ -1,6 +1,6 @@
 ---
 title: The side panel
-description: See the breakdown, goals, scheduled payments, trends and spending pace for your whole budget or for one line.
+description: See the breakdown, transactions, goals, scheduled payments, trends, averages and spending pace for your whole budget or for one line.
 sidebar:
   order: 6
 ---
@@ -31,13 +31,15 @@ Every section folds away with a click on its title. The panel remembers which se
 | Section | Period overview | Line details |
 |---|---|---|
 | [Breakdown](#breakdown) | Yes | Yes |
+| [Transactions](#transactions) | No | Yes |
 | [Goals](#goals) | When any line has a goal | No |
 | [Scheduled](#scheduled) | Current and later periods | Current and later periods, when the line has something scheduled |
 | [Assigned vs spent](#assigned-vs-spent) | Yes | Yes |
+| [Averages](#averages) | No | When the line has earlier periods |
 | [Spending pace](#spending-pace) | Current period only | Current period only |
 | [Goal](#goal) | No | Yes |
 
-Line details also start with the line's **Available** amount in large type. If the line's goal needs money, a note below it says how much, for example "Need $150.00 this month", with "Assign this amount here to stay on track."
+Line details also start with the line's **Available** amount in large type. The box turns amber when that isn't enough for the bills still scheduled, with how much is missing. See [Not covered](#not-covered). If the line's goal needs money, a note below it says how much, for example "Need $150.00 this month", with "Assign this amount here to stay on track."
 
 <Screenshot
   src="/screenshots/budgeting/side-panel-overview.png"
@@ -50,6 +52,25 @@ Line details also start with the line's **Available** amount in large type. If t
 How the period's **Available** amount is made up: **Carried over** from the last period, plus **Assigned**, plus **Activity**, equals **Available**. In the overview it adds up every line. For a line, it's that line alone.
 
 See [How Available is worked out](/budgeting/assigning-and-rollover/#how-available-is-worked-out).
+
+## Transactions
+
+In line details, this section lists the line's 5 newest transactions in the period. They're the ones that make up its **Activity**: transactions on the budget's accounts in the line's categories, subcategories included. Transfers between the budget's accounts don't count.
+
+- At the top you'll see how many transactions there are, for example "12 transactions", and the line's **Activity** total.
+- A split transaction shows under every line one of its parts lands on, with the full transaction amount.
+- A refund shows as its own row.
+- Click a row to open the transaction.
+
+Below the list you'll see how many more there are, for example "7 more", and **See all in Transactions**. The link opens Transactions filtered to the line's categories with their subcategories, the budget's accounts and the period's dates. Those are ordinary filters that don't follow the budget's rules for transfers and refunds, so the list there can differ a little from what the budget counts.
+
+With nothing in the period, the section says "No transactions in this period".
+
+<Screenshot
+  src="/screenshots/budgeting/side-panel-transactions.png"
+  alt="The side panel showing details for a Dining out line: the Available amount, the Breakdown, and the Transactions section with a 12 transactions chip, the Activity total, the 5 newest transactions, '7 more' and the See all in Transactions link."
+  hint="On /budget at about 1440 px wide, click the name of a line with more than 5 transactions this period (for example a Dining out line). Keep Breakdown and Transactions expanded. Crop to the side panel column from the line name down to the end of the Transactions section."
+/>
 
 ## Goals
 
@@ -71,6 +92,24 @@ The section shows the date of the next one and how many there are, totals for **
 
 Past periods don't show this section, and neither does a line with nothing scheduled.
 
+### Not covered
+
+The panel checks whether each line's **Available** pays for what's still scheduled in its categories. It pays the outgoing bills in date order. Incoming money doesn't count, because it hasn't arrived yet.
+
+In line details:
+
+- The **Available** box at the top turns amber and says how much is missing, for example "$500.00 short for what's still scheduled".
+- Each outgoing bill shows **Covered**, or **Not covered** with how much it's short.
+- An **Assign** button with the missing amount, for example **Assign $500.00**, raises this period's **Assigned** by that much. If **Available** is already negative, the amount includes that too, so assigning it pays every bill.
+
+In the period overview, the **Scheduled** title shows how many lines are short, for example "1 not covered". Under **Not covered** each short line is listed with its first uncovered bill, that bill's date and the amount missing. Click one to open that line's details.
+
+<Screenshot
+  src="/screenshots/budgeting/side-panel-not-covered.png"
+  alt="The side panel showing details for a Maintenance and repairs line: an amber Available box with $890.00 and '$500.00 short for what's still scheduled', and the Scheduled section with a $240.00 Boiler service marked Covered, a $1,150.00 Window replacement marked 'Not covered · $500.00 short', and the Assign $500.00 button."
+  hint="On /budget at about 1440 px wide, take a line with money left this period and add two planned expenses in its category later this month: one smaller than Available, one that goes past it. Click the line's name, fold Breakdown and Transactions, keep Scheduled expanded. Crop to the side panel column from the line name down to the Assign button. Don't click Assign."
+/>
+
 ## Assigned vs spent
 
 One chart over the last 6 periods, up to the one you're viewing. Each period has a wide pale column for what was **Assigned** and a narrower bar inside it for what was **Spent**. All periods share one scale, so a period with a bigger budget draws a taller column. When spending leaves a line with a negative **Available**, that part of the bar is red and counts as **Over**. Money carried over from earlier periods covers spending too, so a bar can rise above its column without turning red.
@@ -78,6 +117,23 @@ One chart over the last 6 periods, up to the one you're viewing. Each period has
 Hover a period to see its assigned, spent and over amounts.
 
 Under the chart you'll see the viewed period's spending out of what was assigned, with the share used, and the share used across up to 5 earlier periods, for example "avg 92% used".
+
+## Averages
+
+In line details, this section helps you pick this period's amount from the line's history. Next to **Set Assigned to** you'll see the current amount, for example "now $350.00". Four buttons each show an amount and how far it is from that:
+
+- **Last assigned** and **Last spent**: what you assigned and spent in the most recent earlier period that has the line.
+- **Avg assigned** and **Avg spent**: the averages over up to 12 periods before the one you're viewing. The hint below says how many, for example "Avg of last 3 periods".
+
+Click a button to set **Assigned** to its amount for this period only. A button that matches the current amount says "no change" and can't be clicked.
+
+The section is hidden when the line has no earlier periods, for example a line you added this period.
+
+<Screenshot
+  src="/screenshots/budgeting/side-panel-averages.png"
+  alt="The side panel showing details for a Travel line with the Averages section expanded: Set Assigned to, now $350.00, and the Last assigned button showing no change, next to the Last spent, Avg assigned and Avg spent buttons with their amounts and differences, and the hint 'Avg of last 3 periods · sets Assigned for this period only'."
+  hint="On /budget at about 1440 px wide, use a line active for at least 3 earlier periods with different Assigned amounts and some spending in each. Click the line's name, fold Breakdown, Transactions and Assigned vs spent, keep Averages expanded. Crop to the side panel column from the line name down to the end of the Averages section. Don't click the buttons."
+/>
 
 ## Spending pace
 
@@ -109,7 +165,7 @@ See [Goals](/budgeting/goals/).
 />
 
 <Aside type="tip" title="Use it to plan the period">
-Start a period in the overview: **Goals** tells you what your goals need, and **Scheduled** shows the bills still to come. Then click lines one by one to see which ones are running ahead of the period in **Spending pace**.
+Start a period in the overview: **Goals** tells you what your goals need, and **Scheduled** shows the bills still to come and which lines can't pay them. Then click lines one by one: **Averages** suggests an amount, **Transactions** shows where the money went, and **Spending pace** shows which lines are running ahead of the period.
 </Aside>
 
 ## Related

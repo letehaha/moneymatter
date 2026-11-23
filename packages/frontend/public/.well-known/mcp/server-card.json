@@ -749,7 +749,7 @@
     {
       "name": "create_transaction_automation",
       "toolset": "automations",
-      "description": "Create a transaction automation rule that categorizes, tags, sets a payee, or edits the note of matching transactions. Requires finance:write scope."
+      "description": "Create a transaction automation rule for matching transactions: categorize, tag, set a payee, edit the note, or exclude from stats. Requires finance:write scope."
     },
     {
       "name": "delete_payee_alias",

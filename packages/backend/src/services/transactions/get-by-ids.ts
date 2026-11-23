@@ -7,7 +7,7 @@ import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 
-const MAX_IDS = 50;
+export const MAX_IDS = 50;
 
 interface GetTransactionsByIdsParams {
   userId: number;

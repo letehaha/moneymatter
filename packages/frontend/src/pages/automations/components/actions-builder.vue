@@ -33,7 +33,7 @@ const { formattedCategories, categoriesMap } = storeToRefs(useCategoriesStore())
 const isMenuOpen = ref(false);
 
 /** Width per field once the row no longer folds: one choice stays fixed, growable fields grow to a cap. */
-const FIELD_WIDTH: Record<AutomationActionType, string> = {
+const FIELD_WIDTH: Record<Exclude<AutomationActionType, 'exclude_from_stats'>, string> = {
   set_category: '@xl/action:w-72',
   set_payee: '@xl/action:w-72',
   add_tags: '@xl/action:flex-1 @xl/action:max-w-xl',
@@ -74,7 +74,10 @@ const addAction = ({ type, close }: { type: AutomationActionType; close: () => v
         <div class="flex flex-wrap items-center gap-x-3 gap-y-2 @xl/action:flex-nowrap">
           <span class="shrink-0 text-sm font-medium">{{ $t(`automations.actions.${action.type}`) }}</span>
 
-          <div :class="['order-last w-full min-w-0 @xl/action:order-0', FIELD_WIDTH[action.type]]">
+          <div
+            v-if="action.type !== 'exclude_from_stats'"
+            :class="['order-last w-full min-w-0 @xl/action:order-0', FIELD_WIDTH[action.type]]"
+          >
             <CategorySelectField
               v-if="action.type === 'set_category'"
               :model-value="

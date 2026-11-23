@@ -51,7 +51,8 @@ export type AutomationAction =
   | { type: 'set_category'; categoryId: RecordId }
   | { type: 'add_tags'; tagIds: RecordId[] }
   | { type: 'set_payee'; payeeId: RecordId }
-  | { type: 'set_note'; mode: AutomationNoteMode; value: string };
+  | { type: 'set_note'; mode: AutomationNoteMode; value: string }
+  | { type: 'exclude_from_stats' };
 
 export type AutomationActionType = AutomationAction['type'];
 
@@ -108,7 +109,7 @@ export const AUTOMATION_LIMITS = {
   maxKeywords: 20,
   maxKeywordLength: 64,
   maxIds: 20,
-  maxActions: 4,
+  maxActions: 5,
   maxNoteLength: 200,
   maxNameLength: 120,
   /** Rows the review dialog can list and one apply call can write. */

@@ -109,6 +109,9 @@ const setLayoutBodyFields = {
 
 export const setLayoutBodySchema = z.strictObject(setLayoutBodyFields);
 
+/** Body of `PUT /budget-plans/:planId/periods/:periodId/carry-reset`. */
+export const setCarryResetBodySchema = z.strictObject({ reset: z.boolean() });
+
 /**
  * Body of `PUT /budget-plans/:planId/periods/:periodId/lines/:lineId/assignment`. `undefined` leaves
  * a field untouched, `null` clears it, so an empty body is the one thing that cannot be meant.

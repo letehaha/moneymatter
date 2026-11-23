@@ -261,7 +261,7 @@
               : 'text-muted-foreground line-clamp-1 text-sm tracking-wider [word-break:break-word]'
           "
         >
-          {{ transaction.note }}
+          <LinkifiedText v-if="transaction.note" :text="transaction.note" />
         </span>
       </div>
     </div>
@@ -331,6 +331,7 @@ import { toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-se
 import CategoryCircle from '@/components/common/category-circle.vue';
 import DeletedBadge from '@/components/common/deleted-badge.vue';
 import CurrencyAmount from '@/components/common/currency-amount.vue';
+import LinkifiedText from '@/components/common/linkified-text.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { isHttpUrl } from '@/common/utils/external-url';

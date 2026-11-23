@@ -80,6 +80,7 @@ export const collectAutomationRefs = ({ conditions, actions }: AutomationBody): 
         refs.push({ refType: 'payee', refId: action.payeeId, path });
         break;
       case 'set_note':
+      case 'exclude_from_stats':
         break;
       default:
         action satisfies never;

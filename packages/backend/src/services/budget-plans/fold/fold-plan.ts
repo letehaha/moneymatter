@@ -21,6 +21,7 @@ export interface FoldPeriod {
   startDate: string;
   /** 'yyyy-MM-dd', exclusive. */
   endDate: string;
+  carryReset: boolean;
 }
 
 export interface FoldLine {
@@ -58,8 +59,16 @@ export type FoldedPeriodView = Omit<BudgetPlanPeriodView, 'pool' | 'goals' | 'co
   uncovered: { income: number; spending: number };
 };
 
-const carriedInto = ({ policy, previous }: { policy: BudgetPlanCarryPolicy; previous: number }): number => {
-  if (policy === 'none') return 0;
+const carriedInto = ({
+  policy,
+  previous,
+  reset,
+}: {
+  policy: BudgetPlanCarryPolicy;
+  previous: number;
+  reset: boolean;
+}): number => {
+  if (reset || policy === 'none') return 0;
   if (policy === 'floor') return Math.max(0, previous);
   return previous;
 };
@@ -71,6 +80,7 @@ export const toPlanPeriod = ({ period, today }: { period: FoldPeriod; today: str
     id: period.id,
     startDate,
     endDate,
+    carryReset: period.carryReset,
     isCurrent: covers({
       range: { from: startDate, until: endDate },
       start: today,
@@ -228,6 +238,7 @@ export const foldPlan = ({
       const carriedIn = carriedInto({
         policy: state.policy,
         previous: state.previousAvailable,
+        reset: period.carryReset,
       });
       const available = carriedIn + assigned + activity;
 

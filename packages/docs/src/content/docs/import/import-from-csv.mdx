@@ -320,7 +320,7 @@ What deleting an import does:
 - **It restores the opening balance the import adjusted.** If the import changed an account's initial balance to keep its current balance the same (see [how an import affects balances](#how-an-import-affects-balances)), that change is reversed.
 - **Imports made before this feature was added only delete their transactions.** Their accounts stay and their balances aren't restored.
 - **Transfers are unlinked, not deleted.** If one of your other transactions was linked as a [transfer](/transfers-and-refunds/how-transfers-work/) to an imported one, it stays, as an [Out of wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction. Tick **Also delete the linked transfer transaction** to delete it as well. You'll be asked to confirm a second time.
-- **Large imports take a moment.** For imports with more than 1,000 transactions, the app shows "Deleting imported transactions" and is locked until it finishes.
+- **Large imports take a moment.** For imports with more than 100 transactions, the app shows "Deleting imported transactions" and is locked until it finishes. If the delete is interrupted, part of the import may already be removed: delete it again to finish.
 
 After deleting, check the balance of each affected account. If it doesn't match your bank, [adjust the balance](/accounts/manage-accounts/#adjust-a-balance).
 
