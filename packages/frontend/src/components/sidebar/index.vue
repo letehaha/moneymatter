@@ -11,6 +11,7 @@ import { useSupportButton } from '@/composable/use-support-button';
 import { HeartIcon, PanelLeftIcon } from '@lucide/vue';
 
 import AccountsView from './accounts-view/index.vue';
+import HideAmountsButton from './hide-amounts-button.vue';
 import NavigationLinks from './navigation-links.vue';
 import UserMenu from './user-menu.vue';
 import { useSidebarCollapsed } from './use-sidebar-collapsed';
@@ -62,6 +63,7 @@ const { isSupportButtonVisible, openSupport } = useSupportButton();
 
       <UserMenu :elevated="mobileView">
         <template #trailing>
+          <HideAmountsButton />
           <DesktopOnlyTooltip v-if="!mobileView" :content="$t('sidebar.collapse')">
             <UiButton variant="ghost" size="icon-sm" :aria-label="$t('sidebar.collapse')" @click="isCollapsed = true">
               <PanelLeftIcon class="size-4" />

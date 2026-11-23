@@ -303,7 +303,7 @@ const previewLabel = computed(() => {
   if (!CURRENCY_CODE_PATTERN.test(code) || !isDecimalsInRange(decimals)) return '';
 
   const meta: CurrencyMeta = { decimals, symbol: symbol.trim() || null, isCustom: true };
-  return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta, fractionDigits: decimals });
+  return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta, fractionDigits: decimals, revealed: true });
 });
 
 const { mutate, isPending } = useMutation({

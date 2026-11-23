@@ -1,4 +1,5 @@
 import { formatLargeNumber } from '@/js/helpers';
+import { maskAmountText } from '@/js/helpers/formatters';
 
 // Point-over-point deltas below one currency unit can't be represented by the
 // money formatter (it floors, so they render as "$0") and are visual noise —
@@ -19,7 +20,7 @@ export function shouldDisplayBalanceDelta({ delta }: { delta: number }): boolean
  */
 export function formatBalanceDelta({ delta, currency }: { delta: number; currency?: string }): string {
   const formatted = formatLargeNumber(delta, { isFiat: true, currency });
-  return delta > 0 ? `+${formatted}` : formatted;
+  return delta > 0 ? maskAmountText({ text: `+${formatted}` }) : formatted;
 }
 
 /**

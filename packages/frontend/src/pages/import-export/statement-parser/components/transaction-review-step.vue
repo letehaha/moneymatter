@@ -153,8 +153,11 @@
                   class="ml-auto w-24 shrink-0 text-right font-mono text-xs font-medium"
                   :class="item.txType === 'expense' ? 'text-app-expense-color' : 'text-app-income-color'"
                 >
-                  {{ item.txType === 'expense' ? '-' : '+'
-                  }}{{ toLocalCurrencyNumber(item.amount, { currency: amountCurrencyCode }) }}
+                  {{
+                    maskAmountText({
+                      text: `${item.txType === 'expense' ? '-' : '+'}${toLocalCurrencyNumber(item.amount, { currency: amountCurrencyCode })}`,
+                    })
+                  }}
                   <span v-if="item.originalAmount" class="text-muted-foreground block text-[10px] font-normal">
                     {{ item.originalAmount }}
                   </span>
@@ -207,7 +210,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
-import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
+import { maskAmountText, toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import { useStatementParserStore } from '@/stores/statement-parser';
 import { ArrowLeftIcon, Loader2Icon } from '@lucide/vue';
 import { computed } from 'vue';

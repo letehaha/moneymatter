@@ -143,6 +143,7 @@ import { AVERAGE_LINE_COLOR, renderAverageLine } from '@/composable/charts/rende
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { type Period } from '@/composable/use-period-navigation';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { useCategoriesStore } from '@/stores';
 import { type CashFlowCategoryData, type CashFlowPeriodData } from '@bt/shared/types';
 import { EyeOffIcon } from '@lucide/vue';
@@ -873,7 +874,7 @@ function handleTooltipMouseLeave() {
 
 useResizeObserver(containerRef, renderChart);
 
-watch([chartData, () => props.metric, locale, () => props.filters, currentTheme], renderChart, {
+watch([chartData, () => props.metric, locale, () => props.filters, currentTheme, areAmountsHidden], renderChart, {
   deep: true,
   flush: 'post',
 });

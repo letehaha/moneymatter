@@ -91,6 +91,7 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { areAmountsHidden, maskAmountText } from '@/js/helpers/formatters';
 import {
   type NetWorthHistoryGranularity,
   type NetWorthLiabilityKind,
@@ -225,7 +226,7 @@ const formatAxisValue = (value: number) =>
  * and a genuinely positive value (overpaid loan or card) keeps an explicit "+".
  */
 const formatLiabilityValue = (value: number): string => {
-  if (value > 0) return `+${formatBaseCurrency(value)}`;
+  if (value > 0) return maskAmountText({ text: `+${formatBaseCurrency(value)}` });
   return formatBaseCurrency(value);
 };
 
@@ -618,6 +619,7 @@ watch(
     () => props.zoomLiabilitiesScale,
     locale,
     currentTheme,
+    areAmountsHidden,
   ],
   renderChart,
   {

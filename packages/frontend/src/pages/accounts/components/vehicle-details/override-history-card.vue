@@ -6,6 +6,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { captureException } from '@/lib/sentry';
 import { FILTER_OPERATION, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
@@ -111,8 +112,11 @@ const confirmDelete = async () => {
                   tx.transactionType === TRANSACTION_TYPES.income ? 'text-app-income-color' : 'text-app-expense-color'
                 "
               >
-                {{ tx.transactionType === TRANSACTION_TYPES.income ? '+' : '−' }}
-                {{ formatAmountByCurrencyCode({ amount: tx.amount, currencyCode }) }}
+                {{
+                  maskAmountText({
+                    text: `${tx.transactionType === TRANSACTION_TYPES.income ? '+' : '−'} ${formatAmountByCurrencyCode({ amount: tx.amount, currencyCode })}`,
+                  })
+                }}
               </span>
             </div>
             <div class="text-muted-foreground truncate text-xs">

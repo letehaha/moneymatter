@@ -38,7 +38,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
-import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
+import { useCurrencyName } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { formatUIAmount, getCurrencyDecimals, toLocalCurrencyNumber } from '@/js/helpers';
 import { flattenCategories } from '@/pages/import-export/utils/flatten-categories';
@@ -729,7 +729,6 @@ const originalAmountDecimalRule = useCurrencyDecimalRule({
   decimals: () => getCurrencyDecimals({ code: form.value.originalCurrency?.code }),
 });
 
-const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { convert: convertCurrency, data: exchangeRates } = useExchangeRates();
 
 // --- Transfer → Loan payment guards ---
@@ -922,9 +921,9 @@ const validationRules = computed(() => {
   const loanOverpayRule = helpers.withMessage(
     () =>
       t('dialogs.loanPayment.overpayError', {
-        max: formatAmountByCurrencyCode({
-          amount: loanOverpayMax.value,
-          currencyCode: form.value.toAccount?.currencyCode ?? '',
+        max: formatUIAmount(loanOverpayMax.value, {
+          currency: form.value.toAccount?.currencyCode ?? '',
+          revealed: true,
         }),
       }),
     (value: unknown) => {
@@ -1419,7 +1418,7 @@ const paymentTotalLabel = computed(() =>
       mainCurrencyCode: form.value.account?.currencyCode,
       decimals: amountDecimals.value,
     }),
-    { currency: currencyCode.value, meta: form.value.account?.currencyMeta, fullPrecision: true },
+    { currency: currencyCode.value, meta: form.value.account?.currencyMeta, fullPrecision: true, revealed: true },
   ),
 );
 const targetAmountFieldRef = ref<InstanceType<typeof InputField> | null>(null);
@@ -2139,7 +2138,13 @@ onUnmounted(() => {
                     </span>
                   </span>
                   <span class="text-muted-foreground flex items-center gap-1.5 tabular-nums">
-                    {{ formatUIAmount(splitsTotal, { currency: currencyCode, meta: form.account?.currencyMeta }) }}
+                    {{
+                      formatUIAmount(splitsTotal, {
+                        currency: currencyCode,
+                        meta: form.account?.currencyMeta,
+                        revealed: true,
+                      })
+                    }}
                     <span aria-hidden="true">·</span>
                     {{ $t('dialogs.manageTransaction.form.editSplit') }}
                   </span>

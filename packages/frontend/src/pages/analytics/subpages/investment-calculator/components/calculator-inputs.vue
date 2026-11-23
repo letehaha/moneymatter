@@ -81,7 +81,7 @@
         </label>
         <div class="flex items-center gap-1">
           <span class="text-muted-foreground text-amount text-sm">
-            {{ formatBaseCurrency(monthlyContribution) }}
+            {{ formatBaseCurrency(monthlyContribution, { revealed: true }) }}
           </span>
           <Popover>
             <PopoverTrigger as-child>

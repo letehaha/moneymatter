@@ -71,9 +71,10 @@
           </div>
           <div v-else class="text-right">
             <p class="text-sm font-semibold" :class="dp.amountClass">
-              {{ dp.amountPrefix
-              }}{{
-                formatAmountByCurrencyCode({ amount: Number(transfer.amount), currencyCode: transfer.currencyCode })
+              {{
+                maskAmountText({
+                  text: `${dp.amountPrefix}${formatAmountByCurrencyCode({ amount: Number(transfer.amount), currencyCode: transfer.currencyCode })}`,
+                })
               }}
             </p>
           </div>
@@ -180,6 +181,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useDeletePortfolioTransfer, usePortfolioTransfers } from '@/composable/data-queries/portfolio-transfers';
 import { useFormatCurrency } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
+import { maskAmountText } from '@/js/helpers/formatters';
 import EditCashTransactionDialog from '@/pages/portfolios/components/edit-cash-transaction-dialog.vue';
 import type { PortfolioModel } from '@bt/shared/types';
 import type { PortfolioTransferModel } from '@bt/shared/types/investments';

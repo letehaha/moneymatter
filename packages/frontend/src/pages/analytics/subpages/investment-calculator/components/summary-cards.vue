@@ -23,6 +23,7 @@
 <script setup lang="ts">
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { useFormatCurrency } from '@/composable';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -48,14 +49,14 @@ const cards = computed(() => [
     title: t('analytics.investmentCalculator.nominalFinalValue'),
     value: formatBaseCurrency(props.summary.nominalFinalValue),
     valueClass: props.summary.nominalGrowth > 0 ? 'text-app-income-color' : undefined,
-    subtitle: `${props.summary.nominalGrowth > 0 ? '+' : ''}${formatBaseCurrency(props.summary.nominalGrowth)} ${t('analytics.investmentCalculator.growth')}`,
+    subtitle: `${maskAmountText({ text: `${props.summary.nominalGrowth > 0 ? '+' : ''}${formatBaseCurrency(props.summary.nominalGrowth)}` })} ${t('analytics.investmentCalculator.growth')}`,
     subtitleClass: props.summary.nominalGrowth > 0 ? 'text-app-income-color/70' : 'text-muted-foreground',
   },
   {
     title: t('analytics.investmentCalculator.realFinalValue'),
     value: formatBaseCurrency(props.summary.realFinalValue),
     valueClass: props.summary.realGrowth > 0 ? 'text-app-income-color' : undefined,
-    subtitle: `${props.summary.realGrowth > 0 ? '+' : ''}${formatBaseCurrency(props.summary.realGrowth)} ${t('analytics.investmentCalculator.realGrowth')}`,
+    subtitle: `${maskAmountText({ text: `${props.summary.realGrowth > 0 ? '+' : ''}${formatBaseCurrency(props.summary.realGrowth)}` })} ${t('analytics.investmentCalculator.realGrowth')}`,
     subtitleClass: props.summary.realGrowth > 0 ? 'text-app-income-color/70' : 'text-muted-foreground',
   },
   {

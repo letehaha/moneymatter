@@ -56,6 +56,7 @@ import { useFormatCurrency } from '@/composable';
 import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { useResizeObserver } from '@vueuse/core';
 import { differenceInCalendarDays, format } from 'date-fns';
 import * as d3 from 'd3';
@@ -387,6 +388,7 @@ watch(
     () => props.salvageFloor,
     () => props.currencyCode,
     currentTheme,
+    areAmountsHidden,
   ],
   render,
   { deep: true },

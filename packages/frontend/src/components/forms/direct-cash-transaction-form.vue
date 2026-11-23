@@ -280,6 +280,7 @@ const prepareConfirmationData = () => {
     amount = formatUIAmount(Number(transferForm.amount), {
       currency: transferCurrencyCode.value,
       meta: transferCurrencyMeta.value,
+      revealed: true,
     });
     const accountName = transferForm.selectedAccount?.name || '';
 

@@ -220,6 +220,7 @@ import Button from '@/components/lib/ui/button/Button.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { cn } from '@/lib/utils';
 import type { GetPivotReportResponse, PivotMeasure, PivotRowDimension, PivotRow } from '@bt/shared/types';
 import { ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, ChevronsDownUpIcon, ChevronsUpDownIcon } from '@lucide/vue';
@@ -337,7 +338,7 @@ const formatMoney = (value: number): string => formatCompactAmount(value, curren
 
 const formatSignedMoney = (value: number): string => {
   if (value === 0) return formatMoney(0);
-  return `${value > 0 ? '+' : '−'}${formatMoney(Math.abs(value))}`;
+  return maskAmountText({ text: `${value > 0 ? '+' : '−'}${formatMoney(Math.abs(value))}` });
 };
 
 const netClass = (value: number): string | false =>

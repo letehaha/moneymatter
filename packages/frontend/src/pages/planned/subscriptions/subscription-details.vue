@@ -27,6 +27,7 @@ import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subs
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError, isNotFoundError } from '@/js/errors';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes';
 import { useTagsStore } from '@/stores';
@@ -210,7 +211,9 @@ const KIND_LABEL_KEYS: Record<SUBSCRIPTION_TYPES, string> = {
 const formattedAmount = computed(() => {
   const sub = subscription.value;
   if (!sub?.expectedAmount || !sub.expectedCurrencyCode) return null;
-  return `${getTransactionTypePrefix(sub.transactionType)}${formatAmountByCurrencyCode({ amount: sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })}`;
+  return maskAmountText({
+    text: `${getTransactionTypePrefix(sub.transactionType)}${formatAmountByCurrencyCode({ amount: sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })}`,
+  });
 });
 
 const remindersSummary = computed(() => {

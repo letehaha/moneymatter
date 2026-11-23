@@ -63,6 +63,7 @@ import { useFormatCurrency } from '@/composable';
 import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import * as d3 from 'd3';
 import { useResizeObserver } from '@vueuse/core';
 import { reactive, ref, watch } from 'vue';
@@ -388,5 +389,5 @@ const sampleDataForRendering = (data: ProjectionDataPoint[]): ProjectionDataPoin
 
 useResizeObserver(containerRef, renderChart);
 
-watch([() => props.data, () => props.indicatorLabel, currentTheme], renderChart, { deep: true });
+watch([() => props.data, () => props.indicatorLabel, currentTheme, areAmountsHidden], renderChart, { deep: true });
 </script>

@@ -19,6 +19,7 @@ import { buttonVariants } from '@/components/lib/ui/button';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useCurrenciesStore, useRootStore } from '@/stores';
@@ -147,7 +148,7 @@ const { displayValue: animatedMonthlyIncome } = useAnimatedNumber({
 
 const headlineDisplay = computed(() =>
   summary.value && summary.value.activeCount.expense === 0
-    ? `+${formatBaseCurrency(animatedMonthlyIncome.value)}`
+    ? maskAmountText({ text: `+${formatBaseCurrency(animatedMonthlyIncome.value)}` })
     : formatBaseCurrency(animatedMonthlyCost.value),
 );
 
@@ -200,7 +201,7 @@ const formatRowAmount = ({ sub }: { sub: SubscriptionListItem }) => {
   const amount = sub.expectedCurrencyCode
     ? formatAmountByCurrencyCode({ amount: sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })
     : formatBaseCurrency(sub.expectedAmount);
-  return `${getTransactionTypePrefix(sub.transactionType)}${amount}`;
+  return maskAmountText({ text: `${getTransactionTypePrefix(sub.transactionType)}${amount}` });
 };
 
 const strip = computed(() =>
@@ -328,7 +329,7 @@ function payPeriod({ subscription }: { subscription: SubscriptionListItem }) {
           >
             <template #amount>
               <span class="text-app-income-color font-medium">
-                +{{ formatBaseCurrency(summary.expectedMonthlyIncome) }}
+                {{ maskAmountText({ text: `+${formatBaseCurrency(summary.expectedMonthlyIncome)}` }) }}
               </span>
             </template>
             <template #count>{{ summary.activeCount.income }}</template>

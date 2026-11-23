@@ -25,6 +25,7 @@ import { ApiErrorResponseError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import { useAccountsStore } from '@/stores';
 import type { AccountModel } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
@@ -413,7 +414,9 @@ defineExpose({ triggerPay, isPending });
         <p v-if="estimate?.isCrossCurrency && estimate.expectedAmount != null" class="text-muted-foreground text-xs">
           {{
             $t('dialogs.subscriptionMarkPaid.crossCurrencyEstimate', {
-              sourceAmount: estimate.expectedAmount,
+              sourceAmount: toLocalCurrencyNumber(estimate.expectedAmount, {
+                currency: estimate.subscriptionCurrencyCode ?? undefined,
+              }),
               sourceCurrency: estimate.subscriptionCurrencyCode,
               accountCurrency: estimate.accountCurrencyCode,
             })

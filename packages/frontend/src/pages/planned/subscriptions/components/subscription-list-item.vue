@@ -12,6 +12,7 @@ import {
 import Button from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { cn } from '@/lib/utils';
 import { CheckIcon, CirclePauseIcon, MoreHorizontalIcon, RepeatIcon, Trash2Icon } from '@lucide/vue';
 import { computed } from 'vue';
@@ -146,7 +147,7 @@ const due = computed<{ label: string; chipClass: string } | null>(() => {
         )
       "
     >
-      {{ getTransactionTypePrefix(subscription.transactionType) }}{{ formattedAmount }}
+      {{ maskAmountText({ text: `${getTransactionTypePrefix(subscription.transactionType)}${formattedAmount}` }) }}
     </span>
 
     <!-- Due status: renders for every item with a usable next due date -->

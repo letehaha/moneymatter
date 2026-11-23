@@ -16,6 +16,7 @@ import {
   AVERAGE_LINE_SHADOW_COLOR,
   AVERAGE_LINE_SHADOW_WIDTH,
 } from '@/composable/charts/render-average-line';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import IncludePlannedMenuItem from '@/components/widgets/components/include-planned-menu-item.vue';
@@ -238,7 +239,7 @@ const savingsLineLabel = computed(() => {
                 class="text-2xl font-bold tracking-tight"
                 :class="isPositiveFlow ? 'text-app-income-color' : 'text-app-expense-color'"
               >
-                {{ isPositiveFlow ? '+' : '' }}{{ formatBaseCurrency(animatedNetFlow) }}
+                {{ maskAmountText({ text: `${isPositiveFlow ? '+' : ''}${formatBaseCurrency(animatedNetFlow)}` }) }}
               </p>
               <p class="text-muted-foreground mt-0.5 text-xs font-medium tracking-tight uppercase">
                 {{ periodLabel }}

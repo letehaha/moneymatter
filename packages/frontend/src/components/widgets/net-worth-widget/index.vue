@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAnimatedNumber } from '@/composable/use-animated-number';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { calculatePercentageDifference } from '@/js/helpers/math/calculate-percentage-difference';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { ArrowDownRightIcon, ArrowUpRightIcon, CircleOffIcon, InfoIcon, TrendingUpIcon } from '@lucide/vue';
@@ -81,7 +82,7 @@ const excludedNames = computed(() =>
 
 const formattedDelta = computed(() => {
   if (currentDelta.value === null) return NO_VALUE_LABEL;
-  return `${isPositiveDelta.value ? '+' : ''}${formatBaseCurrency(animatedDelta.value)}`;
+  return maskAmountText({ text: `${isPositiveDelta.value ? '+' : ''}${formatBaseCurrency(animatedDelta.value)}` });
 });
 
 const formatPercent = ({ percent }: { percent: number }) => `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
@@ -116,7 +117,7 @@ const trendBars = computed(() => {
       hasData: true,
       isPositive: bar.delta >= 0,
       heightPercent: Math.max((Math.abs(bar.delta) / maxAbs) * 100, MIN_TREND_BAR_HEIGHT_PERCENT),
-      formattedDelta: `${bar.delta > 0 ? '+' : ''}${formatBaseCurrency(bar.delta)}`,
+      formattedDelta: maskAmountText({ text: `${bar.delta > 0 ? '+' : ''}${formatBaseCurrency(bar.delta)}` }),
       formattedNetWorth: formatBaseCurrency(bar.endNetWorth),
       formattedPercent: percent === null ? null : formatPercent({ percent }),
     };

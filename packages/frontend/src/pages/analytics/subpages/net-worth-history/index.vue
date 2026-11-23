@@ -129,6 +129,7 @@ import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Callout } from '@/components/lib/ui/callout';
 import { useFormatCurrency } from '@/composable/formatters';
 import type { Period } from '@/composable/use-period-navigation';
+import { maskAmountText } from '@/js/helpers/formatters';
 import {
   NET_WORTH_HISTORY_GRANULARITIES,
   type NetWorthHistoryGranularity,
@@ -262,7 +263,7 @@ const periodChange = computed(() => computePeriodChange({ points: displayPoints.
 // Explicit "+" so a gain reads as a change, not a balance.
 const formattedPeriodChange = computed(() => {
   const { amount } = periodChange.value;
-  return `${amount > 0 ? '+' : ''}${formatBaseCurrency(amount)}`;
+  return maskAmountText({ text: `${amount > 0 ? '+' : ''}${formatBaseCurrency(amount)}` });
 });
 
 const formattedPeriodChangePct = computed(() => {

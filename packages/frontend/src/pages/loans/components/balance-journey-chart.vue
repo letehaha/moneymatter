@@ -63,6 +63,7 @@ import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-p
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { useQuery } from '@tanstack/vue-query';
 import { useResizeObserver } from '@vueuse/core';
 import { parseISO } from 'date-fns';
@@ -197,5 +198,5 @@ const { render } = usePayoffChartRender({
 });
 
 useResizeObserver(containerRef, render);
-watch([renderableLines, currentTheme], render, { deep: true });
+watch([renderableLines, currentTheme, areAmountsHidden], render, { deep: true });
 </script>

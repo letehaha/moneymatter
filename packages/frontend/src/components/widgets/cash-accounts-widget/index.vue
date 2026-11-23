@@ -10,6 +10,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useEarliestTransactionDate } from '@/composable/data-queries/earliest-transaction-date';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useBaseBalanceTotals } from '@/composable/use-base-balance-totals';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
@@ -217,7 +218,9 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
               )
             "
           >
-            {{ monthDelta.amount >= 0 ? '+' : '' }}{{ formatBaseCurrency(monthDelta.amount) }}
+            {{
+              maskAmountText({ text: `${monthDelta.amount >= 0 ? '+' : ''}${formatBaseCurrency(monthDelta.amount)}` })
+            }}
             <template v-if="monthDelta.percent !== null">
               ({{ formatBalanceDeltaPercent({ percent: monthDelta.percent }) }})
             </template>

@@ -32,6 +32,7 @@ import { useFormatCurrency } from '@/composable';
 import { getChartColors } from '@/composable/charts/chart-colors';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { useCurrenciesStore } from '@/stores';
 import * as d3 from 'd3';
 import { useResizeObserver } from '@vueuse/core';
@@ -786,5 +787,5 @@ const renderChart = () => {
 };
 
 useResizeObserver(containerRef, renderChart);
-watch([() => props.flow, locale, currentTheme, baseCurrency], renderChart, { deep: true });
+watch([() => props.flow, locale, currentTheme, baseCurrency, areAmountsHidden], renderChart, { deep: true });
 </script>

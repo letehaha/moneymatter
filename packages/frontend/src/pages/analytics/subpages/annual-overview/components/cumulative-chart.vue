@@ -58,6 +58,7 @@ import { useFormatCurrency } from '@/composable';
 import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import type { CumulativeMonthData } from '@bt/shared/types';
 import * as d3 from 'd3';
 import { useResizeObserver } from '@vueuse/core';
@@ -357,7 +358,9 @@ function handleMouseLeave() {
 
 useResizeObserver(containerRef, renderChart);
 
-watch([() => props.currentPeriodData, () => props.previousPeriodData, () => props.metric, currentTheme], renderChart, {
-  deep: true,
-});
+watch(
+  [() => props.currentPeriodData, () => props.previousPeriodData, () => props.metric, currentTheme, areAmountsHidden],
+  renderChart,
+  { deep: true },
+);
 </script>

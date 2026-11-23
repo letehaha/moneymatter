@@ -26,6 +26,7 @@ import AccountGroupsList from './accounts-view/account-groups-list.vue';
 import AccountsList from './accounts-view/accounts-list.vue';
 import AccountsSkeleton from './accounts-view/accounts-skeleton.vue';
 import GroupTotal from './accounts-view/group-total.vue';
+import HideAmountsButton from './hide-amounts-button.vue';
 import type { GroupBaseTotal } from './accounts-view/helpers/account-totals';
 import { useActiveAccountGroups } from './accounts-view/helpers/use-active-account-groups';
 import { useSidebarSectionTotals } from './accounts-view/helpers/use-sidebar-section-totals';
@@ -322,6 +323,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
       </div>
 
       <div class="mt-auto grid gap-1">
+        <HideAmountsButton size="icon" side="right" />
         <DesktopOnlyTooltip :content="$t('sidebar.expand')" side="right">
           <ui-button variant="ghost" size="icon" :aria-label="$t('sidebar.expand')" @click="isCollapsed = false">
             <PanelLeftIcon class="size-4" />
