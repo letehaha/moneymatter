@@ -477,7 +477,7 @@ describe('DELETE /import/batch/:batchId', () => {
 });
 
 describe('background delete for batches above the sync cap', () => {
-  const OVERSIZED_BATCH_ROWS = 1001;
+  const OVERSIZED_BATCH_ROWS = 101;
   const IMPORT_TIMEOUT_MS = 120_000;
 
   it('reports idle when no delete job exists', async () => {
@@ -571,11 +571,8 @@ describe('background delete for batches above the sync cap', () => {
       const status = await helpers.getImportBatchDeleteStatus({ raw: true });
       expect(status).toEqual({ state: 'idle' });
 
-      const [firstPage, secondPage] = await Promise.all([
-        helpers.getTransactions({ batchId: summary.batchId, limit: 1000, raw: true }),
-        helpers.getTransactions({ batchId: summary.batchId, limit: 1000, offset: 1000, raw: true }),
-      ]);
-      expect(firstPage.length + secondPage.length).toBe(OVERSIZED_BATCH_ROWS);
+      const remaining = await helpers.getTransactions({ batchId: summary.batchId, limit: 1000, raw: true });
+      expect(remaining).toHaveLength(OVERSIZED_BATCH_ROWS);
     },
     IMPORT_TIMEOUT_MS * 2,
   );

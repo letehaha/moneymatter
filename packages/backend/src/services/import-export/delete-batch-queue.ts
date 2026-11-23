@@ -25,8 +25,8 @@ interface ImportBatchDeleteJobData extends SentryTraceData {
   deleteLinkedTransfers: boolean;
 }
 
-// bulkDelete is a sequential per-row loop, so a MAX_CSV_ROWS batch can outlive the
-// lock's own TTL; the heartbeat keeps the lock from lapsing mid-transaction.
+// The row-by-row undo of a MAX_CSV_ROWS batch can outlive the lock's own TTL; the
+// heartbeat keeps the lock from lapsing mid-run.
 const LOCK_HEARTBEAT_INTERVAL_MS = 10 * 60 * 1000;
 
 const logLockError = ({ message, err }: { message: string; err: unknown }) =>
@@ -41,7 +41,7 @@ const {
   baseName: 'import-batch-delete',
   sseEventType: SSE_EVENT_TYPES.IMPORT_BATCH_DELETE_PROGRESS,
   logLabel: 'Import Batch Delete',
-  interruptedMessageKey: 'common.jobInterruptedByServerUpdate',
+  interruptedMessageKey: 'importExport.batchDeleteInterruptedByServerUpdate',
   processJob: async ({ job }) => {
     const { userId, batchId, deleteLinkedTransfers } = job.data;
     const jobId = job.id!;

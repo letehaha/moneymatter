@@ -5,7 +5,7 @@ import {
   isTwoLegTransfer,
 } from '@bt/shared/types';
 import { t } from '@i18n/index';
-import { LockedError, ValidationError } from '@js/errors';
+import { LockedError, NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
 import ImportBatches from '@models/import-batches.model';
@@ -32,14 +32,13 @@ interface DeleteImportBatchParams {
    *  external transaction untouched. */
   deleteLinkedTransfers?: boolean;
   /** Rows above this count throw `ImportBatchTooLargeError` instead of deleting.
-   *  The background worker passes `Infinity`. */
+   *  The background worker passes `Infinity`, which deletes row by row. */
   maxRows?: number;
 }
 
-// Import batches can reach MAX_CSV_ROWS (50k) rows; bulkDelete's one-transaction,
-// per-row loop would exceed the HTTP timeout at that scale, so larger batches run
-// as a background job (see delete-batch-queue.ts).
-const MAX_SYNC_BATCH_DELETE_TRANSACTIONS = 1000;
+// The inline undo runs in one transaction, where each row's balance cascade slows the
+// next one; above this the background job deletes row by row (see delete-batch-queue.ts).
+const MAX_SYNC_BATCH_DELETE_TRANSACTIONS = 100;
 
 export class ImportBatchTooLargeError extends Error {
   readonly rowCount: number;
@@ -54,8 +53,7 @@ export class ImportBatchTooLargeError extends Error {
  * Resolves every row stamped with this batch's `importDetails.batchId`, scoped to the
  * caller, then delegates to `bulkDelete` — balance recalculation, transfer-pair handling,
  * and refund unlinking all come from that same pipeline. The opening-balance absorbs the
- * import recorded in `ImportBatchAccountEffects` are then reversed. The whole undo runs in
- * one DB transaction, so a mid-run failure rolls back every delete, unlink and reversal.
+ * import recorded in `ImportBatchAccountEffects` are then reversed.
  *
  * A batch with no `ImportBatches` row carries only its row stamps: its rows are deleted
  * and nothing is reversed.
@@ -65,12 +63,14 @@ export class ImportBatchTooLargeError extends Error {
  */
 type BatchLeg = { id: string; transferId: string | null; transferNature: TRANSACTION_TRANSFER_NATURE };
 
-const deleteImportBatchImpl = async ({
+/** Loads the batch, takes the account locks, runs every refusal check and unlinks
+ *  external transfer twins. `null` when there is nothing to undo. */
+const planUndo = async ({
   userId,
   batchId,
   deleteLinkedTransfers = false,
   maxRows = MAX_SYNC_BATCH_DELETE_TRANSACTIONS,
-}: DeleteImportBatchParams): Promise<DeleteImportBatchResponse & { createdAccountIds: string[] }> => {
+}: DeleteImportBatchParams) => {
   const batch = await ImportBatches.findOne({ where: { userId, batchId }, lock: true });
   const effects = batch ? await ImportBatchAccountEffects.findAll({ where: { importBatchId: batch.id } }) : [];
 
@@ -118,9 +118,7 @@ const deleteImportBatchImpl = async ({
   });
   const trashedIds = trashedRows.map((row) => row.id);
 
-  if (rows.length === 0 && trashedIds.length === 0 && !batch) {
-    return { deletedCount: 0, deletedIds: [], createdAccountIds: [] };
-  }
+  if (rows.length === 0 && trashedIds.length === 0 && !batch) return null;
 
   // An effect that only marks a created account is left out: this transaction writes
   // nothing to that account, so its being bank-linked must not block the undo.
@@ -241,12 +239,31 @@ const deleteImportBatchImpl = async ({
     });
   }
 
-  // Never chunk this list: `bulkDelete` skips a cascade-deleted transfer twin only
-  // within one call. A twin in a later chunk gets re-queried after deletion and 404s.
-  if (transactionIds.length > 0) {
-    await bulkDelete({ userId, transactionIds, maxCount: Infinity, permanent: true });
-  }
-  const trashedToDestroy = [...trashedIds, ...(deleteLinkedTransfers ? trashedTwins.twinIds : [])];
+  return {
+    batch,
+    effects,
+    rows,
+    seamAccounts,
+    absorbedEffects,
+    trashedIds,
+    transactionIds,
+    liveTwinIds: liveTwins.twinIds,
+    trashedTwinIds: trashedTwins.twinIds,
+  };
+};
+
+type UndoPlan = NonNullable<Awaited<ReturnType<typeof planUndo>>>;
+
+const finishUndo = async ({
+  userId,
+  deleteLinkedTransfers = false,
+  plan: { batch, effects, seamAccounts, absorbedEffects, trashedIds, transactionIds, liveTwinIds, trashedTwinIds },
+}: {
+  userId: number;
+  deleteLinkedTransfers?: boolean;
+  plan: UndoPlan;
+}) => {
+  const trashedToDestroy = [...trashedIds, ...(deleteLinkedTransfers ? trashedTwinIds : [])];
   await destroyTrashedRows({ transactionIds: trashedToDestroy });
 
   // Inline so a failed rebuild fails the undo; it re-derives a seam account's opening balance.
@@ -268,7 +285,7 @@ const deleteImportBatchImpl = async ({
 
   // `bulkDelete`'s result omits cascade-deleted twins. Once it returns, every batch row
   // plus the opted-in twins is gone, so report the full list.
-  const deletedIds = [...transactionIds, ...(deleteLinkedTransfers ? liveTwins.twinIds : []), ...trashedToDestroy];
+  const deletedIds = [...transactionIds, ...(deleteLinkedTransfers ? liveTwinIds : []), ...trashedToDestroy];
   return {
     deletedCount: deletedIds.length,
     deletedIds,
@@ -276,7 +293,56 @@ const deleteImportBatchImpl = async ({
   };
 };
 
-const deleteImportBatchInTx = withTransaction(deleteImportBatchImpl);
+const emptyUndo = () => ({ deletedCount: 0, deletedIds: [] as string[], createdAccountIds: [] as string[] });
+
+/** Undoes the batch in one transaction, so a mid-run failure rolls everything back. */
+const deleteImportBatchInTx = withTransaction(async (params: DeleteImportBatchParams) => {
+  const plan = await planUndo(params);
+  if (!plan) return emptyUndo();
+
+  // One call: `bulkDelete` skips a cascade-deleted transfer twin only within the same call.
+  if (plan.transactionIds.length > 0) {
+    await bulkDelete({
+      userId: params.userId,
+      transactionIds: plan.transactionIds,
+      maxCount: Infinity,
+      permanent: true,
+    });
+  }
+  return finishUndo({ ...params, plan });
+});
+
+/**
+ * Background path: every row is deleted in its own transaction. Each delete cascades an
+ * UPDATE over the account's later `Balances` rows, and inside one transaction the dead row
+ * versions pile up so every cascade gets slower. The closing pass is the one-transaction
+ * undo over what is left, so its checks and reversals run against fresh, locked state.
+ * Not atomic: an interrupted run leaves the batch partly deleted, and a rerun finishes it.
+ */
+const deleteImportBatchRowByRow = async (params: DeleteImportBatchParams) => {
+  const plan = await withTransaction(planUndo)(params);
+  if (!plan) return emptyUndo();
+
+  const deletedTransferIds = new Set<string>();
+  for (const row of plan.rows) {
+    if (row.transferId && deletedTransferIds.has(row.transferId)) continue;
+    try {
+      await bulkDelete({ userId: params.userId, transactionIds: [row.id], maxCount: Infinity, permanent: true });
+    } catch (error) {
+      // Already gone (e.g. removed by a co-user of a shared account): nothing left to delete.
+      if (!(error instanceof NotFoundError)) throw error;
+    }
+    if (row.transferId) deletedTransferIds.add(row.transferId);
+  }
+
+  const closing = await deleteImportBatchInTx(params);
+  const deletedIds = [
+    ...plan.transactionIds,
+    ...(params.deleteLinkedTransfers ? plan.liveTwinIds : []),
+    ...closing.deletedIds,
+  ];
+  return { ...closing, deletedCount: deletedIds.length, deletedIds };
+};
 
 /**
  * Deletes an account the undone import created once no transaction of any kind is
@@ -308,7 +374,8 @@ const deleteCreatedAccountIfEmpty = withTransaction(
  * a failed SQL statement inside the undo transaction would abort the whole undo.
  */
 export const deleteImportBatch = async (params: DeleteImportBatchParams): Promise<DeleteImportBatchResponse> => {
-  const { createdAccountIds, ...result } = await deleteImportBatchInTx(params);
+  const undo = params.maxRows === Infinity ? deleteImportBatchRowByRow : deleteImportBatchInTx;
+  const { createdAccountIds, ...result } = await undo(params);
 
   for (const accountId of createdAccountIds) {
     try {

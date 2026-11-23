@@ -113,14 +113,20 @@ const BATCH_ID = 'batch-1';
 const HOUR_MS = 60 * 60 * 1000;
 
 function mockRows(count: number) {
-  findWithFiltersMock.mockResolvedValue(
-    Array.from({ length: count }, (_, i) => ({
-      id: `tx-${i}`,
-      accountId: 'acc-1',
-      accountType: ACCOUNT_TYPES.system,
-      time: new Date(Date.now() - 10 * 24 * HOUR_MS),
-    })),
-  );
+  const rows = Array.from({ length: count }, (_, i) => ({
+    id: `tx-${i}`,
+    accountId: 'acc-1',
+    accountType: ACCOUNT_TYPES.system,
+    time: new Date(Date.now() - 10 * 24 * HOUR_MS),
+  }));
+  findWithFiltersMock.mockResolvedValue(rows);
+  return rows;
+}
+
+/** The row-by-row path re-reads the batch for its closing pass, which finds it emptied. */
+function mockRowsDeletedOneByOne(rows: MockRow[]) {
+  findWithFiltersMock.mockReset();
+  findWithFiltersMock.mockResolvedValueOnce(rows).mockResolvedValue([]);
 }
 
 function mockBatch({ importedAt, finishedAt }: { importedAt: Date; finishedAt: Date | null }): MockBatch {
@@ -138,7 +144,7 @@ describe('deleteImportBatch', () => {
   });
 
   it('throws ImportBatchTooLargeError above the sync cap without deleting anything', async () => {
-    mockRows(1001);
+    mockRows(101);
 
     await expect(deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID })).rejects.toBeInstanceOf(
       ImportBatchTooLargeError,
@@ -148,14 +154,14 @@ describe('deleteImportBatch', () => {
   });
 
   it('deletes an at-cap batch in a single bulkDelete call', async () => {
-    mockRows(1000);
+    mockRows(100);
 
     const result = await deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID });
 
     expect(bulkDeleteMock).toHaveBeenCalledTimes(1);
-    expect(bulkDeleteMock.mock.calls[0]![0].transactionIds).toHaveLength(1000);
-    expect(result.deletedCount).toBe(1000);
-    expect(result.deletedIds).toHaveLength(1000);
+    expect(bulkDeleteMock.mock.calls[0]![0].transactionIds).toHaveLength(100);
+    expect(result.deletedCount).toBe(100);
+    expect(result.deletedIds).toHaveLength(100);
   });
 
   it('locks the affected accounts before deleting and reverses nothing when the batch has no batch row', async () => {
@@ -172,13 +178,61 @@ describe('deleteImportBatch', () => {
     expect(result).toEqual({ deletedCount: 2, deletedIds: ['tx-0', 'tx-1'] });
   });
 
-  it('deletes above the cap when maxRows is lifted (the background worker path)', async () => {
-    mockRows(1001);
+  it('deletes above the cap one row per bulkDelete call when maxRows is lifted (the background worker path)', async () => {
+    mockRowsDeletedOneByOne(mockRows(1001));
+    const batch = mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
 
     const result = await deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID, maxRows: Infinity });
 
-    expect(bulkDeleteMock.mock.calls[0]![0].transactionIds).toHaveLength(1001);
+    expect(bulkDeleteMock).toHaveBeenCalledTimes(1001);
+    expect(bulkDeleteMock.mock.calls.every(([params]) => params.transactionIds.length === 1)).toBe(true);
+    expect(batch.destroy).toHaveBeenCalledTimes(1);
+    expect(bulkDeleteMock.mock.invocationCallOrder.at(-1)!).toBeLessThan(batch.destroy.mock.invocationCallOrder[0]!);
     expect(result.deletedCount).toBe(1001);
+  });
+
+  it('deletes an intra-batch transfer pair with a single call on the background worker path', async () => {
+    mockRowsDeletedOneByOne([
+      {
+        id: 'tx-0',
+        accountId: 'acc-1',
+        transferId: 'transfer-1',
+        transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+      },
+      {
+        id: 'tx-1',
+        accountId: 'acc-2',
+        transferId: 'transfer-1',
+        transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+      },
+    ]);
+    transactionsFindAllMock.mockResolvedValue([
+      { id: 'tx-0', transferId: 'transfer-1' },
+      { id: 'tx-1', transferId: 'transfer-1' },
+    ]);
+
+    const result = await deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID, maxRows: Infinity });
+
+    expect(bulkDeleteMock.mock.calls.map(([params]) => params.transactionIds)).toEqual([['tx-0']]);
+    expect(result).toEqual({ deletedCount: 2, deletedIds: ['tx-0', 'tx-1'] });
+  });
+
+  it('leaves the batch row and its absorbs in place when a row fails mid-run on the background worker path', async () => {
+    mockRowsDeletedOneByOne(mockRows(5));
+    const batch = mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
+    effectsFindAllMock.mockResolvedValue([
+      { accountId: 'acc-1', absorbedAmount: Money.fromDecimal(15), createdByImport: false },
+    ]);
+    bulkDeleteMock.mockResolvedValueOnce({ deletedCount: 1, deletedIds: ['tx-0'] });
+    bulkDeleteMock.mockRejectedValueOnce(new Error('db down'));
+
+    await expect(deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID, maxRows: Infinity })).rejects.toThrow(
+      'db down',
+    );
+
+    expect(bulkDeleteMock).toHaveBeenCalledTimes(2);
+    expect(absorbMock).not.toHaveBeenCalled();
+    expect(batch.destroy).not.toHaveBeenCalled();
   });
 
   it('reports every batch row as deleted even when bulkDelete skips a cascade-deleted intra-batch twin', async () => {
@@ -336,7 +390,7 @@ describe('deleteImportBatch', () => {
 
     it('refuses a batch holding a row dated from the seam on before the size cap queues it', async () => {
       findWithFiltersMock.mockResolvedValue(
-        Array.from({ length: 1001 }, (_, i) => ({
+        Array.from({ length: 101 }, (_, i) => ({
           id: `tx-${i}`,
           accountId: 'acc-1',
           accountType: ACCOUNT_TYPES.system,
