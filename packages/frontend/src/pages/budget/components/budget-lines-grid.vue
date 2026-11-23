@@ -53,6 +53,8 @@ import {
   goalStatusDisplay,
   groupLines,
   linePaceOf,
+  linesInGridOrder,
+  movableLines,
   periodProgress,
   sumLineTotals,
 } from '../helpers';
@@ -65,7 +67,8 @@ import DeleteLineDialog from './delete-line-dialog.vue';
 import GoalEditorDialog from './goal-editor-dialog.vue';
 import GoalPeekPopover from './goal-peek-popover.vue';
 import GroupNameDialog from './group-name-dialog.vue';
-import LineActionsMenu from './line-actions-menu.vue';
+import LineActionsMenu, { type LineAction } from './line-actions-menu.vue';
+import MoveMoneyDialog from './move-money-dialog.vue';
 import SuggestionWizard from './suggestion-wizard.vue';
 
 type GoalDisplay = ReturnType<typeof goalStatusDisplay> & {
@@ -152,6 +155,10 @@ const { formatBaseCurrency, formatShortBaseCurrency, baseCurrencyDecimals } = us
 const { goalText } = useGoalText();
 
 const archivedLineIds = computed(() => new Set(props.archivedLines.map((line) => line.id)));
+const liveLines = computed(() =>
+  movableLines({ lines: linesInGridOrder({ view: props.view }), archivedIds: archivedLineIds.value }),
+);
+const isMoveOpen = ref(false);
 
 const selectedSet = computed(() => new Set(props.selectedIds));
 const allLineIds = computed(() => props.view.lines.map((line) => line.lineId));
@@ -271,15 +278,13 @@ const { isPending: isArchiving, mutate: archive } = useInvalidatingMutation({
   },
 });
 
-const pickMenuAction = ({
-  line,
-  action,
-}: {
-  line: BudgetPlanPeriodViewLine;
-  action: 'edit' | 'archive' | 'delete';
-}) => {
+const pickMenuAction = ({ line, action }: { line: BudgetPlanPeriodViewLine; action: LineAction }) => {
   if (action === 'edit') return emit('edit', line);
   targetLine.value = line;
+  if (action === 'move') {
+    isMoveOpen.value = true;
+    return;
+  }
   targetHasHistory.value = props.historyLineIds.has(line.lineId);
   if (action === 'archive') isArchiveOpen.value = true;
   else isDeleteOpen.value = true;
@@ -630,7 +635,7 @@ const archiveSelected = () => {
         </span>
 
         <span v-if="archivedLineIds.has(line.lineId)" />
-        <LineActionsMenu v-else @pick="(action) => pickMenuAction({ line, action })" />
+        <LineActionsMenu v-else :can-move="liveLines.length > 1" @pick="(action) => pickMenuAction({ line, action })" />
       </div>
     </DefineLineRow>
 
@@ -973,6 +978,8 @@ const archiveSelected = () => {
       :is-archiving="isArchiving"
       @archive="archiveTargetLine"
     />
+
+    <MoveMoneyDialog v-model:open="isMoveOpen" :plan-id="planId" :view="view" :lines="liveLines" :line="targetLine" />
 
     <GroupNameDialog v-model:open="isGroupDialogOpen" :plan-id="planId" :group="targetGroup" />
 

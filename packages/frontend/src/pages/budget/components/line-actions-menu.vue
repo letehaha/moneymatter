@@ -1,12 +1,15 @@
+<script lang="ts">
+export type LineAction = 'move' | 'edit' | 'archive' | 'delete';
+</script>
+
 <script setup lang="ts">
 import ResponsiveMenu from '@/components/common/responsive-menu.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
-import { ArchiveIcon, EllipsisIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
+import { ArchiveIcon, ArrowRightLeftIcon, EllipsisIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
 import { ref } from 'vue';
 
-type LineAction = 'edit' | 'archive' | 'delete';
-
+defineProps<{ canMove?: boolean }>();
 const emit = defineEmits<{ pick: [action: LineAction] }>();
 
 const isOpen = ref(false);
@@ -27,6 +30,10 @@ const pick = ({ action }: { action: LineAction }) => {
           </Button>
         </template>
 
+        <Button v-if="canMove" variant="ghost" size="sm" class="w-full justify-start" @click="pick({ action: 'move' })">
+          <ArrowRightLeftIcon class="size-4" />
+          {{ $t('budgetPlans.move.menuItem') }}
+        </Button>
         <Button variant="ghost" size="sm" class="w-full justify-start" @click="pick({ action: 'edit' })">
           <PencilIcon class="size-4" />
           {{ $t('budgetPlans.grid.editLine') }}

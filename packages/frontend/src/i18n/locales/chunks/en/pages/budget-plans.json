@@ -326,6 +326,22 @@
       "saved": "Assignment saved",
       "error": "Could not save the assignment"
     },
+    "move": {
+      "menuItem": "Move money",
+      "title": "Move money",
+      "description": "Moves assigned money from one line to another for this period.",
+      "fromLabel": "From",
+      "toLabel": "To",
+      "pickPlaceholder": "Pick a line",
+      "swap": "Swap From and To",
+      "amountLabel": "How much?",
+      "tooMuch": "{line} can give {amount} at most",
+      "chipCover": "Cover the overspend · {amount}",
+      "chipAll": "All it can give · {amount}",
+      "submit": "Move {amount}",
+      "submitInstead": "Move {amount} instead",
+      "toast": "Moved {amount} from {from} to {to}"
+    },
     "unbudgeted": {
       "summary": "Spending outside your lines: {amount} in {count} category | Spending outside your lines: {amount} in {count} categories"
     },

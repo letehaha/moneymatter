@@ -383,6 +383,66 @@ export const takeBackCandidates = <T extends Pick<BudgetPlanPeriodViewLine, 'poo
 export const takeBackRoom = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'available' | 'poolAssigned'> }) =>
   Math.min(line.poolAssigned, Math.max(line.available, 0));
 
+/** The most a line can give to another line without going overspent or getting a negative override. */
+export const moveRoom = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'available' | 'assigned'> }) =>
+  Math.max(Math.min(line.assigned, line.available), 0);
+
+type MoveLine = Pick<BudgetPlanPeriodViewLine, 'lineId' | 'available' | 'assigned'>;
+
+export const movableLines = <T extends Pick<BudgetPlanPeriodViewLine, 'lineId'>>({
+  lines,
+  archivedIds,
+}: {
+  lines: T[];
+  archivedIds: Set<string>;
+}) => lines.filter((line) => !archivedIds.has(line.lineId));
+
+/**
+ * Opened on an overspent line: it is To, From is the line with the most to give (first on a tie), and the amount
+ * covers what From can of the overspend. Opened on any other line: it is From.
+ */
+export const defaultMove = ({ lines, line }: { lines: MoveLine[]; line: MoveLine }) => {
+  const over = overspentBy({ line });
+  if (over === null) return { fromId: line.lineId, toId: null, amount: null };
+  const source = lines
+    .filter((entry) => entry.lineId !== line.lineId)
+    .reduce<MoveLine | undefined>(
+      (best, entry) => (best && moveRoom({ line: best }) >= moveRoom({ line: entry }) ? best : entry),
+      undefined,
+    );
+  const room = source ? moveRoom({ line: source }) : 0;
+  return {
+    fromId: source && room > 0 ? source.lineId : null,
+    toId: line.lineId,
+    amount: room > 0 ? Math.min(over, room) : over,
+  };
+};
+
+/** Both legs of a move, or null when either line is missing, so a move never writes one side only. */
+export const moveAssignmentsPayload = ({
+  view,
+  fromId,
+  toId,
+  amount,
+  decimals,
+}: {
+  view: { lines: MoveLine[] };
+  fromId: string;
+  toId: string;
+  amount: number;
+  decimals: number;
+}): SetBudgetPlanAssignmentsPayload | null => {
+  const from = view.lines.find((line) => line.lineId === fromId);
+  const to = view.lines.find((line) => line.lineId === toId);
+  if (!from || !to || fromId === toId || amount <= 0) return null;
+  return {
+    assignments: [
+      { lineId: fromId, amount: trimAmountNoise({ value: from.assigned - amount, decimals }) },
+      { lineId: toId, amount: trimAmountNoise({ value: to.assigned + amount, decimals }) },
+    ],
+  };
+};
+
 /** The line that can give back the most without going overspent, the first one on a tie. */
 export const pickTakeBackLine = <T extends Pick<BudgetPlanPeriodViewLine, 'available' | 'poolAssigned'>>({
   lines,

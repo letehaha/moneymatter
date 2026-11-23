@@ -26,6 +26,10 @@ import {
   overspendingItems,
   poolCost,
   repeatLastMonthItems,
+  defaultMove,
+  moveAssignmentsPayload,
+  moveRoom,
+  movableLines,
   toAssignmentsPayload,
   undoAssignmentsPayload,
   defaultAssignmentScope,
@@ -2206,6 +2210,78 @@ describe('pool suggestions', () => {
           { lineId: 'none', amount: null },
         ],
       });
+    });
+  });
+});
+
+describe('move money', () => {
+  const ml = ({ lineId, assigned = 0, available = 0 }: { lineId: string; assigned?: number; available?: number }) => ({
+    lineId,
+    assigned,
+    available,
+  });
+
+  it('moveRoom gives what is left, capped by what was assigned, never below 0', () => {
+    expect(moveRoom({ line: { assigned: 270, available: 148.61 } })).toBe(148.61);
+    expect(moveRoom({ line: { assigned: 20, available: 50 } })).toBe(20);
+    expect(moveRoom({ line: { assigned: 300, available: -33.9 } })).toBe(0);
+    expect(moveRoom({ line: { assigned: 0, available: 30 } })).toBe(0);
+    expect(moveRoom({ line: { assigned: 50, available: 0 } })).toBe(0);
+  });
+
+  it('movableLines drops archived lines and keeps the order', () => {
+    const lines = [ml({ lineId: 'a' }), ml({ lineId: 'b' }), ml({ lineId: 'c' })];
+    expect(movableLines({ lines, archivedIds: new Set(['b']) }).map((line) => line.lineId)).toEqual(['a', 'c']);
+  });
+
+  describe('defaultMove', () => {
+    const over = ml({ lineId: 'over', assigned: 300, available: -33.9 });
+
+    it('puts a line that is not overspent in From', () => {
+      const line = ml({ lineId: 'a', assigned: 100, available: 40 });
+      expect(defaultMove({ lines: [line, over], line })).toEqual({ fromId: 'a', toId: null, amount: null });
+    });
+
+    it('covers an overspent line from the line with the most to give, first on a tie', () => {
+      const lines = [
+        over,
+        ml({ lineId: 'small', assigned: 50, available: 10 }),
+        ml({ lineId: 'big', assigned: 270, available: 148.61 }),
+        ml({ lineId: 'tie', assigned: 400, available: 148.61 }),
+      ];
+      expect(defaultMove({ lines, line: over })).toEqual({ fromId: 'big', toId: 'over', amount: 33.9 });
+    });
+
+    it('caps the amount at what the best source can give', () => {
+      const lines = [over, ml({ lineId: 'util', assigned: 120, available: 22.76 })];
+      expect(defaultMove({ lines, line: over })).toEqual({ fromId: 'util', toId: 'over', amount: 22.76 });
+    });
+
+    it('leaves From empty when no other line has anything to give', () => {
+      const lines = [over, ml({ lineId: 'rent', assigned: 1400, available: 0 })];
+      expect(defaultMove({ lines, line: over })).toEqual({ fromId: null, toId: 'over', amount: 33.9 });
+      expect(defaultMove({ lines: [over], line: over })).toEqual({ fromId: null, toId: 'over', amount: 33.9 });
+    });
+  });
+
+  describe('moveAssignmentsPayload', () => {
+    const view = {
+      lines: [ml({ lineId: 'from', assigned: 270, available: 148.61 }), ml({ lineId: 'to', assigned: 300 })],
+    };
+
+    it('writes both legs as this-period amounts', () => {
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'to', amount: 33.9, decimals: 2 })).toEqual({
+        assignments: [
+          { lineId: 'from', amount: 236.1 },
+          { lineId: 'to', amount: 333.9 },
+        ],
+      });
+    });
+
+    it('writes nothing when a line is missing, both are the same, or the amount is not positive', () => {
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'gone', amount: 10, decimals: 2 })).toBeNull();
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'from', amount: 10, decimals: 2 })).toBeNull();
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'to', amount: 0, decimals: 2 })).toBeNull();
     });
   });
 });
