@@ -433,6 +433,11 @@
         "pill": "Not covered · {amount} short",
         "shortForScheduled": "{amount} short for what's still scheduled",
         "assign": "Assign {amount}"
+      },
+      "arrange": {
+        "title": "Arrange sections",
+        "description": "Drag to reorder the panel sections, or switch one off to hide it. Some sections only appear for a selected line or for the period overview.",
+        "reset": "Reset to default"
       }
     },
     "groups": {

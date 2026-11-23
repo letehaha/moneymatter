@@ -15,6 +15,7 @@ import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import type { BudgetPlanCadence, BudgetPlanPeriodView, BudgetPlanPeriodViewLine } from '@bt/shared/types';
 import {
+  ArrowUpDownIcon,
   CalculatorIcon,
   CalendarCheckIcon,
   CalendarClockIcon,
@@ -26,7 +27,7 @@ import {
   XIcon,
 } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
-import { type Component, computed } from 'vue';
+import { type Component, computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import {
@@ -52,12 +53,17 @@ import PanelGoalsSection from './panel-goals-section.vue';
 import PanelPaceSection from './panel-pace-section.vue';
 import PanelScheduledSection from './panel-scheduled-section.vue';
 import PanelTransactionsSection from './panel-transactions-section.vue';
-import { type PanelSection, usePanelSections } from '../composables/use-panel-sections';
+import {
+  PANEL_SECTION_TITLES,
+  type PanelSection,
+  usePanelSectionLayout,
+  usePanelSections,
+} from '../composables/use-panel-sections';
+import ArrangePanelDialog from './arrange-panel-dialog.vue';
 import PanelTrendSection from './panel-trend-section.vue';
 
 type SectionEntry = {
   key: PanelSection;
-  titleKey: string;
   icon: Component;
   component: Component;
   iconClass?: string;
@@ -83,6 +89,8 @@ const { t } = useI18n();
 const { formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { locale } = useDateLocale();
 const openSections = usePanelSections({ drawer: props.drawer });
+const layout = usePanelSectionLayout();
+const isArrangeOpen = ref(false);
 
 const line = computed(() => (props.lines.length === 1 ? props.lines[0] : undefined));
 const lineIds = computed(() => props.lines.map((entry) => entry.lineId));
@@ -117,7 +125,9 @@ const lineTransactionsQuery = useQuery({
   ]),
   queryFn: () =>
     loadBudgetLineTransactions({ planId: props.planId, periodId: periodId.value, lineId: line.value!.lineId }),
-  enabled: computed(() => Boolean(line.value) && openSections.value.transactions),
+  enabled: computed(
+    () => Boolean(line.value) && openSections.value.transactions && !layout.value.hidden.includes('transactions'),
+  ),
 });
 
 const { data: allTrends } = trendsQuery;
@@ -189,14 +199,12 @@ const sections = computed(() => {
   const all: SectionEntry[] = [
     {
       key: 'breakdown',
-      titleKey: 'budgetPlans.panel.breakdown',
       icon: CalculatorIcon,
       iconClass: 'bg-app-savings-color/15 text-app-savings-color',
       component: PanelBreakdownSection,
     },
     {
       key: 'transactions',
-      titleKey: 'budgetPlans.panel.lineTransactions.title',
       icon: ReceiptTextIcon,
       component: PanelTransactionsSection,
       props: {
@@ -211,7 +219,6 @@ const sections = computed(() => {
       key: 'coverage',
       icon: CalendarCheckIcon,
       iconClass: 'bg-automation-when/15 text-automation-when',
-      titleKey: 'budgetPlans.panel.nextPeriodCoverage',
       component: PanelCoverageSection,
       props: { coverage: props.view.coverage },
       hidden: props.lines.length > 0 || !props.view.coverage,
@@ -220,7 +227,6 @@ const sections = computed(() => {
       key: 'scheduled',
       icon: CalendarClockIcon,
       iconClass: 'bg-account-cash/15 text-account-cash',
-      titleKey: 'budgetPlans.panel.scheduled',
       component: PanelScheduledSection,
       props: {
         detail: line.value && lineCoverage.value ? { line: line.value, coverage: lineCoverage.value } : undefined,
@@ -232,14 +238,12 @@ const sections = computed(() => {
     {
       key: 'trend',
       icon: ChartColumnIcon,
-      titleKey: 'budgetPlans.panel.trend.title',
       component: PanelTrendSection,
       hidden: !hasTrends,
     },
     {
       key: 'averages',
       icon: SigmaIcon,
-      titleKey: 'budgetPlans.panel.averages.title',
       component: PanelAveragesSection,
       props: { line: line.value, averages: averages.value },
       hidden: !line.value || !averages.value,
@@ -248,7 +252,6 @@ const sections = computed(() => {
       key: 'pace',
       icon: GaugeIcon,
       iconClass: 'bg-warning-text/15 text-warning-text',
-      titleKey: 'budgetPlans.panel.pace',
       component: PanelPaceSection,
       hidden: !props.view.period.isCurrent,
     },
@@ -256,7 +259,6 @@ const sections = computed(() => {
       key: 'goals',
       icon: TargetIcon,
       iconClass: 'bg-success-text/15 text-success-text',
-      titleKey: 'budgetPlans.panel.goals',
       component: PanelGoalsSection,
       props: { goals: props.view.goals, lines: props.view.lines },
       hidden: props.lines.length > 0 || !props.view.goals,
@@ -265,13 +267,15 @@ const sections = computed(() => {
       key: 'goal',
       icon: TargetIcon,
       iconClass: 'bg-success-text/15 text-success-text',
-      titleKey: 'budgetPlans.panel.goal',
       component: PanelGoalSection,
       props: { line: line.value },
       hidden: !line.value,
     },
   ];
-  return all.filter((section) => !section.hidden);
+  const { order, hidden } = layout.value;
+  return all
+    .filter((section) => !section.hidden && !hidden.includes(section.key))
+    .sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
 });
 </script>
 
@@ -295,6 +299,16 @@ const sections = computed(() => {
       </div>
       <div class="flex shrink-0 items-center gap-1">
         <slot name="actions" />
+        <DesktopOnlyTooltip :content="$t('budgetPlans.panel.arrange.title')">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            :aria-label="$t('budgetPlans.panel.arrange.title')"
+            @click="isArrangeOpen = true"
+          >
+            <ArrowUpDownIcon class="size-4" />
+          </Button>
+        </DesktopOnlyTooltip>
         <DesktopOnlyTooltip v-if="lines.length && !drawer" :content="$t('budgetPlans.panel.closeLine')">
           <Button variant="ghost" size="icon-sm" :aria-label="$t('budgetPlans.panel.closeLine')" @click="emit('close')">
             <XIcon class="size-4" />
@@ -338,7 +352,7 @@ const sections = computed(() => {
     <SidePanelSections variant="cards">
       <SidePanelSection v-for="section in sections" :key="section.key" v-model:open="openSections[section.key]">
         <SidePanelSectionTrigger :icon="section.icon" :icon-class="section.iconClass">
-          {{ $t(section.titleKey) }}
+          {{ $t(PANEL_SECTION_TITLES[section.key]) }}
           <template v-if="section.summary" #summary>{{ section.summary }}</template>
         </SidePanelSectionTrigger>
         <SidePanelSectionContent>
@@ -360,5 +374,7 @@ const sections = computed(() => {
         </Button>
       </div>
     </Callout>
+
+    <ArrangePanelDialog v-model:open="isArrangeOpen" />
   </div>
 </template>
