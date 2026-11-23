@@ -32,6 +32,7 @@
   "sidebar": {
     "collapse": "إخفاء الشريط الجانبي",
     "expand": "توسيع الشريط الجانبي",
+    "hideAmounts": "Hide amounts",
     "resize": "Resize sidebar",
     "settings": {
       "title": "الإعدادات",

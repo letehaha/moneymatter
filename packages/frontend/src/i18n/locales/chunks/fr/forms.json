@@ -194,6 +194,7 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Saisissez un montant valide (jusqu'à 2 décimales)",
+      "invalidCurrencyWholeAmount": "Enter a whole amount",
       "mustBePositive": "Le montant doit être positif",
       "httpUrl": "Enter a valid http(s) URL",
       "maxLength": "Must not exceed {max} characters"

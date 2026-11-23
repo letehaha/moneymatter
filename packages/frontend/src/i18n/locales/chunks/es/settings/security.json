@@ -268,6 +268,7 @@
             "foreignReferenceDropped": "Se eliminó la fila {count} de \"{table}\" cuyos datos referenciaban \"{column}\" fuera de esta copia de seguridad. | Eliminadas filas {count} de \"{table}\" cuyas \"{column}\" referían datos fuera de esta copia de seguridad.",
             "invalidRowDropped": "Se eliminó la fila {count} \"{table}\" que falló la validación. | Se eliminaron registros {count} \"{table}\" que fallaron la validación.",
             "foreignReferenceNulled": "Se limpió \"{column}\" en la fila {count} en \"{table}\" que refería datos fuera de esta copia de seguridad. | Limpiado \"{column}\" en filas {count} en \"{table}\" que referían datos fuera de esta copia de seguridad.",
+            "rateSourceHeadersDropped": "An HTTP rate source was restored without its request headers, which never travel in a backup. Enter them again in that currency's rate source settings, or its rates stop updating. | {count} HTTP rate sources were restored without their request headers, which never travel in a backup. Enter them again in each currency's rate source settings, or their rates stop updating.",
             "unknown": "Algunos datos de la copia de seguridad fueron omitidos o ajustados durante la restauración."
           },
           "failed": {

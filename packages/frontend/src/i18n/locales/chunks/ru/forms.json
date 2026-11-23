@@ -194,6 +194,7 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Введите корректную сумму (не более 2 знаков после запятой)",
+      "invalidCurrencyWholeAmount": "Enter a whole amount",
       "mustBePositive": "Сумма должна быть положительной",
       "httpUrl": "Enter a valid http(s) URL",
       "maxLength": "Must not exceed {max} characters"

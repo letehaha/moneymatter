@@ -32,6 +32,16 @@
       "deleted": "Rozpočet presunutý do koša",
       "deleteError": "Rozpočet sa nepodarilo presunúť do koša"
     },
+    "carryReset": {
+      "action": "Vynulovať prenos",
+      "undo": "Vrátiť vynulovanie",
+      "confirmTitle": "Vynulovať prenos pre toto obdobie?",
+      "confirmDescription": "Každý riadok začne toto obdobie len s tým, čo priradíte. Zostatky a prečerpania z predchádzajúcich období sa neprenesú. Môžete to vrátiť späť.",
+      "confirm": "Vynulovať",
+      "resetDone": "Prenos vynulovaný",
+      "undone": "Vynulovanie vrátené späť",
+      "error": "Prenos sa nepodarilo aktualizovať"
+    },
     "lineCount": "{count} riadok | {count} riadky | {count} riadkov",
     "trialNotice": {
       "active": "Skúšobná verzia pre prvých používateľov: zostáva {count} deň rozpočtovania | Skúšobná verzia pre prvých používateľov: zostávajú {count} dni rozpočtovania | Skúšobná verzia pre prvých používateľov: zostáva {count} dní rozpočtovania",
@@ -398,7 +408,37 @@
       },
       "nextPeriodCoverage": "Pokrytie nasledujúceho obdobia",
       "goals": "Ciele",
-      "goal": "Cieľ"
+      "goal": "Cieľ",
+      "lineTransactions": {
+        "title": "Transakcie",
+        "empty": "V tomto období nie sú žiadne transakcie",
+        "more": "ešte {count}",
+        "seeAll": "Zobraziť všetky v Transakciách"
+      },
+      "averages": {
+        "title": "Priemery",
+        "setAssigned": "Nastaviť Priradené na",
+        "now": "teraz {amount}",
+        "lastAssigned": "Naposledy priradené",
+        "lastSpent": "Naposledy minuté",
+        "avgAssigned": "Priemerne priradené",
+        "avgSpent": "Priemerne minuté",
+        "noChange": "bez zmeny",
+        "hint": "Priemer z posledného obdobia · nastaví Priradené len pre toto obdobie | Priemer z posledných {count} období · nastaví Priradené len pre toto obdobie | Priemer z posledných {count} období · nastaví Priradené len pre toto obdobie"
+      },
+      "notCovered": {
+        "title": "Nepokryté",
+        "count": "{count} nepokrytý | {count} nepokryté | {count} nepokrytých",
+        "covered": "Pokryté",
+        "pill": "Nepokryté · chýba {amount}",
+        "shortForScheduled": "Chýba {amount} na to, čo je ešte naplánované",
+        "assign": "Priradiť {amount}"
+      },
+      "arrange": {
+        "title": "Usporiadať sekcie",
+        "description": "Presunutím zmeníte poradie sekcií panela, vypnutím sekciu skryjete. Niektoré sekcie sa zobrazia len pri vybranom riadku alebo v prehľade obdobia.",
+        "reset": "Obnoviť predvolené"
+      }
     },
     "groups": {
       "headerLabel": "Skupina riadkov",

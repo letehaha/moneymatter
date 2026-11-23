@@ -39,6 +39,7 @@
       "noteReplace": "set note",
       "noteAppend": "append",
       "notePrepend": "prepend",
+      "excludeFromStats": "excluded from stats",
       "note": {
         "containsAny": "note has",
         "notContainsAny": "note lacks",
@@ -112,6 +113,7 @@
       "set_payee": "Set payee",
       "add_tags": "Add tags",
       "set_note": "Set note",
+      "exclude_from_stats": "Exclude from stats",
       "noteMode": {
         "replace": "Replace",
         "append": "Append",

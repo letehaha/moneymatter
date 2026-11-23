@@ -18,8 +18,8 @@
     "dedicatedFlowCategoryNotAllowed": "Kredit- und Fahrzeugkonten müssen über ihre eigenen Endpunkte erstellt werden und nicht über den Endpunkt der allgemeinen Konten.",
     "initialBalanceOnlySystem": "Der Startsaldo kann nur für manuelle Konten geändert werden",
     "initialAndCurrentBalanceTogether": "Startsaldo und aktueller Saldo können nicht in derselben Anfrage geändert werden",
-    "onlySystemAccountsCanBeLinked": "Only manually created accounts can be linked to a bank connection.",
-    "bankLinkImportStillRunning": "An import is still running. Wait for it to finish before linking, unlinking, archiving or disconnecting a bank account. If the import stopped, this block clears on its own 3 hours after the import started."
+    "onlySystemAccountsCanBeLinked": "Nur manuell erstellte Konten können mit einer Bankverbindung verknüpft werden.",
+    "bankLinkImportStillRunning": "Ein Import läuft noch. Warte, bis er abgeschlossen ist, bevor du ein Bankkonto verknüpfst, die Verknüpfung aufhebst, es archivierst oder trennst. Falls der Import abgebrochen wurde, wird diese Sperre 3 Stunden nach Importstart automatisch aufgehoben."
   },
   "balanceAdjustment": {
     "defaultNote": "Kontostandsanpassung",
@@ -50,6 +50,7 @@
     "notFound": "Transaktion nicht gefunden",
     "missingRequiredFields": "Eines der Pflichtfelder fehlt: destinationAmount, destinationAccountId.",
     "destinationAmountRequiredCrossCurrency": "destinationAmount ist erforderlich, wenn der Betrag einer währungsübergreifenden Umbuchung geändert wird.",
+    "amountBelowSmallestUnit": "The amount is below the smallest unit of {{code}}.",
     "refundAndTransferNotAllowed": "Es ist nicht erlaubt, eine Transaktion zu erstellen, die gleichzeitig eine Rückerstattung und eine Umbuchung ist",
     "notOwnTransaction": "Du kannst nur Transaktionen bearbeiten oder löschen, die du auf diesem geteilten Konto erstellt hast.",
     "sharedAccountChangeNotSupported": "Das Verschieben einer Transaktion auf ein anderes Konto ist nur dem Kontoinhaber gestattet.",
@@ -58,12 +59,12 @@
     "cannotCreateWithParams": "Transaktion kann mit den angegebenen Parametern nicht erstellt werden",
     "idCannotBeChanged": "ID kann nicht geändert werden",
     "editReadonlyFields": "Versuch, schreibgeschützte Felder des externen Kontos zu bearbeiten",
-    "preSeamTimeOnOrAfterLinkDay": "A manual transaction on a bank-linked account must stay dated before {{date}}, the day the account was linked.",
-    "manualRowOnOrAfterLinkDay": "This transaction is dated on or after {{date}}, the day the account was linked to the bank. From that day on, the bank's records are what counts, so it can't be edited or deleted.",
-    "manualRowOnOrAfterLinkDayCreate": "Your bank owns everything from {{date}} on, so a manual transaction must be dated before {{date}}.",
-    "bulkDeleteBankRowsSelected": "Transactions synced from your bank, and ones dated on or after the day the account was linked, can't be deleted.",
-    "oppositeLegOnBankAccount": "The other side of this transfer is on a bank-linked account, so this change isn't allowed there.",
-    "moveAcrossBankLinkedAccount": "A transaction can't be moved onto or off a bank-linked account. Delete it and add it again on the other account.",
+    "preSeamTimeOnOrAfterLinkDay": "Eine manuelle Transaktion auf einem mit der Bank verknüpften Konto muss auf ein Datum vor {{date}} datiert bleiben, dem Tag, an dem das Konto verknüpft wurde.",
+    "manualRowOnOrAfterLinkDay": "Diese Transaktion ist auf oder nach {{date}} datiert, dem Tag, an dem das Konto mit der Bank verknüpft wurde. Ab diesem Tag zählen die Daten der Bank, daher kann sie nicht bearbeitet oder gelöscht werden.",
+    "manualRowOnOrAfterLinkDayCreate": "Ab {{date}} stammen alle Einträge von deiner Bank, daher muss eine manuelle Transaktion auf ein Datum vor {{date}} datiert sein.",
+    "bulkDeleteBankRowsSelected": "Mit deiner Bank synchronisierte Transaktionen sowie Transaktionen, die auf oder nach dem Tag der Kontoverknüpfung datiert sind, können nicht gelöscht werden.",
+    "oppositeLegOnBankAccount": "Die Gegenseite dieser Umbuchung liegt auf einem mit der Bank verknüpften Konto, daher ist diese Änderung dort nicht erlaubt.",
+    "moveAcrossBankLinkedAccount": "Eine Transaktion kann nicht auf ein mit der Bank verknüpftes Konto verschoben oder von diesem wegbewegt werden. Lösche sie und füge sie auf dem anderen Konto erneut hinzu.",
     "changeTypeNotAllowed": "Es ist nicht erlaubt, den „transactionType“ eines Nicht-System-Kontos zu ändern",
     "bothRefundFieldsNotAllowed": "Du kannst nicht gleichzeitig \"refundedByTxIds\" und \"refundsTargets\" verwenden. Bitte entscheide dich für eines von beiden.",
     "oppositeTransactionNotFound": "Gegenbuchung zum Aktualisieren wurde nicht gefunden",
@@ -224,6 +225,7 @@
     "reminderAlreadyExists": "Eine identische Erinnerung existiert bereits für dieses Tag",
     "amountThresholdRequired": "Ein Schwellenwert ist für Schwellenwert-Erinnerungen erforderlich",
     "maxRemindersReached": "Maximale Anzahl an Erinnerungen (50) erreicht",
+    "amountThresholdRoundsToZero": "The threshold rounds to zero in your base currency (decimal places: {{decimals}}). Enter a larger amount.",
     "notifications": {
       "thresholdExceeded": {
         "title": "Tag-Ausgabenwarnung",
@@ -260,11 +262,13 @@
     "securitySearchResultNotRecognized": "Das Suchergebnis für das Wertpapier wurde nicht erkannt oder ist abgelaufen. Suche erneut nach dem Wertpapier.",
     "currencyForSecurityNotFound": "Währung für das Wertpapier nicht gefunden.",
     "currencyNotFound": "Währung nicht gefunden",
+    "customCurrencyNotSupported": "Portfolios support ISO 4217 currencies only. \"{{code}}\" is a custom currency",
     "transactionNotFound": "Investment-Transaktion nicht gefunden",
     "userBaseCurrencyNotFound": "Basiswährung des Nutzers nicht gefunden",
     "insufficientSharesToSell": "Nicht genügend Anteile zum Verkaufen. Nach dieser Aktualisierung hättest du {{adjustedQuantity}} Anteile, versuchst aber {{sellQuantity}} Anteile zu verkaufen.",
     "sourceAndDestinationMustDiffer": "Quell- und Ziel-Portfolio müssen unterschiedlich sein",
     "transferAmountMustBePositive": "Umbuchungsbetrag muss größer als null sein",
+    "transferCurrencyMustMatchAccount": "The transfer currency must match the destination account's currency ({{currency}}).",
     "sourcePortfolioNotFound": "Quell-Portfolio nicht gefunden",
     "destinationPortfolioNotFound": "Ziel-Portfolio nicht gefunden",
     "sourceAccountNotFound": "Quellkonto nicht gefunden",
@@ -311,7 +315,7 @@
     "providerAlreadyRegistered": "Anbieter {{providerType}} ist bereits registriert. Anlegen von Duplikaten nicht möglich.",
     "providerNotRegistered": "Anbieter {{providerType}} ist nicht registriert. Verfügbare Anbieter: {{available}}",
     "unexpected": "Unerwarteter Fehler.",
-    "clientUpdateRequired": "This version of the app is no longer supported. Please update it from the App Store."
+    "clientUpdateRequired": "Diese Version der App wird nicht mehr unterstützt. Bitte aktualisiere sie im App Store."
   },
   "validation": {
     "dateInvalid": "\"date\" ist ein ungültiges Datum."
@@ -332,7 +336,7 @@
     "failedToFetchCountries": "Abrufen der Länder fehlgeschlagen. Bitte überprüfe deine Zugangsdaten.",
     "accountNotLinkedToConnection": "Konto nicht gefunden oder nicht mit dieser Verbindung verknüpft",
     "accountAlreadyConnectedToAnotherConnection": "Konto \"{{account}}\" ist bereits über \"{{connection}}\" verbunden. Trenne es zuerst dort.",
-    "accountBalanceUnavailable": "Couldn't get the current balance of {{account}} from the bank. Please try again in a few minutes.",
+    "accountBalanceUnavailable": "Der aktuelle Kontostand von {{account}} konnte nicht von der Bank abgerufen werden. Bitte versuche es in ein paar Minuten erneut.",
     "cannotLoadBeforeLinkDate": "Transaktionen vor dem Verknüpfungsdatum ({{linkedAt}}) können nicht geladen werden. Dieses Konto wurde mit der Strategie „nur vorwärts“ verknüpft, um Duplikate zu vermeiden.",
     "dateRangeExceedsLimit": "Datumsbereich darf 1 Jahr nicht überschreiten.",
     "fromAfterTo": "\"Von\"-Datum muss vor dem \"Bis\"-Datum liegen",
@@ -440,7 +444,7 @@
     "selectedAccountNotFound": "Das ausgewählte Konto wurde nicht gefunden oder gehört nicht dir.",
     "selectedCategoryNotFound": "Die ausgewählte Kategorie wurde nicht gefunden oder gehört nicht dir.",
     "linkedAccountCurrencyMismatch": "Währungen müssen übereinstimmen, um ein bestehendes Konto zu verknüpfen: {{mismatches}}. Verknüpfe ein Konto mit derselben Währung oder erstelle ein neues.",
-    "bankLinkChangedSinceReview": "The bank link of an account in this import changed after the review. Go back to the review step and run it again."
+    "bankLinkChangedSinceReview": "Die Bankverbindung eines Kontos in diesem Import hat sich nach der Überprüfung geändert. Kehre zum Überprüfungsschritt zurück und führe ihn erneut aus."
   },
   "ofxImport": {
     "noFileUploaded": "Es wurde keine Datei hochgeladen. Sende die OFX- oder QFX-Datei als Raw-Request-Body.",
@@ -486,6 +490,7 @@
     "batchDeleteLinkedLoanTransfer": "Dieser Import ist mit einer Kreditrückzahlung verknüpft und kann nicht einzeln rückgängig gemacht werden. Aktiviere „verknüpfte Umbuchungen ebenfalls löschen“, um ihn zu entfernen.",
     "batchDeleteInProgress": "Ein Import-Batch wird bereits gelöscht. Warte, bis der Vorgang abgeschlossen ist, bevor du einen weiteren startest.",
     "batchDeleteImportStillRunning": "Dieser Import läuft noch. Warte, bis er abgeschlossen ist, bevor du ihn rückgängig machst.",
+    "batchDeleteInterruptedByServerUpdate": "A server update interrupted the delete. Part of the import may already be removed – delete it again to finish.",
     "importIntoBankLinkedAccount": "Das Konto \"{{accountName}}\" ist mit einer Bank verbunden, daher können keine Transaktionen darin importiert werden. Wähle ein anderes Konto oder erstelle ein neues.",
     "statementImportInProgress": "Ein Kontoauszugs-Import läuft bereits. Warte, bis dieser abgeschlossen ist, bevor du einen neuen startest.",
     "importInterruptedByServerUpdate": "Ein Server-Update hat diesen Import unterbrochen. Bereits gespeicherte Transaktionen wurden behalten. Lösche diesen Import im \"Importverlauf\", bevor du die Datei erneut importierst, da sie sonst dupliziert werden.",
@@ -591,6 +596,7 @@
   "currencies": {
     "notSupportedForBaseCurrency": "Änderung der Basiswährung zu {{currency}} wird nicht unterstützt. Nur folgende Währungen werden unterstützt: {{supportedCurrencies}}.",
     "listIsEmpty": "Währungsliste ist leer",
+    "amountTooLarge": "{{code}} amounts can be at most {{max, number}}",
     "noBaseCurrency": "Nutzer hat keine Basiswährung festgelegt",
     "alreadyBaseCurrency": "Die ausgewählte Währung ist bereits als Basiswährung eingestellt",
     "baseCurrencyLockedByShares": "Basiswährung kann nicht geändert werden, solange du aktive geteilte Ressourcen hast. Widerrufe oder verlasse diese zuerst.",
@@ -603,7 +609,35 @@
     "cannotFindForRefAmount": "Währung zur Berechnung des Referenzbetrags wurde nicht gefunden!",
     "cannotCalculateRefAmount": "Referenzbetrag kann nicht berechnet werden",
     "currencyNotConnected": "Angeforderte Währung ist nicht hinzugefügt",
-    "exchangeRateNotAvailable": "Wechselkurs für {{baseCode}}/{{quoteCode}} am {{date}} nicht verfügbar"
+    "exchangeRateNotAvailable": "Wechselkurs für {{baseCode}}/{{quoteCode}} am {{date}} nicht verfügbar",
+    "unknownCurrencyCode": "Unknown currency code: {{code}}",
+    "invalidCode": "Invalid currency code \"{{code}}\". Use 2 to 16 letters or digits, e.g. \"USD\".",
+    "invalidCodeIso": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\".",
+    "invalidCodeWithCustom": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\", or one of your custom currencies: {{customCodes}}.",
+    "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places",
+    "customCurrencyNotFound": "Custom currency \"{{code}}\" was not found",
+    "customCurrencyIsoCode": "\"{{code}}\" is an ISO 4217 currency code and cannot be defined as a custom currency",
+    "customCurrencyAlreadyDefined": "You already have a currency with the code \"{{code}}\"",
+    "customCurrencyDecimalsInUse": "You can't change the decimals of {{code}} while your data uses it.",
+    "customCurrencyUseCustomEndpoint": "\"{{code}}\" is a custom currency. Remove it from your custom currencies instead",
+    "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency",
+    "customCurrencyRateBetweenCustom": "Custom currencies are quoted in ISO currencies only: \"{{baseCode}}\" and \"{{quoteCode}}\" are both custom currencies",
+    "customCurrencyLastRate": "\"{{code}}\" is a custom currency and always needs a rate. Set a new rate instead of removing the last one",
+    "customCurrencyQuoteNotIso": "The rate of a custom currency must be given in an ISO currency, and \"{{code}}\" is a custom currency",
+    "customCurrencyRateNeedsQuote": "Set a base currency first, or give the rate of the custom currency in an ISO currency you hold",
+    "customCurrencyOneQuote": "A rate of {{code}} for one day can be quoted in one currency only.",
+    "customCurrencyRateNotManual": "{{code}} takes its rates from its rate source. Switch it to manual rates to set or remove a rate.",
+    "customCurrencyRemovalNeedsDate": "Name the day of the {{code}} rate to remove: a custom currency's rates are removed one day at a time.",
+    "customCurrencyRateViaPairs": "\"{{code}}\" is a custom currency. Change its rate from its exchange rate instead",
+    "customCurrencyDefinitionConflict": "Your own \"{{code}}\" has different decimals than the account owner's \"{{code}}\", so you can't add or edit \"{{code}}\" transactions on this shared account",
+    "rateSourceCurrencyNotHeld": "\"{{code}}\" is not in your currencies",
+    "rateSourceIsoNotAllowed": "Rate sources are for custom currencies only. Use live rates or your own rate for {{code}}.",
+    "rateHistoryIsoNotAllowed": "\"{{code}}\" is an ISO currency, so it has one undated rate and no rate history",
+    "rateSourceHttpsRequired": "Rates from an HTTP source must be fetched over https",
+    "rateSourceHeadersUnreadable": "Cannot read the saved request headers of \"{{code}}\" (the server secret changed). Enter the headers again",
+    "rateSourceFirstFetchFailed": "Couldn't get a rate for \"{{code}}\" from this source, so it wasn't saved. Check its settings and try again.",
+    "rateSourceLeavesNoRate": "\"{{code}}\" is a custom currency and always needs a rate. This source would leave it without one, so it wasn't saved.",
+    "rateSourceChangedMeanwhile": "The rate source of \"{{code}}\" changed while this one was being saved. Reload and try again."
   },
   "userSettings": {
     "userSettingsNotFound": "Benutzereinstellungen nicht gefunden"
@@ -880,7 +914,10 @@
         "malformedManifestEntry": "Backup-Archiv hat einen fehlerhaften Manifest-Eintrag für {{path}}.",
         "missingFile": "Im Backup-Archiv fehlt {{path}}, das im Manifest aufgeführt ist.",
         "checksumMismatch": "Integritätsprüfung der Backup-Datei {{path}} fehlgeschlagen (Prüfsummenabweichung).",
+        "amountNotCents": "Backup file {{path}} is corrupt: it contains an invalid amount ({{value}}).",
         "differentAccount": "Dieses Backup wurde von einem anderen Konto exportiert und kann hier nicht wiederhergestellt werden.",
+        "customCurrencyInvalid": "The backup's custom currency \"{{code}}\" has an invalid definition or rate source, so it cannot be restored",
+        "customCurrencyWithoutRate": "The backup's custom currency \"{{code}}\" needs a positive exchange rate against an ISO currency, or a peg to one, so it cannot be restored",
         "alreadyInProgress": "Eine Backup-Wiederherstellung läuft bereits. Warte, bis sie abgeschlossen ist, bevor du eine weitere startest.",
         "failed": "Die Backup-Wiederherstellung ist fehlgeschlagen. Deine bestehenden Daten wurden nicht verändert."
       }

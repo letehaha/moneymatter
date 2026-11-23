@@ -408,22 +408,22 @@
           "description": "What is left in the current budget period, line by line"
         },
         "trackers": {
-          "name": "Trackers",
+          "name": "Трекеры",
           "description": "Each active tracker with how much of its limit is used and its net"
         },
         "goals": {
-          "name": "Goals",
+          "name": "Цели",
           "description": "Progress toward your savings goals",
           "savedOfTarget": "{saved} of {target}",
           "empty": {
-            "title": "No active goals",
+            "title": "Нет активных целей",
             "description": "Set a goal and see how close you are.",
-            "action": "Create a goal"
+            "action": "Создать цель"
           },
           "locked": {
             "title": "Goals are locked",
             "description": "Save toward what matters and see if you're on pace. Available on paid plans.",
-            "action": "Learn more"
+            "action": "Узнать больше"
           },
           "settings": {
             "showReached": "Show reached goals"

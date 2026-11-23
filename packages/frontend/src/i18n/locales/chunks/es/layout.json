@@ -32,6 +32,7 @@
   "sidebar": {
     "collapse": "Contraer barra lateral",
     "expand": "Expandir barra lateral",
+    "hideAmounts": "Hide amounts",
     "resize": "Redimensionar barra lateral",
     "settings": {
       "title": "Ajustes",

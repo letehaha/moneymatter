@@ -193,7 +193,8 @@
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Zadajte platnú sumu (najviac 2 desatinné miesta)",
+      "invalidCurrencyDecimal": "Zadajte platnú sumu (najviac 1 desatinné miesto) | Zadajte platnú sumu (najviac {decimals} desatinné miesta) | Zadajte platnú sumu (najviac {decimals} desatinných miest)",
+      "invalidCurrencyWholeAmount": "Zadajte sumu bez desatinných miest",
       "mustBePositive": "Suma musí byť kladná",
       "httpUrl": "Zadajte platnú URL adresu vo formáte http(s)",
       "maxLength": "Nesmie presiahnuť {max} znakov"

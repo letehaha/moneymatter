@@ -151,8 +151,8 @@
         "residualOpeningLabel": "Anfangssaldo ändern",
         "residualOpeningDescription": "Verschiebt den Anfangssaldo des Kontos um die Differenz, sodass sich auch jeder vergangene Saldo verschiebt. Wähle dies, wenn am Anfang des Verlaufs Transaktionen fehlen.",
         "residualHint": "Der endgültige Betrag wird nach der ersten Synchronisierung festgelegt, daher kann er leicht von dieser Vorschau abweichen.",
-        "linkFailed": "An error occurred while trying to link account",
-        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
+        "linkFailed": "Beim Verknüpfen des Kontos ist ein Fehler aufgetreten",
+        "refreshFailed": "Konto verknüpft, aber das Aktualisieren deiner Konten ist fehlgeschlagen. Lade die Seite neu, falls etwas veraltet aussieht."
       },
       "tabs": {
         "details": "Details",

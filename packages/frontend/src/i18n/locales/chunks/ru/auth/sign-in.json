@@ -32,7 +32,7 @@
         "signIn": "Войти через {provider}",
         "signUp": "Зарегистрироваться через {provider}"
       },
-      "lastUsed": "Last used"
+      "lastUsed": "Время последнего использования"
     }
   }
 }

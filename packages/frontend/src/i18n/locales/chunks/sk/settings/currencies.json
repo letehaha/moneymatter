@@ -24,18 +24,15 @@
         "custom": "Vlastné",
         "live": "Živý kurz",
         "unused": "Nepoužívaná",
-        "accountsCount": "{count} účet | {count} účty | {count} účtov"
+        "accountsCount": "{count} účet | {count} účty | {count} účtov",
+        "customCurrency": "Vlastná mena"
       },
       "empty": {
         "title": "Zatiaľ žiadne ďalšie meny",
         "description": "Vyššie pridajte menu a sledujte jej zostatky a výmenné kurzy popri základnej mene."
       },
       "exchangeRate": {
-        "disableLiveUpdate": "Ak chcete nastaviť vlastný výmenný kurz, vypnite živú aktualizáciu.",
-        "liveUpdateInfo": "Keď je zapnutá, vlastný kurz sa ignoruje.",
-        "liveUpdateLabel": "Živá aktualizácia",
         "ratePlaceholder": "0,00",
-        "saveButton": "Uložiť",
         "successfullyUpdated": "Úspešne aktualizované.",
         "balancesNotRefreshed": "Zostatky účtov, ktoré sa zatiaľ nepodarilo obnoviť novým kurzom (počet: {count}), sa automaticky aktualizujú, keď bude kurz dostupný.",
         "errors": {
@@ -48,7 +45,6 @@
         "description": "Mena sa dá vymazať alebo odpojiť, len ak k nej nie sú priradené žiadne účty ani transakcie.",
         "button": "Vymazať menu",
         "buttonShort": "Zmazať",
-        "disabledTooltip": "Túto menu nemožno zmazať, pretože je stále prepojená s jedným alebo viacerými účtami.",
         "successfullyDeleted": "Úspešne vymazané.",
         "foreignAmountsWarning": "Sumy v cudzej mene zaznamenané v tejto mene sa odstránia z vašich transakcií. Sumy v mene účtu zostanú nezmenené.",
         "inUse": {
@@ -65,7 +61,8 @@
             "transactionTemplate": "Šablóny transakcií",
             "budget": "Rozpočty",
             "goal": "Ciele",
-            "ventureDeal": "Obchody vo venture"
+            "ventureDeal": "Obchody vo venture",
+            "customCurrency": "Vlastné meny"
           }
         },
         "errors": {
@@ -102,7 +99,274 @@
           "lockedShares": "Máte {count} aktívne zdieľanie účtu. Najprv ho odoberte v nastaveniach účtu. | Máte {count} aktívne zdieľania účtov. Najprv ich odoberte pri každom účte. | Máte {count} aktívnych zdieľaní účtov. Najprv ich odoberte pri každom účte.",
           "lockedBudgetPlan": "Zmenu blokuje aktívny plán rozpočtu. Najprv ho zmažte. | Zmenu blokujú {count} aktívne plány rozpočtu. Najprv ich zmažte. | Zmenu blokuje {count} aktívnych plánov rozpočtu. Najprv ich zmažte."
         }
-      }
+      },
+      "custom": {
+        "addButton": "Pridať vlastnú menu",
+        "createTitle": "Pridať vlastnú menu",
+        "createDescription": "Definujte menu, ktorá nie je menou podľa ISO, napríklad stablecoin alebo kryptoaktívum. Vidíte ju len vy.",
+        "editTitle": "Upraviť vlastnú menu",
+        "editDescription": "Zmeny sa prejavia na všetkých účtoch a transakciách v tejto mene.",
+        "codeLabel": "Kód",
+        "codePlaceholder": "USDT",
+        "nameLabel": "Názov",
+        "namePlaceholder": "Tether",
+        "symbolLabel": "Symbol (voliteľné)",
+        "symbolPlaceholder": "₮",
+        "decimalsLabel": "Desatinné miesta",
+        "decimalsPlaceholder": "6",
+        "decimalsHint": "Sumy si zachovajú najviac toľko číslic za desatinnou čiarkou (0 až 8).",
+        "decimalsLockedHint": "Počet desatinných miest možno zmeniť, len kým {code} nepoužíva žiadny účet, transakcia ani šablóna.",
+        "preview": "Príklad: {value}",
+        "createButton": "Pridať menu",
+        "saveButton": "Uložiť zmeny",
+        "cancelButton": "Zrušiť",
+        "rateLabel": "Kurz",
+        "ratePlaceholder": "1,00",
+        "createRateHint": "Hodnota jednej jednotky tejto meny vo vašej základnej mene. Môžete ju neskôr zmeniť v jej riadku.",
+        "successfullyCreated": "Vlastná mena pridaná",
+        "successfullyUpdated": "Vlastná mena aktualizovaná",
+        "errors": {
+          "codeRequired": "Zadajte kód",
+          "codeFormat": "Použite 2 až 16 veľkých písmen alebo číslic",
+          "codeIsIso": "Toto je kód meny podľa ISO. Pridajte ju radšej zo zoznamu mien",
+          "codeExists": "Mena s týmto kódom už existuje",
+          "nameRequired": "Zadajte názov",
+          "symbolTooLong": "Použite najviac 8 znakov",
+          "decimalsRange": "Zadajte celé číslo od 0 do 8",
+          "rateRequired": "Zadajte kurz vyšší ako 0",
+          "createFailed": "Neočakávaná chyba. Vlastná mena nebola pridaná.",
+          "updateFailed": "Neočakávaná chyba. Vlastná mena nebola aktualizovaná."
+        }
+      },
+      "rateSource": {
+        "successfullySaved": "Zdroj kurzu uložený",
+        "quoteLabel": "Mena ceny",
+        "quotePlaceholder": "Vyberte menu",
+        "manual": {
+          "successfullyRemoved": "Kurz odstránený",
+          "errors": {
+            "removeFailed": "Neočakávaná chyba. Kurz nebol odstránený."
+          }
+        },
+        "peg": {
+          "currencyPlaceholder": "Vyberte menu",
+          "factorPlaceholder": "1"
+        },
+        "coingecko": {
+          "searchLabel": "Nájsť kryptomenu",
+          "searchPlaceholder": "Hľadajte podľa názvu alebo symbolu, napríklad Bitcoin",
+          "noResults": "Nenašli sa žiadne kryptomeny",
+          "selected": "Vybraná kryptomena: {coin}",
+          "searchFailed": "Vyhľadávanie v CoinGecko zlyhalo. Skúste to znova o chvíľu."
+        },
+        "http": {
+          "urlPlaceholder": "https://api.example.com/price?id={'{code}'}&vs={'{quote}'}&on={'{date}'}",
+          "urlHint": "Zástupné znaky: {date} je deň vo formáte rrrr-mm-dd, {code} je kód meny a {quote} je mena ceny.",
+          "pathPlaceholder": "data.rates[0].price",
+          "headerNameLabel": "Názov hlavičky",
+          "headerNamePlaceholder": "X-Api-Key",
+          "headerValueLabel": "Hodnota",
+          "headerValuePlaceholder": "Zadajte hodnotu",
+          "addHeader": "Pridať hlavičku",
+          "removeHeader": "Odstrániť hlavičku",
+          "savedHeaders": "Uložené hlavičky: {names}. Ich hodnoty sú skryté.",
+          "headersWillBeRemoved": "Uložené hlavičky sa po uložení odstránia.",
+          "replaceHeaders": "Nahradiť hlavičky",
+          "keepHeaders": "Ponechať uložené hlavičky",
+          "headersOriginChanged": "Uložené hlavičky sa odosielajú len na adresu, pre ktorú boli uložené. Ak chcete použiť túto URL, nahraďte ich.",
+          "testSuccess": "Ku dňu {date}: 1 {code} = {rate} {quote}",
+          "testUnavailable": "Test sa nepodarilo spustiť. Skúste to znova o chvíľu.",
+          "failures": {
+            "blocked": "Táto adresa nie je povolená: súkromné a interné adresy sú zablokované.",
+            "https_required": "Adresa musí používať https.",
+            "timeout": "Koncový bod odpovedal príliš dlho.",
+            "network": "Koncový bod sa nepodarilo kontaktovať.",
+            "http_status": "Koncový bod odpovedal chybovým stavom.",
+            "too_large": "Odpoveď je príliš veľká.",
+            "not_json": "Odpoveď nie je vo formáte JSON.",
+            "path_not_found": "Cesta JSON v odpovedi na nič neukazuje.",
+            "not_a_number": "Hodnota na ceste JSON nie je kladné číslo.",
+            "headers_unreadable": "Uložené hlavičky sa nepodarilo prečítať. Zadajte ich znova."
+          }
+        },
+        "errors": {
+          "pegCurrencyRequired": "Vyberte menu, na ktorú sa má viazať",
+          "factorInvalid": "Zadajte číslo vyššie ako 0",
+          "coinRequired": "Vyhľadajte a vyberte kryptomenu",
+          "urlRequired": "Zadajte URL",
+          "urlInvalid": "Použite URL s http(s); jediné zástupné znaky sú deň, kód a mena ceny",
+          "pathRequired": "Zadajte cestu JSON",
+          "headerNameRequired": "Každej hlavičke zadajte názov",
+          "headerNameDuplicate": "Názvy hlavičiek musia byť jedinečné",
+          "saveFailed": "Neočakávaná chyba. Zdroj kurzu nebol uložený."
+        },
+        "history": {
+          "connectToEdit": "Ak chcete tento kurz upraviť, pripojte {quote}."
+        }
+      },
+      "dialog": {
+        "back": "Späť na {name}",
+        "summary": {
+          "current": "Aktuálny kurz",
+          "since": "Od {date}",
+          "follows": "Viazaná na {code}",
+          "updated": "Aktualizované {date}",
+          "live": "Živý kurz",
+          "yourRate": "Váš kurz",
+          "update": "Aktualizovať kurz"
+        },
+        "source": {
+          "label": "Zdroj kurzu",
+          "manual": "Zadávate ho sami",
+          "peg": "Viazaná na {code}",
+          "pegDetail": "Vždy 1 {code} = {factor} {target}",
+          "coingecko": "CoinGecko · {coin}",
+          "http": "Vlastná URL · {host}",
+          "syncedDetail": "Aktualizuje sa každú noc",
+          "change": "Zmeniť"
+        },
+        "recent": {
+          "title": "Posledné kurzy",
+          "viewAll": "Zobraziť všetky ({count})",
+          "viewAllUnknown": "Zobraziť všetky",
+          "readOnly": "Ceny zo zdroja {source} nemožno upravovať. Ak chcete kurzy zadávať sami, zmeňte zdroj kurzu.",
+          "loadFailedTitle": "Kurzy sa nepodarilo načítať.",
+          "loadFailedDetail": "Aktuálny kurz vyššie je stále správny.",
+          "refreshFailed": "Kurzy sa nepodarilo obnoviť, preto môže byť zoznam neaktuálny."
+        },
+        "pegRow": {
+          "title": "História kurzov",
+          "count": "{count} kurz | {count} kurzy | {count} kurzov",
+          "notUsed": "Nepoužíva sa, kým je {code} viazaná na {target}",
+          "empty": "Žiadne uložené kurzy",
+          "view": "Zobraziť"
+        },
+        "row": {
+          "current": "Aktuálny",
+          "now": "{from} – teraz",
+          "rate": "1 {code} = {rate} {quote}",
+          "edit": "Upraviť kurz používaný od {date}",
+          "source": {
+            "initial": "Počiatočný kurz",
+            "manual": "Zadané vami",
+            "coingecko": "CoinGecko",
+            "http": "Vlastná URL"
+          }
+        },
+        "history": {
+          "title": "História kurzov",
+          "description": "Každý kurz sa používa od svojho dátumu, kým nezačne platiť ďalší. Dátumy pred prvým kurzom používajú prvý kurz.",
+          "count": "{count} kurz, najnovší ako prvý | {count} kurzy, najnovšie ako prvé | {count} kurzov, najnovšie ako prvé",
+          "showOlder": "Zobraziť staršie kurzy",
+          "empty": "Žiadne uložené kurzy. {code} je viazaná na {target}, takže žiadne nepotrebuje."
+        },
+        "form": {
+          "addTitle": "Aktualizovať kurz",
+          "addDescription": "Nastavte hodnotu 1 {code} od zvoleného dňa.",
+          "editTitle": "Upraviť kurz",
+          "usedFor": "Používa sa pre {range}.",
+          "usedFrom": "Používa sa od {date} ďalej.",
+          "usedEveryDay": "Používa sa pre každý deň.",
+          "usedForAndBefore": "Používa sa pre {range} aj pre každý deň pred ním.",
+          "typeEither": "Zadajte ktorúkoľvek z hodnôt.",
+          "dateLabel": "Použiť tento kurz od",
+          "today": "Dnes",
+          "replaceNote": "Pre {date} už kurz existuje ({rate} {quote}). Uložením sa nahradí.",
+          "recalcRange": "Uložením sa prepočíta hodnota vašich transakcií v mene {code} s dátumom {range}.",
+          "recalcFrom": "Uložením sa prepočíta hodnota vašich transakcií v mene {code} od {date} ďalej.",
+          "recalcUntil": "Uložením sa prepočíta hodnota vašich transakcií v mene {code} do {date}.",
+          "recalcAll": "Uložením sa prepočíta hodnota všetkých vašich transakcií v mene {code}.",
+          "amountsKept": "Ich sumy v mene {code} zostanú rovnaké.",
+          "noChange": "Už uložené transakcie si ponechajú svoju hodnotu.",
+          "unknown": "Ak už pre tento deň kurz existuje, uložením sa nahradí. Vaše transakcie v mene {code} od tohto dňa do ďalšieho kurzu sa prepočítajú.",
+          "moveHint": "Ak chcete tento kurz použiť od iného dňa, odstráňte ho a pridajte nový.",
+          "save": "Uložiť kurz",
+          "replace": "Nahradiť kurz",
+          "remove": "Odstrániť kurz",
+          "lastRate": "Mena potrebuje aspoň jeden kurz."
+        },
+        "remove": {
+          "title": "Odstrániť kurz z {date}?",
+          "takenOver": "{range} bude namiesto toho používať kurz z {date} (1 {code} = {rate} {quote}).",
+          "takenOverWithEarlier": "{range} aj každý skorší deň budú namiesto toho používať kurz z {date} (1 {code} = {rate} {quote}).",
+          "unknown": "{range} bude namiesto toho používať predchádzajúci kurz.",
+          "unknownDays": "Dni, ktoré tento kurz pokrýva, budú namiesto toho používať iný uložený kurz.",
+          "recalc": "Hodnota vašich transakcií v mene {code} v týchto dňoch sa prepočíta. Ich sumy v mene {code} zostanú rovnaké.",
+          "confirm": "Odstrániť kurz"
+        },
+        "sourceView": {
+          "title": "Odkiaľ sa má kurz brať?",
+          "now": {
+            "manual": "Momentálne ho zadávate sami.",
+            "peg": "Momentálne je viazaný na {target}.",
+            "coingecko": "Momentálne sa preberá z CoinGecko.",
+            "http": "Momentálne sa preberá z vlastnej URL."
+          },
+          "option": {
+            "manual": "Zadávať ručne",
+            "manualHint": "Keď sa cena zmení, zadajte nový kurz.",
+            "peg": "Viazať na menu",
+            "pegHint": "Vždy má hodnotu pevnej sumy v USD, EUR alebo inej mene.",
+            "coingecko": "Cena kryptomeny",
+            "coingeckoHint": "Aktualizuje sa každú noc z CoinGecko.",
+            "http": "Vlastná URL",
+            "httpHint": "Aktualizuje sa každú noc z webovej adresy, ktorú zadáte."
+          },
+          "schedule": {
+            "coingecko": "Cena sa preberá raz denne, cez noc. Do ďalšej aktualizácie sa používa naposledy prevzatá cena.",
+            "http": "Adresa sa volá raz denne, cez noc. Do ďalšej aktualizácie sa používa posledná cena, ktorú vrátila."
+          },
+          "inUse": "Používa sa",
+          "advanced": "Rozšírené",
+          "notAvailable": "Nedostupné",
+          "note": {
+            "manual": "Po uložení budete kurz zadávať sami. Už uložené kurzy sa použijú znova.",
+            "manualNoRates": "{code} zatiaľ nemá uložené kurzy. Najprv ju viažte na menu alebo pripojte cenu.",
+            "peg": "Po uložení bude mať 1 {code} vždy hodnotu {factor} {target}. Kurzy, ktoré ste zadali, zostanú v histórii a po prepnutí späť sa použijú znova.",
+            "coingecko": "Pri uložení stiahneme ceny {coin} za posledný rok a prepočítame hodnotu vašich minulých transakcií v mene {code}. Kurzy, ktoré ste pridali sami, sa zachovajú. Počiatočný kurz sa nahradí v dňoch, pre ktoré má CoinGecko cenu.",
+            "coingeckoCoinChanged": "Ceny predchádzajúcej kryptomeny sa odstránia.",
+            "http": "Pri uložení získame dnešnú cenu z tejto adresy a prepočítame hodnotu vašich minulých transakcií v mene {code}. Skoršie dni si ponechajú už uložené kurzy. Kurzy, ktoré ste pridali sami, sa zachovajú."
+          },
+          "pegCurrency": "Mena, na ktorú sa viazať",
+          "pegAmount": "1 {code} =",
+          "notSaved": "Zatiaľ neuložené",
+          "saving": "Ukladá sa",
+          "downloading": "Sťahuje sa ročná história cien. Môže to chvíľu trvať.",
+          "fetchingToday": "Získava sa dnešná cena z adresy. Môže to chvíľu trvať.",
+          "saveFailedTitle": "Uloženie zlyhalo. Nič sa nezmenilo.",
+          "unavailable": "Ceny kryptomien nie sú na tomto serveri nastavené. Správca servera musí pridať kľúč CoinGecko. Kurz môžete stále zadať sami alebo viazať menu na inú.",
+          "http": {
+            "address": "Webová adresa",
+            "path": "Kde sa v odpovedi nachádza kurz",
+            "headers": "Tajné hlavičky",
+            "headersStored": "uložené šifrovane",
+            "test": "Otestovať",
+            "testAgain": "Otestovať znova"
+          }
+        },
+        "discard": {
+          "title": "Zahodiť zmeny?",
+          "body": "{code} bude kurz naďalej získavať tak ako teraz: {current}. To, čo ste tu vyplnili, sa stratí.",
+          "rateBody": "Kurz, ktorý ste zadali pre {code}, nie je uložený a stratí sa.",
+          "keep": "Pokračovať v úpravách",
+          "confirm": "Zahodiť"
+        },
+        "iso": {
+          "liveTitle": "Živý kurz",
+          "liveOn": "Aktualizuje sa automaticky. Vypnite ho, ak chcete zadať vlastný kurz.",
+          "liveOff": "Vypnuté. Po opätovnom zapnutí sa váš kurz odstráni.",
+          "save": "Uložiť kurz",
+          "note": "Váš kurz sa použije pre nové transakcie. Už uložené transakcie si ponechajú svoje hodnoty.",
+          "confirmTitle": "Vrátiť sa k živému kurzu?",
+          "confirmBody": "Váš kurz ({rate}) sa odstráni a {code} sa opäť riadi trhovým kurzom. Už uložené transakcie si ponechajú svoje hodnoty.",
+          "confirm": "Použiť živý kurz"
+        },
+        "footer": {
+          "editDetails": "Upraviť údaje",
+          "deleteBlocked": "Používa ju {count} účet, preto ju nemožno zmazať. | Používajú ju {count} účty, preto ju nemožno zmazať. | Používa ju {count} účtov, preto ju nemožno zmazať."
+        }
+      },
+      "refreshFailed": "Uložené, ale zoznam mien sa nepodarilo obnoviť. Ak niečo vyzerá neaktuálne, načítajte stránku znova."
     }
   }
 }

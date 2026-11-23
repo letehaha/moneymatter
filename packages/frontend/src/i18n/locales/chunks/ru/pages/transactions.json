@@ -65,7 +65,7 @@
       "menu": {
         "type": "Тип",
         "tags": "Теги",
-        "budgets": "Бюджеты",
+        "budgets": "Трекеры",
         "amount": "Диапазон суммы"
       },
       "transferNature": {

@@ -119,6 +119,7 @@
             "bankProviders": "Conexões bancárias (Monobank, Enable Banking, SimpleFIN, Lunch Flow, Walutomat)",
             "ourAiKey": "Recursos de IA com a nossa chave, com limite de uso justo",
             "firePlanner": "Planejador FIRE",
+            "customCurrencies": "Custom currencies",
             "seats": "5 vagas na família"
           }
         },

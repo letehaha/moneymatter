@@ -268,6 +268,7 @@
             "foreignReferenceDropped": "{count} Zeile aus \"{table}\" verworfen, deren \"{column}\" auf Daten außerhalb dieses Backups verwies. | {count} Zeilen aus \"{table}\" verworfen, deren \"{column}\" auf Daten außerhalb dieses Backups verwiesen.",
             "invalidRowDropped": "{count} \"{table}\"-Zeile verworfen, die die Validierung nicht bestanden hat. | {count} \"{table}\"-Zeilen verworfen, die die Validierung nicht bestanden haben.",
             "foreignReferenceNulled": "\"{column}\" bei {count} Zeile in \"{table}\" geleert, die auf Daten außerhalb dieses Backups verwies. | \"{column}\" bei {count} Zeilen in \"{table}\" geleert, die auf Daten außerhalb dieses Backups verwiesen.",
+            "rateSourceHeadersDropped": "An HTTP rate source was restored without its request headers, which never travel in a backup. Enter them again in that currency's rate source settings, or its rates stop updating. | {count} HTTP rate sources were restored without their request headers, which never travel in a backup. Enter them again in each currency's rate source settings, or their rates stop updating.",
             "unknown": "Einige Daten im Backup wurden während der Wiederherstellung übersprungen oder angepasst."
           },
           "failed": {

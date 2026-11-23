@@ -119,6 +119,7 @@
             "bankProviders": "Bankové pripojenia (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
             "ourAiKey": "Funkcie AI na našom kľúči, s limitom férového používania",
             "firePlanner": "Plánovač FIRE",
+            "customCurrencies": "Vlastné meny",
             "seats": "5 miesta v domácnosti"
           }
         },
