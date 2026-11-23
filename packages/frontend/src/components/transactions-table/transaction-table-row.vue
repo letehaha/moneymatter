@@ -153,8 +153,9 @@
 
       <!-- Note -->
       <template v-else-if="column.id === TABLE_COLUMN.note">
-        <DesktopOnlyTooltip v-if="tx.note" :content="tx.note">
-          <span class="text-muted-foreground block truncate">{{ tx.note }}</span>
+        <DesktopOnlyTooltip v-if="tx.note">
+          <span class="text-muted-foreground block truncate"><LinkifiedText :text="tx.note" /></span>
+          <template #content><LinkifiedText :text="tx.note" /></template>
         </DesktopOnlyTooltip>
       </template>
 
@@ -257,6 +258,7 @@ import BrandLogo from '@/components/common/brand-logo.vue';
 import { toEntityLogoDisplayProps, toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import CurrencyAmount from '@/components/common/currency-amount.vue';
+import LinkifiedText from '@/components/common/linkified-text.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Checkbox } from '@/components/lib/ui/checkbox';
