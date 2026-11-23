@@ -2,6 +2,7 @@ import type { SetBudgetLineGoalPayload, SetBudgetPlanLayoutPayload } from '@bt/s
 import { toUtcDateString } from '@common/utils/date';
 import { createLine as _createLine } from '@services/budget-plans/create-line';
 import { createPlan as _createPlan } from '@services/budget-plans/create-plan';
+import { getLineTransactions as _getLineTransactions } from '@services/budget-plans/get-line-transactions';
 import { getPeriodView as _getPeriodView } from '@services/budget-plans/get-period-view';
 import { getPlan as _getPlan, listPlans as _listPlans } from '@services/budget-plans/get-plan';
 import { getScheduled as _getScheduled } from '@services/budget-plans/get-scheduled';
@@ -339,6 +340,30 @@ export function getBudgetPlanScheduled<R extends boolean | undefined = false>({
   return makeRequest<Awaited<ReturnType<typeof _getScheduled>>, R>({
     method: 'get',
     url: `/budget-plans/${planId}/periods/${periodId}/scheduled`,
+    headers,
+    raw,
+  });
+}
+
+export function getBudgetLineTransactions<R extends boolean | undefined = false>({
+  planId,
+  periodId,
+  lineId,
+  limit,
+  headers,
+  raw,
+}: {
+  planId: string;
+  periodId: string;
+  lineId: string;
+  limit?: number | string;
+  headers?: object;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _getLineTransactions>>, R>({
+    method: 'get',
+    url: `/budget-plans/${planId}/periods/${periodId}/lines/${lineId}/transactions`,
+    payload: limit !== undefined ? { limit: String(limit) } : undefined,
     headers,
     raw,
   });

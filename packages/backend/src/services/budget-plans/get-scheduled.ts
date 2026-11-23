@@ -6,7 +6,6 @@ import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError, NotFoundError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
-import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import BudgetPlans from '@models/budget-plans.model';
 import Payees from '@models/payees.model';
@@ -19,9 +18,8 @@ import { Op } from 'sequelize';
 
 import { addUtcDays, utcInstant } from './date-ranges';
 import { findPlan } from './find-plan';
-import { lineOwnerResolver, periodMembership } from './fold/fold-plan';
-import { ensurePeriods, loadLines } from './periods/ensure-periods';
-import { ownerCategories } from './validate-line-categories';
+import { ensurePeriods } from './periods/ensure-periods';
+import { loadLineOwnerResolver } from './validate-line-categories';
 
 const EMPTY: BudgetPlanScheduled = {
   items: [],
@@ -120,18 +118,10 @@ export const getScheduled = async ({
   if (until <= today) return EMPTY;
   const from = start > today ? start : today;
 
-  const [accountIds, lines, { byId }] = await Promise.all([
+  const [accountIds, { ownerOf: lineOf }] = await Promise.all([
     planAccountIds({ plan }),
-    loadLines({ planId: plan.id }),
-    ownerCategories({ userId: plan.userId }),
+    loadLineOwnerResolver({ plan, start }),
   ]);
-  const lineCategories = await BudgetLineCategories.findAll({
-    where: { lineId: { [Op.in]: lines.map((line) => line.id) } },
-  });
-  const lineOf = lineOwnerResolver({
-    membership: periodMembership({ lines, lineCategories, start }).membership,
-    byId,
-  });
   const lineOfCategory = ({ categoryId }: { categoryId: string | null }) =>
     categoryId === null ? null : lineOf(categoryId);
 

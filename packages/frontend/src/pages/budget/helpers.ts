@@ -1,4 +1,4 @@
-import { trimAmountNoise } from '@/js/helpers/currency-decimals';
+import { roundToDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import {
   type AccountModel,
@@ -23,6 +23,7 @@ import {
   type BudgetPlanPeriodViewLine,
   type BudgetPlanPeriodViewLineGoal,
   type BudgetPlanScheduled,
+  type BudgetPlanScheduledItem,
   type BudgetPlanTrendPeriod,
   type BudgetPlanTrends,
   type BudgetPlanTypeKey,
@@ -695,6 +696,15 @@ export const trendPaddingStarts = ({
   });
 };
 
+const trendTotalsOf = ({ period, ids }: { period: BudgetPlanTrendPeriod; ids: Set<string> }) => {
+  const lines = ids.size ? period.lines.filter((line) => ids.has(line.lineId)) : period.lines;
+  const sources = ids.size ? lines : [period];
+  const assigned = sources.reduce((sum, source) => sum + source.assigned, 0);
+  const spent = sources.reduce((sum, source) => sum + spentOf({ line: source }), 0);
+  const overspent = lines.reduce((sum, line) => sum + overspendOf({ line }), 0);
+  return { assigned, spent, over: Math.min(spent, overspent) };
+};
+
 /**
  * Assigned vs spent per period for `lineIds` (the whole plan when empty), with bar heights as percentages of one
  * shared scale. The last period is the current one; a line missing from a period (not active yet) counts as 0.
@@ -702,14 +712,7 @@ export const trendPaddingStarts = ({
  */
 export const trendBars = ({ periods, lineIds }: { periods: BudgetPlanTrendPeriod[]; lineIds: string[] }) => {
   const ids = new Set(lineIds);
-  const totals = periods.map((period) => {
-    const lines = ids.size ? period.lines.filter((line) => ids.has(line.lineId)) : period.lines;
-    const sources = ids.size ? lines : [period];
-    const assigned = sources.reduce((sum, source) => sum + source.assigned, 0);
-    const spent = sources.reduce((sum, source) => sum + spentOf({ line: source }), 0);
-    const overspent = lines.reduce((sum, line) => sum + overspendOf({ line }), 0);
-    return { assigned, spent, over: Math.min(spent, overspent) };
-  });
+  const totals = periods.map((period) => trendTotalsOf({ period, ids }));
 
   const max = Math.max(0, ...totals.flatMap(({ assigned, spent }) => [assigned, spent]));
   const percentOfMax = ({ value }: { value: number }) => (max > 0 ? (Math.max(0, value) / max) * 100 : 0);
@@ -729,6 +732,43 @@ export const trendBars = ({ periods, lineIds }: { periods: BudgetPlanTrendPeriod
     averageUsedPercent: usedPercent({ items: totals.slice(0, -1).slice(-TREND_AVERAGE_WINDOW) }),
   };
 };
+
+const AVERAGE_PERIOD_COUNT = 12;
+export const TRENDS_FETCH_COUNT = Math.max(TREND_PERIOD_COUNT, AVERAGE_PERIOD_COUNT + 1);
+
+/**
+ * One line's assigned and spent over up to `AVERAGE_PERIOD_COUNT` periods before the last (viewed) one, counted as
+ * `trendBars` counts them. Periods without the line (not active yet) are skipped; `null` when none are left.
+ */
+export const lineAverages = ({
+  periods,
+  lineId,
+  decimals,
+}: {
+  periods: BudgetPlanTrendPeriod[];
+  lineId: string;
+  decimals: number;
+}) => {
+  const ids = new Set([lineId]);
+  const totals = periods
+    .slice(0, -1)
+    .filter((period) => period.lines.some((line) => line.lineId === lineId))
+    .slice(-AVERAGE_PERIOD_COUNT)
+    .map((period) => trendTotalsOf({ period, ids }));
+  const last = totals.at(-1);
+  if (!last) return null;
+  const average = ({ key }: { key: 'assigned' | 'spent' }) =>
+    roundToDecimals({ value: totals.reduce((sum, total) => sum + total[key], 0) / totals.length, decimals });
+  return {
+    periodCount: totals.length,
+    lastAssigned: last.assigned,
+    lastSpent: last.spent,
+    avgAssigned: average({ key: 'assigned' }),
+    avgSpent: average({ key: 'spent' }),
+  };
+};
+
+export type LineAverages = NonNullable<ReturnType<typeof lineAverages>>;
 
 export const isPastPeriod = ({ period, now = new Date() }: { period: Pick<BudgetPlanPeriod, 'endDate'>; now?: Date }) =>
   period.endDate <= format(now, 'yyyy-MM-dd');
@@ -757,6 +797,40 @@ export const scheduledForLines = ({
     nextDate: items[0]?.date ?? null,
   };
 };
+
+/**
+ * Pays one line's scheduled outflows from its `available` in date order; `short` is what each bill, and all of them,
+ * still lack. With any bill, the total also covers a negative `available`, so assigning it pays every bill.
+ * Inflows cover nothing: expected money is not there yet.
+ */
+export const scheduledCoverage = <T extends Pick<BudgetPlanScheduledItem, 'date' | 'amount'>>({
+  items,
+  available,
+  decimals,
+}: {
+  items: T[];
+  available: number;
+  decimals: number;
+}) => {
+  let left = Math.max(0, available);
+  const bills = items
+    .filter((item) => item.amount < 0)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((item) => {
+      const cost = -item.amount;
+      const covered = Math.min(cost, left);
+      left = trimAmountNoise({ value: left - covered, decimals });
+      const short = trimAmountNoise({ value: cost - covered, decimals });
+      return { item, status: short > 0 ? ('short' as const) : ('covered' as const), short };
+    });
+  const cost = bills.reduce((sum, bill) => sum - bill.item.amount, 0);
+  return { bills, short: bills.length ? trimAmountNoise({ value: Math.max(0, cost - available), decimals }) : 0 };
+};
+
+export type ScheduledCoverage = ReturnType<typeof scheduledCoverage<BudgetPlanScheduledItem>>;
+
+export const scheduledItemKey = ({ item }: { item: Pick<BudgetPlanScheduledItem, 'source' | 'id' | 'date'> }) =>
+  `${item.source}-${item.id}-${item.date}`;
 
 type GoalDisplayKind = BudgetLineGoalStatus | 'progress';
 

@@ -684,6 +684,7 @@ const openLineDialog = ({
                   <BudgetSidePanel
                     v-if="plan"
                     :plan-id="planId"
+                    :account-ids="plan.accountIds"
                     :cadence="plan.plan.cadence"
                     :unit="goalUnit"
                     :view="view"
@@ -790,6 +791,7 @@ const openLineDialog = ({
               <BudgetSidePanel
                 v-if="view && plan"
                 :plan-id="planId"
+                :account-ids="plan.accountIds"
                 :cadence="plan.plan.cadence"
                 :unit="goalUnit"
                 :view="view"
@@ -840,6 +842,7 @@ const openLineDialog = ({
               <BudgetSidePanel
                 drawer
                 :plan-id="planId"
+                :account-ids="plan.accountIds"
                 :cadence="plan.plan.cadence"
                 :unit="goalUnit"
                 :view="view"

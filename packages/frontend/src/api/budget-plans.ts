@@ -6,6 +6,7 @@ import type {
   BudgetPlanDetails,
   BudgetPlanLineEntry,
   BudgetPlanLineGroup,
+  BudgetPlanLineTransactions,
   BudgetPlanModel,
   BudgetPlanPeriod,
   BudgetPlanPeriodView,
@@ -69,6 +70,17 @@ export const loadBudgetPlanScheduled = async ({
   planId: string;
   periodId: string;
 }): Promise<BudgetPlanScheduled> => api.get(`/budget-plans/${planId}/periods/${periodId}/scheduled`);
+
+export const loadBudgetLineTransactions = async ({
+  planId,
+  periodId,
+  lineId,
+}: {
+  planId: string;
+  periodId: string;
+  lineId: string;
+}): Promise<BudgetPlanLineTransactions> =>
+  api.get(`/budget-plans/${planId}/periods/${periodId}/lines/${lineId}/transactions`);
 
 export const createBudgetPlanLine = async ({
   planId,

@@ -8,6 +8,7 @@ import deleteGroup from '@controllers/budget-plans/delete-group';
 import deleteLine from '@controllers/budget-plans/delete-line';
 import deleteLineGoal from '@controllers/budget-plans/delete-line-goal';
 import deletePlan from '@controllers/budget-plans/delete-plan';
+import getLineTransactions from '@controllers/budget-plans/get-line-transactions';
 import getPeriodView from '@controllers/budget-plans/get-period-view';
 import getPlan from '@controllers/budget-plans/get-plan';
 import getScheduled from '@controllers/budget-plans/get-scheduled';
@@ -44,6 +45,7 @@ router.get('/:planId/trends', authenticateSession, getTrends);
 router.get('/:planId/periods', authenticateSession, listPeriods);
 router.get('/:planId/periods/:periodId', authenticateSession, getPeriodView);
 router.get('/:planId/periods/:periodId/scheduled', authenticateSession, getScheduled);
+router.get('/:planId/periods/:periodId/lines/:lineId/transactions', authenticateSession, getLineTransactions);
 
 router.post('/', ...gatedWrite, createPlan);
 router.patch('/:planId', ...gatedWrite, updatePlan);

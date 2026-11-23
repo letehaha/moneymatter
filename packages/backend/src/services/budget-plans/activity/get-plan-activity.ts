@@ -15,7 +15,14 @@ interface RawActivityRow {
   categoryId: RecordId | null;
   /** Decimal string: a SUM over the DECIMAL ref amounts, which pg hands back as text. */
   activity: string;
-  dayOffset?: number;
+}
+
+type ActivityGrouping = { kind: 'period' } | { kind: 'day' } | { kind: 'transaction'; periodId: RecordId };
+
+interface RawRowByGrouping {
+  period: RawActivityRow;
+  day: RawActivityRow & { dayOffset: number };
+  transaction: RawActivityRow & { transactionId: RecordId; time: Date };
 }
 
 interface PlanDailyActivityRow extends FoldActivityRow {
@@ -23,25 +30,32 @@ interface PlanDailyActivityRow extends FoldActivityRow {
   dayOffset: number;
 }
 
-const queryActivity = async ({
+const queryActivity = async <G extends ActivityGrouping>({
   plan,
   from,
   until,
-  byDay,
+  grouping,
   decimals,
   timezone,
 }: {
   plan: BudgetPlans;
   from: string | Date;
   until: string | Date;
-  byDay: boolean;
+  /** `transaction` narrows the result to that period and splits it by transaction. */
+  grouping: G;
   /** The plan currency's decimals. */
   decimals: number;
   timezone: string;
-}): Promise<RawActivityRow[]> => {
+}): Promise<RawRowByGrouping[G['kind']][]> => {
   const dayOffset = `(x."time" AT TIME ZONE :timezone)::date - p."startDate"`;
+  const { select, groupBy } =
+    grouping.kind === 'day'
+      ? { select: ` ${dayOffset} AS "dayOffset",`, groupBy: `, ${dayOffset}` }
+      : grouping.kind === 'transaction'
+        ? { select: ` x."txId" AS "transactionId", MAX(x."time") AS "time",`, groupBy: `, x."txId"` }
+        : { select: '', groupBy: '' };
 
-  const rows: RawActivityRow[] = await connection.sequelize.query(
+  const rows: RawRowByGrouping[G['kind']][] = await connection.sequelize.query(
     `
     WITH scoped AS (
       SELECT t.id, t."time", t."categoryId", t."amount", t."refAmount", t."transactionType"
@@ -112,7 +126,7 @@ const queryActivity = async ({
       -- A refund lands in ITS period. On an original this plan counted it takes
       -- that original's category, NULL included, so it can never credit a line
       -- the original never charged. Otherwise it keeps its own category.
-      SELECT u."time", u."transactionType", u."shareRefAmount" AS "refAmount",
+      SELECT u."txId", u."time", u."transactionType", u."shareRefAmount" AS "refAmount",
              CASE WHEN o.id IS NULL THEN u."categoryId"
                   ELSE COALESCE(osp."categoryId", o."categoryId") END AS "categoryId"
       FROM unit_shares u
@@ -120,22 +134,22 @@ const queryActivity = async ({
       LEFT JOIN "TransactionSplits" osp ON osp.id = u."refundSplitId"
       UNION ALL
       -- Whatever the shares leave unassigned stays under the refund's own category.
-      SELECT u."time", u."transactionType", u."refAmount" - SUM(u."shareRefAmount"), u."categoryId"
+      SELECT u."txId", u."time", u."transactionType", u."refAmount" - SUM(u."shareRefAmount"), u."categoryId"
       FROM unit_shares u
       WHERE u."isPartial"
       GROUP BY u."txId", u."splitId", u."time", u."transactionType", u."categoryId", u."refAmount"
       HAVING u."refAmount" > SUM(u."shareRefAmount")
     )
-    SELECT p.id AS "periodId", x."categoryId",${byDay ? ` ${dayOffset} AS "dayOffset",` : ''}
+    SELECT p.id AS "periodId", x."categoryId",${select}
            SUM(CASE WHEN x."transactionType" = 'expense' THEN -x."refAmount" ELSE x."refAmount" END) AS "activity"
     FROM attributed x
     JOIN "BudgetPeriods" p
-      ON p."planId" = :planId
+      ON p."planId" = :planId${grouping.kind === 'transaction' ? ' AND p.id = :periodId' : ''}
      AND x."time" >= (p."startDate"::timestamp AT TIME ZONE :timezone)
      AND x."time" <  (p."endDate"::timestamp   AT TIME ZONE :timezone)
     -- A NULL pool start makes the comparison NULL, which keeps the row out.
     WHERE x."categoryId" IS NOT NULL OR x."time" >= ${localMidnight({ param: 'poolFrom' })}
-    GROUP BY p.id, x."categoryId"${byDay ? `, ${dayOffset}` : ''}
+    GROUP BY p.id, x."categoryId"${groupBy}
     `,
     {
       type: QueryTypes.SELECT,
@@ -147,6 +161,7 @@ const queryActivity = async ({
         poolFrom: plan.poolFrom ? toUtcDateString(plan.poolFrom) : null,
         timezone,
         decimals,
+        ...(grouping.kind === 'transaction' ? { periodId: grouping.periodId } : {}),
       },
     },
   );
@@ -178,7 +193,14 @@ export const getPlanActivity = async ({
   const lastEnd = periods.at(-1)?.endDate;
   if (!lastEnd) return [];
 
-  const rows = await queryActivity({ plan, from: plan.epochDate, until: lastEnd, byDay: false, decimals, timezone });
+  const rows = await queryActivity({
+    plan,
+    from: plan.epochDate,
+    until: lastEnd,
+    grouping: { kind: 'period' },
+    decimals,
+    timezone,
+  });
   return rows.map((row) => ({
     periodId: row.periodId,
     categoryId: row.categoryId,
@@ -213,7 +235,7 @@ export const getPlanDailyActivity = async ({
     plan,
     from: start > epoch ? start : epoch,
     until: last.endDate,
-    byDay: true,
+    grouping: { kind: 'day' },
     decimals,
     timezone,
   });
@@ -222,5 +244,44 @@ export const getPlanDailyActivity = async ({
     categoryId: row.categoryId,
     activity: Money.fromDecimal(row.activity).toMinorUnits({ decimals }),
     dayOffset: Number(row.dayOffset),
+  }));
+};
+
+interface PlanTransactionActivityRow extends FoldActivityRow {
+  transactionId: RecordId;
+  time: Date;
+}
+
+/**
+ * `getPlanActivity` rows of one period, split by the transaction that produced them.
+ * ponytail: the scan stops at the period end, so a refund dated before an original
+ * from a later period keeps its own category here; widen `until` if that case matters.
+ */
+export const getPlanPeriodTransactionActivity = async ({
+  plan,
+  period,
+  decimals,
+  timezone,
+}: {
+  plan: BudgetPlans;
+  period: BudgetPeriods;
+  /** The plan currency's decimals. */
+  decimals: number;
+  timezone: string;
+}): Promise<PlanTransactionActivityRow[]> => {
+  const rows = await queryActivity({
+    plan,
+    from: plan.epochDate,
+    until: period.endDate,
+    grouping: { kind: 'transaction', periodId: period.id },
+    decimals,
+    timezone,
+  });
+  return rows.map((row) => ({
+    periodId: row.periodId,
+    categoryId: row.categoryId,
+    activity: Money.fromDecimal(row.activity).toMinorUnits({ decimals }),
+    transactionId: row.transactionId,
+    time: new Date(row.time),
   }));
 };
