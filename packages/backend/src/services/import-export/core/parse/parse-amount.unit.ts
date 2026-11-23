@@ -137,4 +137,27 @@ describe('parseAmount (core tabular-import amount parser)', () => {
     expect(parseAmount(`1e${'9'.repeat(5000)}`)).toBeNull();
     expect(parseAmount('0e999999999')).toBeNull();
   });
+
+  it('reads a DR suffix as negative and a CR suffix as positive', () => {
+    expect(parseAmount('50.00 DR')).toBe('-50');
+    expect(parseAmount('50.00DR')).toBe('-50');
+    expect(parseAmount('$1,234.56 dr')).toBe('-1234.56');
+    expect(parseAmount('50.00 CR')).toBe('50');
+    expect(parseAmount('50.00cr')).toBe('50');
+    expect(parseAmount('50.00 Dr.')).toBe('-50');
+    expect(parseAmount('1.234,56 DR')).toBe('-1234.56');
+    expect(parseAmount('0.00 DR')).toBe('0');
+  });
+
+  it('ignores DR/CR glued to other letters, such as the XDR currency code', () => {
+    expect(parseAmount('50.00 XDR')).toBe('50');
+    expect(parseAmount('12.5 MDR')).toBe('12.5');
+  });
+
+  it('rejects a DR/CR suffix that contradicts a sign or stands alone', () => {
+    expect(parseAmount('-50.00 CR')).toBeNull();
+    expect(parseAmount('(50.00) DR')).toBeNull();
+    expect(parseAmount('$-5.00 DR')).toBeNull();
+    expect(parseAmount('DR')).toBeNull();
+  });
 });
