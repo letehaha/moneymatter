@@ -562,6 +562,7 @@ const openLineDialog = ({
               :view="view"
               :previous-period="previousPeriod"
               :zero-sum="plan?.plan.zeroSum ?? false"
+              @add-line="openLineDialog({})"
             />
             <dl
               v-if="overviewStats"
@@ -648,6 +649,7 @@ const openLineDialog = ({
               :view="view"
               :previous-period="previousPeriod"
               :zero-sum="plan?.plan.zeroSum ?? false"
+              @add-line="openLineDialog({})"
             />
 
             <MobileToolbar v-if="isNarrow" />

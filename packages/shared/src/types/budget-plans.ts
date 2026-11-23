@@ -320,6 +320,11 @@ export interface SetBudgetPlanAssignmentPayload {
   carryPolicy?: BudgetPlanCarryPolicy | null;
 }
 
+/** This-period overrides for several lines, saved together; `null` clears a line's override. */
+export interface SetBudgetPlanAssignmentsPayload {
+  assignments: { lineId: string; amount: number | null }[];
+}
+
 /** Array order is the new `sortOrder`. Lines left out, archived ones say, keep their group and order. */
 export interface SetBudgetPlanLayoutPayload {
   groups: { id: string; lineIds: string[] }[];

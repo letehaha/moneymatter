@@ -1,4 +1,8 @@
-import type { SetBudgetLineGoalPayload, SetBudgetPlanLayoutPayload } from '@bt/shared/types';
+import type {
+  SetBudgetLineGoalPayload,
+  SetBudgetPlanAssignmentsPayload,
+  SetBudgetPlanLayoutPayload,
+} from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 import { createLine as _createLine } from '@services/budget-plans/create-line';
 import { createPlan as _createPlan } from '@services/budget-plans/create-plan';
@@ -13,6 +17,7 @@ import { listPeriods as _listPeriods } from '@services/budget-plans/list-periods
 import { restoreLine as _restoreLine } from '@services/budget-plans/restore-line';
 import { restorePlan as _restorePlan } from '@services/budget-plans/restore-plan';
 import { setAssignment as _setAssignment } from '@services/budget-plans/set-assignment';
+import { setAssignments as _setAssignments } from '@services/budget-plans/set-assignments';
 import { setCarryReset as _setCarryReset } from '@services/budget-plans/set-carry-reset';
 import { setPlanAccounts as _setPlanAccounts } from '@services/budget-plans/set-plan-accounts';
 import {
@@ -390,6 +395,25 @@ export function setBudgetAssignment<R extends boolean | undefined = false>({
   return makeRequest<Awaited<ReturnType<typeof _setAssignment>>, R>({
     method: 'put',
     url: `/budget-plans/${planId}/periods/${periodId}/lines/${lineId}/assignment`,
+    payload,
+    raw,
+  });
+}
+
+export function setBudgetAssignments<R extends boolean | undefined = false>({
+  planId,
+  periodId,
+  payload,
+  raw,
+}: {
+  planId: string;
+  periodId: string;
+  payload: SetBudgetPlanAssignmentsPayload;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _setAssignments>>, R>({
+    method: 'put',
+    url: `/budget-plans/${planId}/periods/${periodId}/assignments`,
     payload,
     raw,
   });

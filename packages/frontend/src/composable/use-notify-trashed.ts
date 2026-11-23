@@ -8,7 +8,7 @@ import { useI18n } from 'vue-i18n';
 export const TRASH_INVALIDATE_KEYS = [[VUE_QUERY_GLOBAL_PREFIXES.transactionChange]];
 export const TRASH_INVALIDATE_ON_SETTLE_KEYS = [VUE_QUERY_CACHE_KEYS.transactionsTrash];
 
-const UNDO_VISIBILITY_MS = 8000;
+export const UNDO_VISIBILITY_MS = 8000;
 
 /** Raises the "moved to Trash" toast with an Undo that restores the given rows. */
 export const useNotifyTrashed = () => {

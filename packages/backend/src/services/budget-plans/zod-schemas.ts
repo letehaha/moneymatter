@@ -122,6 +122,17 @@ export const setAssignmentBodyFields = {
   carryPolicy: z.enum(BUDGET_PLAN_CARRY_POLICIES).nullable().optional(),
 };
 
+/** Body of `PUT /budget-plans/:planId/periods/:periodId/assignments`: this-period overrides, `null` clears one. */
+export const setAssignmentsBodySchema = z.strictObject({
+  assignments: z
+    .array(z.strictObject({ lineId: recordId(), amount: boundedDecimalAmount().nullable() }))
+    .min(1)
+    .max(200)
+    .refine((items) => new Set(items.map((item) => item.lineId)).size === items.length, {
+      message: 'Each line can appear only once.',
+    }),
+});
+
 export const setAssignmentBodySchema = z
   .strictObject(setAssignmentBodyFields)
   .refine((body) => body.amount !== undefined || body.carryPolicy !== undefined, {

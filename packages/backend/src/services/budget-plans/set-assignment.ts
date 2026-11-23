@@ -6,6 +6,8 @@ import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError, NotFoundError } from '@js/errors';
 import BudgetAssignments from '@models/budget-assignments.model';
+import BudgetPeriods from '@models/budget-periods.model';
+import BudgetPlans from '@models/budget-plans.model';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { covers, toRange } from './date-ranges';
@@ -23,17 +25,25 @@ interface SetAssignmentParams extends SetBudgetPlanAssignmentPayload {
   timezone: string;
 }
 
-const setAssignmentImpl = async ({
+interface WriteAssignmentParams extends SetBudgetPlanAssignmentPayload {
+  userId: number;
+  plan: BudgetPlans;
+  periods: BudgetPeriods[];
+  periodId: RecordId;
+  lineId: RecordId;
+}
+
+/** Writes one line's assignment inside the caller's transaction, which already holds the plan lock. */
+export const writeAssignment = async ({
   userId,
-  planId,
+  plan,
+  periods,
   periodId,
   lineId,
   scope,
   amount,
   carryPolicy,
-  timezone,
-}: SetAssignmentParams) => {
-  const plan = await findPlan({ planId, userId, lock: true });
+}: WriteAssignmentParams) => {
   const money =
     amount == null
       ? amount
@@ -43,7 +53,6 @@ const setAssignmentImpl = async ({
           currencyCode: plan.currencyCode,
           mode: 'half-up',
         });
-  const { periods } = await ensureCurrentPeriods({ plan });
 
   const period = periods.find((entry) => entry.id === periodId);
   if (!period) throw new NotFoundError({ message: t({ key: 'budgetPlans.periodNotFound' }) });
@@ -82,6 +91,13 @@ const setAssignmentImpl = async ({
   if (existing && empty) await existing.destroy();
   else if (existing) await existing.update(next);
   else if (!empty) await BudgetAssignments.create({ periodId, lineId, ...next });
+};
+
+const setAssignmentImpl = async ({ userId, planId, periodId, timezone, ...rest }: SetAssignmentParams) => {
+  const plan = await findPlan({ planId, userId, lock: true });
+  const { periods } = await ensureCurrentPeriods({ plan });
+
+  await writeAssignment({ userId, plan, periods, periodId, ...rest });
 
   return getPeriodView({ userId, planId, periodId, timezone });
 };
