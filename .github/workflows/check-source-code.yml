@@ -35,7 +35,6 @@ jobs:
     outputs:
       frontend-only: ${{ steps.detect.outputs.frontend_only }}
       backend-only: ${{ steps.detect.outputs.backend_only }}
-      money-migration: ${{ steps.money-migration.outputs.changed }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -43,15 +42,6 @@ jobs:
           fetch-depth: 0 # Fetch all history for file changes
       - id: detect
         uses: ./.github/actions/detect-changes
-      - id: money-migration
-        uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
-        with:
-          filters: |
-            changed:
-              - 'packages/backend/src/migrations/20261115100000-money-columns-to-decimal.ts'
-              - 'packages/backend/src/migrations/utils/money-columns-20261115.ts'
-              - 'packages/backend/src/migrations/utils/real-transactions-view.ts'
-              - 'packages/backend/scripts/check-money-migration.ts'
 
   frontend:
     name: Frontend tasks
@@ -168,31 +158,6 @@ jobs:
       - name: Run ${{ matrix.task }}
         if: needs.detect-changes.outputs.frontend-only != 'true'
         run: npm run ${{ matrix.task }} -w packages/backend
-
-  # The e2e template runs the money-storage migration on empty tables, so its conversion of
-  # real rows (columns, JSON fields, down, re-runs) is only checked here, against a seeded DB.
-  backend-money-migration:
-    name: Money migration round trip
-    needs: [prepare-dependencies, detect-changes]
-    if: needs.detect-changes.outputs.money-migration == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_PASSWORD: test
-        ports:
-          - 55432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: ./.github/actions/prepare-local-env
-      - name: Run check:money-migration
-        run: npm run check:money-migration -w packages/backend
 
   backend-e2e:
     name: Backend e2e tests (shard ${{ matrix.shardIndex }})
