@@ -156,9 +156,10 @@ export async function transformBudgetLines({ userId }: { userId: number }): Prom
 }
 
 /**
- * Every period from the plan's epoch through the later of the current one and
- * the last one holding an assignment row or a line note, so a future period's carry-in has
- * every period it depends on. Numbers come from the same fold the period view reads.
+ * Every period from the plan's epoch through the later of the current one and the last
+ * one holding an assignment row or a note, so a future period's carry-in has every period
+ * it depends on. Numbers come from the same fold the period view reads. A period with a
+ * note but no lines gets one row with an empty line, so its note isn't lost.
  */
 export async function transformBudgetPeriods({
   userId,
@@ -188,7 +189,9 @@ export async function transformBudgetPeriods({
       const folded = foldPlan(input);
       const lastOwnedStart = folded.findLast(
         ({ period, lines }) =>
-          assignedPeriodIds.has(period.id) || lines.some((line) => noteOf.has(`${period.id}:${line.lineId}`)),
+          assignedPeriodIds.has(period.id) ||
+          Boolean(period.note) ||
+          lines.some((line) => noteOf.has(`${period.id}:${line.lineId}`)),
       )?.period.startDate;
       const keepThrough = lastOwnedStart && lastOwnedStart > today ? lastOwnedStart : today;
 
@@ -199,6 +202,23 @@ export async function transformBudgetPeriods({
           (!dateRange?.from || periodEndInclusive >= dateRange.from) &&
           (!dateRange?.to || period.startDate <= dateRange.to);
         if (!kept) return [];
+
+        if (!lines.length && period.note) {
+          return [
+            {
+              plan: plan.name,
+              periodStart: period.startDate,
+              periodEndInclusive,
+              line: '',
+              assigned: 0,
+              spent: 0,
+              available: 0,
+              currency: plan.currencyCode,
+              note: '',
+              periodNote: period.note,
+            } satisfies BudgetPeriodRow,
+          ];
+        }
 
         return lines
           .toSorted((a, b) => rankOf(groupIdOf.get(a.lineId) ?? null) - rankOf(groupIdOf.get(b.lineId) ?? null))
@@ -213,6 +233,7 @@ export async function transformBudgetPeriods({
               available: minorUnitsToApiDecimal({ value: line.available, decimals }),
               currency: plan.currencyCode,
               note: noteOf.get(`${period.id}:${line.lineId}`) ?? '',
+              periodNote: period.note ?? '',
             }),
           );
       });
