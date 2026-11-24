@@ -1,5 +1,6 @@
 import { registerCurrencyDecimals, resetCurrencyDecimals } from './currency-decimals';
 import {
+  areAmountsHidden,
   currencyDisplayPreference,
   formatCompactFiat,
   formatCompactUIAmount,
@@ -8,7 +9,9 @@ import {
   formatFiat,
   formatLargeNumber,
   formatUIAmount,
+  maskAmountText,
   toLocalCurrencyNumber,
+  toLocalNumber,
 } from './formatters';
 
 describe('js/helpers/formatters', () => {
@@ -377,6 +380,52 @@ describe('js/helpers/formatters', () => {
       [NaN, 'NaN'],
     ])('%d → %s', (amount, expected) => {
       expect(formatTinyUIAmount({ amount, currency: 'USD' })).toBe(expected);
+    });
+  });
+
+  describe('hidden amounts', () => {
+    beforeEach(() => {
+      areAmountsHidden.value = true;
+    });
+    afterEach(() => {
+      areAmountsHidden.value = false;
+    });
+
+    test.each<[string, () => string, string]>([
+      ['formatUIAmount', () => formatUIAmount(1234.56), '••••'],
+      ['formatUIAmount negative', () => formatUIAmount(-98_765.4), '••••'],
+      ['formatUIAmount custom currency', () => formatUIAmount(1.5, { currency: 'SAT' }), '••••'],
+      ['formatCompactUIAmount', () => formatCompactUIAmount({ amount: 1_240_000, currency: 'USD' }), '••••'],
+      ['formatCompactFiat', () => formatCompactFiat({ amount: 42_600, currency: 'USD' }), '••••'],
+      ['formatTinyUIAmount', () => formatTinyUIAmount({ amount: 7_800, currency: 'USD' }), '••••'],
+      ['formatLargeNumber fiat', () => formatLargeNumber(5_000_000, { isFiat: true, currency: 'USD' }), '••••'],
+      ['toLocalCurrencyNumber', () => toLocalCurrencyNumber(1500, { currency: 'KRW' }), '••••'],
+    ])('%s masks the number', (_name, format, expected) => {
+      expect(format()).toBe(expected);
+    });
+
+    test('leaves non-money numbers alone', () => {
+      expect(toLocalNumber(12.5)).toBe('12.50');
+    });
+
+    test('revealed amounts bypass the mask', () => {
+      expect(formatUIAmount(1234.56, { currency: 'USD', revealed: true })).toBe('$1,234.56');
+      expect(toLocalCurrencyNumber(1500, { currency: 'KRW', revealed: true })).toBe('1,500');
+    });
+
+    test('toLocalCurrencyNumber leaves null and undefined unmasked', () => {
+      expect(toLocalCurrencyNumber(null)).toBe('null');
+      expect(toLocalCurrencyNumber(undefined)).toBe('undefined');
+    });
+
+    test('maskAmountText masks the text', () => {
+      expect(maskAmountText({ text: '+$500' })).toBe('••••');
+    });
+  });
+
+  describe('maskAmountText', () => {
+    test('returns the text unchanged while amounts are visible', () => {
+      expect(maskAmountText({ text: '+$500' })).toBe('+$500');
     });
   });
 });

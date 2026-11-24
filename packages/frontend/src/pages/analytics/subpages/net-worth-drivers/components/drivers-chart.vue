@@ -94,6 +94,7 @@ import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-p
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { currentTheme } from '@/common/utils/color-theme';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import type { NetWorthDriversGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
@@ -387,5 +388,8 @@ useResizeObserver(containerRef, renderChart);
 
 // `flush: 'post'` so the container has been laid out with the new data before
 // the render reads its dimensions — the stat cards above can change height.
-watch([() => props.points, () => props.granularity, currentTheme], renderChart, { deep: true, flush: 'post' });
+watch([() => props.points, () => props.granularity, currentTheme, areAmountsHidden], renderChart, {
+  deep: true,
+  flush: 'post',
+});
 </script>

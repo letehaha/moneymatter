@@ -1,7 +1,9 @@
 import {
   ACCOUNT_CATEGORIES,
   type AccountModel,
+  type BudgetPlanLineGroup,
   type BudgetPlanModel,
+  type BudgetPlanPeriodViewLine,
   type BudgetPlanScheduled,
   type BudgetPlanScheduledItem,
   type BudgetPlanTrendPeriod,
@@ -17,8 +19,19 @@ import {
   buildLayoutPayload,
   buildGoalPayload,
   buildPoolAssignPayload,
-  buildPoolTakeBackPayload,
   cadenceLabel,
+  fillInOrder,
+  goalFundingItems,
+  leftoverTakeBackItems,
+  overspendingItems,
+  poolCost,
+  repeatLastMonthItems,
+  defaultMove,
+  moveAssignmentsPayload,
+  moveRoom,
+  movableLines,
+  toAssignmentsPayload,
+  undoAssignmentsPayload,
   defaultAssignmentScope,
   earliestValidPlanStart,
   formatPeriodLabel,
@@ -667,49 +680,6 @@ describe('buildPoolAssignPayload', () => {
       scope: 'this_period',
       amount: expected,
     });
-  });
-});
-
-describe('buildPoolTakeBackPayload', () => {
-  const baseline = {
-    assigned: 100.3,
-    poolAssigned: 100.3,
-    assignedSource: 'baseline' as const,
-    carryPolicy: 'floor' as const,
-  };
-
-  it.each(['baseline', 'override'] as const)(
-    'takes the amount off a %s line for this period only',
-    (assignedSource) => {
-      expect(buildPoolTakeBackPayload({ line: { ...baseline, assignedSource }, amount: 0.2, decimals: 2 })).toEqual({
-        scope: 'this_period',
-        amount: 100.1,
-      });
-    },
-  );
-
-  it('takes the whole assigned down to 0', () => {
-    expect(buildPoolTakeBackPayload({ line: baseline, amount: 100.3, decimals: 2 })).toEqual({
-      scope: 'this_period',
-      amount: 0,
-    });
-  });
-
-  it.each([null, 0, -10, 100.31])('returns null for amount %s', (amount) => {
-    expect(buildPoolTakeBackPayload({ line: baseline, amount, decimals: 2 })).toBeNull();
-  });
-
-  it('returns null when the pool counts none of the assigned', () => {
-    expect(buildPoolTakeBackPayload({ line: { ...baseline, poolAssigned: 0 }, amount: 10, decimals: 2 })).toBeNull();
-  });
-
-  it.each<[number, number, number, number]>([
-    [3, baseline.assigned, 0.105, 100.195],
-    [0, 1500, 250, 1250],
-  ])('takes off at %d base currency decimals: %d - %d = %d', (decimals, assigned, amount, expected) => {
-    expect(
-      buildPoolTakeBackPayload({ line: { ...baseline, assigned, poolAssigned: assigned }, amount, decimals }),
-    ).toEqual({ scope: 'this_period', amount: expected });
   });
 });
 
@@ -1978,5 +1948,340 @@ describe('paceCaptionNumbers', () => {
     expect(
       paceCaptionNumbers({ spent: 500, funded: 500, available: 0, expectedPercent: 40, daysLeft: 5 }).perDay,
     ).toBeNull();
+  });
+});
+
+describe('pool suggestions', () => {
+  type GoalFields = { ask: number; status?: string; nextNeededDate?: string | null; dueDate?: string | null };
+  const line = ({
+    lineId,
+    groupId = null,
+    assigned = 0,
+    poolAssigned = assigned,
+    available = 0,
+    assignedSource = 'baseline',
+    goal = null,
+  }: {
+    lineId: string;
+    groupId?: string | null;
+    assigned?: number;
+    poolAssigned?: number;
+    available?: number;
+    assignedSource?: 'override' | 'baseline' | 'none';
+    goal?: GoalFields | null;
+  }) =>
+    ({
+      lineId,
+      name: lineId,
+      groupId,
+      assigned,
+      poolAssigned,
+      available,
+      assignedSource,
+      goal: goal && { status: 'underfunded', nextNeededDate: null, dueDate: null, ...goal },
+    }) as unknown as BudgetPlanPeriodViewLine;
+  const view = ({ lines, groups = [] }: { lines: BudgetPlanPeriodViewLine[]; groups?: string[] }) => ({
+    lines,
+    groups: groups.map((id) => ({ id }) as BudgetPlanLineGroup),
+  });
+
+  describe('goalFundingItems', () => {
+    it('lists underfunded asks, soonest needed first, undated last, ties in grid order', () => {
+      const lines = [
+        line({ lineId: 'grouped-undated', groupId: 'g', goal: { ask: 5 } }),
+        line({ lineId: 'late', goal: { ask: 10, dueDate: '2026-12-20' } }),
+        line({ lineId: 'soon', goal: { ask: 20, nextNeededDate: '2026-11-25', dueDate: '2026-12-31' } }),
+        line({ lineId: 'undated', goal: { ask: 30 } }),
+        line({ lineId: 'tie', goal: { ask: 40, dueDate: '2026-12-20' } }),
+      ];
+      expect(goalFundingItems({ view: view({ lines, groups: ['g'] }) })).toEqual([
+        { lineId: 'soon', amount: 20 },
+        { lineId: 'late', amount: 10 },
+        { lineId: 'tie', amount: 40 },
+        { lineId: 'undated', amount: 30 },
+        { lineId: 'grouped-undated', amount: 5 },
+      ]);
+    });
+
+    it('skips funded, snoozed and zero-ask goals and lines without one', () => {
+      const lines = [
+        line({ lineId: 'funded', goal: { ask: 10, status: 'funded' } }),
+        line({ lineId: 'snoozed', goal: { ask: 10, status: 'snoozed' } }),
+        line({ lineId: 'zero', goal: { ask: 0 } }),
+        line({ lineId: 'none' }),
+      ];
+      expect(goalFundingItems({ view: view({ lines }) })).toEqual([]);
+    });
+  });
+
+  describe('fillInOrder', () => {
+    const items = [
+      { lineId: 'a', amount: 30.1 },
+      { lineId: 'b', amount: 50.2 },
+      { lineId: 'c', amount: 10 },
+    ];
+
+    it('fills in order, the last one partially, and drops the rest', () => {
+      expect(fillInOrder({ items, available: 50.3, decimals: 2 })).toEqual([
+        { lineId: 'a', amount: 30.1 },
+        { lineId: 'b', amount: 20.2 },
+      ]);
+    });
+
+    it('keeps every item when there is enough', () => {
+      expect(fillInOrder({ items, available: 100, decimals: 2 })).toEqual(items);
+    });
+
+    it('stops exactly at the available amount without float residue', () => {
+      expect(fillInOrder({ items, available: 80.3, decimals: 2 })).toEqual(items.slice(0, 2));
+    });
+
+    it('partially fills the first item when available is smaller than it', () => {
+      expect(fillInOrder({ items, available: 12.5, decimals: 2 })).toEqual([{ lineId: 'a', amount: 12.5 }]);
+    });
+
+    it.each([0, -5])('returns nothing for available %d', (available) => {
+      expect(fillInOrder({ items, available, decimals: 2 })).toEqual([]);
+    });
+  });
+
+  describe('overspendingItems', () => {
+    it('covers each overspent line back to zero', () => {
+      const lines = [line({ lineId: 'ok', available: 5 }), line({ lineId: 'over', available: -33.9 })];
+      expect(overspendingItems({ view: view({ lines }) })).toEqual([{ lineId: 'over', amount: 33.9 }]);
+    });
+
+    it('returns nothing when no line is overspent', () => {
+      expect(overspendingItems({ view: view({ lines: [line({ lineId: 'zero' })] }) })).toEqual([]);
+    });
+  });
+
+  describe('repeatLastMonthItems', () => {
+    it('tops up lines that got more last period, skipping the rest', () => {
+      const lines = [
+        line({ lineId: 'less', assigned: 100.1 }),
+        line({ lineId: 'same', assigned: 50 }),
+        line({ lineId: 'more', assigned: 80 }),
+        line({ lineId: 'new', assigned: 0 }),
+      ];
+      const previous = [
+        { lineId: 'less', assigned: 100.3 },
+        { lineId: 'same', assigned: 50 },
+        { lineId: 'more', assigned: 60 },
+        { lineId: 'archived', assigned: 999 },
+      ];
+      expect(repeatLastMonthItems({ view: view({ lines }), previous, decimals: 2 })).toEqual([
+        { lineId: 'less', amount: 0.2 },
+      ]);
+    });
+
+    it('returns nothing without a previous period', () => {
+      expect(
+        repeatLastMonthItems({ view: view({ lines: [line({ lineId: 'a' })] }), previous: [], decimals: 2 }),
+      ).toEqual([]);
+    });
+  });
+
+  describe('leftoverTakeBackItems', () => {
+    const lines = [
+      line({ lineId: 'small', assigned: 50, available: 20 }),
+      line({ lineId: 'most', assigned: 100, available: 80.3 }),
+      line({ lineId: 'carried', assigned: 30, available: 500 }),
+      line({ lineId: 'overspent', assigned: 300, available: -40 }),
+      line({ lineId: 'unpooled', assigned: 100, poolAssigned: 0, available: 100 }),
+    ];
+
+    it('takes from the most left first until the shortfall is covered', () => {
+      expect(leftoverTakeBackItems({ view: view({ lines }), shortfall: 100.4, decimals: 2 })).toEqual([
+        { lineId: 'most', amount: 80.3 },
+        { lineId: 'carried', amount: 20.1 },
+      ]);
+    });
+
+    it('takes what there is when the shortfall is bigger than every leftover', () => {
+      expect(leftoverTakeBackItems({ view: view({ lines }), shortfall: 1000, decimals: 2 })).toEqual([
+        { lineId: 'most', amount: 80.3 },
+        { lineId: 'carried', amount: 30 },
+        { lineId: 'small', amount: 20 },
+      ]);
+    });
+
+    it('keeps the grid order on a tie', () => {
+      const tied = [
+        line({ lineId: 'first', assigned: 10, available: 10 }),
+        line({ lineId: 'second', assigned: 10, available: 10 }),
+      ];
+      expect(leftoverTakeBackItems({ view: view({ lines: tied }), shortfall: 5, decimals: 2 })).toEqual([
+        { lineId: 'first', amount: 5 },
+      ]);
+    });
+
+    it('returns nothing without a shortfall or leftovers', () => {
+      expect(leftoverTakeBackItems({ view: view({ lines }), shortfall: 0, decimals: 2 })).toEqual([]);
+      expect(leftoverTakeBackItems({ view: view({ lines: [lines[3]!] }), shortfall: 10, decimals: 2 })).toEqual([]);
+    });
+  });
+
+  describe('toAssignmentsPayload', () => {
+    const lines = [line({ lineId: 'a', assigned: 100.1 }), line({ lineId: 'b', assigned: 0.3 })];
+
+    it('turns assign deltas into absolute amounts', () => {
+      expect(
+        toAssignmentsPayload({
+          view: view({ lines }),
+          items: [
+            { lineId: 'a', amount: 0.2 },
+            { lineId: 'b', amount: 0 },
+            { lineId: 'gone', amount: 5 },
+          ],
+          direction: 'assign',
+          decimals: 2,
+        }),
+      ).toEqual({ assignments: [{ lineId: 'a', amount: 100.3 }] });
+    });
+
+    it('takes take-back deltas off', () => {
+      expect(
+        toAssignmentsPayload({
+          view: view({ lines }),
+          items: [
+            { lineId: 'a', amount: 0.2 },
+            { lineId: 'b', amount: 0.1 },
+          ],
+          direction: 'takeBack',
+          decimals: 2,
+        }),
+      ).toEqual({
+        assignments: [
+          { lineId: 'a', amount: 99.9 },
+          { lineId: 'b', amount: 0.2 },
+        ],
+      });
+    });
+  });
+
+  describe('toAssignmentsPayload at other decimals', () => {
+    it.each([
+      { decimals: 0, assigned: 100, amount: 7, assign: 107, takeBack: 93 },
+      { decimals: 3, assigned: 100.001, amount: 0.002, assign: 100.003, takeBack: 99.999 },
+    ])('assigns and takes back at $decimals decimals', ({ decimals, assigned, amount, assign, takeBack }) => {
+      const lines = [line({ lineId: 'a', assigned })];
+      const items = [{ lineId: 'a', amount }];
+      expect(toAssignmentsPayload({ view: view({ lines }), items, direction: 'assign', decimals })).toEqual({
+        assignments: [{ lineId: 'a', amount: assign }],
+      });
+      expect(toAssignmentsPayload({ view: view({ lines }), items, direction: 'takeBack', decimals })).toEqual({
+        assignments: [{ lineId: 'a', amount: takeBack }],
+      });
+    });
+  });
+
+  describe('poolCost', () => {
+    it('adds the baseline Ready to Assign does not count yet', () => {
+      const future = line({ lineId: 'a', assigned: 80, poolAssigned: 0 });
+      expect(poolCost({ line: future, amount: 20.1, decimals: 2 })).toBe(100.1);
+    });
+
+    it('is the amount when the pool counts all of assigned', () => {
+      expect(poolCost({ line: line({ lineId: 'a', assigned: 80 }), amount: 20.1, decimals: 2 })).toBe(20.1);
+    });
+  });
+
+  describe('undoAssignmentsPayload', () => {
+    it('restores an override of exactly 0 as 0, not null', () => {
+      const lines = [line({ lineId: 'zero', assigned: 0, assignedSource: 'override' })];
+      expect(undoAssignmentsPayload({ view: view({ lines }), lineIds: ['zero'] })).toEqual({
+        assignments: [{ lineId: 'zero', amount: 0 }],
+      });
+    });
+
+    it('restores overrides and clears the ones the save added', () => {
+      const lines = [
+        line({ lineId: 'override', assigned: 40, assignedSource: 'override' }),
+        line({ lineId: 'baseline', assigned: 100 }),
+        line({ lineId: 'none', assignedSource: 'none' }),
+      ];
+      expect(
+        undoAssignmentsPayload({ view: view({ lines }), lineIds: ['override', 'baseline', 'none', 'gone'] }),
+      ).toEqual({
+        assignments: [
+          { lineId: 'override', amount: 40 },
+          { lineId: 'baseline', amount: null },
+          { lineId: 'none', amount: null },
+        ],
+      });
+    });
+  });
+});
+
+describe('move money', () => {
+  const ml = ({ lineId, assigned = 0, available = 0 }: { lineId: string; assigned?: number; available?: number }) => ({
+    lineId,
+    assigned,
+    available,
+  });
+
+  it('moveRoom gives what is left, capped by what was assigned, never below 0', () => {
+    expect(moveRoom({ line: { assigned: 270, available: 148.61 } })).toBe(148.61);
+    expect(moveRoom({ line: { assigned: 20, available: 50 } })).toBe(20);
+    expect(moveRoom({ line: { assigned: 300, available: -33.9 } })).toBe(0);
+    expect(moveRoom({ line: { assigned: 0, available: 30 } })).toBe(0);
+    expect(moveRoom({ line: { assigned: 50, available: 0 } })).toBe(0);
+  });
+
+  it('movableLines drops archived lines and keeps the order', () => {
+    const lines = [ml({ lineId: 'a' }), ml({ lineId: 'b' }), ml({ lineId: 'c' })];
+    expect(movableLines({ lines, archivedIds: new Set(['b']) }).map((line) => line.lineId)).toEqual(['a', 'c']);
+  });
+
+  describe('defaultMove', () => {
+    const over = ml({ lineId: 'over', assigned: 300, available: -33.9 });
+
+    it('puts a line that is not overspent in From', () => {
+      const line = ml({ lineId: 'a', assigned: 100, available: 40 });
+      expect(defaultMove({ lines: [line, over], line })).toEqual({ fromId: 'a', toId: null, amount: null });
+    });
+
+    it('covers an overspent line from the line with the most to give, first on a tie', () => {
+      const lines = [
+        over,
+        ml({ lineId: 'small', assigned: 50, available: 10 }),
+        ml({ lineId: 'big', assigned: 270, available: 148.61 }),
+        ml({ lineId: 'tie', assigned: 400, available: 148.61 }),
+      ];
+      expect(defaultMove({ lines, line: over })).toEqual({ fromId: 'big', toId: 'over', amount: 33.9 });
+    });
+
+    it('caps the amount at what the best source can give', () => {
+      const lines = [over, ml({ lineId: 'util', assigned: 120, available: 22.76 })];
+      expect(defaultMove({ lines, line: over })).toEqual({ fromId: 'util', toId: 'over', amount: 22.76 });
+    });
+
+    it('leaves From empty when no other line has anything to give', () => {
+      const lines = [over, ml({ lineId: 'rent', assigned: 1400, available: 0 })];
+      expect(defaultMove({ lines, line: over })).toEqual({ fromId: null, toId: 'over', amount: 33.9 });
+      expect(defaultMove({ lines: [over], line: over })).toEqual({ fromId: null, toId: 'over', amount: 33.9 });
+    });
+  });
+
+  describe('moveAssignmentsPayload', () => {
+    const view = {
+      lines: [ml({ lineId: 'from', assigned: 270, available: 148.61 }), ml({ lineId: 'to', assigned: 300 })],
+    };
+
+    it('writes both legs as this-period amounts', () => {
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'to', amount: 33.9, decimals: 2 })).toEqual({
+        assignments: [
+          { lineId: 'from', amount: 236.1 },
+          { lineId: 'to', amount: 333.9 },
+        ],
+      });
+    });
+
+    it('writes nothing when a line is missing, both are the same, or the amount is not positive', () => {
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'gone', amount: 10, decimals: 2 })).toBeNull();
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'from', amount: 10, decimals: 2 })).toBeNull();
+      expect(moveAssignmentsPayload({ view, fromId: 'from', toId: 'to', amount: 0, decimals: 2 })).toBeNull();
+    });
   });
 });

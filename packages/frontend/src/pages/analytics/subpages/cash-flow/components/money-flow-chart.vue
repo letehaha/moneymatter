@@ -32,12 +32,15 @@ import { useFormatCurrency } from '@/composable';
 import { getChartColors } from '@/composable/charts/chart-colors';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
-import { useCurrenciesStore } from '@/stores';
+import type { Period } from '@/composable/use-period-navigation';
+import { areAmountsHidden } from '@/js/helpers/formatters';
+import { useCategoriesStore, useCurrenciesStore } from '@/stores';
 import * as d3 from 'd3';
 import { useResizeObserver } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { type RouteLocationNamedRaw, useRouter } from 'vue-router';
 
 import {
   CASH_NODE_ID,
@@ -48,16 +51,24 @@ import {
   nodeColor,
   nodeLabel,
 } from '../utils/build-money-flow';
+import { type MoneyFlowNodeKind, buildNodeTransactionsLink } from '../utils/node-transactions-link';
 import { spreadTops } from '../utils/spread-tops';
 
 const props = defineProps<{
   flow: MoneyFlow;
+  period: Period;
+  sourceLevel: number;
+  expenseLevel: number;
+  taxCategoryIds?: string[];
+  savingsCategoryIds?: string[];
 }>();
 
 const { t } = useI18n();
 const { locale } = useDateLocale();
 const { formatBaseCurrency, formatCompactAmount } = useFormatCurrency();
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
+const { categories } = storeToRefs(useCategoriesStore());
+const router = useRouter();
 
 const containerRef = ref<HTMLDivElement | null>(null);
 const svgRef = ref<SVGSVGElement | null>(null);
@@ -182,6 +193,30 @@ const bindTooltip = <T extends d3.BaseType>({
       tooltip.visible = false;
     });
 
+const bindLink = <T extends d3.BaseType>({
+  selection,
+  link,
+  name,
+}: {
+  selection: d3.Selection<T, unknown, null, undefined>;
+  link?: RouteLocationNamedRaw | null;
+  name?: string;
+}) => {
+  if (!link) return selection;
+  const open = () => router.push(link);
+  return selection
+    .style('cursor', 'pointer')
+    .attr('tabindex', 0)
+    .attr('role', 'link')
+    .attr('aria-label', name ?? null)
+    .on('click', open)
+    .on('keydown', (event: KeyboardEvent) => {
+      if (event.key === 'Enter') open();
+    });
+};
+
+const OUTFLOW_KINDS = { taxes: 'tax', expenses: 'expense', savings: 'savings' } as const;
+
 const renderChart = () => {
   const currencyCode = baseCurrency.value?.currency?.code;
   if (!svgRef.value || !containerRef.value || !currencyCode) return;
@@ -202,6 +237,16 @@ const renderChart = () => {
     ? Math.round(Math.min(GROUPED_LABEL_COLUMN_MAX, Math.max(LABEL_COLUMN_MIN, width * GROUPED_LABEL_COLUMN_SHARE)))
     : labelColumn;
   const compactAmount = (value: number) => formatCompactAmount(value, currencyCode);
+  const linkFor = ({ node, kind, level }: { node: MoneyFlowNode; kind: MoneyFlowNodeKind; level?: number }) =>
+    buildNodeTransactionsLink({
+      nodeId: node.id,
+      kind,
+      level,
+      categories: categories.value,
+      period: props.period,
+      taxCategoryIds: props.taxCategoryIds,
+      savingsCategoryIds: props.savingsCategoryIds,
+    });
 
   // Label rows: name plus amount on one line, or stacked when the node is tall enough
   // to own two lines. The name is truncated to whatever `max` has left after the amount,
@@ -216,6 +261,7 @@ const renderChart = () => {
     amount: string;
     share: string;
     detailed: boolean;
+    link?: RouteLocationNamedRaw | null;
   }
   const labelRow = ({
     node,
@@ -224,6 +270,7 @@ const renderChart = () => {
     key,
     max,
     nameOnly = false,
+    link,
   }: {
     node: MoneyFlowNode;
     box: Box;
@@ -231,13 +278,14 @@ const renderChart = () => {
     key: string;
     max: number;
     nameOnly?: boolean;
+    link?: RouteLocationNamedRaw | null;
   }): LabelRow => {
     const detailed = fitsTwoLines({ box });
     const amount = compactAmount(node.value);
     const share = `(${formatShare(node.share)})`;
     const detailWidth = textWidth({ text: `${amount} ${share}`, font: detailFont });
     const text = nodeLabel({ node, t });
-    const row = { node, box, content, key, detailed };
+    const row = { node, box, content, key, detailed, link };
     if (nameOnly && !detailed && textWidth({ text, font: nameFont }) + detailWidth + 5 > max) {
       return { ...row, name: fitText({ text, font: nameFont, max }), amount: '', share: '' };
     }
@@ -400,6 +448,7 @@ const renderChart = () => {
       key: `source:${node.id}`,
       max: insideMax,
       nameOnly: true,
+      link: linkFor({ node, kind: 'income', level: props.sourceLevel }),
     }),
   );
   // Leaf ids repeat across parents (each root has its own "other"), so the parent scopes the key.
@@ -423,11 +472,16 @@ const renderChart = () => {
         parentKey,
         color,
         content: categoryTooltip({ node, color, shareLabel: outflow.shareLabel }),
+        link: linkFor({
+          node,
+          kind: OUTFLOW_KINDS[outflow.id],
+          level: outflow.id === 'expenses' ? props.expenseLevel : 1,
+        }),
       };
     });
   const leavesOf = ({ parentKey }: { parentKey: string }) => rightLeaves.filter((leaf) => leaf.parentKey === parentKey);
-  const rightRows = rightLeaves.map(({ node, box, content, key }) =>
-    labelRow({ node, box, content, key, max: rightLabelColumn - LABEL_OFFSET }),
+  const rightRows = rightLeaves.map(({ node, box, content, key, link }) =>
+    labelRow({ node, box, content, key, link, max: rightLabelColumn - LABEL_OFFSET }),
   );
   const svg = d3.select(svgRef.value);
   svg.selectAll('*').remove();
@@ -491,6 +545,8 @@ const renderChart = () => {
     color,
     content,
     key,
+    link,
+    name,
   }: {
     x: number;
     box: Box;
@@ -498,6 +554,8 @@ const renderChart = () => {
     color: string;
     content?: TooltipContent;
     key?: string;
+    link?: RouteLocationNamedRaw | null;
+    name?: string;
   }) => {
     const rect = nodes
       .append('rect')
@@ -509,6 +567,7 @@ const renderChart = () => {
       .attr('fill', color);
     if (content) bindTooltip({ selection: rect, content });
     if (key) bindHighlight({ selection: rect, key });
+    bindLink({ selection: rect, link, name });
     return rect;
   };
 
@@ -591,6 +650,7 @@ const renderChart = () => {
         selection: bindTooltip({ selection: labels.append('g'), content: row.content }),
         key: row.key,
       });
+      bindLink({ selection: group, link: row.link, name: nodeLabel({ node: row.node, t }) });
       if (halo) group.attr('paint-order', 'stroke').attr('stroke', colors.card).attr('stroke-width', 3);
       const name = group
         .append('text')
@@ -615,7 +675,7 @@ const renderChart = () => {
   };
 
   let hubInput = 0;
-  leftRows.forEach(({ node, box, key, content }) => {
+  leftRows.forEach(({ node, box, key, content, link }) => {
     const target = { y0: hubInput, y1: hubInput + node.value * scale };
     hubInput = target.y1;
     const color = nodeColor({ node, colors, fallback: colors.appIncome });
@@ -627,7 +687,7 @@ const renderChart = () => {
       names: [nodeLabel({ node, t }), hubLabel],
       value: node.value,
     });
-    drawNode({ x: 0, box, w: NODE_WIDTH, color, content, key });
+    drawNode({ x: 0, box, w: NODE_WIDTH, color, content, key, link, name: nodeLabel({ node, t }) });
   });
   drawSideLabels({ x: xInside, items: leftRows, halo: true });
 
@@ -666,7 +726,7 @@ const renderChart = () => {
     ribbonColor: string;
   }) => {
     let output = from.y0;
-    leaves.forEach(({ node, box, key, color, content }) => {
+    leaves.forEach(({ node, box, key, color, content, link }) => {
       const source = { y0: output, y1: output + node.value * scale };
       output = source.y1;
       drawLink({
@@ -677,7 +737,7 @@ const renderChart = () => {
         names: [parentName, nodeLabel({ node, t })],
         value: node.value,
       });
-      drawNode({ x: xRight, box, w: NODE_WIDTH, color, content, key });
+      drawNode({ x: xRight, box, w: NODE_WIDTH, color, content, key, link, name: nodeLabel({ node, t }) });
     });
   };
 
@@ -708,6 +768,8 @@ const renderChart = () => {
         color,
         content: categoryTooltip({ node: group, color, shareLabel: shareOfExpenses }),
         key,
+        link: linkFor({ node: group, kind: 'expense' }),
+        name: nodeLabel({ node: group, t }),
       });
       drawOutflows({
         leaves,
@@ -786,5 +848,9 @@ const renderChart = () => {
 };
 
 useResizeObserver(containerRef, renderChart);
-watch([() => props.flow, locale, currentTheme, baseCurrency], renderChart, { deep: true });
+watch(
+  [() => props.flow, () => props.period, categories, locale, currentTheme, baseCurrency, areAmountsHidden],
+  renderChart,
+  { deep: true },
+);
 </script>

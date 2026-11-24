@@ -9,7 +9,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useDeleteHolding } from '@/composable/data-queries/holdings';
 import { useFormatCurrency } from '@/composable/formatters';
-import { toLocalNumber } from '@/js/helpers/formatters';
+import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import { getGainColorClass } from '@/composable/gain-color';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { getApiErrorMessage } from '@/js/errors';
@@ -88,7 +88,7 @@ const { currencies } = storeToRefs(useCurrenciesStore());
 const formatCurrency = (amount: number, currencyCode: string) => {
   const userCurrency = currencies.value.find((c) => c.currency?.code === currencyCode.toUpperCase());
   if (!userCurrency) {
-    return toLocalNumber(amount, { maximumFractionDigits: 2 });
+    return toLocalCurrencyNumber(amount, { currency: currencyCode });
   }
   return formatAmountByCurrencyCode({ amount, currencyCode: userCurrency.currencyCode });
 };

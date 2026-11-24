@@ -2,7 +2,7 @@
   "oauth": {
     "authorize": {
       "title": "{name} يريد الوصول الى بيانات MoneyMatter",
-      "redirect_notice": "After approval you will be redirected to {host}. Only continue if you recognize this address.",
+      "redirect_notice": "بعد الموافقة سيتم إعادة توجيهك إلى {host}. فقط إذا كنت تتعرف على هذا العنوان.",
       "description": "هذا التطبيق يطلب هذه الأذونات:",
       "approve": "قبول",
       "deny": "رفض",
@@ -14,37 +14,37 @@
       "delete_warning": "القبول للتطبيقات التي تثق بها فقط",
       "unknown_app": "تطبيق",
       "steps": {
-        "permissions": "Permissions",
-        "tools": "Tools"
+        "permissions": "الصلاحيات",
+        "tools": "أدوات"
       },
-      "continue": "Continue",
-      "back": "Back",
+      "continue": "استمر",
+      "back": "رجوع",
       "toolsets": {
-        "intro": "Pick what {name} can work with. Each extra set adds tools that {name} loads into every chat.",
-        "add_all": "Add all",
-        "core_only": "Core only",
-        "always_on": "{count} tool, always on | {count} tools, always on",
-        "tool_count": "{count} tool | {count} tools",
-        "selected": "{count} tool selected | {count} tools selected",
-        "of_total": "of {total}",
-        "counter_label": "Selected tools",
-        "fits_cap": "Fits every app, including ChatGPT and VS Code Copilot ({cap} tools max).",
-        "over_cap": "Over {cap} tools. ChatGPT and VS Code Copilot won't load this many.",
-        "load_error": "Couldn't load the toolsets. Allow access to use the core tools, and reconnect later to add more."
+        "intro": "اختر ما يمكن أن يعمل به {name} كل مجموعة إضافية تضيف أدوات يحملها {name} في كل محادثة.",
+        "add_all": "إضافة الكل",
+        "core_only": "الأساسية فقط",
+        "always_on": "{count} أداة دائما مفعلة | {count} أداة دائما مفعلين",
+        "tool_count": "{count} أداة|{count} أداة",
+        "selected": "{count} أداة محددة|{count} أداة محددة",
+        "of_total": "من {total}",
+        "counter_label": "أدوات محددة",
+        "fits_cap": "مناسب لكل الأدوات، بما فيها ChatGPT و VS Code Copilot ( أقصى عدد من الأدوات هو {cap}).",
+        "over_cap": "أكثر من {cap} أداة. ChatGPT و VS Code Copilot لا يستطيعون تحمل هذا العدد الكبير.",
+        "load_error": "تعذر تحميل مجموعة الأدوات. السماح بالوصول إلى الأدوات الأساسية، وإعادة الاتصال لاحقاً لإضافة المزيد."
       }
     },
     "scopes": {
       "finance_read": {
         "label": "عرض بياناتك المالية",
-        "desc": "Read accounts, transactions, trackers, categories, tags, portfolios, and spending stats."
+        "desc": "قراءة الحسابات والمعاملات والتتبع والفئات والعلامات والحوافظ وإحصائيات الإنفاق."
       },
       "finance_write": {
         "label": "إنشاء وتعديل بياناتك المالية",
-        "desc": "Add and update transactions, trackers, subscriptions, investment positions, and more."
+        "desc": "إضافة وتحديث المعاملات، التتبع، الاشتراكات، الاستثمارات، والمزيد."
       },
       "finance_delete": {
         "label": "حذف بياناتك المالية",
-        "desc": "Permanently remove transactions, accounts, trackers, and other records."
+        "desc": "إزالة المعاملات والحسابات والتتبع وغيرها من السجلات بشكل دائم."
       },
       "profile_read": {
         "label": "عرض ملفك الشخصي",

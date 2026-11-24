@@ -31,13 +31,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import {
-  BUDGET_POOL_ENABLED,
-  CARRY_POLICY_OPTIONS,
-  cadenceLabel,
-  isAttachableAccount,
-  trashedPlansOf,
-} from '../helpers';
+import { CARRY_POLICY_OPTIONS, cadenceLabel, isAttachableAccount, trashedPlansOf } from '../helpers';
 import DeletedPlansDialog from './deleted-plans-dialog.vue';
 
 // Each save returns the full plan into the cache, so one scope runs them in order and the last response wins.
@@ -260,7 +254,7 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
         </div>
       </div>
 
-      <div v-if="BUDGET_POOL_ENABLED" class="grid gap-3">
+      <div class="grid gap-3">
         <div class="grid gap-1">
           <div class="flex items-center justify-between gap-3">
             <Label for="budget-pool" class="cursor-pointer text-sm font-normal">

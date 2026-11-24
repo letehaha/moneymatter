@@ -11,6 +11,7 @@ import { useExchangeCurrency } from '@/composable/data-queries/portfolio-transfe
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { getCurrencyDecimals, getSmallestCurrencyUnit } from '@/js/helpers/currency-decimals';
+import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import { useCurrenciesStore } from '@/stores';
 import type { CurrencyModel, PortfolioModel, UserCurrencyModel } from '@bt/shared/types';
 import { format as formatDate } from 'date-fns';
@@ -252,7 +253,11 @@ const onSubmit = async () => {
         class="mt-1 h-auto p-0"
         @click="handleMaxAmount"
       >
-        {{ $t('forms.exchangeCurrency.maxButton', { amount: fromAvailableCash }) }}
+        {{
+          $t('forms.exchangeCurrency.maxButton', {
+            amount: toLocalCurrencyNumber(fromAvailableCash, { currency: form.fromCurrency?.currencyCode }),
+          })
+        }}
       </UiButton>
     </div>
 

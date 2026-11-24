@@ -1,4 +1,5 @@
 import { registerCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useFormatCurrency } from './formatters';
@@ -53,6 +54,27 @@ describe('useFormatCurrency', () => {
       const { getCurrencySymbol } = useFormatCurrency();
 
       expect(getCurrencySymbol('EUR')).toBe('€');
+    });
+  });
+
+  describe('hidden amounts', () => {
+    beforeEach(() => {
+      areAmountsHidden.value = true;
+    });
+    afterEach(() => {
+      areAmountsHidden.value = false;
+    });
+
+    it('masks a signed amount without its sign', () => {
+      const { formatSignedWholeOrCompactAmount } = useFormatCurrency();
+
+      expect(formatSignedWholeOrCompactAmount({ amount: -500, currencyCode: 'USD' })).toBe('••••');
+    });
+
+    it('shows a revealed base-currency amount', () => {
+      const { formatBaseCurrency } = useFormatCurrency();
+
+      expect(formatBaseCurrency(1234.5, { revealed: true })).toBe('$1,234.50');
     });
   });
 });

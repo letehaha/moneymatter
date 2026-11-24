@@ -166,6 +166,7 @@ import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { formatDuration } from '@/js/helpers/format-duration';
+import { areAmountsHidden, formatUIAmount, maskAmountText } from '@/js/helpers/formatters';
 import { captureException } from '@/lib/sentry';
 import { refDebounced, useResizeObserver } from '@vueuse/core';
 import { parseISO, startOfToday } from 'date-fns';
@@ -366,7 +367,9 @@ const comparisons = computed(() => {
         slower,
         interestText: sameInterest
           ? t('loans.detail.payoffChart.sameAsPlanned')
-          : `${interestDelta < 0 ? MINUS_SIGN : '+'}${formatCurrency(Math.abs(interestDelta))}`,
+          : maskAmountText({
+              text: `${interestDelta < 0 ? MINUS_SIGN : '+'}${formatCurrency(Math.abs(interestDelta))}`,
+            }),
         timeText: sameTime
           ? t('loans.detail.payoffChart.sameAsPlanned')
           : monthsDelta < 0
@@ -402,7 +405,9 @@ const canApply = computed(() => {
   );
 });
 
-const appliedAmountDisplay = computed(() => formatCurrency(debouncedCustomPayment.value ?? 0));
+const appliedAmountDisplay = computed(() =>
+  formatUIAmount(debouncedCustomPayment.value ?? 0, { currency: currencyCode.value, revealed: true }),
+);
 const customPaymentPlaceholder = computed(() => formatCurrency(minimumPayment.value ?? 0));
 
 const isApplyOpen = ref(false);
@@ -452,5 +457,5 @@ const { render } = usePayoffChartRender({
 useResizeObserver(containerRef, render);
 // Re-render off the debounced value so the curve only redraws once the user
 // settles on an amount, not on every keystroke.
-watch([() => props.loan, debouncedCustomPayment, currentTheme], render, { deep: true });
+watch([() => props.loan, debouncedCustomPayment, currentTheme, areAmountsHidden], render, { deep: true });
 </script>

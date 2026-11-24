@@ -39,6 +39,7 @@
       "noteReplace": "задать примечание",
       "noteAppend": "добавить в конец",
       "notePrepend": "добавить в начало",
+      "excludeFromStats": "excluded from stats",
       "note": {
         "containsAny": "примечание содержит",
         "notContainsAny": "примечание не содержит",
@@ -112,6 +113,7 @@
       "set_payee": "Установить получателя",
       "add_tags": "Добавить теги",
       "set_note": "Установить примечание",
+      "exclude_from_stats": "Exclude from stats",
       "noteMode": {
         "replace": "Заменить",
         "append": "Добавить в конец",

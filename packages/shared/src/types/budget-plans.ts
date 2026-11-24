@@ -15,6 +15,7 @@ export const BUDGET_PLAN_TYPE_KEYS = ['category_caps'] as const;
 export type BudgetPlanTypeKey = (typeof BUDGET_PLAN_TYPE_KEYS)[number];
 
 export const BUDGET_PLAN_NAME_MAX_LENGTH = 200;
+export const BUDGET_PLAN_NOTE_MAX_LENGTH = 1000;
 
 export const BUDGET_LINE_GOAL_BEHAVIORS = ['budget_another', 'refill_up_to', 'reach_balance'] as const;
 export type BudgetLineGoalBehavior = (typeof BUDGET_LINE_GOAL_BEHAVIORS)[number];
@@ -133,6 +134,8 @@ export interface BudgetPlanPeriod {
   isCurrent: boolean;
   /** Every line starts this period with nothing carried in from earlier periods. */
   carryReset: boolean;
+  /** Non-empty, or `null`. */
+  note: string | null;
 }
 
 export interface BudgetPlanPeriodViewLine {
@@ -153,6 +156,8 @@ export interface BudgetPlanPeriodViewLine {
   goal: BudgetPlanPeriodViewLineGoal | null;
   /** Current period only, and only for a funded line; `null` otherwise. */
   pace: BudgetPlanLinePace | null;
+  /** This period only; non-empty, or `null`. */
+  note: string | null;
 }
 
 /**
@@ -313,11 +318,21 @@ export interface SetBudgetPlanCarryResetPayload {
   reset: boolean;
 }
 
+/** `null` or a blank string clears the note. */
+export interface SetBudgetPlanNotePayload {
+  note: string | null;
+}
+
 export interface SetBudgetPlanAssignmentPayload {
   scope: BudgetAssignmentScope;
   /** `undefined` leaves the column untouched, `null` clears it. */
   amount?: number | null;
   carryPolicy?: BudgetPlanCarryPolicy | null;
+}
+
+/** This-period overrides for several lines, saved together; `null` clears a line's override. */
+export interface SetBudgetPlanAssignmentsPayload {
+  assignments: { lineId: string; amount: number | null }[];
 }
 
 /** Array order is the new `sortOrder`. Lines left out, archived ones say, keep their group and order. */

@@ -39,6 +39,7 @@
       "noteReplace": "definir observação",
       "noteAppend": "adicionar ao final",
       "notePrepend": "adicionar ao início",
+      "excludeFromStats": "excluded from stats",
       "note": {
         "containsAny": "observação contém",
         "notContainsAny": "observação não contém",
@@ -112,6 +113,7 @@
       "set_payee": "Definir favorecido",
       "add_tags": "Adicionar tags",
       "set_note": "Definir observação",
+      "exclude_from_stats": "Exclude from stats",
       "noteMode": {
         "replace": "Substituir",
         "append": "Adicionar ao final",

@@ -1723,6 +1723,19 @@ describe('Data export (POST /user/data-export)', () => {
       await assign({ period: previous, lineId: groceriesLine.id, amount: 200.5 });
       await assign({ period: current, lineId: groceriesLine.id, amount: 150 });
       await assign({ period: next, lineId: transportLine.id, amount: 50 });
+      await helpers.setBudgetLineNote({
+        planId: plan.id,
+        periodId: current.id,
+        lineId: groceriesLine.id,
+        payload: { note: 'Party week' },
+        raw: true,
+      });
+      await helpers.setBudgetPeriodNote({
+        planId: plan.id,
+        periodId: current.id,
+        payload: { note: 'Moving month' },
+        raw: true,
+      });
 
       await helpers.createTransaction({
         payload: {
@@ -1783,6 +1796,8 @@ describe('Data export (POST /user/data-export)', () => {
             spent: 0 - line.activity,
             available: line.available,
             currency,
+            note: line.note ?? '',
+            periodNote: view.period.note ?? '',
           };
         });
       };
@@ -1831,6 +1846,61 @@ describe('Data export (POST /user/data-export)', () => {
       expect(data.budget_periods.map((row) => row.periodStart)).toEqual(
         periods.slice(0, 4).map((period) => period.startDate),
       );
+    });
+
+    it('keeps every period through the last future one holding a note', async () => {
+      const category = await helpers.addCustomCategory({ name: 'Plan noted', color: '#777777', raw: true });
+      const { plan } = await helpers.createBudgetPlan({ payload: { name: 'Noted plan' }, raw: true });
+      const line = await helpers.createBudgetPlanLine({
+        planId: plan.id,
+        payload: { name: 'Noted line', categoryIds: [category.id] },
+        raw: true,
+      });
+      const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+      await helpers.setBudgetLineNote({
+        planId: plan.id,
+        periodId: periods[2]!.id,
+        lineId: line.id,
+        payload: { note: 'Trip' },
+        raw: true,
+      });
+      await helpers.setBudgetPeriodNote({
+        planId: plan.id,
+        periodId: periods[3]!.id,
+        payload: { note: 'Bonus month' },
+        raw: true,
+      });
+
+      const data = await exportBudgets();
+
+      expect(data.budget_periods.map((row) => [row.periodStart, row.note, row.periodNote])).toEqual([
+        [periods[0]!.startDate, '', ''],
+        [periods[1]!.startDate, '', ''],
+        [periods[2]!.startDate, 'Trip', ''],
+        [periods[3]!.startDate, '', 'Bonus month'],
+      ]);
+    });
+
+    it('exports a period note from a plan without lines', async () => {
+      const { plan } = await helpers.createBudgetPlan({ payload: { name: 'Lineless plan' }, raw: true });
+      const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+      await helpers.setBudgetPeriodNote({
+        planId: plan.id,
+        periodId: periods[0]!.id,
+        payload: { note: 'Just a note' },
+        raw: true,
+      });
+
+      const data = await exportBudgets();
+
+      expect(data.budget_periods).toEqual([
+        expect.objectContaining({
+          plan: 'Lineless plan',
+          periodStart: periods[0]!.startDate,
+          line: '',
+          periodNote: 'Just a note',
+        }),
+      ]);
     });
 
     describe('plan currency decimals', () => {

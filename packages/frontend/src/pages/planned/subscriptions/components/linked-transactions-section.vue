@@ -242,7 +242,7 @@ const getMatchSourceDotClass = ({ source }: { source: string }): string =>
                   <p class="text-muted-foreground mb-1 text-xs">
                     {{ $t('planned.subscriptions.linked.convertedTooltip') }}
                   </p>
-                  <p v-for="line in totalBreakdownLines" :key="line" class="tabular-nums">{{ line }}</p>
+                  <p v-for="(line, index) in totalBreakdownLines" :key="index" class="tabular-nums">{{ line }}</p>
                 </template>
               </ResponsiveTooltip>
               <template v-else>
@@ -371,7 +371,7 @@ const getMatchSourceDotClass = ({ source }: { source: string }): string =>
                 <p class="text-muted-foreground mb-1 text-xs">
                   {{ $t('planned.subscriptions.linked.convertedTooltip') }}
                 </p>
-                <p v-for="line in total.breakdownLines" :key="line" class="tabular-nums">{{ line }}</p>
+                <p v-for="(line, index) in total.breakdownLines" :key="index" class="tabular-nums">{{ line }}</p>
               </template>
             </ResponsiveTooltip>
             <span v-else class="text-muted-foreground shrink-0 font-mono text-[11px] tabular-nums">

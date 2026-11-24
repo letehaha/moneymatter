@@ -51,6 +51,7 @@ import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-p
 import type { FireChart, FireChartPoint } from '@/composable/fire/build-fire-plan';
 import { type FireChartPace, PACE_SWATCH_CLASS } from '@/composable/fire/fire-pace-display';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { cn } from '@/lib/utils';
@@ -402,5 +403,5 @@ const renderChart = () => {
 
 useResizeObserver(containerRef, renderChart);
 
-watch([() => props.chart, () => props.pace, currentTheme, locale], renderChart, { flush: 'post' });
+watch([() => props.chart, () => props.pace, currentTheme, locale, areAmountsHidden], renderChart, { flush: 'post' });
 </script>

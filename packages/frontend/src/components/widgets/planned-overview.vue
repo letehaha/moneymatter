@@ -4,6 +4,7 @@ import { usePendingPlannedTransactions } from '@/composable/data-queries/planned
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAnimatedNumber } from '@/composable/use-animated-number';
 import { useBaseBalanceTotals } from '@/composable/use-base-balance-totals';
+import { maskAmountText } from '@/js/helpers/formatters';
 import {
   selectProjectedTotalAccounts,
   usePlannedDateLabel,
@@ -56,7 +57,7 @@ const projectedDisplay = computed(
 );
 const deltaDisplay = computed(() => {
   const delta = planned.value.refPlannedDelta;
-  return `${delta > 0 ? '+' : ''}${formatBaseCurrency(delta)}`;
+  return maskAmountText({ text: `${delta > 0 ? '+' : ''}${formatBaseCurrency(delta)}` });
 });
 const deltaColorClass = computed(() =>
   planned.value.refPlannedDelta < 0 ? 'text-app-expense-color' : 'text-app-income-color',

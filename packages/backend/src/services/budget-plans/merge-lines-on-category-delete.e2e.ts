@@ -2,6 +2,7 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import type { RecordId } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import BudgetLineNotes from '@models/budget-line-notes.model';
 import BudgetPeriods from '@models/budget-periods.model';
 import * as helpers from '@tests/helpers';
 import { Op } from 'sequelize';
@@ -119,6 +120,27 @@ describe('Category delete: budget line merge', () => {
     await deleteCategory({ categoryId: transport.id });
 
     expect((await helpers.getBudgetPlan({ planId, raw: true })).lines).toEqual([]);
+  });
+
+  it('archives instead of deleting an emptied line that only owns a note', async () => {
+    const { planId, transport, periods } = await setup({ monthsAgo: 0 });
+    const line = await addLine({ planId, name: 'Transport', categoryIds: [transport.id] });
+    await helpers.setBudgetLineNote({
+      planId,
+      periodId: periods[0]!.id,
+      lineId: line.id,
+      payload: { note: 'Car service' },
+      raw: true,
+    });
+
+    await deleteCategory({ categoryId: transport.id });
+
+    expect((await helpers.getBudgetPlan({ planId, raw: true })).lines).toEqual([
+      { ...line, activeUntil: periods[0]!.startDate, categoryIds: [] },
+    ]);
+    expect((await BudgetLineNotes.findAll({ where: { lineId: line.id } })).map((row) => row.note)).toEqual([
+      'Car service',
+    ]);
   });
 
   it('archives an emptied line from the current period and leaves its closed periods owned', async () => {

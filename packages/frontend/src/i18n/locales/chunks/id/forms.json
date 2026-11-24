@@ -194,6 +194,7 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Masukkan jumlah yang valid (hingga 2 desimal)",
+      "invalidCurrencyWholeAmount": "Enter a whole amount",
       "mustBePositive": "Jumlah harus positif",
       "httpUrl": "Enter a valid http(s) URL",
       "maxLength": "Must not exceed {max} characters"

@@ -28,6 +28,14 @@ describe('resolveDefaultAccount', () => {
     expect(resolveDefaultAccount({ accounts, defaultAccountId: 'missing', fallbackToFirst: false })).toBe(null);
   });
 
+  it('uses the last-used account when no default is set, and the default wins over it', () => {
+    expect(resolveDefaultAccount({ accounts, defaultAccountId: null, lastUsedAccountId: 'b' })).toBe(accounts[1]);
+    expect(resolveDefaultAccount({ accounts, defaultAccountId: 'a', lastUsedAccountId: 'b' })).toBe(accounts[0]);
+    expect(
+      resolveDefaultAccount({ accounts, defaultAccountId: null, lastUsedAccountId: 'gone', fallbackToFirst: false }),
+    ).toBe(null);
+  });
+
   it('returns null for an empty list', () => {
     expect(resolveDefaultAccount({ accounts: [], defaultAccountId: 'a' })).toBe(null);
     expect(resolveDefaultAccount({ accounts: [], defaultAccountId: null, fallbackToFirst: false })).toBe(null);

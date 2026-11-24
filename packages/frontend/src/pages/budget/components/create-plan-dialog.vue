@@ -41,7 +41,6 @@ import {
   isAttachableAccount,
   isValidCustomInterval,
   isValidPlanStart,
-  BUDGET_POOL_ENABLED,
 } from '../helpers';
 import SuggestionWizard from './suggestion-wizard.vue';
 
@@ -297,7 +296,7 @@ const submit = () => {
         </template>
       </SelectField>
 
-      <div v-if="BUDGET_POOL_ENABLED" class="grid gap-1">
+      <div class="grid gap-1">
         <div class="flex items-center justify-between gap-3">
           <Label for="budget-create-pool" class="cursor-pointer text-sm font-normal">
             {{ $t('budgetPlans.pool.settingLabel') }}

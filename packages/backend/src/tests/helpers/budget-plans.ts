@@ -1,4 +1,8 @@
-import type { SetBudgetLineGoalPayload, SetBudgetPlanLayoutPayload } from '@bt/shared/types';
+import type {
+  SetBudgetLineGoalPayload,
+  SetBudgetPlanAssignmentsPayload,
+  SetBudgetPlanLayoutPayload,
+} from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 import { createLine as _createLine } from '@services/budget-plans/create-line';
 import { createPlan as _createPlan } from '@services/budget-plans/create-plan';
@@ -13,7 +17,10 @@ import { listPeriods as _listPeriods } from '@services/budget-plans/list-periods
 import { restoreLine as _restoreLine } from '@services/budget-plans/restore-line';
 import { restorePlan as _restorePlan } from '@services/budget-plans/restore-plan';
 import { setAssignment as _setAssignment } from '@services/budget-plans/set-assignment';
+import { setAssignments as _setAssignments } from '@services/budget-plans/set-assignments';
 import { setCarryReset as _setCarryReset } from '@services/budget-plans/set-carry-reset';
+import { setLineNote as _setLineNote } from '@services/budget-plans/set-line-note';
+import { setPeriodNote as _setPeriodNote } from '@services/budget-plans/set-period-note';
 import { setPlanAccounts as _setPlanAccounts } from '@services/budget-plans/set-plan-accounts';
 import {
   addSuggestedLines as _addSuggestedLines,
@@ -395,6 +402,25 @@ export function setBudgetAssignment<R extends boolean | undefined = false>({
   });
 }
 
+export function setBudgetAssignments<R extends boolean | undefined = false>({
+  planId,
+  periodId,
+  payload,
+  raw,
+}: {
+  planId: string;
+  periodId: string;
+  payload: SetBudgetPlanAssignmentsPayload;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _setAssignments>>, R>({
+    method: 'put',
+    url: `/budget-plans/${planId}/periods/${periodId}/assignments`,
+    payload,
+    raw,
+  });
+}
+
 export function setBudgetPeriodCarryReset<R extends boolean | undefined = false>({
   planId,
   periodId,
@@ -409,6 +435,46 @@ export function setBudgetPeriodCarryReset<R extends boolean | undefined = false>
   return makeRequest<Awaited<ReturnType<typeof _setCarryReset>>, R>({
     method: 'put',
     url: `/budget-plans/${planId}/periods/${periodId}/carry-reset`,
+    payload,
+    raw,
+  });
+}
+
+export function setBudgetLineNote<R extends boolean | undefined = false>({
+  planId,
+  periodId,
+  lineId,
+  payload,
+  raw,
+}: {
+  planId: string;
+  periodId: string;
+  lineId: string;
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _setLineNote>>, R>({
+    method: 'put',
+    url: `/budget-plans/${planId}/periods/${periodId}/lines/${lineId}/note`,
+    payload,
+    raw,
+  });
+}
+
+export function setBudgetPeriodNote<R extends boolean | undefined = false>({
+  planId,
+  periodId,
+  payload,
+  raw,
+}: {
+  planId: string;
+  periodId: string;
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _setPeriodNote>>, R>({
+    method: 'put',
+    url: `/budget-plans/${planId}/periods/${periodId}/note`,
     payload,
     raw,
   });

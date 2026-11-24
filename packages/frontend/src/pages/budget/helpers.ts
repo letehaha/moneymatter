@@ -30,6 +30,7 @@ import {
   type CreateBudgetPlanPayload,
   type SetBudgetLineGoalPayload,
   type SetBudgetPlanAssignmentPayload,
+  type SetBudgetPlanAssignmentsPayload,
   type SetBudgetPlanLayoutPayload,
 } from '@bt/shared/types';
 import {
@@ -231,9 +232,6 @@ export const trashedPlansOf = ({ plans }: { plans: BudgetPlanModel[] }): Trashed
     .filter((plan): plan is TrashedBudgetPlan => Boolean(plan.deletedAt))
     .sort((a, b) => b.deletedAt.localeCompare(a.deletedAt));
 
-/** Shows the pool / zero-sum switches in plan creation and plan settings. */
-export const BUDGET_POOL_ENABLED = false;
-
 export const cadenceLabel = ({
   cadence,
   intervalN,
@@ -375,26 +373,6 @@ export const buildPoolAssignPayload = ({
   });
 };
 
-/** Takes `amount` off the line's assigned for this period only; `null` unless 0 < amount <= poolAssigned. */
-export const buildPoolTakeBackPayload = ({
-  line,
-  amount,
-  decimals,
-}: {
-  line: Pick<BudgetPlanPeriodViewLine, 'assigned' | 'poolAssigned' | 'assignedSource' | 'carryPolicy'>;
-  amount: number | null;
-  /** Decimals of the plan's base currency. */
-  decimals: number;
-}): SetBudgetPlanAssignmentPayload | null => {
-  if (!amount || amount <= 0 || amount > line.poolAssigned) return null;
-  return buildAssignmentPayload({
-    line,
-    amount: trimAmountNoise({ value: line.assigned - amount, decimals }),
-    scope: 'this_period',
-    carryPolicy: line.carryPolicy,
-  });
-};
-
 /** Lines holding money Ready to Assign counts, so taking it back raises Ready to Assign by the amount. */
 export const takeBackCandidates = <T extends Pick<BudgetPlanPeriodViewLine, 'poolAssigned'>>({
   lines,
@@ -402,8 +380,68 @@ export const takeBackCandidates = <T extends Pick<BudgetPlanPeriodViewLine, 'poo
   lines: T[];
 }): T[] => lines.filter((line) => line.poolAssigned > 0);
 
-const takeBackRoom = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'available' | 'poolAssigned'> }) =>
+export const takeBackRoom = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'available' | 'poolAssigned'> }) =>
   Math.min(line.poolAssigned, Math.max(line.available, 0));
+
+/** The most a line can give to another line without going overspent or getting a negative override. */
+export const moveRoom = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'available' | 'assigned'> }) =>
+  Math.max(Math.min(line.assigned, line.available), 0);
+
+type MoveLine = Pick<BudgetPlanPeriodViewLine, 'lineId' | 'available' | 'assigned'>;
+
+export const movableLines = <T extends Pick<BudgetPlanPeriodViewLine, 'lineId'>>({
+  lines,
+  archivedIds,
+}: {
+  lines: T[];
+  archivedIds: Set<string>;
+}) => lines.filter((line) => !archivedIds.has(line.lineId));
+
+/**
+ * Opened on an overspent line: it is To, From is the line with the most to give (first on a tie), and the amount
+ * covers what From can of the overspend. Opened on any other line: it is From.
+ */
+export const defaultMove = ({ lines, line }: { lines: MoveLine[]; line: MoveLine }) => {
+  const over = overspentBy({ line });
+  if (over === null) return { fromId: line.lineId, toId: null, amount: null };
+  const source = lines
+    .filter((entry) => entry.lineId !== line.lineId)
+    .reduce<MoveLine | undefined>(
+      (best, entry) => (best && moveRoom({ line: best }) >= moveRoom({ line: entry }) ? best : entry),
+      undefined,
+    );
+  const room = source ? moveRoom({ line: source }) : 0;
+  return {
+    fromId: source && room > 0 ? source.lineId : null,
+    toId: line.lineId,
+    amount: room > 0 ? Math.min(over, room) : over,
+  };
+};
+
+/** Both legs of a move, or null when either line is missing, so a move never writes one side only. */
+export const moveAssignmentsPayload = ({
+  view,
+  fromId,
+  toId,
+  amount,
+  decimals,
+}: {
+  view: { lines: MoveLine[] };
+  fromId: string;
+  toId: string;
+  amount: number;
+  decimals: number;
+}): SetBudgetPlanAssignmentsPayload | null => {
+  const from = view.lines.find((line) => line.lineId === fromId);
+  const to = view.lines.find((line) => line.lineId === toId);
+  if (!from || !to || fromId === toId || amount <= 0) return null;
+  return {
+    assignments: [
+      { lineId: fromId, amount: trimAmountNoise({ value: from.assigned - amount, decimals }) },
+      { lineId: toId, amount: trimAmountNoise({ value: to.assigned + amount, decimals }) },
+    ],
+  };
+};
 
 /** The line that can give back the most without going overspent, the first one on a tie. */
 export const pickTakeBackLine = <T extends Pick<BudgetPlanPeriodViewLine, 'available' | 'poolAssigned'>>({
@@ -415,6 +453,173 @@ export const pickTakeBackLine = <T extends Pick<BudgetPlanPeriodViewLine, 'avail
     (best, line) => (best && takeBackRoom({ line: best }) >= takeBackRoom({ line }) ? best : line),
     undefined,
   );
+
+/** A positive amount to add to, or take off, one line's assigned. */
+export interface PoolItem {
+  lineId: string;
+  amount: number;
+}
+
+export type PoolSuggestion = 'goals' | 'overspending' | 'repeat' | 'leftovers';
+
+export type PoolDirection = 'assign' | 'takeBack';
+
+type PoolView = Pick<BudgetPlanPeriodView, 'lines' | 'groups'>;
+
+/** How much assigning `amount` takes off Ready to Assign: the override also brings in the uncounted baseline. */
+export const poolCost = ({
+  line,
+  amount,
+  decimals,
+}: {
+  line: Pick<BudgetPlanPeriodViewLine, 'assigned' | 'poolAssigned'>;
+  amount: number;
+  decimals: number;
+}) => trimAmountNoise({ value: amount + line.assigned - line.poolAssigned, decimals });
+
+export const goalAskOf = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'goal'> }) =>
+  line.goal?.status === 'underfunded' && line.goal.ask > 0 ? line.goal.ask : null;
+
+export const overspentBy = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'available'> }) =>
+  line.available < 0 ? -line.available : null;
+
+export const linesInGridOrder = ({ view }: { view: PoolView }) => {
+  const { ungrouped, groups } = groupLines({ lines: view.lines, groups: view.groups });
+  return [...ungrouped, ...groups.flatMap((section) => section.lines)];
+};
+
+export const sumPoolItems = ({ items, decimals }: { items: PoolItem[]; decimals: number }) =>
+  trimAmountNoise({ value: items.reduce((total, item) => total + item.amount, 0), decimals });
+
+/** Soonest needed first, undated last; ties keep the grid order. */
+export const goalFundingItems = ({ view }: { view: PoolView }): PoolItem[] => {
+  const neededBy = ({ line }: { line: BudgetPlanPeriodViewLine }) =>
+    line.goal?.nextNeededDate ?? line.goal?.dueDate ?? null;
+  return linesInGridOrder({ view })
+    .filter((line) => goalAskOf({ line }) !== null)
+    .sort((a, b) => {
+      const left = neededBy({ line: a });
+      const right = neededBy({ line: b });
+      if (left === right) return 0;
+      if (left === null) return 1;
+      if (right === null) return -1;
+      return left.localeCompare(right);
+    })
+    .map((line) => ({ lineId: line.lineId, amount: goalAskOf({ line })! }));
+};
+
+/** Fills items in order until `available` runs out; the last one may be partial. */
+export const fillInOrder = ({
+  items,
+  available,
+  decimals,
+}: {
+  items: PoolItem[];
+  available: number;
+  decimals: number;
+}): PoolItem[] => {
+  const filled: PoolItem[] = [];
+  let left = available;
+  for (const item of items) {
+    if (left <= 0) break;
+    const amount = Math.min(item.amount, left);
+    if (amount > 0) filled.push({ lineId: item.lineId, amount });
+    left = trimAmountNoise({ value: left - amount, decimals });
+  }
+  return filled;
+};
+
+export const overspendingItems = ({ view }: { view: PoolView }): PoolItem[] =>
+  linesInGridOrder({ view })
+    .filter((line) => overspentBy({ line }) !== null)
+    .map((line) => ({ lineId: line.lineId, amount: overspentBy({ line })! }));
+
+/** Tops lines up to what they got in `previous`; lines that got as much or more now are skipped. */
+export const repeatLastMonthItems = ({
+  view,
+  previous,
+  decimals,
+}: {
+  view: PoolView;
+  previous: Pick<BudgetPlanTrendPeriod['lines'][number], 'lineId' | 'assigned'>[];
+  decimals: number;
+}): PoolItem[] => {
+  const previousById = new Map(previous.map((line) => [line.lineId, line.assigned]));
+  return linesInGridOrder({ view }).flatMap((line) => {
+    const before = previousById.get(line.lineId);
+    if (before === undefined) return [];
+    const amount = trimAmountNoise({ value: before - line.assigned, decimals });
+    return amount > 0 ? [{ lineId: line.lineId, amount }] : [];
+  });
+};
+
+/** Takes back from the lines with the most left first, until `shortfall` is covered or nothing is left. */
+export const leftoverTakeBackItems = ({
+  view,
+  shortfall,
+  decimals,
+}: {
+  view: PoolView;
+  shortfall: number;
+  decimals: number;
+}): PoolItem[] => {
+  const items: PoolItem[] = [];
+  let remaining = shortfall;
+  const lines = takeBackCandidates({ lines: linesInGridOrder({ view }) }).sort(
+    (a, b) => takeBackRoom({ line: b }) - takeBackRoom({ line: a }),
+  );
+  for (const line of lines) {
+    if (remaining <= 0) break;
+    const amount = Math.min(takeBackRoom({ line }), remaining);
+    if (amount <= 0) continue;
+    items.push({ lineId: line.lineId, amount });
+    remaining = trimAmountNoise({ value: remaining - amount, decimals });
+  }
+  return items;
+};
+
+/** Absolute this-period overrides for the items; non-positive amounts and unknown lines are skipped. */
+export const toAssignmentsPayload = ({
+  view,
+  items,
+  direction,
+  decimals,
+}: {
+  view: Pick<BudgetPlanPeriodView, 'lines'>;
+  items: PoolItem[];
+  direction: PoolDirection;
+  decimals: number;
+}): SetBudgetPlanAssignmentsPayload => {
+  const linesById = new Map(view.lines.map((line) => [line.lineId, line]));
+  const sign = direction === 'assign' ? 1 : -1;
+  return {
+    assignments: items.flatMap((item) => {
+      const line = linesById.get(item.lineId);
+      if (!line || item.amount <= 0) return [];
+      return [
+        { lineId: item.lineId, amount: trimAmountNoise({ value: line.assigned + sign * item.amount, decimals }) },
+      ];
+    }),
+  };
+};
+
+/** Restores each line's override as it is now; `null` drops one the save added. */
+export const undoAssignmentsPayload = ({
+  view,
+  lineIds,
+}: {
+  view: Pick<BudgetPlanPeriodView, 'lines'>;
+  lineIds: string[];
+}): SetBudgetPlanAssignmentsPayload => {
+  const linesById = new Map(view.lines.map((line) => [line.lineId, line]));
+  return {
+    assignments: lineIds.flatMap((lineId) => {
+      const line = linesById.get(lineId);
+      if (!line) return [];
+      return [{ lineId, amount: line.assignedSource === 'override' ? line.assigned : null }];
+    }),
+  };
+};
 
 const spentOf = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'activity'> }) => Math.max(0, -line.activity);
 

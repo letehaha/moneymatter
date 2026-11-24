@@ -2,6 +2,7 @@
 import { Button } from '@/components/lib/ui/button';
 import { useFormatCurrency } from '@/composable';
 import { trimAmountNoise } from '@/js/helpers/currency-decimals';
+import { maskAmountText } from '@/js/helpers/formatters';
 import type { BudgetPlanPeriodViewLine } from '@bt/shared/types';
 import { computed } from 'vue';
 
@@ -41,7 +42,7 @@ const options = computed(() =>
 );
 
 const changeText = ({ change }: { change: number }) =>
-  change > 0 ? `+${formatBaseCurrency(change)}` : formatBaseCurrency(change);
+  change > 0 ? maskAmountText({ text: `+${formatBaseCurrency(change)}` }) : formatBaseCurrency(change);
 </script>
 
 <template>

@@ -192,8 +192,8 @@
         "nameRequired": "El nombre del grupo es obligatorio",
         "minTransactions": "Seleccione al menos {min} transacciones",
         "alreadyInGroup": "Algunas transacciones seleccionadas ya pertenecen a un grupo",
-        "tooManyTransactions": "A group can hold up to {max} transactions, this would make {count}. Transfers count both sides. Deselect some or split them into several groups.",
-        "alreadyInNamedGroup": "Some selected transactions are already in: {name}. A transaction can only be in one group – remove it from there first.",
+        "tooManyTransactions": "Un grupo puede contener hasta transacciones {max}, lo que haría que {count}. Las transferencias cuenten a ambos lados. Deselecciona algunas o dividirlas en varios grupos.",
+        "alreadyInNamedGroup": "Algunas transacciones seleccionadas ya están en: {name}. Una transacción solo puede estar en un grupo - quítala de ahí primero.",
         "createFailed": "Error al crear el grupo",
         "addFailed": "Error al añadir transacciones al grupo"
       }
@@ -262,7 +262,7 @@
     },
     "bulkDelete": {
       "button": "Eliminar",
-      "externalTooltip": "La selección contiene transacciones sincronizadas con el banco, que no se pueden eliminar.",
+      "externalTooltip": "Las transacciones sincronizadas desde tu banco, y las actualizadas en o después del día en que la cuenta estaba vinculada, no se pueden eliminar.",
       "confirmButton": "Eliminar",
       "confirmTitle": "¿Eliminar {count} transacciones?",
       "confirmDescription": "Permanecen en la Papelera durante 30 días y puedes restaurarlos hasta entonces. Las transferencias afectan a ambos lados.",
@@ -271,15 +271,15 @@
       "noneDeletedMessage": "Nada movido a Papelera: 1 transacción está vinculada a un pago, cartera o aventura. | Nada movido a la papelera: Las transacciones {count} están vinculadas a un pago, cartera o aventura.",
       "unexpectedError": "No se pudieron eliminar las transacciones. Por favor, intente de nuevo."
     },
-    "bankSeamDateError": "This account has been synced with your bank since {date}. Pick an earlier date.",
+    "bankSeamDateError": "Esta cuenta ha sido sincronizada con tu banco desde {date}. Elige una fecha anterior.",
     "inlineEdit": {
       "saveFailed": "No se pudo guardar {field}. Inténtelo de nuevo.",
       "bankTitle": "Establecido por tu banco",
       "bankDescription": "Fecha, cuenta y cantidad sincronizada desde tu conexión bancaria. Todo lo demás en esta transacción es tuyo para cambiar.",
-      "bankAccountTitle": "Connected to a bank",
-      "bankAccountDescription": "This account is connected to a bank, so the transaction can't be moved to another account. Everything else on it is yours to change.",
-      "manualAfterLinkTitle": "Locked since the bank link",
-      "manualAfterLinkDescription": "This account has been synced with your bank since {date}, so this transaction can't be deleted and its date and amount can no longer change.",
+      "bankAccountTitle": "Conectado a un banco",
+      "bankAccountDescription": "Esta cuenta está conectada a un banco, por lo que la transacción no se puede mover a otra cuenta. Todo lo demás es tuyo para cambiar.",
+      "manualAfterLinkTitle": "Bloqueado desde el enlace bancario",
+      "manualAfterLinkDescription": "Esta cuenta ha sido sincronizada con tu banco desde {date}por lo que esta transacción no puede ser eliminada y su fecha y cantidad ya no puede cambiar.",
       "managedTitle": "Administrado en otro lugar",
       "managedDescription": "Esta transacción pertenece a un portafolio, inversión, vehículo o préstamo. Cambia desde su propia página para que los balances permanezcan correctos.",
       "gotIt": "Entendido",

@@ -55,6 +55,7 @@ import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { reactive, ref, watch } from 'vue';
@@ -243,5 +244,5 @@ const renderChart = () => {
 
 useResizeObserver(containerRef, renderChart);
 
-watch([() => props, currentTheme, locale], renderChart, { deep: true, flush: 'post' });
+watch([() => props, currentTheme, locale, areAmountsHidden], renderChart, { deep: true, flush: 'post' });
 </script>

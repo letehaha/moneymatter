@@ -179,6 +179,7 @@ import {
 import { useAnimatedNumber } from '@/composable/use-animated-number';
 import { currentTheme } from '@/common/utils/color-theme';
 import { calculatePercentageDifference, formatLargeNumber } from '@/js/helpers';
+import { areAmountsHidden, maskAmountText } from '@/js/helpers/formatters';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { loadCombinedBalanceTrendData } from '@/services/stats';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
@@ -1146,7 +1147,9 @@ const renderChart = () => {
         d.planLabels
           .map((plan) => {
             const amount =
-              plan.refDelta > 0 ? `+${formatBaseCurrency(plan.refDelta)}` : formatBaseCurrency(plan.refDelta);
+              plan.refDelta > 0
+                ? maskAmountText({ text: `+${formatBaseCurrency(plan.refDelta)}` })
+                : formatBaseCurrency(plan.refDelta);
             return plan.note ? `${amount} · ${plan.note}` : amount;
           })
           .join('\n'),
@@ -1236,7 +1239,7 @@ watch(
   { deep: true, flush: 'post' },
 );
 
-watch([spikePoints, chartXAxisEnd, projection], () => {
+watch([spikePoints, chartXAxisEnd, projection, areAmountsHidden], () => {
   renderChart();
 });
 </script>

@@ -10,6 +10,7 @@ import { toUtcDateString } from '@common/utils/date';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetLineGoals from '@models/budget-line-goals.model';
 import BudgetLineGroups from '@models/budget-line-groups.model';
+import BudgetLineNotes from '@models/budget-line-notes.model';
 import BudgetLines from '@models/budget-lines.model';
 import Categories from '@models/categories.model';
 import { addUtcDays } from '@services/budget-plans/date-ranges';
@@ -155,9 +156,10 @@ export async function transformBudgetLines({ userId }: { userId: number }): Prom
 }
 
 /**
- * Every period from the plan's epoch through the later of the current one and
- * the last one holding an assignment row, so a future period's carry-in has
- * every period it depends on. Numbers come from the same fold the period view reads.
+ * Every period from the plan's epoch through the later of the current one and the last
+ * one holding an assignment row or a note, so a future period's carry-in has every period
+ * it depends on. Numbers come from the same fold the period view reads. A period with a
+ * note but no lines gets one row with an empty line, so its note isn't lost.
  */
 export async function transformBudgetPeriods({
   userId,
@@ -176,12 +178,22 @@ export async function transformBudgetPeriods({
     plans.map(async (plan) => {
       const input = await loadFoldInput({ plan, today, timezone: 'UTC' });
       const { decimals } = input;
+      const noteRows = await BudgetLineNotes.findAll({
+        where: { lineId: { [Op.in]: input.lines.map((line) => line.id) } },
+        attributes: ['periodId', 'lineId', 'note'],
+      });
+      const noteOf = new Map(noteRows.map((row) => [`${row.periodId}:${row.lineId}`, row.note]));
       const assignedPeriodIds = new Set<string>(input.assignments.map((row) => row.periodId));
       const groupIdOf = new Map<string, string | null>(input.lines.map((line) => [line.id, line.groupId]));
       const rankOf = groupRanker({ groups: groupsByPlan.get(plan.id) ?? [] });
       const folded = foldPlan(input);
-      const lastAssignedStart = folded.findLast(({ period }) => assignedPeriodIds.has(period.id))?.period.startDate;
-      const keepThrough = lastAssignedStart && lastAssignedStart > today ? lastAssignedStart : today;
+      const lastOwnedStart = folded.findLast(
+        ({ period, lines }) =>
+          assignedPeriodIds.has(period.id) ||
+          Boolean(period.note) ||
+          lines.some((line) => noteOf.has(`${period.id}:${line.lineId}`)),
+      )?.period.startDate;
+      const keepThrough = lastOwnedStart && lastOwnedStart > today ? lastOwnedStart : today;
 
       return folded.flatMap(({ period, lines }) => {
         const periodEndInclusive = addUtcDays({ date: period.endDate, days: -1 });
@@ -190,6 +202,23 @@ export async function transformBudgetPeriods({
           (!dateRange?.from || periodEndInclusive >= dateRange.from) &&
           (!dateRange?.to || period.startDate <= dateRange.to);
         if (!kept) return [];
+
+        if (!lines.length && period.note) {
+          return [
+            {
+              plan: plan.name,
+              periodStart: period.startDate,
+              periodEndInclusive,
+              line: '',
+              assigned: 0,
+              spent: 0,
+              available: 0,
+              currency: plan.currencyCode,
+              note: '',
+              periodNote: period.note,
+            } satisfies BudgetPeriodRow,
+          ];
+        }
 
         return lines
           .toSorted((a, b) => rankOf(groupIdOf.get(a.lineId) ?? null) - rankOf(groupIdOf.get(b.lineId) ?? null))
@@ -203,6 +232,8 @@ export async function transformBudgetPeriods({
               spent: minorUnitsToApiDecimal({ value: -line.activity, decimals }),
               available: minorUnitsToApiDecimal({ value: line.available, decimals }),
               currency: plan.currencyCode,
+              note: noteOf.get(`${period.id}:${line.lineId}`) ?? '',
+              periodNote: period.note ?? '',
             }),
           );
       });

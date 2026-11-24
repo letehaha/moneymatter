@@ -320,6 +320,7 @@
         "mainCategoryLabel": "Основна категорія",
         "selectCategoryPlaceholder": "Виберіть категорію",
         "amountPlaceholder": "0",
+        "notePlaceholder": "Примітка (необов’язково)",
         "addCategoryButton": "Додати категорію",
         "removeRowLabel": "Видалити категорію",
         "totalAmountLabel": "Загальна сума",

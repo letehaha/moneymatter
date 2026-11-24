@@ -373,7 +373,7 @@ const prepareConfirmationData = () => {
     }
 
     currency = currencyCode.value ?? '';
-    amount = formatUIAmount(Number(form.amount), { currency, meta: currencyMeta.value });
+    amount = formatUIAmount(Number(form.amount), { currency, meta: currencyMeta.value, revealed: true });
   }
 
   confirmDialogData.value = { from: fromName, to: toName, amount, currency, action: getTransferAction() };

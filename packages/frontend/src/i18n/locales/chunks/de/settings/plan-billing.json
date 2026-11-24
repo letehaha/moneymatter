@@ -32,7 +32,7 @@
       "current": {
         "lifetime": "{plan} · Lebenslang",
         "lifetimeMeta": "Alles aus Plus. Keine Verlängerung, keine Karte hinterlegt.",
-        "lifetimePurchaseMeta": "No renewal, no card on file.",
+        "lifetimePurchaseMeta": "Keine Verlängerung, keine Karte hinterlegt.",
         "earlyAdopterNote": "Danke, dass du von Anfang an dabei bist. Alles aus Plus im heutigen Umfang gehört dir lebenslang. Funktionen, die wir ab jetzt hinzufügen, und alles, was uns pro Benutzer Kosten verursacht, gehört zu den kostenpflichtigen Tarifen. Möchtest du sie? 50% Rabatt auf jeden Tarif, für immer, automatisch beim Checkout angewendet.",
         "seats": "1 Haushaltsplatz | {count} Haushaltsplätze",
         "subscription": "{tier} · {cycle}",
@@ -119,6 +119,7 @@
             "bankProviders": "Bankverbindungen (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
             "ourAiKey": "KI-Funktionen mit unserem Schlüssel, begrenzt durch Fair-Use",
             "firePlanner": "FIRE-Planer",
+            "customCurrencies": "Custom currencies",
             "seats": "5 Haushaltsplätze"
           }
         },

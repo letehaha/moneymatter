@@ -38,7 +38,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
-import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
+import { useCurrencyName } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { formatUIAmount, getCurrencyDecimals, toLocalCurrencyNumber } from '@/js/helpers';
 import { flattenCategories } from '@/pages/import-export/utils/flatten-categories';
@@ -434,11 +434,15 @@ const isCreateMoreAvailable = computed(() => isFormCreation.value && props.creat
 let shouldKeepOpen = false;
 let isHandedOffToNextEntry = false;
 
+const { resolveDefaultAccount, rememberLastUsedAccount } = useAccountDropdownPrefs();
 const submitMutation = useSubmitTransaction({
   onSuccess: ({ created, attachmentsFailed }) => {
     // Emitted for every creation submit: only a plain creation answers with the new row, and a
     // listener that prefilled the form needs to know when it did not get one.
-    if (isFormCreation.value) emit('created', { transaction: created, attachmentsFailed: Boolean(attachmentsFailed) });
+    if (isFormCreation.value) {
+      if (form.value.account) rememberLastUsedAccount({ id: form.value.account.id });
+      emit('created', { transaction: created, attachmentsFailed: Boolean(attachmentsFailed) });
+    }
     if (shouldKeepOpen) {
       addSuccessNotification(t('dialogs.manageTransaction.form.createMore.createdToast'));
       isHandedOffToNextEntry = true;
@@ -729,7 +733,6 @@ const originalAmountDecimalRule = useCurrencyDecimalRule({
   decimals: () => getCurrencyDecimals({ code: form.value.originalCurrency?.code }),
 });
 
-const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { convert: convertCurrency, data: exchangeRates } = useExchangeRates();
 
 // --- Transfer → Loan payment guards ---
@@ -922,9 +925,9 @@ const validationRules = computed(() => {
   const loanOverpayRule = helpers.withMessage(
     () =>
       t('dialogs.loanPayment.overpayError', {
-        max: formatAmountByCurrencyCode({
-          amount: loanOverpayMax.value,
-          currencyCode: form.value.toAccount?.currencyCode ?? '',
+        max: formatUIAmount(loanOverpayMax.value, {
+          currency: form.value.toAccount?.currencyCode ?? '',
+          revealed: true,
         }),
       }),
     (value: unknown) => {
@@ -1343,7 +1346,6 @@ const applyPickedLocation = ({
 // the global Pinia map is loaded synchronously on app boot; for shared-with-caller txs
 // we route through `useAccountCategories`, which fires after mount – populate then.
 const hasPrepopulated = ref(false);
-const { resolveDefaultAccount } = useAccountDropdownPrefs();
 const prepopulateIfReady = () => {
   if (hasPrepopulated.value) return;
   // Wait for the first accounts fetch: the query serves `placeholderData: []` until then, and
@@ -1354,7 +1356,7 @@ const prepopulateIfReady = () => {
     // On an account page the open account wins over the favorite one.
     const pageAccount =
       route.name === ROUTES_NAMES.account ? accounts.find((account) => account.id === route.params.id) : undefined;
-    form.value.account = pageAccount ?? resolveDefaultAccount({ accounts });
+    form.value.account = pageAccount ?? resolveDefaultAccount({ accounts, useLastUsed: true });
     Object.assign(form.value, initialPrefill);
     form.value.paymentType =
       initialPrefill?.paymentType ??
@@ -1419,7 +1421,7 @@ const paymentTotalLabel = computed(() =>
       mainCurrencyCode: form.value.account?.currencyCode,
       decimals: amountDecimals.value,
     }),
-    { currency: currencyCode.value, meta: form.value.account?.currencyMeta, fullPrecision: true },
+    { currency: currencyCode.value, meta: form.value.account?.currencyMeta, fullPrecision: true, revealed: true },
   ),
 );
 const targetAmountFieldRef = ref<InstanceType<typeof InputField> | null>(null);
@@ -2139,7 +2141,13 @@ onUnmounted(() => {
                     </span>
                   </span>
                   <span class="text-muted-foreground flex items-center gap-1.5 tabular-nums">
-                    {{ formatUIAmount(splitsTotal, { currency: currencyCode, meta: form.account?.currencyMeta }) }}
+                    {{
+                      formatUIAmount(splitsTotal, {
+                        currency: currencyCode,
+                        meta: form.account?.currencyMeta,
+                        revealed: true,
+                      })
+                    }}
                     <span aria-hidden="true">·</span>
                     {{ $t('dialogs.manageTransaction.form.editSplit') }}
                   </span>

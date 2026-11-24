@@ -24,18 +24,15 @@
         "custom": "Tùy chỉnh",
         "live": "Trực tiếp",
         "unused": "Chưa sử dụng",
-        "accountsCount": "{count} account | {count} accounts"
+        "accountsCount": "{count} account | {count} accounts",
+        "customCurrency": "Custom currency"
       },
       "empty": {
         "title": "Chưa có loại tiền tệ nào khác",
         "description": "Thêm loại tiền tệ ở trên để theo dõi số dư và tỷ giá cùng với tiền tệ cơ sở."
       },
       "exchangeRate": {
-        "disableLiveUpdate": "Tắt cập nhật tỷ giá trực tiếp để có thể đặt tỷ giá tùy chỉnh.",
-        "liveUpdateInfo": "Khi bật, tỷ giá tùy chỉnh sẽ bị bỏ qua.",
-        "liveUpdateLabel": "Cập nhật trực tiếp",
         "ratePlaceholder": "0.00",
-        "saveButton": "Save",
         "successfullyUpdated": "Đã cập nhật thành công.",
         "balancesNotRefreshed": "{count} số dư tài khoản chưa thể cập nhật theo tỷ giá mới — sẽ tự động cập nhật khi có tỷ giá.",
         "errors": {
@@ -48,7 +45,6 @@
         "description": "Chỉ có thể xóa hoặc ngắt kết nối tiền tệ khi không còn tài khoản hay giao dịch nào liên kết với tiền tệ đó.",
         "button": "Xóa tiền tệ",
         "buttonShort": "Delete",
-        "disabledTooltip": "Không thể xóa tiền tệ này vì vẫn còn tài khoản liên kết.",
         "successfullyDeleted": "Đã xóa thành công.",
         "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
         "inUse": {
@@ -65,7 +61,8 @@
             "transactionTemplate": "Transaction templates",
             "budget": "Budgets",
             "goal": "Goals",
-            "ventureDeal": "Venture deals"
+            "ventureDeal": "Venture deals",
+            "customCurrency": "Custom currencies quoted in it"
           }
         },
         "errors": {
@@ -102,7 +99,274 @@
           "lockedShares": "Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi quyền đó trong tài khoản. | Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi từng quyền trong các tài khoản tương ứng.",
           "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
-      }
+      },
+      "custom": {
+        "addButton": "Add custom currency",
+        "createTitle": "Add custom currency",
+        "createDescription": "Define a currency that is not an ISO currency, such as a stablecoin or a crypto asset. Only you can see it.",
+        "editTitle": "Edit custom currency",
+        "editDescription": "Changes apply to every account and transaction you hold in this currency.",
+        "codeLabel": "Code",
+        "codePlaceholder": "USDT",
+        "nameLabel": "Name",
+        "namePlaceholder": "Tether",
+        "symbolLabel": "Symbol (optional)",
+        "symbolPlaceholder": "₮",
+        "decimalsLabel": "Decimals",
+        "decimalsPlaceholder": "6",
+        "decimalsHint": "Amounts keep up to this many digits after the decimal point (0 to 8).",
+        "decimalsLockedHint": "Decimals can change only while no account, transaction or template uses {code}.",
+        "preview": "Example: {value}",
+        "createButton": "Add currency",
+        "saveButton": "Save changes",
+        "cancelButton": "Cancel",
+        "rateLabel": "Rate",
+        "ratePlaceholder": "1.00",
+        "createRateHint": "What one unit of this currency is worth in your base currency. You can change it later from its row.",
+        "successfullyCreated": "Custom currency added",
+        "successfullyUpdated": "Custom currency updated",
+        "errors": {
+          "codeRequired": "Enter a code",
+          "codeFormat": "Use 2 to 16 capital letters or digits",
+          "codeIsIso": "This is an ISO currency code. Add it from the currency list instead",
+          "codeExists": "You already have a currency with this code",
+          "nameRequired": "Enter a name",
+          "symbolTooLong": "Use up to 8 characters",
+          "decimalsRange": "Enter a whole number from 0 to 8",
+          "rateRequired": "Enter a rate above 0",
+          "createFailed": "Unexpected error. Custom currency is not added.",
+          "updateFailed": "Unexpected error. Custom currency is not updated."
+        }
+      },
+      "rateSource": {
+        "successfullySaved": "Rate source saved",
+        "quoteLabel": "Price currency",
+        "quotePlaceholder": "Select a currency",
+        "manual": {
+          "successfullyRemoved": "Rate removed",
+          "errors": {
+            "removeFailed": "Unexpected error. The rate is not removed."
+          }
+        },
+        "peg": {
+          "currencyPlaceholder": "Select a currency",
+          "factorPlaceholder": "1"
+        },
+        "coingecko": {
+          "searchLabel": "Find a coin",
+          "searchPlaceholder": "Search by name or symbol, for example Bitcoin",
+          "noResults": "No coins found",
+          "selected": "Selected coin: {coin}",
+          "searchFailed": "Could not search CoinGecko. Try again in a moment."
+        },
+        "http": {
+          "urlPlaceholder": "https://api.example.com/price?id={'{code}'}&vs={'{quote}'}&on={'{date}'}",
+          "urlHint": "Placeholders: {date} is the day as yyyy-mm-dd, {code} is the currency code and {quote} is the price currency.",
+          "pathPlaceholder": "data.rates[0].price",
+          "headerNameLabel": "Header name",
+          "headerNamePlaceholder": "X-Api-Key",
+          "headerValueLabel": "Value",
+          "headerValuePlaceholder": "Enter the value",
+          "addHeader": "Add header",
+          "removeHeader": "Remove header",
+          "savedHeaders": "Saved headers: {names}. Their values are hidden.",
+          "headersWillBeRemoved": "The saved headers will be removed when you save.",
+          "replaceHeaders": "Replace headers",
+          "keepHeaders": "Keep saved headers",
+          "headersOriginChanged": "Saved headers are sent only to the address they were saved for. Replace them to use this URL.",
+          "testSuccess": "On {date}, 1 {code} = {rate} {quote}",
+          "testUnavailable": "The test could not run. Try again in a moment.",
+          "failures": {
+            "blocked": "This address is not allowed: private and internal addresses are blocked.",
+            "https_required": "The address must use https.",
+            "timeout": "The endpoint took too long to answer.",
+            "network": "Could not reach the endpoint.",
+            "http_status": "The endpoint answered with an error status.",
+            "too_large": "The response is too large.",
+            "not_json": "The response is not JSON.",
+            "path_not_found": "The JSON path points at nothing in the response.",
+            "not_a_number": "The value at the JSON path is not a positive number.",
+            "headers_unreadable": "The saved headers could not be read. Enter them again."
+          }
+        },
+        "errors": {
+          "pegCurrencyRequired": "Select the currency to peg to",
+          "factorInvalid": "Enter a number above 0",
+          "coinRequired": "Search and select a coin",
+          "urlRequired": "Enter the URL",
+          "urlInvalid": "Use an http(s) URL; the only placeholders are the day, the code and the quote",
+          "pathRequired": "Enter the JSON path",
+          "headerNameRequired": "Give every header a name",
+          "headerNameDuplicate": "Header names must be unique",
+          "saveFailed": "Unexpected error. The rate source is not saved."
+        },
+        "history": {
+          "connectToEdit": "Connect {quote} to edit this rate."
+        }
+      },
+      "dialog": {
+        "back": "Back to {name}",
+        "summary": {
+          "current": "Current rate",
+          "since": "Since {date}",
+          "follows": "Follows {code}",
+          "updated": "Updated {date}",
+          "live": "Live",
+          "yourRate": "Your rate",
+          "update": "Update rate"
+        },
+        "source": {
+          "label": "Rate comes from",
+          "manual": "You enter it yourself",
+          "peg": "Follows {code}",
+          "pegDetail": "Always 1 {code} = {factor} {target}",
+          "coingecko": "CoinGecko · {coin}",
+          "http": "Custom URL · {host}",
+          "syncedDetail": "Updated every night",
+          "change": "Change"
+        },
+        "recent": {
+          "title": "Recent rates",
+          "viewAll": "View all {count}",
+          "viewAllUnknown": "View all",
+          "readOnly": "Prices from {source} can't be edited. To enter rates yourself, change where the rate comes from.",
+          "loadFailedTitle": "Couldn't load the rates.",
+          "loadFailedDetail": "The current rate above is still correct.",
+          "refreshFailed": "Couldn't refresh the rates, so the list may be out of date."
+        },
+        "pegRow": {
+          "title": "Rate history",
+          "count": "{count} rate | {count} rates",
+          "notUsed": "Not used while {code} follows {target}",
+          "empty": "No stored rates",
+          "view": "View"
+        },
+        "row": {
+          "current": "Current",
+          "now": "{from} – now",
+          "rate": "1 {code} = {rate} {quote}",
+          "edit": "Edit the rate used from {date}",
+          "source": {
+            "initial": "Starting rate",
+            "manual": "Entered by you",
+            "coingecko": "CoinGecko",
+            "http": "Custom URL"
+          }
+        },
+        "history": {
+          "title": "Rate history",
+          "description": "Each rate is used from its date until the next one starts. Dates before the first rate use the first rate.",
+          "count": "{count} rate, newest first | {count} rates, newest first",
+          "showOlder": "Show older rates",
+          "empty": "No stored rates. {code} follows {target}, so it doesn't need any."
+        },
+        "form": {
+          "addTitle": "Update rate",
+          "addDescription": "Set what 1 {code} is worth, starting from a day you choose.",
+          "editTitle": "Edit rate",
+          "usedFor": "Used for {range}.",
+          "usedFrom": "Used from {date} onward.",
+          "usedEveryDay": "Used for every day.",
+          "usedForAndBefore": "Used for {range}, and for every day before it.",
+          "typeEither": "Type either one.",
+          "dateLabel": "Use this rate from",
+          "today": "Today",
+          "replaceNote": "{date} already has a rate ({rate} {quote}). Saving replaces it.",
+          "recalcRange": "Saving recalculates the value of your {code} transactions dated {range}.",
+          "recalcFrom": "Saving recalculates the value of your {code} transactions from {date} onward.",
+          "recalcUntil": "Saving recalculates the value of your {code} transactions up to {date}.",
+          "recalcAll": "Saving recalculates the value of all your {code} transactions.",
+          "amountsKept": "Their {code} amounts stay the same.",
+          "noChange": "Transactions you already saved keep their value.",
+          "unknown": "If this day already has a rate, saving replaces it. Your {code} transactions from this day until the next rate are recalculated.",
+          "moveHint": "To use this rate from another day, remove it and add a new one.",
+          "save": "Save rate",
+          "replace": "Replace rate",
+          "remove": "Remove rate",
+          "lastRate": "A currency needs at least one rate."
+        },
+        "remove": {
+          "title": "Remove the {date} rate?",
+          "takenOver": "{range} will use the {date} rate instead (1 {code} = {rate} {quote}).",
+          "takenOverWithEarlier": "{range} and every day before will use the {date} rate instead (1 {code} = {rate} {quote}).",
+          "unknown": "{range} will use the previous rate instead.",
+          "unknownDays": "The days this rate covers will use another stored rate instead.",
+          "recalc": "The value of your {code} transactions on those days is recalculated. Their {code} amounts stay the same.",
+          "confirm": "Remove rate"
+        },
+        "sourceView": {
+          "title": "Where should the rate come from?",
+          "now": {
+            "manual": "Right now you enter it yourself.",
+            "peg": "Right now it follows {target}.",
+            "coingecko": "Right now it comes from CoinGecko.",
+            "http": "Right now it comes from a custom URL."
+          },
+          "option": {
+            "manual": "Enter it myself",
+            "manualHint": "Type a rate when the price changes.",
+            "peg": "Follow a currency",
+            "pegHint": "Always worth a fixed amount of USD, EUR or another currency.",
+            "coingecko": "Crypto price",
+            "coingeckoHint": "Updated every night from CoinGecko.",
+            "http": "Custom URL",
+            "httpHint": "Updated every night from a web address you provide."
+          },
+          "schedule": {
+            "coingecko": "The price is fetched once a day, overnight. Until the next update, the last fetched price is used.",
+            "http": "The address is called once a day, overnight. Until the next update, the last price it returned is used."
+          },
+          "inUse": "In use",
+          "advanced": "Advanced",
+          "notAvailable": "Not available",
+          "note": {
+            "manual": "After saving, you enter the rate yourself. The rates already stored are used again.",
+            "manualNoRates": "{code} has no stored rates yet. Follow a currency or connect a price first.",
+            "peg": "After saving, 1 {code} is always worth {factor} {target}. The rates you entered stay in the history and are used again if you switch back.",
+            "coingecko": "When you save, we download the last year of {coin} prices and recalculate the value of your past {code} transactions. Rates you added yourself are kept. The starting rate is replaced on days CoinGecko has a price.",
+            "coingeckoCoinChanged": "Prices of the previous coin are removed.",
+            "http": "When you save, we get today's price from this address and recalculate the value of your past {code} transactions. Earlier days keep the rates already stored. Rates you added yourself are kept."
+          },
+          "pegCurrency": "Currency to follow",
+          "pegAmount": "1 {code} =",
+          "notSaved": "Not saved yet",
+          "saving": "Saving",
+          "downloading": "Downloading a year of prices. This can take a moment.",
+          "fetchingToday": "Getting today's price from the address. This can take a moment.",
+          "saveFailedTitle": "Couldn't save. Nothing was changed.",
+          "unavailable": "Crypto prices aren't set up on this server. Whoever runs it needs to add a CoinGecko key. You can still enter the rate yourself or follow a currency.",
+          "http": {
+            "address": "Web address",
+            "path": "Where the rate is in the reply",
+            "headers": "Secret headers",
+            "headersStored": "stored encrypted",
+            "test": "Test",
+            "testAgain": "Test again"
+          }
+        },
+        "discard": {
+          "title": "Discard your changes?",
+          "body": "{code} keeps getting its rate the way it does now: {current}. What you filled in here is lost.",
+          "rateBody": "The rate you entered for {code} is not saved and will be lost.",
+          "keep": "Keep editing",
+          "confirm": "Discard"
+        },
+        "iso": {
+          "liveTitle": "Live rate",
+          "liveOn": "Updated automatically. Turn it off to enter your own rate.",
+          "liveOff": "Off. Turning it back on removes your rate.",
+          "save": "Save rate",
+          "note": "Your rate is used for new transactions. Transactions you already saved keep their values.",
+          "confirmTitle": "Go back to the live rate?",
+          "confirmBody": "Your rate ({rate}) is removed and {code} follows the market rate again. Transactions you already saved keep their values.",
+          "confirm": "Use live rate"
+        },
+        "footer": {
+          "editDetails": "Edit details",
+          "deleteBlocked": "Used by {count} account, so it can't be deleted. | Used by {count} accounts, so it can't be deleted."
+        }
+      },
+      "refreshFailed": "Saved, but the currency list could not refresh. Reload the page if anything looks stale."
     }
   }
 }

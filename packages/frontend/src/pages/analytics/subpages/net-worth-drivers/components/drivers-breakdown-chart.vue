@@ -63,6 +63,7 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import type { NetWorthDriversGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
@@ -347,8 +348,12 @@ useResizeObserver(containerRef, renderChart);
 
 // flush: 'post' lets the SVG container mount/resize before the first draw so it
 // reads correct dimensions; deep watch picks up in-place model mutations.
-watch([() => props.bars, () => props.legend, () => props.granularity, locale, currentTheme], renderChart, {
-  deep: true,
-  flush: 'post',
-});
+watch(
+  [() => props.bars, () => props.legend, () => props.granularity, locale, currentTheme, areAmountsHidden],
+  renderChart,
+  {
+    deep: true,
+    flush: 'post',
+  },
+);
 </script>

@@ -50,6 +50,7 @@
     "notFound": "Транзакция не найдена",
     "missingRequiredFields": "Отсутствует одно из обязательных полей: destinationAmount, destinationAccountId.",
     "destinationAmountRequiredCrossCurrency": "Поле destinationAmount обязательно при изменении суммы межвалютного перевода.",
+    "amountBelowSmallestUnit": "The amount is below the smallest unit of {{code}}.",
     "refundAndTransferNotAllowed": "Нельзя создать транзакцию, которая одновременно является возвратом и переводом",
     "notOwnTransaction": "На этом общем счёте вы можете редактировать или удалять только созданные вами транзакции.",
     "sharedAccountChangeNotSupported": "Перемещать транзакцию на другой счёт может только владелец счёта.",
@@ -224,6 +225,7 @@
     "reminderAlreadyExists": "Для этого тега уже существует идентичное напоминание",
     "amountThresholdRequired": "Для напоминаний по порогу суммы необходимо указать порог",
     "maxRemindersReached": "Достигнуто максимальное количество напоминаний (50)",
+    "amountThresholdRoundsToZero": "The threshold rounds to zero in your base currency (decimal places: {{decimals}}). Enter a larger amount.",
     "notifications": {
       "thresholdExceeded": {
         "title": "Предупреждение о расходах по тегу",
@@ -260,11 +262,13 @@
     "securitySearchResultNotRecognized": "Security search result is not recognized or has expired. Search for the security again.",
     "currencyForSecurityNotFound": "Валюта для ценной бумаги не найдена.",
     "currencyNotFound": "Валюта не найдена",
+    "customCurrencyNotSupported": "Portfolios support ISO 4217 currencies only. \"{{code}}\" is a custom currency",
     "transactionNotFound": "Инвестиционная транзакция не найдена",
     "userBaseCurrencyNotFound": "Базовая валюта пользователя не найдена",
     "insufficientSharesToSell": "Недостаточно бумаг для продажи. После этого обновления у вас останется {{adjustedQuantity}} бумаг, но вы пытаетесь продать {{sellQuantity}}.",
     "sourceAndDestinationMustDiffer": "Исходный и целевой портфели должны различаться",
     "transferAmountMustBePositive": "Сумма перевода должна быть больше нуля",
+    "transferCurrencyMustMatchAccount": "The transfer currency must match the destination account's currency ({{currency}}).",
     "sourcePortfolioNotFound": "Исходный портфель не найден",
     "destinationPortfolioNotFound": "Целевой портфель не найден",
     "sourceAccountNotFound": "Исходный счёт не найден",
@@ -486,6 +490,7 @@
     "batchDeleteLinkedLoanTransfer": "Этот импорт связан с платежом по кредиту и не может быть отменён отдельно. Включите «также удалить связанные транзакции перевода», чтобы удалить его.",
     "batchDeleteInProgress": "An import batch is already being deleted. Wait for it to finish before starting another.",
     "batchDeleteImportStillRunning": "This import is still running. Wait for it to finish before undoing it.",
+    "batchDeleteInterruptedByServerUpdate": "A server update interrupted the delete. Part of the import may already be removed – delete it again to finish.",
     "importIntoBankLinkedAccount": "Account \"{{accountName}}\" is connected to a bank, so transactions cannot be imported into it. Choose another account or create a new one.",
     "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one.",
     "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated.",
@@ -591,6 +596,7 @@
   "currencies": {
     "notSupportedForBaseCurrency": "Изменение базовой валюты на {{currency}} не поддерживается. Поддерживаются только следующие валюты: {{supportedCurrencies}}.",
     "listIsEmpty": "Список валют пуст",
+    "amountTooLarge": "{{code}} amounts can be at most {{max, number}}",
     "noBaseCurrency": "У пользователя не задана базовая валюта",
     "alreadyBaseCurrency": "Выбранная валюта уже является базовой",
     "baseCurrencyLockedByShares": "Нельзя изменить базовую валюту при наличии активных общих ресурсов. Сначала отзовите доступ или покиньте их.",
@@ -603,7 +609,35 @@
     "cannotFindForRefAmount": "Не удалось найти валюту для расчёта суммы в валюте учёта!",
     "cannotCalculateRefAmount": "Не удалось рассчитать сумму в валюте учёта",
     "currencyNotConnected": "Запрошенная валюта не подключена",
-    "exchangeRateNotAvailable": "Обменный курс {{baseCode}}/{{quoteCode}} на {{date}} недоступен"
+    "exchangeRateNotAvailable": "Обменный курс {{baseCode}}/{{quoteCode}} на {{date}} недоступен",
+    "unknownCurrencyCode": "Unknown currency code: {{code}}",
+    "invalidCode": "Invalid currency code \"{{code}}\". Use 2 to 16 letters or digits, e.g. \"USD\".",
+    "invalidCodeIso": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\".",
+    "invalidCodeWithCustom": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\", or one of your custom currencies: {{customCodes}}.",
+    "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places",
+    "customCurrencyNotFound": "Custom currency \"{{code}}\" was not found",
+    "customCurrencyIsoCode": "\"{{code}}\" is an ISO 4217 currency code and cannot be defined as a custom currency",
+    "customCurrencyAlreadyDefined": "You already have a currency with the code \"{{code}}\"",
+    "customCurrencyDecimalsInUse": "You can't change the decimals of {{code}} while your data uses it.",
+    "customCurrencyUseCustomEndpoint": "\"{{code}}\" is a custom currency. Remove it from your custom currencies instead",
+    "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency",
+    "customCurrencyRateBetweenCustom": "Custom currencies are quoted in ISO currencies only: \"{{baseCode}}\" and \"{{quoteCode}}\" are both custom currencies",
+    "customCurrencyLastRate": "\"{{code}}\" is a custom currency and always needs a rate. Set a new rate instead of removing the last one",
+    "customCurrencyQuoteNotIso": "The rate of a custom currency must be given in an ISO currency, and \"{{code}}\" is a custom currency",
+    "customCurrencyRateNeedsQuote": "Set a base currency first, or give the rate of the custom currency in an ISO currency you hold",
+    "customCurrencyOneQuote": "A rate of {{code}} for one day can be quoted in one currency only.",
+    "customCurrencyRateNotManual": "{{code}} takes its rates from its rate source. Switch it to manual rates to set or remove a rate.",
+    "customCurrencyRemovalNeedsDate": "Name the day of the {{code}} rate to remove: a custom currency's rates are removed one day at a time.",
+    "customCurrencyRateViaPairs": "\"{{code}}\" is a custom currency. Change its rate from its exchange rate instead",
+    "customCurrencyDefinitionConflict": "Your own \"{{code}}\" has different decimals than the account owner's \"{{code}}\", so you can't add or edit \"{{code}}\" transactions on this shared account",
+    "rateSourceCurrencyNotHeld": "\"{{code}}\" is not in your currencies",
+    "rateSourceIsoNotAllowed": "Rate sources are for custom currencies only. Use live rates or your own rate for {{code}}.",
+    "rateHistoryIsoNotAllowed": "\"{{code}}\" is an ISO currency, so it has one undated rate and no rate history",
+    "rateSourceHttpsRequired": "Rates from an HTTP source must be fetched over https",
+    "rateSourceHeadersUnreadable": "Cannot read the saved request headers of \"{{code}}\" (the server secret changed). Enter the headers again",
+    "rateSourceFirstFetchFailed": "Couldn't get a rate for \"{{code}}\" from this source, so it wasn't saved. Check its settings and try again.",
+    "rateSourceLeavesNoRate": "\"{{code}}\" is a custom currency and always needs a rate. This source would leave it without one, so it wasn't saved.",
+    "rateSourceChangedMeanwhile": "The rate source of \"{{code}}\" changed while this one was being saved. Reload and try again."
   },
   "userSettings": {
     "userSettingsNotFound": "Настройки пользователя не найдены"
@@ -880,7 +914,10 @@
         "malformedManifestEntry": "Backup archive has a malformed manifest entry for {{path}}.",
         "missingFile": "Backup archive is missing {{path}} listed in its manifest.",
         "checksumMismatch": "Backup file {{path}} failed its integrity check (checksum mismatch).",
+        "amountNotCents": "Backup file {{path}} is corrupt: it contains an invalid amount ({{value}}).",
         "differentAccount": "This backup was exported by a different account and cannot be restored here.",
+        "customCurrencyInvalid": "The backup's custom currency \"{{code}}\" has an invalid definition or rate source, so it cannot be restored",
+        "customCurrencyWithoutRate": "The backup's custom currency \"{{code}}\" needs a positive exchange rate against an ISO currency, or a peg to one, so it cannot be restored",
         "alreadyInProgress": "A backup restore is already in progress. Wait for it to finish before starting another.",
         "failed": "The backup restore failed. Your existing data was not changed."
       }
@@ -890,14 +927,14 @@
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
   },
   "goals": {
-    "goalNotFound": "Goal not found.",
-    "accountNotFound": "One of the selected accounts was not found.",
+    "goalNotFound": "Цель не найдена.",
+    "accountNotFound": "Один из выбранных счетов не найден.",
     "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
     "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
     "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
     "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
     "reachedNotification": {
-      "title": "Goal reached: {{name}}",
+      "title": "Достигнута цель: {{name}}",
       "message": "You've saved {{amount}} {{currencyCode}}."
     }
   },

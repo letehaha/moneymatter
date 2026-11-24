@@ -45,7 +45,7 @@
             <div :class="getGainColorClass({ gainValue: getTotalGainValue() })" class="flex items-center gap-1.5">
               <component :is="getTotalGainValue() >= 0 ? TrendingUpIcon : TrendingDownIcon" class="size-4" />
               <span class="text-sm font-medium">
-                {{ getTotalGainValue() >= 0 ? '+' : '' }}{{ formatCurrency(getTotalGainValue(), summary.currencyCode) }}
+                {{ formatGain({ amount: getTotalGainValue(), currencyCode: summary.currencyCode }) }}
               </span>
               <span class="text-xs">
                 ({{ getTotalGainPercent() >= 0 ? '+' : '' }}{{ getTotalGainPercent().toFixed(2) }}%)
@@ -90,8 +90,7 @@
             </p>
             <div :class="getGainColorClass({ gainValue: Number(summary.unrealizedGainValue) })">
               <p class="text-base font-semibold">
-                {{ Number(summary.unrealizedGainValue) >= 0 ? '+' : ''
-                }}{{ formatCurrency(Number(summary.unrealizedGainValue), summary.currencyCode) }}
+                {{ formatGain({ amount: Number(summary.unrealizedGainValue), currencyCode: summary.currencyCode }) }}
               </p>
               <p class="text-xs">
                 {{ Number(summary.unrealizedGainPercent) >= 0 ? '+' : ''
@@ -107,8 +106,7 @@
             </p>
             <div :class="getGainColorClass({ gainValue: Number(summary.realizedGainValue) })">
               <p class="text-base font-semibold">
-                {{ Number(summary.realizedGainValue) >= 0 ? '+' : ''
-                }}{{ formatCurrency(Number(summary.realizedGainValue), summary.currencyCode) }}
+                {{ formatGain({ amount: Number(summary.realizedGainValue), currencyCode: summary.currencyCode }) }}
               </p>
               <p class="text-xs">
                 {{ Number(summary.realizedGainPercent) >= 0 ? '+' : ''
@@ -124,7 +122,7 @@
             </p>
             <div :class="getGainColorClass({ gainValue: getTotalGainValue() })">
               <p class="text-base font-semibold">
-                {{ getTotalGainValue() >= 0 ? '+' : '' }}{{ formatCurrency(getTotalGainValue(), summary.currencyCode) }}
+                {{ formatGain({ amount: getTotalGainValue(), currencyCode: summary.currencyCode }) }}
               </p>
               <p class="text-xs">{{ getTotalGainPercent() >= 0 ? '+' : '' }}{{ getTotalGainPercent().toFixed(2) }}%</p>
             </div>
@@ -139,7 +137,7 @@
 import { Card } from '@/components/lib/ui/card';
 import { usePortfolioSummary } from '@/composable/data-queries/portfolio-summary';
 import { useFormatCurrency } from '@/composable/formatters';
-import { toLocalNumber } from '@/js/helpers/formatters';
+import { maskAmountText, toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import { getGainColorClass } from '@/composable/gain-color';
 import { useCurrenciesStore } from '@/stores/currencies';
 import { TrendingDownIcon, TrendingUpIcon } from '@lucide/vue';
@@ -157,10 +155,13 @@ const { currencies } = storeToRefs(useCurrenciesStore());
 const formatCurrency = (amount: number, currencyCode: string) => {
   const userCurrency = currencies.value.find((c) => c.currency?.code === currencyCode.toUpperCase());
   if (!userCurrency) {
-    return toLocalNumber(amount, { maximumFractionDigits: 2 });
+    return toLocalCurrencyNumber(amount, { currency: currencyCode });
   }
   return formatAmountByCurrencyCode({ amount, currencyCode: userCurrency.currencyCode });
 };
+
+const formatGain = ({ amount, currencyCode }: { amount: number; currencyCode: string }) =>
+  maskAmountText({ text: `${amount >= 0 ? '+' : ''}${formatCurrency(amount, currencyCode)}` });
 
 const getTotalGainValue = () => {
   if (!summary.value) return 0;

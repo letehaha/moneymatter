@@ -266,6 +266,16 @@ const handleClearAll = () => {
             </DesktopOnlyTooltip>
           </div>
 
+          <InputField
+            :model-value="split.note ?? ''"
+            size="sm"
+            maxlength="100"
+            :placeholder="$t('dialogs.manageTransaction.splitDialog.notePlaceholder')"
+            :aria-label="$t('dialogs.manageTransaction.splitDialog.notePlaceholder')"
+            class="mt-1 text-sm"
+            @update:model-value="(val) => updateSplit(index, { note: val ? String(val) : null })"
+          />
+
           <!-- Split error message -->
           <p v-if="getSplitError(index)" class="text-destructive-text mt-1 px-1 text-xs">
             {{ getSplitError(index) }}

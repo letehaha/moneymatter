@@ -193,7 +193,8 @@
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Inserire un importo valido (fino a 2 decimali)",
+      "invalidCurrencyDecimal": "Inserire un importo valido (fino a 1 decimale) | Inserire un importo valido (fino a {decimals} decimali)",
+      "invalidCurrencyWholeAmount": "Enter a whole amount",
       "mustBePositive": "L'importo deve essere positivo",
       "httpUrl": "Enter a valid http(s) URL",
       "maxLength": "Must not exceed {max} characters"

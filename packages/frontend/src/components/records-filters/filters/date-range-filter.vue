@@ -33,7 +33,7 @@ import { type ControlSize } from '@/components/lib/ui/control-size';
 import { DateSelector, type DateSelectorPreset } from '@/components/lib/ui/date-selector';
 import { type Period } from '@/composable/use-period-navigation';
 import { resolveDatePreset } from '@/components/records-filters/saved-views';
-import { endOfMonth, startOfMonth } from 'date-fns';
+import { endOfDay, endOfMonth, endOfYear, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns';
 import { CalendarIcon, XIcon } from '@lucide/vue';
 import { type PropType, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -69,6 +69,13 @@ const presets = computed<DateSelectorPreset[]>(() => [
     getValue: () => resolveDatePreset({ preset: 'thisMonth' }),
   },
   {
+    label: t('transactions.filters.dateRange.presets.lastMonth'),
+    getValue: () => {
+      const lastMonth = subMonths(new Date(), 1);
+      return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
+    },
+  },
+  {
     label: t('transactions.filters.dateRange.presets.last3Months'),
     getValue: () => resolveDatePreset({ preset: 'last3Months' }),
   },
@@ -79,6 +86,17 @@ const presets = computed<DateSelectorPreset[]>(() => [
   {
     label: t('transactions.filters.dateRange.presets.last12Months'),
     getValue: () => resolveDatePreset({ preset: 'last12Months' }),
+  },
+  {
+    label: t('transactions.filters.dateRange.presets.thisYear'),
+    getValue: () => ({ from: startOfYear(new Date()), to: endOfDay(new Date()) }),
+  },
+  {
+    label: t('transactions.filters.dateRange.presets.lastYear'),
+    getValue: () => {
+      const lastYear = subYears(new Date(), 1);
+      return { from: startOfYear(lastYear), to: endOfYear(lastYear) };
+    },
   },
 ]);
 

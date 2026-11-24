@@ -14,6 +14,7 @@ import BudgetAssignmentsModel from './budget-assignments.model';
 import BudgetLineCategoriesModel from './budget-line-categories.model';
 import BudgetLineGoalsModel from './budget-line-goals.model';
 import BudgetLineGroupsModel from './budget-line-groups.model';
+import BudgetLineNotesModel from './budget-line-notes.model';
 import BudgetLinesModel from './budget-lines.model';
 import BudgetPeriodsModel from './budget-periods.model';
 import BudgetPlanAccountsModel from './budget-plan-accounts.model';
@@ -173,6 +174,7 @@ const models = [
   BudgetLineGoalsModel,
   BudgetPeriodsModel,
   BudgetAssignmentsModel,
+  BudgetLineNotesModel,
   BudgetPlanAccountsModel,
   GoalsModel,
   GoalAccountsModel,

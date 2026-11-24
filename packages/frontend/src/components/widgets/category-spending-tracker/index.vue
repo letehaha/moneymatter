@@ -12,6 +12,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import IncludePlannedMenuItem from '@/components/widgets/components/include-planned-menu-item.vue';
 import { useIncludePlannedConfig, useWidgetConfigFlag } from '@/components/widgets/use-include-planned-config';
 import { useFormatCurrency } from '@/composable/formatters';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useCategoriesStore } from '@/stores/categories/categories';
@@ -250,7 +251,7 @@ const getAmountClass = ({ netAmount }: { netAmount: number }) => {
 
 const formatAmount = ({ netAmount }: { netAmount: number }) => {
   if (netAmount > 0) return formatBaseCurrency(netAmount);
-  if (netAmount < 0) return `-${formatBaseCurrency(Math.abs(netAmount))}`;
+  if (netAmount < 0) return maskAmountText({ text: `-${formatBaseCurrency(Math.abs(netAmount))}` });
   return formatBaseCurrency(0);
 };
 

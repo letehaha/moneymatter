@@ -35,6 +35,7 @@
 <script setup lang="ts">
 import { usePortfolioSummaries } from '@/composable/data-queries/portfolio-summary';
 import { useFormatCurrency } from '@/composable/formatters';
+import { maskAmountText } from '@/js/helpers/formatters';
 import type { UserCurrencyModel } from '@bt/shared/types';
 import { TrendingDownIcon, TrendingUpIcon } from '@lucide/vue';
 import { computed } from 'vue';
@@ -82,7 +83,9 @@ const unrealizedGainPercent = computed(() => (summary.value ? Number(summary.val
 const unrealizedGainFormatted = computed(() => {
   if (!summary.value) return '';
   const sign = unrealizedGainValue.value >= 0 ? '+' : '';
-  return `${sign}${formatCurrency({ amount: unrealizedGainValue.value, currencyCode: summary.value.currencyCode })}`;
+  return maskAmountText({
+    text: `${sign}${formatCurrency({ amount: unrealizedGainValue.value, currencyCode: summary.value.currencyCode })}`,
+  });
 });
 
 const unrealizedPercentFormatted = computed(() => {

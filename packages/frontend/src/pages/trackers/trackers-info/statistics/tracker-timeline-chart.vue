@@ -67,6 +67,7 @@ import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import { TRACKER_LIMIT_KINDS, type TrackerSpendingGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
@@ -322,5 +323,5 @@ const renderChart = () => {
 
 useResizeObserver(containerRef, renderChart);
 
-watch([() => props, currentTheme], renderChart, { deep: true });
+watch([() => props, currentTheme, areAmountsHidden], renderChart, { deep: true });
 </script>

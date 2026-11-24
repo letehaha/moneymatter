@@ -2,6 +2,7 @@ import { BUDGET_PLAN_TRASH_RETENTION_DAYS } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
+import BudgetLineNotes from '@models/budget-line-notes.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
@@ -31,7 +32,15 @@ describe('Budget plans purge cron', () => {
       payload: { scope: 'from_here', amount: 100 },
       raw: true,
     });
+    await helpers.setBudgetLineNote({
+      planId,
+      periodId: period!.id,
+      lineId: line.id,
+      payload: { note: 'Purge note' },
+      raw: true,
+    });
     expect(await BudgetAssignments.count({ where: { lineId: line.id } })).toBe(1);
+    expect(await BudgetLineNotes.count({ where: { lineId: line.id } })).toBe(1);
     await helpers.deleteBudgetPlan({ planId });
 
     const fresh = await helpers.createBudgetPlan({ raw: true });
@@ -59,6 +68,7 @@ describe('Budget plans purge cron', () => {
     expect(await BudgetPeriods.count({ where: { planId } })).toBe(0);
     expect(await BudgetLineCategories.count({ where: { lineId: line.id } })).toBe(0);
     expect(await BudgetAssignments.count({ where: { lineId: line.id } })).toBe(0);
+    expect(await BudgetLineNotes.count({ where: { lineId: line.id } })).toBe(0);
     expect(await BudgetPlans.findByPk(fresh.plan.id, { paranoid: false })).not.toBeNull();
     expect(await BudgetPlans.findByPk(insideWindow.plan.id, { paranoid: false })).not.toBeNull();
     expect(await BudgetPlans.findByPk(active.plan.id)).not.toBeNull();

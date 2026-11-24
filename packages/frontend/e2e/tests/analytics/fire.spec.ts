@@ -1239,7 +1239,7 @@ test.describe('FIRE planner failures and callouts', () => {
     await signUpWithHistory({ page, prefix: 'fire-callout', monthlyIncome: MONTHLY_INCOME });
     await openFirePage({ page, fire: { returnIndicatorId: 'custom', customReturnPct: null }, others: false });
     const main = page.locator('main');
-    const hide = main.getByRole('button', { name: /^hide/i });
+    const hide = main.getByRole('button', { name: /^hide warning$/i });
     const dialog = page.getByRole('alertdialog');
 
     await expect(hide).toBeVisible({ timeout: 15_000 });

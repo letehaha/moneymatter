@@ -62,7 +62,7 @@ import AssignPopover from './components/assign-popover.vue';
 import LineDialog from './components/line-dialog.vue';
 import ManageLayoutDialog from './components/manage-layout-dialog.vue';
 import PeriodPicker from './components/period-picker.vue';
-import LineActionsMenu from './components/line-actions-menu.vue';
+import LineActionsMenu, { type LineAction } from './components/line-actions-menu.vue';
 import PlanSettingsSheet from './components/plan-settings-sheet.vue';
 import { ROW_BAR_MODES, type RowBarMode, useGridDisplayOptions } from './composables/use-grid-display-options';
 import { useLineSelection } from './composables/use-line-selection';
@@ -74,6 +74,7 @@ import {
   groupLines,
   headerStats,
   lineIdsWithHistory,
+  movableLines,
   periodProgress,
   sumLineTotals,
 } from './helpers';
@@ -238,6 +239,13 @@ const goalUnit = computed(() =>
 );
 
 const archivedLines = computed(() => (plan.value?.lines ?? []).filter((line) => line.activeUntil !== null));
+const canMoveLines = computed(
+  () =>
+    movableLines({
+      lines: view.value?.lines ?? [],
+      archivedIds: new Set(archivedLines.value.map((line) => line.id)),
+    }).length > 1,
+);
 
 const liveGroupIds = computed(
   () =>
@@ -307,8 +315,8 @@ watch(isPanelSheetOpen, (open) => {
 const selectedLine = computed(() => (selectedLines.value.length === 1 ? selectedLines.value[0] : undefined));
 
 const gridRef = ref<InstanceType<typeof BudgetLinesGrid> | null>(null);
-// Archive and delete confirm in their own dialog, so the drawer steps aside for them.
-const pickDrawerLineAction = ({ action }: { action: 'edit' | 'archive' | 'delete' }) => {
+// Every action but edit opens its own dialog, so the drawer steps aside for them.
+const pickDrawerLineAction = ({ action }: { action: LineAction }) => {
   const line = selectedLine.value;
   if (!line) return;
   if (action !== 'edit') isPanelSheetOpen.value = false;
@@ -562,6 +570,7 @@ const openLineDialog = ({
               :view="view"
               :previous-period="previousPeriod"
               :zero-sum="plan?.plan.zeroSum ?? false"
+              @add-line="openLineDialog({})"
             />
             <dl
               v-if="overviewStats"
@@ -648,6 +657,7 @@ const openLineDialog = ({
               :view="view"
               :previous-period="previousPeriod"
               :zero-sum="plan?.plan.zeroSum ?? false"
+              @add-line="openLineDialog({})"
             />
 
             <MobileToolbar v-if="isNarrow" />
@@ -882,6 +892,7 @@ const openLineDialog = ({
                   </AssignPopover>
                   <LineActionsMenu
                     v-if="!archivedLines.some((line) => line.id === selectedLine?.lineId)"
+                    :can-move="canMoveLines"
                     @pick="(action) => pickDrawerLineAction({ action })"
                   />
                 </template>

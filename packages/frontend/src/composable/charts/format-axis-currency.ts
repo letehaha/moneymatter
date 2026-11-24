@@ -1,3 +1,5 @@
+import { maskAmountText } from '@/js/helpers/formatters';
+
 /**
  * Compact currency formatter for chart axes: abbreviates thousands as `K`
  * and millions as `M` with one decimal. Below 1000 the value is rendered
@@ -5,11 +7,11 @@
  */
 export const formatAxisCurrency = ({ value, symbol }: { value: number; symbol: string }): string => {
   const absValue = Math.abs(value);
+  let text = `${symbol}${value}`;
   if (absValue >= 1_000_000) {
-    return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
+    text = `${symbol}${(value / 1_000_000).toFixed(1)}M`;
+  } else if (absValue >= 1_000) {
+    text = `${symbol}${(value / 1_000).toFixed(0)}K`;
   }
-  if (absValue >= 1_000) {
-    return `${symbol}${(value / 1_000).toFixed(0)}K`;
-  }
-  return `${symbol}${value}`;
+  return maskAmountText({ text });
 };

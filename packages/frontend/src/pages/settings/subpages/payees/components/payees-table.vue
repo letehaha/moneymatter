@@ -278,6 +278,7 @@ import { ArrowDownIcon, ArrowUpIcon, InfoIcon, PackageOpenIcon } from '@lucide/v
 import { useElementSize, useLocalStorage } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { computed, ref, shallowReactive, watch } from 'vue';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
 
@@ -420,12 +421,14 @@ const getRowKey = (index: number) => list.value[index]?.id ?? `pending-${index}`
 const { data: baseCurrency } = useBaseCurrency();
 const refCurrencyCode = computed(() => baseCurrency.value?.currencyCode ?? NET_FLOW_FALLBACK_CURRENCY);
 const formatNetFlow = (val: number) =>
-  new Intl.NumberFormat(locale.value, {
-    style: 'currency',
-    currency: refCurrencyCode.value,
-    signDisplay: 'always',
-    maximumFractionDigits: 0,
-  }).format(val);
+  maskAmountText({
+    text: new Intl.NumberFormat(locale.value, {
+      style: 'currency',
+      currency: refCurrencyCode.value,
+      signDisplay: 'always',
+      maximumFractionDigits: 0,
+    }).format(val),
+  });
 
 const netFlowClass = (val: number) => {
   if (val > 0) return 'text-app-income-color';

@@ -8,6 +8,7 @@ import {
   isIntlCurrencyCode,
   resolveCurrencyDisplay,
 } from '@/js/helpers';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { useCurrenciesStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
@@ -65,10 +66,14 @@ export const useFormatCurrency = () => {
   /** Decimals the base currency's amounts (budgets, reference values) are stored with. */
   const baseCurrencyDecimals = computed(() => getCurrencyDecimals({ code: baseCurrency.value?.currency?.code }));
 
-  const formatBaseCurrency = (amount: number, { fractionDigits }: { fractionDigits?: number } = {}) =>
+  const formatBaseCurrency = (
+    amount: number,
+    { fractionDigits, revealed }: { fractionDigits?: number; revealed?: boolean } = {},
+  ) =>
     formatUIAmount(amount, {
       currency: baseCurrency.value?.currency?.code,
       fractionDigits,
+      revealed,
     });
 
   const formatWholeBaseCurrency = (amount: number) => formatBaseCurrency(amount, { fractionDigits: 0 });
@@ -132,8 +137,8 @@ export const useFormatCurrency = () => {
   /** `formatWholeOrCompactAmount` with an explicit sign: "+₴500", "−₴1.2k", "₴0". */
   const formatSignedWholeOrCompactAmount = ({ amount, currencyCode }: { amount: number; currencyCode: string }) => {
     const formatted = formatWholeOrCompactAmount({ amount: Math.abs(amount), currencyCode });
-    if (amount > 0) return `+${formatted}`;
-    if (amount < 0) return `−${formatted}`;
+    if (amount > 0) return maskAmountText({ text: `+${formatted}` });
+    if (amount < 0) return maskAmountText({ text: `−${formatted}` });
     return formatted;
   };
 

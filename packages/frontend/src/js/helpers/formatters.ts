@@ -1,4 +1,5 @@
 import type { CurrencyDisplayPreference, CurrencyMeta } from '@bt/shared/types';
+import { useLocalStorage } from '@vueuse/core';
 import { ref } from 'vue';
 
 import { isIntlCurrencyCode, resolveCurrencyDisplay } from './currency-decimals';
@@ -7,7 +8,13 @@ export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
 // Module-level so plain helpers, not just composables, follow the user's setting.
 export const currencyDisplayPreference = ref<CurrencyDisplayPreference>('symbol');
+export const areAmountsHidden = useLocalStorage('amounts:hidden', false);
 const numberFormatLocale = ref('en-US');
+
+const HIDDEN_AMOUNT = '••••';
+
+/** Already-formatted money text, or `••••` while amounts are hidden. */
+export const maskAmountText = ({ text }: { text: string }): string => (areAmountsHidden.value ? HIDDEN_AMOUNT : text);
 
 export function toLocalNumber(
   value: string | number | undefined | null,
@@ -57,6 +64,11 @@ const getCustomFractionDigits = ({
   };
 };
 
+type RevealOption = {
+  /** Shown even while amounts are hidden: what the user is typing and its previews. */
+  revealed?: boolean;
+};
+
 function toLocalFiatCurrency(
   value: string | number | undefined | null,
   options: Intl.NumberFormatOptions & {
@@ -66,10 +78,12 @@ function toLocalFiatCurrency(
     suffix?: string;
     /** Every digit a custom currency carries instead of its shortened display. */
     fullPrecision?: boolean;
-  } = {},
+  } & RevealOption = {},
 ): string {
+  const { revealed, ...restOptions } = options;
+  if (areAmountsHidden.value && !revealed && value !== undefined && value !== null) return HIDDEN_AMOUNT;
   if (value !== undefined && value !== null) {
-    const { meta, suffix = '', fullPrecision, ...intlOptions } = options;
+    const { meta, suffix = '', fullPrecision, ...intlOptions } = restOptions;
     const currency = intlOptions.currency || 'USD';
     const display = resolveCurrencyDisplay({ code: currency, meta });
     const currencyDigits = display.decimals;
@@ -114,9 +128,10 @@ export function toLocalCurrencyNumber(
     locale?: Intl.LocalesArgument;
     /** Every digit a custom currency carries instead of its shortened display. */
     fullPrecision?: boolean;
-  } = {},
+  } & RevealOption = {},
 ): string {
-  const { currency, meta, fullPrecision, ...numberOptions } = options;
+  const { currency, meta, fullPrecision, revealed, ...numberOptions } = options;
+  if (areAmountsHidden.value && !revealed && value !== undefined && value !== null) return HIDDEN_AMOUNT;
   const code = currency || 'USD';
   const display = resolveCurrencyDisplay({ code, meta });
   const digits = rendersAsPlainNumber({ code, display })
@@ -284,7 +299,8 @@ export function formatUIAmount(
     fractionDigits,
     meta,
     fullPrecision,
-  }: {
+    revealed,
+  }: RevealOption & {
     currency?: Intl.NumberFormatOptions['currency'];
     fractionDigits?: number;
     /** The owner's definition of the currency; pass the account's `currencyMeta` for its amounts. */
@@ -300,6 +316,7 @@ export function formatUIAmount(
     currency,
     meta,
     fullPrecision,
+    revealed,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });

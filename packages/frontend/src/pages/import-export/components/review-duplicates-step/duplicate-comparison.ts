@@ -16,6 +16,7 @@ export const formatDuplicateAmount = ({ amount, currencyCode }: { amount: number
     locale: 'en-US',
     useGrouping: false,
     fullPrecision: true,
+    revealed: true,
   }).replace(/^-(?=[0.]+$)/, '');
 
 /**

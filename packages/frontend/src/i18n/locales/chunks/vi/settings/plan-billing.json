@@ -119,6 +119,7 @@
             "bankProviders": "Kết nối ngân hàng (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
             "ourAiKey": "Tính năng AI dùng khóa API của chúng tôi, có giới hạn sử dụng hợp lý",
             "firePlanner": "Công cụ lập kế hoạch FIRE",
+            "customCurrencies": "Custom currencies",
             "seats": "5 thành viên hộ gia đình"
           }
         },

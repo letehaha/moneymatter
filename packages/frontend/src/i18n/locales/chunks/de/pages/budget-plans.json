@@ -32,6 +32,16 @@
       "deleted": "Budget in den Papierkorb verschoben",
       "deleteError": "Budget konnte nicht in den Papierkorb verschoben werden"
     },
+    "carryReset": {
+      "action": "Reset rollover",
+      "undo": "Undo reset",
+      "confirmTitle": "Reset rollover for this period?",
+      "confirmDescription": "Every line starts this period with only what you assign. Leftovers and overspending from earlier periods don't carry in. You can undo this.",
+      "confirm": "Reset",
+      "resetDone": "Rollover reset",
+      "undone": "Reset undone",
+      "error": "Couldn't update the rollover"
+    },
     "lineCount": "{count} Zeile | {count} Zeilen",
     "trialNotice": {
       "active": "Testphase für Early Adopter: Noch {count} Tag Budgetierung verbleibend | Testphase für Early Adopter: Noch {count} Tage Budgetierung verbleibend",
@@ -340,7 +350,7 @@
         "outsideSpending": "Ausgaben außerhalb deiner Zeilen",
         "fromLines": "Aus Zeilen (Übertrag zurückerstattet / Mehrausgaben gedeckt)",
         "assigned": "In diesem Zeitraum zugewiesen",
-        "cashHint": "Bargeld auf den Konten des Plans, abzüglich Kreditlimits.",
+        "cashHint": "Guthaben auf den Konten des Plans. Kreditlimits werden abgezogen, wenn \"Kreditlimits im Kontostand berücksichtigen\" aktiviert ist.",
         "inLinesHint": "Alles, was sich derzeit in deinen Zeilen befindet.",
         "driftHint": "Kursbewegungen und Salden, die nicht durch Transaktionen erklärt werden.",
         "committedLaterHint": "Bereits in einem späteren Zeitraum zugewiesen.",
@@ -377,8 +387,8 @@
       "pace": "Ausgabentempo",
       "spent": "Ausgegeben",
       "elapsed": "Vergangene Zeit",
-      "usuallyByToday": "Usually by today",
-      "slowDown": "Slow down to ~{perDay}/day to make it last",
+      "usuallyByToday": "Üblicherweise bis heute",
+      "slowDown": "Reduziere auf ~{perDay}/Tag, damit es reicht",
       "spentOfTotal": "{spent} von {total}",
       "daysLeft": "Noch {n} T.",
       "scheduled": "Geplant",
@@ -398,7 +408,37 @@
       },
       "nextPeriodCoverage": "Abdeckung des nächsten Zeitraums",
       "goals": "Ziele",
-      "goal": "Ziel"
+      "goal": "Ziel",
+      "lineTransactions": {
+        "title": "Transactions",
+        "empty": "No transactions in this period",
+        "more": "{count} more",
+        "seeAll": "See all in Transactions"
+      },
+      "averages": {
+        "title": "Averages",
+        "setAssigned": "Set Assigned to",
+        "now": "now {amount}",
+        "lastAssigned": "Last assigned",
+        "lastSpent": "Last spent",
+        "avgAssigned": "Avg assigned",
+        "avgSpent": "Avg spent",
+        "noChange": "no change",
+        "hint": "Avg of the last period · sets Assigned for this period only | Avg of last {count} periods · sets Assigned for this period only"
+      },
+      "notCovered": {
+        "title": "Not covered",
+        "count": "{count} not covered | {count} not covered",
+        "covered": "Covered",
+        "pill": "Not covered · {amount} short",
+        "shortForScheduled": "{amount} short for what's still scheduled",
+        "assign": "Assign {amount}"
+      },
+      "arrange": {
+        "title": "Arrange sections",
+        "description": "Drag to reorder the panel sections, or switch one off to hide it. Some sections only appear for a selected line or for the period overview.",
+        "reset": "Reset to default"
+      }
     },
     "groups": {
       "headerLabel": "Zeilengruppe",
@@ -434,10 +474,10 @@
       "layoutError": "Layout konnte nicht gespeichert werden"
     },
     "pace": {
-      "aheadUsual": "{amount} ahead of usual pace",
-      "aheadEven": "{amount} ahead of pace",
-      "aheadUsualPerDay": "{amount} ahead of usual pace · ~{perDay}/day left for {count} day | {amount} ahead of usual pace · ~{perDay}/day left for {count} days",
-      "aheadEvenPerDay": "{amount} ahead of pace · ~{perDay}/day left for {count} day | {amount} ahead of pace · ~{perDay}/day left for {count} days"
+      "aheadUsual": "{amount} über dem üblichen Schnitt",
+      "aheadEven": "{amount} über dem Tempo",
+      "aheadUsualPerDay": "{amount} über dem üblichen Tempo · noch ~{perDay}/Tag für {count} Tag | {amount} über dem üblichen Tempo · noch ~{perDay}/Tag für {count} Tage",
+      "aheadEvenPerDay": "{amount} über dem Tempo · noch ~{perDay}/Tag für {count} Tag | {amount} über dem Tempo · noch ~{perDay}/Tag für {count} Tage"
     },
     "options": {
       "title": "Optionen",
@@ -448,7 +488,7 @@
       "rowBarCombined": "Kombinierter Balken",
       "rowBarSplit": "Geteilte Balken",
       "rowBarNone": "Kein Balken",
-      "paceHint": "Pace hint"
+      "paceHint": "Tempo-Hinweis"
     },
     "goals": {
       "askHint": "Weise hier diesen Betrag zu, um auf Kurs zu bleiben.",

@@ -7,22 +7,24 @@ import { Label } from '@/components/lib/ui/label';
 import { useFormatCurrency } from '@/composable/formatters';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { Separator } from '@/components/lib/ui/separator';
+import { trimAmountNoise } from '@/js/helpers/currency-decimals';
 import {
   type BudgetAssignmentScope,
   type BudgetPlanCarryPolicy,
   type BudgetPlanPeriodViewLine,
   type SetBudgetPlanAssignmentPayload,
 } from '@bt/shared/types';
+import { ArrowRightIcon } from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { useSetAssignment } from '../composables/use-set-assignment';
-import { CARRY_POLICY_OPTIONS, buildAssignmentPayload, defaultAssignmentScope } from '../helpers';
+import { CARRY_POLICY_OPTIONS, amountToneClass, buildAssignmentPayload, defaultAssignmentScope } from '../helpers';
 
 const props = defineProps<{ planId: string; periodId: string; line: BudgetPlanPeriodViewLine }>();
 
 const { t } = useI18n();
-const { baseCurrencyDecimals } = useFormatCurrency();
+const { baseCurrencyDecimals, formatBaseCurrency } = useFormatCurrency();
 
 const isOpen = ref(false);
 const contentRef = ref<HTMLElement | null>(null);
@@ -44,6 +46,15 @@ watch(isOpen, async (open) => {
   await nextTick();
   contentRef.value?.querySelector('input')?.focus();
 });
+
+const availableAfter = computed(() =>
+  amount.value === null || amount.value === props.line.assigned
+    ? null
+    : trimAmountNoise({
+        value: props.line.available + amount.value - props.line.assigned,
+        decimals: baseCurrencyDecimals.value,
+      }),
+);
 
 const { isPending, mutate } = useSetAssignment({
   onSuccess: () => {
@@ -88,6 +99,17 @@ const resetToBaseline = () => submit({ payload: { scope: 'this_period', amount: 
         @update:model-value="(value) => (amount = value)"
         @keydown.enter.prevent="save"
       />
+
+      <div v-if="availableAfter !== null" class="bg-muted/50 flex justify-between gap-3 rounded-md p-3 text-sm">
+        <span class="text-muted-foreground min-w-0 truncate">
+          {{ $t('budgetPlans.pool.line.previewAvailable', { line: line.name }) }}
+        </span>
+        <span class="flex shrink-0 items-center gap-1 tabular-nums">
+          {{ formatBaseCurrency(line.available) }}
+          <ArrowRightIcon class="text-muted-foreground size-3.5" />
+          <span :class="amountToneClass({ amount: availableAfter })">{{ formatBaseCurrency(availableAfter) }}</span>
+        </span>
+      </div>
 
       <div class="grid gap-1.5">
         <Label>{{ $t('budgetPlans.assign.scopeLabel') }}</Label>

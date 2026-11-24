@@ -32,6 +32,16 @@
       "deleted": "Budget moved to trash",
       "deleteError": "Couldn't move the budget to trash"
     },
+    "carryReset": {
+      "action": "Reset rollover",
+      "undo": "Undo reset",
+      "confirmTitle": "Reset rollover for this period?",
+      "confirmDescription": "Every line starts this period with only what you assign. Leftovers and overspending from earlier periods don't carry in. You can undo this.",
+      "confirm": "Reset",
+      "resetDone": "Rollover reset",
+      "undone": "Reset undone",
+      "error": "Couldn't update the rollover"
+    },
     "lineCount": "{count} line | {count} lines",
     "trialNotice": {
       "active": "Early adopter trial: {count} day of budgeting left | Early adopter trial: {count} days of budgeting left",
@@ -397,8 +407,38 @@
         "averageUsed": "avg {percent}% used"
       },
       "nextPeriodCoverage": "Next period coverage",
-      "goals": "Goals",
-      "goal": "Goal"
+      "goals": "Цели",
+      "goal": "Goal",
+      "lineTransactions": {
+        "title": "Transactions",
+        "empty": "No transactions in this period",
+        "more": "{count} more",
+        "seeAll": "See all in Transactions"
+      },
+      "averages": {
+        "title": "Averages",
+        "setAssigned": "Set Assigned to",
+        "now": "now {amount}",
+        "lastAssigned": "Last assigned",
+        "lastSpent": "Last spent",
+        "avgAssigned": "Avg assigned",
+        "avgSpent": "Avg spent",
+        "noChange": "no change",
+        "hint": "Avg of the last period · sets Assigned for this period only | Avg of last {count} periods · sets Assigned for this period only"
+      },
+      "notCovered": {
+        "title": "Not covered",
+        "count": "{count} not covered | {count} not covered",
+        "covered": "Covered",
+        "pill": "Not covered · {amount} short",
+        "shortForScheduled": "{amount} short for what's still scheduled",
+        "assign": "Assign {amount}"
+      },
+      "arrange": {
+        "title": "Arrange sections",
+        "description": "Drag to reorder the panel sections, or switch one off to hide it. Some sections only appear for a selected line or for the period overview.",
+        "reset": "Reset to default"
+      }
     },
     "groups": {
       "headerLabel": "Line group",
@@ -461,7 +501,7 @@
         "progress": "In progress"
       },
       "noGoal": "No goal set",
-      "create": "Create goal",
+      "create": "Создать цель",
       "title": {
         "budget_another": "Budget {amount}",
         "refill_up_to": "Refill up to {amount}",
@@ -472,12 +512,12 @@
       "toGo": "{amount} to go",
       "assignAsk": "Budget {amount}",
       "unsnooze": "Resume",
-      "edit": "Edit goal",
-      "delete": "Delete goal",
-      "deleteTitle": "Delete goal",
+      "edit": "Изменить цель",
+      "delete": "Удалить цель",
+      "deleteTitle": "Удалить цель",
       "deleteDescription": "This will remove the goal from {line}. Your assigned amounts will not be affected.",
-      "deleted": "Goal deleted",
-      "deleteError": "Couldn't delete the goal",
+      "deleted": "Цель удалена",
+      "deleteError": "Не удалось удалить цель",
       "snoozeError": "Couldn't snooze the goal",
       "frequencyLabel": "Frequency",
       "frequency": {

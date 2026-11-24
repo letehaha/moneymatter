@@ -65,6 +65,7 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
 import type { Period } from '@/composable/use-period-navigation';
+import { areAmountsHidden } from '@/js/helpers/formatters';
 import type { CashFlowPeriodData } from '@bt/shared/types';
 import * as d3 from 'd3';
 import { format as formatISODate, parseISO } from 'date-fns';
@@ -519,6 +520,7 @@ watch(
     () => props.highlightedPeriod,
     locale,
     currentTheme,
+    areAmountsHidden,
   ],
   renderChart,
   { deep: true },

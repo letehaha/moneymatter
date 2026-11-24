@@ -17,10 +17,12 @@
               'text-app-expense-color': !isPositive,
             }"
           >
-            {{ isPositive ? '+' : ''
-            }}{{ formatLargeNumber(deltaAbsolute, { isFiat: true, currency: currencyCode }) }} ({{
-              isPositive ? '+' : ''
-            }}{{ deltaPercent.toFixed(1) }}%)
+            {{
+              maskAmountText({
+                text: `${isPositive ? '+' : ''}${formatLargeNumber(deltaAbsolute, { isFiat: true, currency: currencyCode })}`,
+              })
+            }}
+            ({{ isPositive ? '+' : '' }}{{ deltaPercent.toFixed(1) }}%)
           </div>
         </div>
         <button
@@ -46,8 +48,11 @@
                 'text-muted-foreground': accountsDelta === 0,
               }"
             >
-              {{ accountsDelta > 0 ? '+' : ''
-              }}{{ formatLargeNumber(accountsDelta, { isFiat: true, currency: currencyCode }) }}
+              {{
+                maskAmountText({
+                  text: `${accountsDelta > 0 ? '+' : ''}${formatLargeNumber(accountsDelta, { isFiat: true, currency: currencyCode })}`,
+                })
+              }}
             </span>
           </div>
           <div class="mt-1 flex justify-between">
@@ -61,8 +66,11 @@
                 'text-muted-foreground': portfoliosDelta === 0,
               }"
             >
-              {{ portfoliosDelta > 0 ? '+' : ''
-              }}{{ formatLargeNumber(portfoliosDelta, { isFiat: true, currency: currencyCode }) }}
+              {{
+                maskAmountText({
+                  text: `${portfoliosDelta > 0 ? '+' : ''}${formatLargeNumber(portfoliosDelta, { isFiat: true, currency: currencyCode })}`,
+                })
+              }}
             </span>
           </div>
         </div>
@@ -102,6 +110,7 @@
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
 import TransactionRecordSkeleton from '@/components/transactions-list/transaction-record-skeleton.vue';
 import { formatLargeNumber } from '@/js/helpers';
+import { maskAmountText } from '@/js/helpers/formatters';
 import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,

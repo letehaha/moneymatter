@@ -130,8 +130,8 @@
         </div>
       </div>
 
-      <MoneyFlowList v-if="isCompact" :flow="flow" />
-      <MoneyFlowChart v-else :flow="flow" />
+      <MoneyFlowList v-if="isCompact" :flow="flow" v-bind="linkScope" />
+      <MoneyFlowChart v-else :flow="flow" v-bind="linkScope" />
     </template>
 
     <div v-else class="flex h-100 items-center justify-center">
@@ -260,6 +260,14 @@ const flow = computed(() =>
       })
     : undefined,
 );
+
+const linkScope = computed(() => ({
+  period: period.value,
+  sourceLevel: sourceLevel.value,
+  expenseLevel: expenseLevel.value,
+  taxCategoryIds: userSettings.value?.taxCategoryIds,
+  savingsCategoryIds: userSettings.value?.savingsCategoryIds,
+}));
 
 const { displayValue: animatedIncome } = useAnimatedNumber({ value: computed(() => flow.value?.income ?? 0) });
 const { displayValue: animatedExpenses } = useAnimatedNumber({ value: computed(() => flow.value?.expenses ?? 0) });

@@ -350,6 +350,7 @@ import { ApiErrorResponseError, getPayeeNameConflict, isApiErrorWithCode } from 
 import { ChevronLeftIcon, InfoIcon, PencilIcon, PlusIcon, TagsIcon, Trash2Icon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import { maskAmountText } from '@/js/helpers/formatters';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
@@ -491,12 +492,14 @@ async function handleApplyTagsToExisting() {
 const NET_FLOW_FALLBACK_CURRENCY = 'USD';
 const { data: baseCurrency } = useBaseCurrency();
 const formatNetFlow = (val: number) =>
-  new Intl.NumberFormat(locale.value, {
-    style: 'currency',
-    currency: baseCurrency.value?.currencyCode ?? NET_FLOW_FALLBACK_CURRENCY,
-    signDisplay: 'always',
-    maximumFractionDigits: 0,
-  }).format(val);
+  maskAmountText({
+    text: new Intl.NumberFormat(locale.value, {
+      style: 'currency',
+      currency: baseCurrency.value?.currencyCode ?? NET_FLOW_FALLBACK_CURRENCY,
+      signDisplay: 'always',
+      maximumFractionDigits: 0,
+    }).format(val),
+  });
 
 const netFlowToneClass = (val: number) => {
   if (val > 0) return 'text-app-income-color';

@@ -11,7 +11,10 @@
           "thisMonth": "Цей місяць",
           "last3Months": "Останні 3 місяці",
           "last6Months": "Останні 6 місяців",
-          "last12Months": "Останні 12 місяців"
+          "last12Months": "Останні 12 місяців",
+          "lastMonth": "Минулий місяць",
+          "thisYear": "Цей рік",
+          "lastYear": "Минулий рік"
         }
       },
       "transactionType": {

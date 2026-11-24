@@ -331,8 +331,8 @@
         "disconnectFailed": "Trennen der Integration fehlgeschlagen",
         "connectAccountsSuccess": "Konten verbunden. Transaktionen werden im Hintergrund synchronisiert.",
         "connectAccountsFailed": "Verbinden der Konten fehlgeschlagen",
-        "updateNameSuccess": "Verbindungsname erfolgreich aktualisiert",
-        "updateNameFailed": "Aktualisierung des Verbindungsnamens fehlgeschlagen",
+        "updateNameSuccess": "Verbindung erfolgreich aktualisiert",
+        "updateNameFailed": "Verbindung konnte nicht aktualisiert werden",
         "connectionEstablished": "Bankverbindung erfolgreich!"
       },
       "details": {
@@ -373,7 +373,7 @@
         },
         "actions": {
           "openExternalUrl": "Open external link",
-          "renameButton": "Verbindung umbenennen",
+          "renameButton": "Verbindung bearbeiten",
           "disconnectButton": "Integration trennen",
           "manage": "Verwalten"
         },
@@ -429,8 +429,8 @@
           "disconnect": "Trennen"
         },
         "editName": {
-          "title": "Verbindungsname bearbeiten",
-          "description": "Gib deiner Verbindung einen benutzerdefinierten Namen, um sie leicht zu identifizieren.",
+          "title": "Verbindung bearbeiten",
+          "description": "Aktualisiere den Anzeigenamen oder den Portal-Link des Instituts für diese Verbindung.",
           "label": "Verbindungsname",
           "externalUrlLabel": "External URL (optional)",
           "externalUrlPlaceholder": "https://bridge.example.com",
