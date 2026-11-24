@@ -27,7 +27,7 @@
         },
         "userAlreadyExists": {
           "signIn": "يوجد حساب مرتبط بهذا البريد الإلكتروني بالفعل",
-          "signUp": "An account with this email already exists",
+          "signUp": "يوجد حساب مرتبط بهذا البريد الإلكتروني بالفعل",
           "link": "هذا الحساب مرتبط بالفعل بمستخدم آخر"
         },
         "accountNotLinked": {
@@ -38,13 +38,13 @@
         "genericError": {
           "signIn": "فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى.",
           "signUp": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
-          "link": "Failed to link account. Please try again."
+          "link": "فشل ربط الحساب. يرجى المحاولة مرة اخرى."
         },
         "unauthorizedClient": "هذا التطبيق غير مصرح له باستخدام طريقة المصادقة هذه",
         "temporarilyUnavailable": "خدمة المصادقة غير متوفرة مؤقتاً. الرجاء المحاولة لاحقاً.",
-        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
-        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
-        "emailNotVerified": "Check your email to verify your address, then sign in again."
+        "unableToLinkAccount": "لم نتمكن من ربط هذا الحساب لأن هذا الخادم لا يتعامل مع البريد الإلكتروني لمقدم الخدمة. اتصل بالمسؤول.",
+        "emailDoesNotMatch": "البريد الإلكتروني على حساب المزود لا يتطابق مع البريد الإلكتروني للحساب. استخدم نفس البريد الإلكتروني الخاص بالمزود.",
+        "emailNotVerified": "تحقق من بريدك الإلكتروني للتحقق من عنوانك، ثم قم بتسجيل الدخول مرة أخرى."
       }
     }
   }

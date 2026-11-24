@@ -184,7 +184,7 @@
         "defaultPaymentTypeUpdateError": "Predvolený spôsob platby sa nepodarilo aktualizovať",
         "externalUrl": "Externá URL:",
         "externalUrlPlaceholder": "https://banka.priklad.sk",
-        "externalUrlNotSet": "Nenastavené",
+        "externalUrlNotSet": "Nenastavená",
         "editExternalUrl": "Upraviť externú URL",
         "externalUrlUpdateSuccess": "Externá URL aktualizovaná",
         "externalUrlUpdateError": "Aktualizácia externej URL zlyhala",

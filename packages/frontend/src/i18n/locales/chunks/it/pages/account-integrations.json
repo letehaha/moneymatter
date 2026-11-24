@@ -331,8 +331,8 @@
         "disconnectFailed": "Disconnessione dell'integrazione non riuscita",
         "connectAccountsSuccess": "Conti collegati. Le transazioni vengono sincronizzate in background.",
         "connectAccountsFailed": "Collegamento dei conti non riuscito",
-        "updateNameSuccess": "Nome della connessione aggiornato con successo",
-        "updateNameFailed": "Aggiornamento del nome della connessione non riuscito",
+        "updateNameSuccess": "Connessione aggiornata con successo",
+        "updateNameFailed": "Aggiornamento della connessione non riuscito",
         "connectionEstablished": "Connessione bancaria stabilita con successo!"
       },
       "details": {
@@ -373,7 +373,7 @@
         },
         "actions": {
           "openExternalUrl": "Open external link",
-          "renameButton": "Rinomina connessione",
+          "renameButton": "Modifica connessione",
           "disconnectButton": "Disconnetti integrazione",
           "manage": "Gestisci"
         },
@@ -429,8 +429,8 @@
           "disconnect": "Disconnetti"
         },
         "editName": {
-          "title": "Modifica nome della connessione",
-          "description": "Assegnare un nome personalizzato alla connessione per identificarla facilmente.",
+          "title": "Modifica connessione",
+          "description": "Aggiornare il nome visualizzato o il link al portale dell'istituto per questa connessione.",
           "label": "Nome della connessione",
           "externalUrlLabel": "External URL (optional)",
           "externalUrlPlaceholder": "https://bridge.example.com",

@@ -268,6 +268,7 @@
             "foreignReferenceDropped": "{count} ligne de « {table} » dont la colonne « {column} » référençait des données externes à cette sauvegarde a été supprimée. | {count} lignes de « {table} » dont la colonne « {column} » référençait des données externes à cette sauvegarde ont été supprimées.",
             "invalidRowDropped": "{count} ligne non valide de « {table} » a été supprimée. | {count} lignes non valides de « {table} » ont été supprimées.",
             "foreignReferenceNulled": "La colonne « {column} » de {count} ligne de « {table} » référençant des données externes à cette sauvegarde a été effacée. | La colonne « {column} » de {count} lignes de « {table} » référençant des données externes à cette sauvegarde a été effacée.",
+            "rateSourceHeadersDropped": "An HTTP rate source was restored without its request headers, which never travel in a backup. Enter them again in that currency's rate source settings, or its rates stop updating. | {count} HTTP rate sources were restored without their request headers, which never travel in a backup. Enter them again in each currency's rate source settings, or their rates stop updating.",
             "unknown": "Certaines données de la sauvegarde ont été ignorées ou ajustées pendant la restauration."
           },
           "failed": {

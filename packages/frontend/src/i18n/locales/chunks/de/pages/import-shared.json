@@ -18,7 +18,7 @@
         "payeeNameTooLong": "Der Name des Zahlungsempfängers \"{name}\" ist zu lang ({length} Zeichen); das Maximum beträgt {max}.",
         "accountMappingMissing": "Diese Konten aus der Datei haben keine Zuordnung: {accounts}. Gehe zurück und ordne jedes davon zu.",
         "linkedAccountNotFound": "Das mit \"{account}\" verknüpfte Konto existiert nicht mehr. Gehe zurück und wähle ein anderes Konto oder erstelle ein neues.",
-        "bankLinkChanged": "An account's bank link changed after the review. Go back to the review step and run it again."
+        "bankLinkChanged": "Die Bankverbindung eines Kontos hat sich nach der Überprüfung geändert. Kehre zum Überprüfungsschritt zurück und führe ihn erneut aus."
       },
       "importResults": {
         "findTransfers": "Umbuchungen finden"
@@ -110,7 +110,7 @@
       "deleteAria": "Zuordnung löschen",
       "confirmRenameAria": "Name speichern"
     },
-    "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
-    "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day."
+    "bankSeamSkipped": "{count} Zeile auf oder nach {date} wurde übersprungen: Die Bankverbindung liefert ab diesem Tag bereits Transaktionen. | {count} Zeilen auf oder nach {date} wurden übersprungen: Die Bankverbindung liefert ab diesem Tag bereits Transaktionen.",
+    "bankSeamSkippedNoDate": "{count} Zeile auf oder nach dem Tag der Bankverknüpfung ihres Kontos wurde übersprungen: Die Bankverbindung liefert ab diesem Tag bereits Transaktionen. | {count} Zeilen auf oder nach dem Tag der Bankverknüpfung ihrer Konten wurden übersprungen: Die Bankverbindung liefert ab diesem Tag bereits Transaktionen."
   }
 }

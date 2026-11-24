@@ -18,7 +18,7 @@
         "payeeNameTooLong": "El nombre del beneficiario \"{name}\" es demasiado largo ({length} caracteres); el máximo es {max}.",
         "accountMappingMissing": "Estas cuentas del archivo no tienen mapeo: {accounts}. Vuelve y mapea cada una de ellas.",
         "linkedAccountNotFound": "La cuenta vinculada a \"{account}\" ya no existe. Vuelve y elige otra cuenta o crea una nueva.",
-        "bankLinkChanged": "An account's bank link changed after the review. Go back to the review step and run it again."
+        "bankLinkChanged": "El enlace bancario de una cuenta cambió después de la revisión. Vuelva al paso de revisión y vuelva a ejecutarlo."
       },
       "importResults": {
         "findTransfers": "Encontrar transferencias"
@@ -110,7 +110,7 @@
       "deleteAria": "Eliminar mapeo",
       "confirmRenameAria": "Guardar nombre"
     },
-    "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
-    "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day."
+    "bankSeamSkipped": "Se omitió {count} fila con fecha igual o posterior al {date}: la conexión bancaria ya proporciona transacciones a partir de ese día. | Se omitieron {count} filas con fecha igual o posterior al {date}: la conexión bancaria ya proporciona transacciones a partir de ese día.",
+    "bankSeamSkippedNoDate": "Se omitió {count} fila con fecha igual o posterior al día en que su cuenta se conectó a un banco: la conexión bancaria ya proporciona transacciones a partir de ese día. | Se omitieron {count} filas con fecha igual o posterior al día en que su cuenta se conectó a un banco: la conexión bancaria ya proporciona transacciones a partir de ese día."
   }
 }

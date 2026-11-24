@@ -39,6 +39,7 @@
       "noteReplace": "establecer nota",
       "noteAppend": "añadir al final",
       "notePrepend": "añadir al inicio",
+      "excludeFromStats": "excluded from stats",
       "note": {
         "containsAny": "la nota contiene",
         "notContainsAny": "la nota no contiene",
@@ -112,6 +113,7 @@
       "set_payee": "Establecer beneficiario",
       "add_tags": "Añadir etiquetas",
       "set_note": "Establecer nota",
+      "exclude_from_stats": "Exclude from stats",
       "noteMode": {
         "replace": "Reemplazar",
         "append": "Añadir al final",

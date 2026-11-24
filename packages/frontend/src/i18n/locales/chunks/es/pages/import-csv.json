@@ -135,8 +135,8 @@
           "balanceWarningTitle": "Los saldos de las cuentas pueden estar desincronizados",
           "balanceWarningBody": "Las transacciones se importaron, pero no se pudieron actualizar los saldos de algunas cuentas después. Revise estas cuentas y ajuste sus saldos manualmente si es necesario."
         },
-        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
-        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
+        "bankSeamRecalculateHint": "Las cuentas vinculadas con el banco mantienen el saldo de sus reportes bancarios, por lo que esta configuración no los cambia.",
+        "bankSeamRecalculateAllHint": "El saldo de apertura se recalcula automáticamente para las cuentas vinculadas a la banca."
       },
       "columnMapping": {
         "stepTitle": "Mapear columnas",

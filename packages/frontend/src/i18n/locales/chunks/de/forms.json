@@ -193,7 +193,8 @@
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Gib einen gültigen Betrag ein (bis zu 2 Nachkommastellen)",
+      "invalidCurrencyDecimal": "Gib einen gültigen Betrag ein (bis zu 1 Nachkommastelle) | Gib einen gültigen Betrag ein (bis zu {decimals} Nachkommastellen)",
+      "invalidCurrencyWholeAmount": "Enter a whole amount",
       "mustBePositive": "Betrag muss positiv sein",
       "httpUrl": "Enter a valid http(s) URL",
       "maxLength": "Must not exceed {max} characters"

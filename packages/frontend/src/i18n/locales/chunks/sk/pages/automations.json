@@ -39,6 +39,7 @@
       "noteReplace": "nastaviť poznámku",
       "noteAppend": "pripojiť na koniec",
       "notePrepend": "pripojiť na začiatok",
+      "excludeFromStats": "vylúčené zo štatistík",
       "note": {
         "containsAny": "poznámka obsahuje",
         "notContainsAny": "poznámka neobsahuje",
@@ -112,6 +113,7 @@
       "set_payee": "Nastaviť protistranu",
       "add_tags": "Pridať značky",
       "set_note": "Nastaviť poznámku",
+      "exclude_from_stats": "Vylúčiť zo štatistík",
       "noteMode": {
         "replace": "Nahradiť",
         "append": "Pripojiť na koniec",

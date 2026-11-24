@@ -23,7 +23,7 @@
     "planned": {
       "planned": "Запланированные",
       "subscriptions": "Регулярные платежи",
-      "budgets": "Бюджеты",
+      "budgets": "Трекеры",
       "goals": "Цели"
     },
     "venture": "Венчурные инвестиции",
@@ -32,6 +32,7 @@
   "sidebar": {
     "collapse": "Свернуть панель",
     "expand": "Развернуть панель",
+    "hideAmounts": "Hide amounts",
     "resize": "Изменить размер панели",
     "settings": {
       "title": "Настройки",

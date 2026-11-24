@@ -268,6 +268,7 @@
             "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
             "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
             "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
+            "rateSourceHeadersDropped": "An HTTP rate source was restored without its request headers, which never travel in a backup. Enter them again in that currency's rate source settings, or its rates stop updating. | {count} HTTP rate sources were restored without their request headers, which never travel in a backup. Enter them again in each currency's rate source settings, or their rates stop updating.",
             "unknown": "Some data in the backup was skipped or adjusted during the restore."
           },
           "failed": {

@@ -39,6 +39,7 @@
       "noteReplace": "définir la note",
       "noteAppend": "ajouter à la fin",
       "notePrepend": "ajouter au début",
+      "excludeFromStats": "excluded from stats",
       "note": {
         "containsAny": "note contient",
         "notContainsAny": "note ne contient pas",
@@ -112,6 +113,7 @@
       "set_payee": "Définir le tiers",
       "add_tags": "Ajouter des étiquettes",
       "set_note": "Définir la note",
+      "exclude_from_stats": "Exclude from stats",
       "noteMode": {
         "replace": "Remplacer",
         "append": "Ajouter à la fin",

@@ -268,6 +268,7 @@
             "foreignReferenceDropped": "{count} linha de “{table}” foi descartada porque “{column}” fazia referência a dados fora deste backup. | {count} linhas de “{table}” foram descartadas porque “{column}” fazia referência a dados fora deste backup.",
             "invalidRowDropped": "{count} linha de “{table}” foi descartada por não passar na validação. | {count} linhas de “{table}” foram descartadas por não passarem na validação.",
             "foreignReferenceNulled": "“{column}” foi limpo em {count} linha de “{table}” que fazia referência a dados fora deste backup. | “{column}” foi limpo em {count} linhas de “{table}” que faziam referência a dados fora deste backup.",
+            "rateSourceHeadersDropped": "An HTTP rate source was restored without its request headers, which never travel in a backup. Enter them again in that currency's rate source settings, or its rates stop updating. | {count} HTTP rate sources were restored without their request headers, which never travel in a backup. Enter them again in each currency's rate source settings, or their rates stop updating.",
             "unknown": "Alguns dados do backup foram ignorados ou ajustados durante a restauração."
           },
           "failed": {

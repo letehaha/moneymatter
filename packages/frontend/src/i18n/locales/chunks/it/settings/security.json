@@ -268,6 +268,7 @@
             "foreignReferenceDropped": "Rimossa {count} riga da \"{table}\" il cui \"{column}\" faceva riferimento a dati esterni a questo backup. | Rimosse {count} righe da \"{table}\" il cui \"{column}\" faceva riferimento a dati esterni a questo backup.",
             "invalidRowDropped": "Rimossa {count} riga di \"{table}\" che non ha superato la convalida. | Rimosse {count} righe di \"{table}\" che non hanno superato la convalida.",
             "foreignReferenceNulled": "Svuotato \"{column}\" in {count} riga di \"{table}\" che faceva riferimento a dati esterni a questo backup. | Svuotato \"{column}\" in {count} righe di \"{table}\" che facevano riferimento a dati esterni a questo backup.",
+            "rateSourceHeadersDropped": "An HTTP rate source was restored without its request headers, which never travel in a backup. Enter them again in that currency's rate source settings, or its rates stop updating. | {count} HTTP rate sources were restored without their request headers, which never travel in a backup. Enter them again in each currency's rate source settings, or their rates stop updating.",
             "unknown": "Alcuni dati del backup sono stati saltati o modificati durante il ripristino."
           },
           "failed": {

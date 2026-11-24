@@ -151,8 +151,8 @@
         "residualOpeningLabel": "Cambiar el saldo inicial",
         "residualOpeningDescription": "Mueve el saldo inicial de la cuenta por la diferencia, así que cada saldo pasado también cambia. Escoge esto si las transacciones faltan desde el comienzo del historial.",
         "residualHint": "La cantidad final se establece después de la primera sincronización, por lo que puede diferir un poco de esta vista previa.",
-        "linkFailed": "An error occurred while trying to link account",
-        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
+        "linkFailed": "Ocurrió un error mientras se trataba de vincular la cuenta",
+        "refreshFailed": "Cuenta vinculada, pero la actualización de sus cuentas falló. Recarga la página si algo parece antiguo."
       },
       "tabs": {
         "details": "Detalles",

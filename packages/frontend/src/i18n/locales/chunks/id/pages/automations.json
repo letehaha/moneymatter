@@ -39,6 +39,7 @@
       "noteReplace": "atur catatan",
       "noteAppend": "tambah di akhir",
       "notePrepend": "tambah di awal",
+      "excludeFromStats": "excluded from stats",
       "note": {
         "containsAny": "catatan memuat",
         "notContainsAny": "catatan tanpa",
@@ -112,6 +113,7 @@
       "set_payee": "Atur penerima",
       "add_tags": "Tambah tag",
       "set_note": "Atur catatan",
+      "exclude_from_stats": "Exclude from stats",
       "noteMode": {
         "replace": "Ganti",
         "append": "Tambah di akhir",
