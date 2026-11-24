@@ -46,16 +46,17 @@ The [Early Adopter plan](/settings/plans-and-billing/#early-adopter-plan) doesn'
 4. Check **Starts on**, the first day of your first period.
 5. Check **Accounts**. Every account that can be budgeted is already selected. Remove the ones you don't want counted.
 6. Pick a **Rollover** rule for money left in a line at the end of a period. **Carry surplus** is selected by default.
-7. Leave **Smart pre-fill** on to get a first set of lines, or turn it off to start empty.
-8. With **Smart pre-fill** on, **Ask me a few questions first** is on too. Leave it on to shape the lines with a few [setup questions](#setup-questions), or turn it off to skip them.
-9. Click **Next** and answer the questions. If you turned the questions or **Smart pre-fill** off, the button reads **Create budget** instead. Building the lines takes a few seconds.
+7. Turn on **Fund from a pool** if you want your income to go into [Ready to assign](/budgeting/ready-to-assign/) first, so you hand it out to lines yourself. It's off by default.
+8. Leave **Smart pre-fill** on to get a first set of lines, or turn it off to start empty.
+9. With **Smart pre-fill** on, **Ask me a few questions first** is on too. Leave it on to shape the lines with a few [setup questions](#setup-questions), or turn it off to skip them.
+10. Click **Next** and answer the questions. If you turned the questions or **Smart pre-fill** off, the button reads **Create budget** instead. Building the lines takes a few seconds.
 
 </Steps>
 
 <Screenshot
   src="/screenshots/budgeting/create-budget-dialog.png"
-  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, three accounts selected, Carry surplus as the Rollover rule, the Smart pre-fill and Ask me a few questions first switches turned on, and the Next button."
-  hint="Sign in as the docs test user with no budget (move any existing budget to trash first). Open Planning → Budget in the sidebar, then click Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts (Everyday Checking and the SimpleFIN demo accounts), Rollover 'Carry surplus', and both Smart pre-fill and Ask me a few questions first on. Crop to the window."
+  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, 7 accounts selected, Carry surplus as the Rollover rule, the Fund from a pool switch turned off, the Smart pre-fill and Ask me a few questions first switches turned on, and the Next button."
+  hint="Sign in as the docs test user with no budget (move any existing budget to trash first, or mock GET /budget-plans to return an empty list). Open Planning → Budget in the sidebar, then click Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts, Rollover 'Carry surplus', Fund from a pool off, and both Smart pre-fill and Ask me a few questions first on. Don't submit. Crop to the window."
 />
 
 Your new budget is called "Budget". You can rename it in **Budget settings**.
@@ -66,6 +67,7 @@ Your new budget is called "Budget". You can rename it in **Budget settings**.
 - **Starts on.** For **Monthly**, **Semi-monthly** and a custom number of months, it starts on the first day of this month. For **Biweekly**, **Weekly** and a custom number of days, it starts on the first day of this week. You can pick an earlier day, such as your last payday, as long as it's less than one reset ago. For **Monthly**, that means after this day last month. You can't pick a future day. Your budget starts with the period that includes today, so it has no earlier periods.
 - **Accounts.** A budget can hold current, savings, cash, credit card, overdraft and general accounts that you own. Accounts someone shared with you aren't offered. If you have none, you'll see **No accounts to budget yet** with a **Go to accounts** button. Add an account first (see [Create an account](/accounts/create-an-account/)).
 - **Rollover.** See [Rollover](/budgeting/assigning-and-rollover/#rollover) for what each rule does. You can change it later, and every line can have its own.
+- **Fund from a pool.** Income goes into **Ready to assign** instead of straight to your lines, and you decide which lines get it. The pool starts with the budget's first period. You can turn it on or off later in **Budget settings**. See [Ready to assign](/budgeting/ready-to-assign/).
 
 ## Suggested lines
 
@@ -180,7 +182,7 @@ Amounts you set **From now on** repeat by themselves, so a period that goes to p
 <Steps>
 
 1. Open **Budget**. It always opens on the current period.
-2. Look for lines with a red **Available**. They're overspent. Move money to them from a line that has some left.
+2. Look for lines with a red **Available**. They're overspent. [Move money](/budgeting/assigning-and-rollover/#move-money-between-lines) to them from a line that has some left.
 3. Open **Spending outside your lines** below the grid, if it's there, and add a line or a category for anything that should be budgeted.
 4. Check your goals in the side panel. See [The side panel](/budgeting/side-panel/).
 
@@ -192,6 +194,8 @@ Click **Budget settings** at the top right of the budget to change:
 
 - **Name** of the budget. It saves when you leave the field or press Enter.
 - **Accounts on budget.** Keep at least one. Turn on **Add new accounts automatically** to add accounts you create later.
+- **Fund from a pool.** Turning it on asks "Fund this plan from a pool?" first: the pool starts from the current period, and earlier periods don't show **Ready to assign**. Click **Turn on** to confirm. Turning it off needs no confirmation. See [Ready to assign](/budgeting/ready-to-assign/).
+- **Keep ready to assign at 0**, once **Fund from a pool** is on. See [Keep ready to assign at 0](/budgeting/ready-to-assign/#keep-ready-to-assign-at-0).
 - **Rollover default**. See [Rollover](/budgeting/assigning-and-rollover/#rollover).
 
 **Period** shows how often the budget resets and when it started. It can't be changed.
@@ -216,5 +220,6 @@ Until then, the **Budget** page shows "Your budget is in the trash" with a **Res
 
 - [Budget lines and groups](/budgeting/lines-and-groups/)
 - [Assigning and rollover](/budgeting/assigning-and-rollover/)
+- [Ready to assign](/budgeting/ready-to-assign/)
 - [Goals](/budgeting/goals/)
 - [The side panel](/budgeting/side-panel/)

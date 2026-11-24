@@ -256,7 +256,7 @@ const save = ({ items }: { items: PoolItem[] }) => {
       </Button>
     </template>
 
-    <div class="grid gap-3">
+    <div class="grid grid-cols-1 gap-3">
       <h3 v-if="!isMobile" class="text-base font-medium">{{ title }}</h3>
 
       <template v-if="step.name === 'menu'">
@@ -269,7 +269,7 @@ const save = ({ items }: { items: PoolItem[] }) => {
             {{ isFix ? $t('budgetPlans.pool.freeUp.subtitle') : $t('budgetPlans.pool.menu.assignSubtitle') }}
           </p>
 
-          <div class="grid gap-1">
+          <div class="grid grid-cols-1 gap-1">
             <Button
               v-for="row in suggestionRows"
               :key="row.suggestion"
