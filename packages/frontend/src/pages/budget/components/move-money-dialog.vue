@@ -17,6 +17,7 @@ import { useSetAssignments } from '../composables/use-set-assignments';
 import {
   amountToneClass,
   defaultMove,
+  goalAskOf,
   moveAssignmentsPayload,
   moveRoom,
   overspentBy,
@@ -33,7 +34,9 @@ const props = defineProps<{
 }>();
 const isOpen = defineModel<boolean>('open', { required: true });
 
-const [DefineLineOption, LineOption] = createReusableTemplate<{ item: { label: string; available: number } }>();
+const [DefineLineOption, LineOption] = createReusableTemplate<{
+  item: { label: string; available: number; hint?: string };
+}>();
 
 const { t } = useI18n();
 const { baseCurrencyDecimals: decimals, formatBaseCurrency } = useFormatCurrency();
@@ -56,12 +59,25 @@ const lineById = ({ id }: { id: string | null }) => props.lines.find((entry) => 
 const from = computed(() => lineById({ id: fromId.value }));
 const to = computed(() => lineById({ id: toId.value }));
 
-const optionsWithout = ({ id }: { id: string | null }) =>
+const needHint = ({ line }: { line: BudgetPlanPeriodViewLine }) => {
+  const ask = goalAskOf({ line });
+  if (ask !== null) return t('budgetPlans.pool.line.goalHint', { amount: formatBaseCurrency(ask) });
+  const over = overspentBy({ line });
+  return over === null ? undefined : t('budgetPlans.pool.line.overspentHint', { amount: formatBaseCurrency(over) });
+};
+const optionsWithout = ({ id, withHints = false }: { id: string | null; withHints?: boolean }) =>
   props.lines
     .filter((entry) => entry.lineId !== id)
-    .map((entry) => ({ value: entry.lineId, label: entry.name, available: entry.available }));
+    .map((entry) => ({
+      value: entry.lineId,
+      label: entry.name,
+      available: entry.available,
+      hint: withHints ? needHint({ line: entry }) : undefined,
+    }));
 const fromOptions = computed(() => optionsWithout({ id: toId.value }));
-const toOptions = computed(() => optionsWithout({ id: fromId.value }));
+const toOptions = computed(() =>
+  optionsWithout({ id: fromId.value, withHints: true }).sort((a, b) => Number(!!b.hint) - Number(!!a.hint)),
+);
 
 const swap = () => {
   [fromId.value, toId.value] = [toId.value, fromId.value];
@@ -147,7 +163,10 @@ const submit = () => {
 <template>
   <DefineLineOption v-slot="{ item }">
     <span class="flex w-full items-center justify-between gap-3">
-      <span class="min-w-0 truncate">{{ item.label }}</span>
+      <span class="min-w-0">
+        <span class="block truncate">{{ item.label }}</span>
+        <span v-if="item.hint" class="text-muted-foreground block truncate text-xs">{{ item.hint }}</span>
+      </span>
       <span :class="cn('shrink-0 text-sm tabular-nums', amountToneClass({ amount: item.available }))">
         {{ formatBaseCurrency(item.available) }}
       </span>

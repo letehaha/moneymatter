@@ -9,10 +9,17 @@
         <span v-if="group.hint" class="ml-1 font-medium tracking-normal normal-case">· {{ group.hint }}</span>
       </p>
       <div class="space-y-0.5">
-        <div
-          v-for="(node, index) in group.nodes"
+        <component
+          :is="link ? RouterLink : 'div'"
+          v-for="({ node, link }, index) in group.rows"
           :key="index"
-          class="relative grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 overflow-hidden rounded-md px-2 py-1.5 text-[13px]"
+          :to="link ?? undefined"
+          :class="
+            cn(
+              'relative grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 overflow-hidden rounded-md px-2 py-1.5 text-[13px]',
+              link && 'hover:bg-hover focus-visible:bg-hover outline-hidden',
+            )
+          "
         >
           <span
             class="absolute inset-y-0 left-0 opacity-10"
@@ -27,7 +34,7 @@
           <span class="text-muted-foreground relative min-w-8 text-right tabular-nums">{{
             formatShare(node.share)
           }}</span>
-        </div>
+        </component>
       </div>
     </div>
   </div>
@@ -36,8 +43,13 @@
 <script setup lang="ts">
 import { useFormatCurrency } from '@/composable';
 import { useChartColors } from '@/composable/charts/chart-colors';
+import type { Period } from '@/composable/use-period-navigation';
+import { cn } from '@/lib/utils';
+import { useCategoriesStore } from '@/stores';
+import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { RouterLink } from 'vue-router';
 
 import {
   type MoneyFlow,
@@ -48,12 +60,21 @@ import {
   nodeLabel,
   pctOfIncome,
 } from '../utils/build-money-flow';
+import { type MoneyFlowNodeKind, buildNodeTransactionsLink } from '../utils/node-transactions-link';
 
-const props = defineProps<{ flow: MoneyFlow }>();
+const props = defineProps<{
+  flow: MoneyFlow;
+  period: Period;
+  sourceLevel: number;
+  expenseLevel: number;
+  taxCategoryIds?: string[];
+  savingsCategoryIds?: string[];
+}>();
 
 const { t } = useI18n();
 const { formatBaseCurrency } = useFormatCurrency();
 const colors = useChartColors();
+const { categories } = storeToRefs(useCategoriesStore());
 
 // A flat list has no ribbons tying a per-category "other" row to its root, so the name carries it.
 const listLabel = ({ node }: { node: MoneyFlowNode }) =>
@@ -63,29 +84,48 @@ const listLabel = ({ node }: { node: MoneyFlowNode }) =>
 
 const groups = computed(() => {
   const { income, expenses, taxes, savings, sources, expenseNodes, taxNodes, savingsNodes } = props.flow;
+  const toRows = ({ nodes, kind, level }: { nodes: MoneyFlowNode[]; kind: MoneyFlowNodeKind; level?: number }) =>
+    nodes.map((node) => ({
+      node,
+      link: buildNodeTransactionsLink({
+        nodeId: node.id,
+        kind,
+        level,
+        categories: categories.value,
+        period: props.period,
+        taxCategoryIds: props.taxCategoryIds,
+        savingsCategoryIds: props.savingsCategoryIds,
+      }),
+    }));
   return [
-    { label: t('analytics.cashFlow.income'), total: income, hint: '', nodes: sources, color: colors.value.appIncome },
+    {
+      label: t('analytics.cashFlow.income'),
+      total: income,
+      hint: '',
+      rows: toRows({ nodes: sources, kind: 'income', level: props.sourceLevel }),
+      color: colors.value.appIncome,
+    },
     {
       label: t('analytics.cashFlow.composition.taxes'),
       total: taxes,
       hint: pctOfIncome({ value: taxes, income, t }),
-      nodes: taxNodes,
+      rows: toRows({ nodes: taxNodes, kind: 'tax' }),
       color: colors.value.primary,
     },
     {
       label: t('analytics.cashFlow.expenses'),
       total: expenses,
       hint: pctOfIncome({ value: expenses, income, t }),
-      nodes: expenseNodes,
+      rows: toRows({ nodes: expenseNodes, kind: 'expense', level: props.expenseLevel }),
       color: colors.value.appExpense,
     },
     {
       label: t('analytics.cashFlow.composition.savings'),
       total: savings,
       hint: pctOfIncome({ value: savings, income, t }),
-      nodes: savingsNodes,
+      rows: toRows({ nodes: savingsNodes, kind: 'savings' }),
       color: colors.value.appSavings,
     },
-  ].filter((g) => g.nodes.length > 0);
+  ].filter((g) => g.rows.length > 0);
 });
 </script>

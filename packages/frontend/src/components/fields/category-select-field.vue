@@ -406,7 +406,9 @@ const filteredItems = computed(() => {
   }
 
   const query = searchQuery.value.toLowerCase();
-  return allFlatCategories.value.filter((category) => category.name.toLowerCase().includes(query));
+  return allFlatCategories.value.filter(
+    (category) => category.name.toLowerCase().includes(query) || category.rootParentName.toLowerCase().includes(query),
+  );
 });
 
 const shouldShowSeparator = ({ item, index }: { item: FlatCategory; index: number }): boolean => {
