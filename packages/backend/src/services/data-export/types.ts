@@ -154,6 +154,7 @@ export interface BudgetPeriodRow {
   spent: number;
   available: number;
   currency: string;
+  note: string;
 }
 
 export interface GoalRow {

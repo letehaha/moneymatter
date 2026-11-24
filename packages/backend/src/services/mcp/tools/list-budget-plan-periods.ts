@@ -12,7 +12,7 @@ export const listBudgetPlanPeriodsTool = defineTool({
   toolset: 'budget-plans',
   access: 'read',
   description:
-    'List the periods of a budget plan, newest first. A plan always has its future periods (up to a year ahead), so the first entries are upcoming ones; the one with isCurrent true covers today. Each period has id, startDate, endDate (exclusive), isCurrent and carryReset (true: every line starts the period with nothing carried in). Returns { periods, total }, total being the number of periods before limit and offset; raise offset to reach older ones. Pass a period id to get_budget_plan_period or get_budget_plan_scheduled.',
+    'List the periods of a budget plan, newest first. A plan always has its future periods (up to a year ahead), so the first entries are upcoming ones; the one with isCurrent true covers today. Each period has id, startDate, endDate (exclusive), isCurrent, carryReset (true: every line starts the period with nothing carried in) and note (the note on the period, or null). Returns { periods, total }, total being the number of periods before limit and offset; raise offset to reach older ones. Pass a period id to get_budget_plan_period or get_budget_plan_scheduled.',
   input: {
     planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
     limit: z

@@ -382,6 +382,19 @@ async function seedBudgetPlans() {
     payload: { frequency: 'every_period', behavior: 'budget_another', amount: 120 },
     raw: true,
   });
+  await helpers.setBudgetLineNote({
+    planId: plan.id,
+    periodId: periods[1]!.id,
+    lineId: foodLine.id,
+    payload: { note: 'Birthday dinner' },
+    raw: true,
+  });
+  await helpers.setBudgetPeriodNote({
+    planId: plan.id,
+    periodId: periods[1]!.id,
+    payload: { note: 'Holiday month' },
+    raw: true,
+  });
 
   const funLine = await helpers.createBudgetPlanLine({
     planId: plan.id,
@@ -402,6 +415,7 @@ const BUDGET_PLAN_FILES = [
   'budget-line-categories',
   'budget-line-goals',
   'budget-assignments',
+  'budget-line-notes',
 ];
 
 const foreignReferenceWarnings = (status: Awaited<ReturnType<typeof helpers.waitForRestore>>) =>
@@ -1159,6 +1173,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
           const periods = await helpers.listBudgetPlanPeriods({ planId: main.id, raw: true });
           const view = await helpers.getBudgetPlanPeriodView({ planId: main.id, periodId: periods[1]!.id, raw: true });
+          expect(view.period.note).toBe('Holiday month');
           expect(view.groups.map((g) => g.name)).toEqual(['Bills']);
           const lineByName = new Map(view.lines.map((line) => [line.name, line]));
           expect(lineByName.get('Rent')).toMatchObject({
@@ -1173,6 +1188,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
             assignedSource: 'override',
           });
           expect(lineByName.get('Food')!.goal).toMatchObject({ amount: 120 });
+          expect(lineByName.get('Food')!.note).toBe('Birthday dinner');
 
           const funLine = details.lines.find((line) => line.name === 'Fun')!;
           expect(funLine.id).not.toBe(seeded.funLineId);

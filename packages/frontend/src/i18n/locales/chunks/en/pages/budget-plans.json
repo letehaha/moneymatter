@@ -519,6 +519,12 @@
         "title": "Arrange sections",
         "description": "Drag to reorder the panel sections, or switch one off to hide it. Some sections only appear for a selected line or for the period overview.",
         "reset": "Reset to default"
+      },
+      "note": {
+        "label": "Note",
+        "placeholder": "Add a note for this period",
+        "gridIcon": "Has a note",
+        "error": "Couldn't save the note"
       }
     },
     "groups": {

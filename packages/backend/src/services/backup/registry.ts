@@ -555,6 +555,13 @@ const TABLE_DEFS = [
     scope: { strategy: 'viaParent', fk: 'lineId', parent: 'budgetLines' },
     restoreMode: 'insert',
   },
+  {
+    fileName: 'budget-line-notes',
+    model: models.BudgetLineNotes,
+    tier: 6,
+    scope: { strategy: 'viaParent', fk: 'lineId', parent: 'budgetLines' },
+    restoreMode: 'insert',
+  },
 
   // Exported for completeness, skipped on restore: they reference counterpart
   // users (sharedWithUserId / inviteeUserId) that don't exist on another instance.

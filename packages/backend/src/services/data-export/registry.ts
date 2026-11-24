@@ -217,6 +217,7 @@ export const EXPORT_DOMAINS: { readonly [N in ExportFileName]: ExportDomain<N> }
       { header: 'Spent', field: 'spent', kind: 'money' },
       { header: 'Available', field: 'available', kind: 'money' },
       { header: 'Currency', field: 'currency', kind: 'text' },
+      { header: 'Note', field: 'note', kind: 'text' },
     ],
   },
   goals: {

@@ -23,6 +23,8 @@ import setAssignments from '@controllers/budget-plans/set-assignments';
 import setCarryReset from '@controllers/budget-plans/set-carry-reset';
 import setLayout from '@controllers/budget-plans/set-layout';
 import setLineGoal from '@controllers/budget-plans/set-line-goal';
+import setLineNote from '@controllers/budget-plans/set-line-note';
+import setPeriodNote from '@controllers/budget-plans/set-period-note';
 import setPlanAccounts from '@controllers/budget-plans/set-plan-accounts';
 import snoozeLineGoal from '@controllers/budget-plans/snooze-line-goal';
 import updateGroup from '@controllers/budget-plans/update-group';
@@ -70,5 +72,7 @@ router.post('/:planId/lines/:lineId/goal/snooze', ...gatedWrite, snoozeLineGoal)
 router.put('/:planId/periods/:periodId/lines/:lineId/assignment', ...gatedWrite, setAssignment);
 router.put('/:planId/periods/:periodId/assignments', ...gatedWrite, setAssignments);
 router.put('/:planId/periods/:periodId/carry-reset', ...gatedWrite, setCarryReset);
+router.put('/:planId/periods/:periodId/note', ...gatedWrite, setPeriodNote);
+router.put('/:planId/periods/:periodId/lines/:lineId/note', ...gatedWrite, setLineNote);
 
 export default router;

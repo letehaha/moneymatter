@@ -6,6 +6,7 @@ import { type PanelSection, usePanelSections } from '../composables/use-panel-se
 
 const SECTIONS: { key: PanelSection; labelClass: string; contentClass: string }[] = [
   { key: 'breakdown', labelClass: 'w-20', contentClass: 'h-29' },
+  { key: 'note', labelClass: 'w-10', contentClass: 'h-20' },
   { key: 'coverage', labelClass: 'w-36', contentClass: 'h-34' },
   { key: 'goals', labelClass: 'w-14', contentClass: 'h-37' },
   { key: 'scheduled', labelClass: 'w-20', contentClass: 'h-40' },

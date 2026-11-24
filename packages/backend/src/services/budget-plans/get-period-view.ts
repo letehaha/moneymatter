@@ -17,6 +17,7 @@ import { logger } from '@js/utils/logger';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetLineGoals from '@models/budget-line-goals.model';
+import BudgetLineNotes from '@models/budget-line-notes.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { Op } from 'sequelize';
@@ -269,6 +270,7 @@ const toApi = ({
   coverage,
   decimals,
   paces,
+  notes,
 }: {
   view: FoldedPeriodView;
   groups: BudgetPlanLineGroup[];
@@ -282,6 +284,7 @@ const toApi = ({
   coverage: BudgetPlanCoverage | null;
   decimals: number;
   paces: Map<string, BudgetPlanLinePace>;
+  notes: Map<string, string>;
 }): BudgetPlanPeriodView => {
   return {
     period: view.period,
@@ -309,6 +312,7 @@ const toApi = ({
         ? goalToApi({ goal: goals.get(line.lineId)!, result: asks.get(line.lineId)!, decimals })
         : null,
       pace: paces.get(line.lineId) ?? null,
+      note: notes.get(line.lineId) ?? null,
     })),
     unbudgeted: view.unbudgeted.map((entry) => ({
       categoryId: entry.categoryId,
@@ -407,11 +411,15 @@ export const getPeriodView = async ({
   const views = foldPlan(foldInput);
   const view = views[index]!;
   const explicitViews = plan.poolFrom ? foldPlan({ ...foldInput, explicitFutureOnly: true }) : [];
-  const [poolResult, paces] = await Promise.all([
+  const [poolResult, paces, noteRows] = await Promise.all([
     plan.poolFrom ? periodPool({ plan, views: explicitViews, periodId, today, decimals, timezone }) : null,
     periodPaces({ plan, foldInput, index, view, today, timezone }).catch((error) => {
       logger.error({ message: 'Failed to compute budget line paces', error }, { planId: plan.id, periodId });
       return new Map<string, BudgetPlanLinePace>();
+    }),
+    BudgetLineNotes.findAll({
+      where: { periodId, lineId: { [Op.in]: view.lines.map((line) => line.lineId) } },
+      attributes: ['lineId', 'note'],
     }),
   ]);
 
@@ -441,5 +449,6 @@ export const getPeriodView = async ({
     coverage,
     decimals,
     paces,
+    notes: new Map(noteRows.map((row) => [row.lineId, row.note])),
   });
 };

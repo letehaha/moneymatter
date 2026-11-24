@@ -2,6 +2,7 @@ import {
   BUDGET_ASSIGNMENT_SCOPES,
   BUDGET_PLAN_CADENCES,
   BUDGET_PLAN_CARRY_POLICIES,
+  BUDGET_PLAN_NOTE_MAX_LENGTH,
   BUDGET_PLAN_TYPE_KEYS,
 } from '@bt/shared/types';
 import {
@@ -111,6 +112,11 @@ export const setLayoutBodySchema = z.strictObject(setLayoutBodyFields);
 
 /** Body of `PUT /budget-plans/:planId/periods/:periodId/carry-reset`. */
 export const setCarryResetBodySchema = z.strictObject({ reset: z.boolean() });
+
+/** Body of the period and line note endpoints; `null` or a blank note clears it. */
+export const setNoteBodySchema = z.strictObject({
+  note: z.string().trim().max(BUDGET_PLAN_NOTE_MAX_LENGTH).nullable(),
+});
 
 /**
  * Body of `PUT /budget-plans/:planId/periods/:periodId/lines/:lineId/assignment`. `undefined` leaves

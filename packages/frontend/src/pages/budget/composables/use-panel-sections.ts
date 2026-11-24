@@ -2,6 +2,7 @@ import { useLocalStorage } from '@vueuse/core';
 
 export const PANEL_SECTION_TITLES = {
   breakdown: 'budgetPlans.panel.breakdown',
+  note: 'budgetPlans.panel.note.label',
   transactions: 'budgetPlans.panel.lineTransactions.title',
   coverage: 'budgetPlans.panel.nextPeriodCoverage',
   scheduled: 'budgetPlans.panel.scheduled',

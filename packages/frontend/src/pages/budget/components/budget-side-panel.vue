@@ -23,6 +23,7 @@ import {
   GaugeIcon,
   ReceiptTextIcon,
   SigmaIcon,
+  StickyNoteIcon,
   TargetIcon,
   XIcon,
 } from '@lucide/vue';
@@ -50,6 +51,7 @@ import PanelBreakdownSection from './panel-breakdown-section.vue';
 import PanelCoverageSection from './panel-coverage-section.vue';
 import PanelGoalSection from './panel-goal-section.vue';
 import PanelGoalsSection from './panel-goals-section.vue';
+import PanelNoteSection from './panel-note-section.vue';
 import PanelPaceSection from './panel-pace-section.vue';
 import PanelScheduledSection from './panel-scheduled-section.vue';
 import PanelTransactionsSection from './panel-transactions-section.vue';
@@ -204,8 +206,17 @@ const sections = computed(() => {
       component: PanelBreakdownSection,
     },
     {
+      key: 'note',
+      icon: StickyNoteIcon,
+      iconClass: 'bg-app-transfer-color/15 text-app-transfer-color',
+      component: PanelNoteSection,
+      props: { line: line.value },
+      hidden: props.lines.length > 1,
+    },
+    {
       key: 'transactions',
       icon: ReceiptTextIcon,
+      iconClass: 'bg-account-vehicle/15 text-account-vehicle',
       component: PanelTransactionsSection,
       props: {
         line: line.value,
@@ -238,12 +249,14 @@ const sections = computed(() => {
     {
       key: 'trend',
       icon: ChartColumnIcon,
+      iconClass: 'bg-loan-business/15 text-loan-business',
       component: PanelTrendSection,
       hidden: !hasTrends,
     },
     {
       key: 'averages',
       icon: SigmaIcon,
+      iconClass: 'bg-loan-medical/15 text-loan-medical',
       component: PanelAveragesSection,
       props: { line: line.value, averages: averages.value },
       hidden: !line.value || !averages.value,

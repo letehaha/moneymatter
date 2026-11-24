@@ -5,6 +5,7 @@ import { describe, expect, it } from '@jest/globals';
 import Accounts from '@models/accounts.model';
 import BudgetLineGoals from '@models/budget-line-goals.model';
 import BudgetLineGroups from '@models/budget-line-groups.model';
+import BudgetLineNotes from '@models/budget-line-notes.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPlans from '@models/budget-plans.model';
 import Categories from '@models/categories.model';
@@ -57,6 +58,14 @@ describe('User data wipe (POST /user/wipe-data)', () => {
       planId,
       lineId: planLine.id,
       payload: { frequency: 'every_period', behavior: 'budget_another', amount: 100 },
+      raw: true,
+    });
+    const [planPeriod] = await helpers.listBudgetPlanPeriods({ planId, raw: true });
+    await helpers.setBudgetLineNote({
+      planId,
+      periodId: planPeriod!.id,
+      lineId: planLine.id,
+      payload: { note: 'Wipe note' },
       raw: true,
     });
     await helpers.deleteBudgetPlan({ planId });
@@ -114,6 +123,7 @@ describe('User data wipe (POST /user/wipe-data)', () => {
     expect(await BudgetLineGroups.findAll({ where: { planId } })).toHaveLength(0);
     expect(await BudgetLines.findAll({ where: { planId } })).toHaveLength(0);
     expect(await BudgetLineGoals.findAll({ where: { lineId: planLine.id } })).toHaveLength(0);
+    expect(await BudgetLineNotes.findAll({ where: { lineId: planLine.id } })).toHaveLength(0);
     expect(await TransactionTemplateTags.findAll({ where: { templateId: template.id } })).toHaveLength(0);
     expect(await Trackers.findAll({ where: { id: tracker.id } })).toHaveLength(0);
     expect(await GoalAccounts.findAll({ where: { goalId: goal.id } })).toHaveLength(0);

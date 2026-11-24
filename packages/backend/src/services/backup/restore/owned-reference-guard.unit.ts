@@ -19,6 +19,7 @@ const EXPECTED_GUARDED_COLUMNS: Record<string, string[]> = {
   'budget-assignments': ['lineId', 'periodId'],
   'budget-line-categories': ['categoryId', 'lineId'],
   'budget-line-goals': ['lineId'],
+  'budget-line-notes': ['lineId', 'periodId'],
   'budget-line-groups': ['planId'],
   'budget-lines': ['groupId', 'planId'],
   'budget-periods': ['planId'],

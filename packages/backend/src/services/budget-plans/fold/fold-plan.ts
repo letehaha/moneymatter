@@ -22,6 +22,7 @@ export interface FoldPeriod {
   /** 'yyyy-MM-dd', exclusive. */
   endDate: string;
   carryReset: boolean;
+  note: string | null;
 }
 
 export interface FoldLine {
@@ -52,7 +53,10 @@ export interface FoldActivityRow {
 }
 
 /** A period view before the pool: `uncovered` is what no line holds, split by sign. */
-export type FoldedPeriodViewLine = Omit<BudgetPlanPeriodViewLine, 'goal' | 'groupId' | 'poolAssigned' | 'pace'>;
+export type FoldedPeriodViewLine = Omit<
+  BudgetPlanPeriodViewLine,
+  'goal' | 'groupId' | 'poolAssigned' | 'pace' | 'note'
+>;
 
 export type FoldedPeriodView = Omit<BudgetPlanPeriodView, 'pool' | 'goals' | 'coverage' | 'lines' | 'groups'> & {
   lines: FoldedPeriodViewLine[];
@@ -81,6 +85,7 @@ export const toPlanPeriod = ({ period, today }: { period: FoldPeriod; today: str
     startDate,
     endDate,
     carryReset: period.carryReset,
+    note: period.note,
     isCurrent: covers({
       range: { from: startDate, until: endDate },
       start: today,

@@ -33,6 +33,7 @@ import {
   PencilIcon,
   PlusIcon,
   SparklesIcon,
+  StickyNoteIcon,
   TargetIcon,
   Trash2Icon,
   XIcon,
@@ -450,6 +451,12 @@ const archiveSelected = () => {
     <DefineLineName v-slot="{ line }">
       <span class="flex items-center gap-2 leading-5">
         <span class="min-w-0 truncate text-sm font-semibold">{{ line.name }}</span>
+        <DesktopOnlyTooltip v-if="line.note" content-class-name="max-w-xs break-words whitespace-pre-wrap">
+          <span role="img" class="inline-flex shrink-0" :aria-label="$t('budgetPlans.panel.note.gridIcon')">
+            <StickyNoteIcon class="text-muted-foreground size-3.5" />
+          </span>
+          <template #content>{{ line.note }}</template>
+        </DesktopOnlyTooltip>
         <span
           v-if="!view.pool && line.assignedSource === 'override'"
           class="text-primary-text bg-primary/10 rounded-full px-1.5 py-0.5 text-[10px] font-medium"

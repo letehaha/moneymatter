@@ -4,6 +4,7 @@ import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
+import BudgetLineNotes from '@models/budget-line-notes.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { getAncestorIds } from '@services/categories/category-hierarchy';
@@ -58,11 +59,14 @@ const mergePlanLines = async ({
   const currentStart = boundaryAtOrBefore({ plan, date: today });
   const startById = new Map<string, string>(periods.map((period) => [period.id, toUtcDateString(period.startDate)]));
 
-  const [assignments, { byId }, decimals] = await Promise.all([
+  const [assignments, noteRows, { byId }, decimals] = await Promise.all([
     BudgetAssignments.findAll({ where: { lineId: { [Op.in]: lineIds } } }),
+    BudgetLineNotes.findAll({ where: { lineId: { [Op.in]: lineIds } }, attributes: ['lineId'] }),
     ownerCategories({ userId: plan.userId }),
     getCurrencyDecimals({ userId: plan.userId, code: plan.currencyCode }),
   ]);
+
+  const notedLineIds = new Set(noteRows.map((row) => row.lineId));
 
   const replacementPath = new Set(
     replacementId === null ? [] : [replacementId, ...getAncestorIds({ categoryId: replacementId, byId })],
@@ -236,11 +240,12 @@ const mergePlanLines = async ({
       }
     }
 
-    // The archive below ends everything at `currentStart`, so only a membership row or
-    // an assignment row in an earlier period of its lifetime leaves the line anything to own.
+    // The archive below ends everything at `currentStart`, so only a membership row, an
+    // assignment row in an earlier period of its lifetime or a note leaves the line anything to own.
     const rows = rowsOf({ lineId: line.id });
     if (
       !kept.length &&
+      !notedLineIds.has(line.id) &&
       !sourcePeriodIds.some((periodId) => rows.has(periodId) && startById.get(periodId)! < currentStart)
     ) {
       await line.destroy();
