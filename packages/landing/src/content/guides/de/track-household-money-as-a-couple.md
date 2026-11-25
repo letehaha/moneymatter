@@ -75,15 +75,6 @@ Du zahlst deinem Partner deine Hälfte der Miete zurück? Mit Schreibzugriff auf
 
 Die Banksynchronisierung braucht Plus nur bei der Person, die die Bank verbindet. Verbinde deine, und dein Partner sieht die synchronisierten Transaktionen mit Essential. Auf ein Konto mit Bankverbindung lassen sich keine Transaktionen von Hand hinzufügen, auch nicht mit Schreibzugriff.
 
-## Was es für zwei kostet
-
-Ein Platz ist eine Person, die deine Einladung angenommen hat, dich nicht mitgezählt. Das Limit gilt getrennt für deinen Haushalt und für jedes Konto und jeden Tracker, den du teilst.
-
-- **Essential**, $5 im Monat oder $30 im Jahr vor Steuern: 2 Plätze.
-- **Plus**, $8 im Monat oder $55 im Jahr vor Steuern: 5 Plätze, dazu die Banksynchronisierung.
-
-Jede Person bezahlt ihre eigenen Bearbeitungsrechte. Wenn ihr also beide Transaktionen hinzufügt, braucht ihr zwei Tarife. Jedes neue Konto startet mit einer kostenlosen Testphase von 40 Tagen, ohne dass du eine Karte brauchst. Nach Ablauf kann ein Konto ohne Tarif weiterhin ansehen, was schon mit ihm geteilt wurde, aber keine neuen Einladungen annehmen und nichts ändern.
-
 ## Wenn ihr nicht mehr teilt
 
 Entferne deinen Partner im Freigabebereich oder unter **Einstellungen** → **Haushalt**, oder er verlässt die Freigabe selbst. Sein Zugriff endet, und jede Transaktion auf deinem Konto bleibt erhalten, auch die, die er hinzugefügt hat. Umbuchungen zwischen euch bleiben in beiden Verläufen als getrennte Einträge bestehen.

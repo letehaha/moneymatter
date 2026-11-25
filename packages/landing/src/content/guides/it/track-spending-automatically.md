@@ -114,10 +114,3 @@ Ogni correzione che trasformi in regola è una che non farai mai più, quindi l'
 ## Se la tua banca non è supportata
 
 Puoi comunque evitare di inserire tutto a mano. Importa un file CSV, OFX o QFX dalla tua banca, oppure carica un estratto conto in PDF e lascia che l'IA ne estragga le transazioni. Beneficiari e regole funzionano anche sulle transazioni importate. Anche le transazioni di un estratto conto in PDF passano alla classificazione IA, mentre per un file CSV puoi avviarla tu da **Transazioni** → **Ottimizzazioni**. Con Essential, che non ha la sincronizzazione bancaria, è così che le regole ricevono le loro transazioni.
-
-## Quanto costa
-
-- **Plus**, $8 al mese o $55 all'anno, tasse escluse: sincronizzazione bancaria, IA di MoneyMatter con un limite mensile, regole e beneficiari.
-- **Essential**, $5 al mese o $30 all'anno, tasse escluse: regole, beneficiari e importazione di file, con l'IA sulla tua chiave. Nessuna sincronizzazione bancaria.
-
-Ogni nuovo account parte con una prova gratuita di 40 giorni di tutto ciò che include Plus, senza carta.

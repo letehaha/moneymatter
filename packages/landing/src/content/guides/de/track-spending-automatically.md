@@ -114,10 +114,3 @@ Jede Korrektur, die du in eine Regel verwandelst, musst du nie wieder machen, de
 ## Wenn deine Bank nicht unterstützt wird
 
 Auch dann kannst du dir das Tippen sparen. Importiere eine CSV-, OFX- oder QFX-Datei deiner Bank oder lade einen PDF-Kontoauszug hoch und lass die KI die Transaktionen herausziehen. Zahlungsempfänger und Regeln funktionieren auch bei importierten Transaktionen. Transaktionen aus einem PDF-Kontoauszug gehen außerdem an die KI-Kategorisierung, und bei einer CSV-Datei kannst du sie selbst unter **Transaktionen** → **Optimierungen** starten. Im Tarif Essential, der keine Banksynchronisierung hat, bekommen Regeln ihre Transaktionen auf diesem Weg.
-
-## Was es kostet
-
-- **Plus**, $8 im Monat oder $55 im Jahr vor Steuern: Banksynchronisierung, die KI von MoneyMatter mit einem monatlichen Kontingent, Regeln und Zahlungsempfänger.
-- **Essential**, $5 im Monat oder $30 im Jahr vor Steuern: Regeln, Zahlungsempfänger und Dateiimporte, mit der KI über deinen eigenen Schlüssel. Keine Banksynchronisierung.
-
-Jedes neue Konto startet mit einer kostenlosen Testphase von 40 Tagen mit allem aus Plus, ohne dass du eine Karte brauchst.

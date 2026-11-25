@@ -58,10 +58,3 @@ Sus datos no están atrapados en un archivo de un solo Mac, ni tampoco en MoneyM
 - **Descargar una copia de seguridad**, un único zip con una copia completa de sus datos que puede dejar su cuenta tal como estaba.
 
 No se elimina nada cuando termina una prueba o una suscripción. Su cuenta pasa a ser de solo lectura, y aún puede iniciar sesión, verlo todo y descargar una exportación.
-
-## Cuánto cuesta
-
-- **Esencial**, $5 al mes o $30 al año antes de impuestos: cuentas, presupuestos, reglas, beneficiarios e importación de archivos, y la IA funciona con su propia clave.
-- **Plus**, $8 al mes o $55 al año antes de impuestos: todo lo de Esencial, más sincronización bancaria, la IA de MoneyMatter con una cuota mensual y automatizaciones de pago en el iPhone.
-
-Toda cuenta nueva empieza con una prueba gratuita de 40 días de todo lo que incluye Plus, sin necesidad de tarjeta.

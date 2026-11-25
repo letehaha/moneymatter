@@ -58,10 +58,3 @@ Seus dados não ficam presos a um arquivo em um único Mac, nem presos ao MoneyM
 - **Baixar um backup**, um único arquivo zip com uma cópia completa dos seus dados que consegue restaurar sua conta como estava.
 
 Nada é excluído quando um teste ou uma assinatura termina. Sua conta passa a ser somente leitura, e você ainda pode entrar, ver tudo e baixar uma exportação.
-
-## Quanto custa
-
-- **Essential**, $5 por mês ou $30 por ano sem impostos: contas, orçamentos, regras, favorecidos e importação de arquivos, com IA na sua própria chave.
-- **Plus**, $8 por mês ou $55 por ano sem impostos: tudo do Essential, mais sincronização bancária, a IA do MoneyMatter com uma cota mensal e automações de pagamento no iPhone.
-
-Toda conta nova começa com um teste grátis de 40 dias de tudo o que há no Plus, sem precisar de cartão.

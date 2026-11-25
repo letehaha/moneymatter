@@ -68,10 +68,3 @@ Bei 7 Tagen oder weniger zeigt die Verbindung **Läuft bald ab**. Sobald sie abg
 Viele Menschen in Europa haben Konten in mehr als einer Währung, etwa ein Girokonto in Euro und ein Konto in Pfund oder Dollar. MoneyMatter führt jedes Konto in seiner eigenen Währung und zeigt deine Summen in deiner Basiswährung.
 
 Wenn du Geld zwischen zwei deiner verbundenen Konten in derselben Währung verschiebst, kommen beide Seiten von deinen Banken. MoneyMatter verknüpft sie als Umbuchung, wenn es genau einen Treffer mit gleichem Betrag in Gegenrichtung innerhalb von 3 Tagen findet, damit die Verschiebung nicht als Ausgabe zählt. Bei einem Umtausch zwischen zwei Währungen musst du meist selbst nachhelfen: Öffne die Transaktion, wähle den Tab **Umbuchung** und verknüpfe die Gegenseite selbst.
-
-## Was es kostet
-
-- **Plus**, $8 im Monat oder $55 im Jahr vor Steuern: Banksynchronisierung, die KI von MoneyMatter mit einem monatlichen Kontingent, Regeln und Zahlungsempfänger.
-- **Essential**, $5 im Monat oder $30 im Jahr vor Steuern: Regeln, Zahlungsempfänger und Dateiimporte, mit der KI über deinen eigenen Schlüssel. Keine Banksynchronisierung.
-
-Lunch Flow berechnet seinen Dienst separat. Enable Banking und Walutomat verursachen keine zusätzlichen Kosten. Jedes neue Konto startet mit einer kostenlosen Testphase von 40 Tagen mit allem aus Plus, ohne dass du eine Karte brauchst.

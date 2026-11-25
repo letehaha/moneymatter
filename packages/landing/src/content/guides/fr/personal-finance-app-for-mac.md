@@ -58,10 +58,3 @@ Vos données ne sont pas enfermées dans un fichier sur un seul Mac, ni dans Mon
 - **Télécharger une sauvegarde**, un seul fichier zip contenant une copie complète de vos données, qui peut remettre votre compte tel qu'il était.
 
 Rien n'est supprimé à la fin d'un essai ou d'un abonnement. Votre compte passe en lecture seule, et vous pouvez toujours vous connecter, tout consulter et télécharger un export.
-
-## Ce que ça coûte
-
-- **Essential**, 5 $ par mois ou 30 $ par an avant taxes : comptes, budgets, règles, tiers et imports de fichiers, avec l'IA sur votre propre clé.
-- **Plus**, 8 $ par mois ou 55 $ par an avant taxes : tout ce que comprend Essential, plus la synchronisation bancaire, l'IA de MoneyMatter avec un quota mensuel et les automatisations de paiement sur iPhone.
-
-Chaque nouveau compte démarre avec un essai gratuit de 40 jours de tout ce que comprend Plus, sans carte bancaire.

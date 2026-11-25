@@ -58,10 +58,3 @@ Deine Daten sind weder in einer Datei auf einem einzelnen Mac eingesperrt noch i
 - Ein **Backup herunterladen**, eine einzelne Zip-Datei mit einer vollständigen Kopie deiner Daten, mit der sich dein Konto so wiederherstellen lässt, wie es war.
 
 Nichts wird gelöscht, wenn eine Testphase oder ein Abo endet. Dein Konto wird schreibgeschützt, und du kannst dich weiter anmelden, alles ansehen und einen Export herunterladen.
-
-## Was es kostet
-
-- **Essential**, $5 im Monat oder $30 im Jahr vor Steuern: Konten, Budgets, Regeln, Zahlungsempfänger und Dateiimporte, mit der KI über deinen eigenen Schlüssel.
-- **Plus**, $8 im Monat oder $55 im Jahr vor Steuern: alles aus Essential, dazu Banksynchronisierung, die KI von MoneyMatter mit einem monatlichen Kontingent und Zahlungsautomatisierungen auf dem iPhone.
-
-Jedes neue Konto startet mit einer kostenlosen Testphase von 40 Tagen mit allem aus Plus, ohne dass du eine Karte brauchst.

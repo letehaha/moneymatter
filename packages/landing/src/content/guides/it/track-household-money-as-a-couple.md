@@ -75,15 +75,6 @@ Stai restituendo al tuo partner la tua metà dell'affitto? Con l'accesso in scri
 
 La sincronizzazione bancaria richiede Plus solo per chi collega la banca. Collega la tua, e il tuo partner vede le transazioni sincronizzate con Essential. Un conto collegato alla banca non accetta transazioni aggiunte a mano, nemmeno con l'accesso in scrittura.
 
-## Quanto costa per due
-
-Un posto è una persona che ha accettato il tuo invito, te escluso. Il limite vale separatamente per il tuo nucleo familiare e per ogni conto o tracker che condividi.
-
-- **Essential**, $5 al mese o $30 all'anno, tasse escluse: 2 posti.
-- **Plus**, $8 al mese o $55 all'anno, tasse escluse: 5 posti, più la sincronizzazione bancaria.
-
-Ognuno paga per i propri diritti di modifica, quindi se entrambi aggiungete transazioni, servono due piani. Ogni nuovo account parte con una prova gratuita di 40 giorni, senza carta. Dopo la fine, un account senza piano può comunque vedere ciò che era già stato condiviso con lui, ma non può accettare nuovi inviti né fare modifiche.
-
 ## Se smetti di condividere
 
 Rimuovi il tuo partner dal pannello di condivisione o da **Impostazioni** → **Nucleo Familiare**, oppure può andarsene da solo. Il suo accesso termina e ogni transazione sul tuo conto resta, comprese quelle che ha aggiunto. I trasferimenti tra voi restano nello storico di entrambi come registrazioni separate.

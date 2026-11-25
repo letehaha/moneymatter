@@ -114,10 +114,3 @@ Each fix you turn into a rule is one you never make again, so the list gets shor
 ## If your bank isn't supported
 
 You can still skip the typing. Import a CSV, OFX or QFX file from your bank, or upload a PDF statement and let AI pull the transactions out. Payees and rules work on imported transactions too. Transactions from a PDF statement also go to AI categorization, and for a CSV file you can run it yourself from **Transactions** → **Optimizations**. On Essential, which has no bank sync, this is how rules get their transactions.
-
-## What it costs
-
-- **Plus**, $8 a month or $55 a year before tax: bank sync, MoneyMatter's AI with a monthly allowance, rules and payees.
-- **Essential**, $5 a month or $30 a year before tax: rules, payees and file imports, with AI on your own key. No bank sync.
-
-Every new account starts with a 40-day free trial of everything in Plus, with no card needed.

@@ -75,15 +75,6 @@ Vai devolver ao seu parceiro a sua metade do aluguel? Com acesso de edição à 
 
 A sincronização bancária exige o Plus só para quem conecta o banco. Conecte o seu, e seu parceiro vê as transações sincronizadas no Essential. Uma conta conectada a um banco não aceita transações adicionadas manualmente, mesmo com acesso de edição.
 
-## Quanto custa para dois
-
-Uma vaga é uma pessoa que aceitou seu convite, sem contar você. O limite vale separadamente para sua família e para cada conta ou acompanhamento que você compartilha.
-
-- **Essential**, $5 por mês ou $30 por ano sem impostos: 2 vagas.
-- **Plus**, $8 por mês ou $55 por ano sem impostos: 5 vagas, mais a sincronização bancária.
-
-Cada pessoa paga pelo próprio direito de edição, então, se os dois adicionam transações, vocês precisam de dois planos. Toda conta nova começa com um teste grátis de 40 dias, sem precisar de cartão. Depois que ele termina, uma conta sem plano ainda pode ver o que já foi compartilhado com ela, mas não pode aceitar novos convites nem fazer alterações.
-
 ## Se vocês deixarem de compartilhar
 
 Remova seu parceiro no painel de compartilhamento ou em **Configurações** → **Família**, ou ele mesmo pode sair. O acesso dele termina, e todas as transações da sua conta continuam lá, inclusive as que ele adicionou. As transferências entre vocês continuam nos dois históricos, como registros separados.

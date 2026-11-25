@@ -75,15 +75,6 @@ Paying your partner back for your half of the rent? With write access to their h
 
 Bank sync needs Plus only for the person who connects the bank. Connect yours, and your partner sees the synced transactions on Essential. A bank-connected account takes no transactions added by hand, even with write access.
 
-## What it costs for two
-
-A seat is one person who has accepted your invitation, not counting you. The limit applies separately to your household and to each account or tracker you share.
-
-- **Essential**, $5 a month or $30 a year before tax: 2 seats.
-- **Plus**, $8 a month or $55 a year before tax: 5 seats, plus bank sync.
-
-Each person pays for their own editing rights, so if you both add transactions, you need two plans. Every new account starts with a 40-day free trial, with no card needed. After it ends, an account without a plan can still view what was already shared with it, but it can't accept new invitations or make changes.
-
 ## If you stop sharing
 
 Remove your partner from the sharing panel or from **Settings** → **Household**, or they can leave on their own. Their access ends, and every transaction on your account stays, including the ones they added. Transfers between you stay in both histories as separate records.

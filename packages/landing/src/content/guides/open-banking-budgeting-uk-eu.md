@@ -68,10 +68,3 @@ When 7 days or fewer remain, the connection shows **Expiring soon**. Once it exp
 Many people in Europe hold accounts in more than one currency, such as a euro current account and a pound or dollar account. MoneyMatter keeps each account in its own currency and shows your totals in your base currency.
 
 When you move money between two of your connected accounts in the same currency, both sides arrive from your banks. MoneyMatter links them as a transfer when it finds exactly one match with the same amount in the opposite direction within 3 days, so the move doesn't count as spending. An exchange between two currencies usually needs your help: open the transaction, select the **Transfer** tab and link the other side yourself.
-
-## What it costs
-
-- **Plus**, $8 a month or $55 a year before tax: bank sync, MoneyMatter's AI with a monthly allowance, rules and payees.
-- **Essential**, $5 a month or $30 a year before tax: rules, payees and file imports, with AI on your own key. No bank sync.
-
-Lunch Flow charges separately for its service. Enable Banking and Walutomat add no extra cost. Every new account starts with a 40-day free trial of everything in Plus, with no card needed.

@@ -68,10 +68,3 @@ Quand il reste 7 jours ou moins, la connexion affiche **Expire bientôt**. Une f
 Beaucoup de gens en Europe détiennent des comptes dans plusieurs devises, par exemple un compte courant en euros et un compte en livres ou en dollars. MoneyMatter garde chaque compte dans sa propre devise et affiche vos totaux dans votre devise principale.
 
 Quand vous déplacez de l'argent entre deux de vos comptes connectés dans la même devise, les deux côtés arrivent de vos banques. MoneyMatter les lie comme un virement quand il trouve exactement une correspondance avec le même montant en sens inverse à moins de 3 jours d'écart, si bien que ce mouvement ne compte pas comme une dépense. Un change entre deux devises demande généralement votre aide : ouvrez l'opération, sélectionnez l'onglet **Virement** et liez vous-même l'autre côté.
-
-## Ce que ça coûte
-
-- **Plus**, 8 $ par mois ou 55 $ par an avant taxes : synchronisation bancaire, IA de MoneyMatter avec un quota mensuel, règles et tiers.
-- **Essential**, 5 $ par mois ou 30 $ par an avant taxes : règles, tiers et imports de fichiers, avec l'IA sur votre propre clé. Pas de synchronisation bancaire.
-
-Lunch Flow facture son service séparément. Enable Banking et Walutomat n'ajoutent aucun coût. Chaque nouveau compte démarre avec un essai gratuit de 40 jours de tout ce que comprend Plus, sans carte bancaire.

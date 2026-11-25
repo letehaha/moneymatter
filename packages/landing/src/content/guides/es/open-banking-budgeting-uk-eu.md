@@ -68,10 +68,3 @@ Cuando quedan 7 días o menos, la conexión muestra **Próxima a caducar**. Cuan
 Mucha gente en Europa tiene cuentas en más de una moneda, como una cuenta corriente en euros y otra en libras o dólares. MoneyMatter mantiene cada cuenta en su propia moneda y muestra sus totales en su moneda base.
 
 Cuando mueve dinero entre dos de sus cuentas conectadas en la misma moneda, ambas partes llegan desde sus bancos. MoneyMatter las vincula como una transferencia cuando encuentra exactamente una coincidencia con el mismo importe en sentido contrario dentro de 3 días, de modo que el movimiento no cuenta como gasto. Un cambio entre dos monedas suele necesitar su ayuda: abra la transacción, seleccione la pestaña **Transferencia** y vincule usted mismo la otra parte.
-
-## Cuánto cuesta
-
-- **Plus**, $8 al mes o $55 al año antes de impuestos: sincronización bancaria, la IA de MoneyMatter con una cuota mensual, reglas y beneficiarios.
-- **Esencial**, $5 al mes o $30 al año antes de impuestos: reglas, beneficiarios e importación de archivos, y la IA funciona con su propia clave. Sin sincronización bancaria.
-
-Lunch Flow cobra aparte por su servicio. Enable Banking y Walutomat no suponen ningún coste adicional. Toda cuenta nueva empieza con una prueba gratuita de 40 días de todo lo que incluye Plus, sin necesidad de tarjeta.

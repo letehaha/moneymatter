@@ -75,15 +75,6 @@ Vous remboursez à votre conjoint votre moitié du loyer ? Avec l'accès en écr
 
 La synchronisation bancaire n'exige l'offre Plus que pour la personne qui connecte la banque. Connectez la vôtre, et votre conjoint voit les opérations synchronisées avec Essential. Un compte connecté à une banque n'accepte aucune opération ajoutée à la main, même avec l'accès en écriture.
 
-## Ce que ça coûte à deux
-
-Un accès correspond à une personne qui a accepté votre invitation, vous non compris. La limite s'applique séparément à votre foyer et à chaque compte ou suivi que vous partagez.
-
-- **Essential**, 5 $ par mois ou 30 $ par an avant taxes : 2 accès.
-- **Plus**, 8 $ par mois ou 55 $ par an avant taxes : 5 accès, plus la synchronisation bancaire.
-
-Chacun paie pour ses propres droits de modification, donc si vous ajoutez tous les deux des opérations, il vous faut deux offres. Chaque nouveau compte démarre avec un essai gratuit de 40 jours, sans carte bancaire. Une fois l'essai terminé, un compte sans offre peut encore consulter ce qui lui a déjà été partagé, mais il ne peut ni accepter de nouvelles invitations ni faire de modifications.
-
 ## Si vous arrêtez de partager
 
 Retirez votre conjoint depuis le panneau de partage ou depuis **Paramètres** → **Foyer**, ou il peut partir de lui-même. Son accès prend fin, et toutes les opérations de votre compte restent, y compris celles qu'il a ajoutées. Les virements entre vous restent dans les deux historiques comme des enregistrements distincts.

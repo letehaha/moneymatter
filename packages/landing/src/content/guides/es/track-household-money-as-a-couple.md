@@ -75,15 +75,6 @@ Las reglas y la coincidencia con IA de un rastreador solo miran las transaccione
 
 La sincronización bancaria requiere Plus solo para la persona que conecta el banco. Conecte el suyo, y su pareja verá las transacciones sincronizadas en Esencial. Una cuenta conectada a un banco no admite transacciones añadidas a mano, ni siquiera con acceso de escritura.
 
-## Cuánto cuesta para dos
-
-Una plaza es una persona que ha aceptado su invitación, sin contarle a usted. El límite se aplica por separado a su hogar y a cada cuenta o rastreador que comparta.
-
-- **Esencial**, $5 al mes o $30 al año antes de impuestos: 2 plazas.
-- **Plus**, $8 al mes o $55 al año antes de impuestos: 5 plazas, además de sincronización bancaria.
-
-Cada persona paga sus propios derechos de edición, así que si los dos añaden transacciones, necesitan dos planes. Toda cuenta nueva empieza con una prueba gratuita de 40 días, sin necesidad de tarjeta. Cuando termina, una cuenta sin plan aún puede ver lo que ya se había compartido con ella, pero no puede aceptar invitaciones nuevas ni hacer cambios.
-
 ## Si deja de compartir
 
 Retire a su pareja desde el panel de compartir o desde **Ajustes** → **Hogar**, o puede irse por su cuenta. Su acceso termina y todas las transacciones de su cuenta se quedan, incluidas las que añadió. Las transferencias entre ustedes permanecen en el historial de ambos como registros separados.

@@ -114,10 +114,3 @@ Chaque correction transformée en règle est une correction que vous ne referez 
 ## Si votre banque n'est pas prise en charge
 
 Vous pouvez quand même vous passer de la saisie. Importez un fichier CSV, OFX ou QFX de votre banque, ou chargez un relevé PDF et laissez l'IA en extraire les opérations. Les tiers et les règles fonctionnent aussi sur les opérations importées. Les opérations d'un relevé PDF passent aussi par la catégorisation par IA, et pour un fichier CSV vous pouvez la lancer vous-même depuis **Opérations** → **Optimisations**. Avec Essential, qui n'inclut pas la synchronisation bancaire, c'est ainsi que les règles reçoivent leurs opérations.
-
-## Ce que ça coûte
-
-- **Plus**, 8 $ par mois ou 55 $ par an avant taxes : synchronisation bancaire, IA de MoneyMatter avec un quota mensuel, règles et tiers.
-- **Essential**, 5 $ par mois ou 30 $ par an avant taxes : règles, tiers et imports de fichiers, avec l'IA sur votre propre clé. Pas de synchronisation bancaire.
-
-Chaque nouveau compte démarre avec un essai gratuit de 40 jours de tout ce que comprend Plus, sans carte bancaire.

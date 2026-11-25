@@ -58,10 +58,3 @@ Your data isn't locked into a file on one Mac, and it isn't locked into MoneyMat
 - **Download a backup**, a single zip with a complete copy of your data that can put your account back as it was.
 
 Nothing is deleted when a trial or subscription ends. Your account becomes read-only, and you can still sign in, view everything and download an export.
-
-## What it costs
-
-- **Essential**, $5 a month or $30 a year before tax: accounts, budgets, rules, payees and file imports, with AI on your own key.
-- **Plus**, $8 a month or $55 a year before tax: everything in Essential, plus bank sync, MoneyMatter's AI with a monthly allowance and iPhone payment automations.
-
-Every new account starts with a 40-day free trial of everything in Plus, with no card needed.
