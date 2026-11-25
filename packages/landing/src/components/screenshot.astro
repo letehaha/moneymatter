@@ -1,5 +1,5 @@
 ---
-import { existsSync } from 'node:fs';
+import { screenshotVariants } from '@/lib/themed-screenshots';
 
 interface Props {
   name: string;
@@ -11,13 +11,7 @@ interface Props {
 
 const { name, alt, width, height, loading = 'lazy' } = Astro.props;
 const base = `/img/landing/screenshots/${name}`;
-if (!existsSync(`public${base}@1x.webp`)) throw new Error(`Missing screenshot: ${name}`);
-const variants = existsSync(`public${base}-light@1x.webp`)
-  ? [
-      { src: `${base}-light`, theme: 'shot-light' },
-      { src: base, theme: 'shot-dark' },
-    ]
-  : [{ src: base, theme: undefined }];
+const variants = screenshotVariants({ base });
 ---
 
 {

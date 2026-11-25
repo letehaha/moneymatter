@@ -1,11 +1,12 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/base-layout.astro';
 import LandingHeader from '@/components/landing-header.astro';
 import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 import FeatureCard from '@/components/feature-card.astro';
 import { getFeaturePage } from '@/lib/features';
+import { withThemedScreenshots } from '@/lib/themed-screenshots';
 import '@/styles/feature-page.css';
 import '@/styles/prose-page.css';
 import { useI18n } from '@/i18n';
@@ -18,7 +19,8 @@ export async function getStaticPaths() {
 const { t, url, locale, localizeGuide } = useI18n(Astro);
 const guide = await localizeGuide({ guide: Astro.props.guide });
 const { title, description, published, updated, related, docs } = guide.data;
-const { Content } = await render(guide);
+if (!guide.rendered?.html) throw new Error(`Guide has no rendered HTML: ${guide.id}`);
+const html = withThemedScreenshots({ html: guide.rendered.html });
 
 const relatedPages = related.map((href) => getFeaturePage({ href }));
 
@@ -73,7 +75,7 @@ const structuredData = {
         </header>
 
         <article class="guide-body mt-12">
-          <Content />
+          <Fragment set:html={html} />
         </article>
 
         <p class="text-muted-foreground mt-12 text-sm">
