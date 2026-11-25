@@ -1286,6 +1286,82 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       }
     }, 30000);
 
+    it('round-trips the watchlist with its sections, items, alerts and watch-only securities', async () => {
+      const portfolio = await helpers.createPortfolio({ payload: { name: 'Watching' }, raw: true });
+      const [security] = await helpers.seedSecurities([{ symbol: 'WTCH', name: 'Watched Corp' }]);
+      const section = await helpers.createWatchlistSection({ portfolioId: portfolio.id, name: 'Ideas', raw: true });
+      const item = await helpers.createWatchlistItem({
+        portfolioId: portfolio.id,
+        payload: { securityId: security!.id, sectionId: section.id, note: 'Dip', targetPrice: '12.5' },
+        raw: true,
+      });
+      await helpers.createWatchlistAlert({
+        portfolioId: portfolio.id,
+        itemId: item.id,
+        payload: { type: 'close_below', price: '10', notifyEmail: true },
+        raw: true,
+      });
+      const before = await helpers.getWatchlist({ portfolioId: portfolio.id, raw: true });
+
+      const first = await exportArchive();
+      const firstArchive = helpers.parseBackupArchive({ buffer: first.buffer });
+      const references = JSON.parse(firstArchive.files.get('reference/securities.json')!.toString('utf8')) as {
+        id: string;
+      }[];
+      expect(references.map((row) => row.id)).toContain(security!.id);
+
+      const restore = await helpers.restoreBackup({ fileContent: first.base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(foreignReferenceWarnings(status)).toEqual([]);
+
+      expect(await helpers.getWatchlist({ portfolioId: portfolio.id, raw: true })).toEqual(before);
+
+      const secondArchive = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
+      for (const name of ['watchlist-sections', 'watchlist-items', 'watchlist-alerts']) {
+        expect({ name, rows: helpers.canonicalBackupRows({ rows: secondArchive.readData({ name }) }) }).toEqual({
+          name,
+          rows: helpers.canonicalBackupRows({ rows: firstArchive.readData({ name }) }),
+        });
+      }
+    }, 30000);
+
+    it('restores a fired watchlist alert without its pending email', async () => {
+      const portfolio = await helpers.createPortfolio({ payload: { name: 'Fired' }, raw: true });
+      const security = await helpers.createTestSecurity({ symbol: 'FIRED' });
+      const item = await helpers.createWatchlistItem({
+        portfolioId: portfolio.id,
+        payload: { securityId: security.id },
+        raw: true,
+      });
+      await helpers.sleep(200);
+      await helpers.setDailyPrices({ securityId: security.id, prices: [{ days: 2, price: '100' }] });
+      await helpers.createWatchlistAlert({
+        portfolioId: portfolio.id,
+        itemId: item.id,
+        payload: { type: 'close_above', price: '90', notifyEmail: true },
+        raw: true,
+      });
+      expect((await helpers.triggerSecuritiesSync()).statusCode).toBe(200);
+
+      const first = await exportArchive();
+      type AlertRow = { id: string; pendingEmailPayload: unknown };
+      const [archived] = helpers
+        .parseBackupArchive({ buffer: first.buffer })
+        .readData({ name: 'watchlist-alerts' }) as AlertRow[];
+      expect(archived!.pendingEmailPayload).not.toBeNull();
+
+      const restore = await helpers.restoreBackup({ fileContent: first.base64 });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      const [restored] = helpers
+        .parseBackupArchive({ buffer: (await exportArchive()).buffer })
+        .readData({ name: 'watchlist-alerts' }) as AlertRow[];
+      expect(restored).toMatchObject({ id: archived!.id, pendingEmailPayload: null });
+    }, 30000);
+
     it('re-links goal shares to the reminted accounts and gives the goal its own logo copy', async () => {
       const account = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ name: 'Goal source' }),

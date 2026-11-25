@@ -4,6 +4,7 @@ import { logger } from '@js/utils/logger';
 import Holdings from '@models/investments/holdings.model';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import Securities from '@models/investments/securities.model';
+import WatchlistItems from '@models/investments/watchlist-items.model';
 import isPlainObject from 'lodash/isPlainObject';
 import omit from 'lodash/omit';
 import { Op } from 'sequelize';
@@ -126,8 +127,8 @@ async function dumpTable({
 }
 
 /**
- * Securities referenced by the user's holdings and investment transactions (the
- * only two owner-scoped tables carrying a `securityId`). Identity only — restore
+ * Securities referenced by the user's holdings, investment transactions and
+ * watchlist items (the owner-scoped tables carrying a `securityId`). Identity only — restore
  * resolves-or-creates by natural key. Prices are not dumped: derived market data
  * the instance refetches, never trusted from an uploaded backup.
  */
@@ -136,7 +137,7 @@ async function dumpReferenceFiles({ resolver }: { resolver: ScopeResolver }): Pr
 
   let securityIds: RecordId[] = [];
   if (portfolioIds.length > 0) {
-    const [holdings, invTx] = await Promise.all([
+    const [holdings, invTx, watchlistItems] = await Promise.all([
       Holdings.findAll({
         where: { portfolioId: { [Op.in]: portfolioIds } },
         attributes: ['securityId'],
@@ -149,8 +150,13 @@ async function dumpReferenceFiles({ resolver }: { resolver: ScopeResolver }): Pr
         raw: true,
         paranoid: false,
       }),
+      WatchlistItems.findAll({
+        where: { portfolioId: { [Op.in]: portfolioIds } },
+        attributes: ['securityId'],
+        raw: true,
+      }),
     ]);
-    const ids = [...holdings, ...invTx]
+    const ids = [...holdings, ...invTx, ...watchlistItems]
       .map((r) => (r as unknown as { securityId: RecordId | null }).securityId)
       .filter((id): id is RecordId => id != null);
     securityIds = [...new Set(ids)];

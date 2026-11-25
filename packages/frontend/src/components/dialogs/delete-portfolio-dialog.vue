@@ -34,7 +34,6 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { useDeletePortfolio } from '@/composable/data-queries/portfolios';
 import { ApiErrorResponseError } from '@/js/errors';
 import { Trash2Icon } from '@lucide/vue';
-import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -47,9 +46,10 @@ const emit = defineEmits<{
   (e: 'deleted'): void;
 }>();
 
+const isOpen = defineModel<boolean>('open', { default: false });
+
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
 const deletePortfolioMutation = useDeletePortfolio();
-const isOpen = ref(false);
 
 const handleDelete = async () => {
   try {

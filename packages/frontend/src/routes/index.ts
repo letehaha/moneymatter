@@ -94,6 +94,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: '/portfolios/:portfolioId/holdings/:securityId',
+        name: ROUTES_NAMES.portfolioHolding,
+        component: () => import('@/pages/portfolios/holding-detail.vue'),
+        meta: {
+          navSection: 'accounts',
+          i18nChunks: ['pages/portfolio-detail', 'pages/investments', 'pages/transactions'],
+        },
+      },
+      {
         path: '/portfolios/:portfolioId/import-transactions',
         name: ROUTES_NAMES.portfolioTransactionsImport,
         component: () => import('@/pages/portfolios/transactions-import/page.vue'),

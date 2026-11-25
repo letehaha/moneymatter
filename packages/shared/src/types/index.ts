@@ -22,6 +22,7 @@ export * from './subscriptions';
 export * from './loans';
 export * from './vehicles';
 export * from './investments';
+export * from './watchlist';
 export * from './venture';
 export * from './fire';
 export * from './stats';

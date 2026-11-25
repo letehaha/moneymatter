@@ -1,6 +1,7 @@
 import type { RecordId } from './record-id';
 import type { ResourceType, SharePermission, SharePolicy } from './sharing';
 import type { TagReminderFrequency, TagReminderType } from './tags';
+import type { WatchlistAlertNotificationPayload } from './watchlist';
 
 /**
  * Known notification types. Using string literals (not enum) to allow
@@ -20,6 +21,7 @@ export const NOTIFICATION_TYPES = {
   trackerAiMatches: 'tracker_ai_matches',
   goalReached: 'goal_reached',
   unrealizedLossAlert: 'unrealized_loss_alert',
+  watchlistAlert: 'watchlist_alert',
   shareInvitationReceived: 'share_invitation_received',
   shareInvitationSendFailed: 'share_invitation_send_failed',
   shareAccepted: 'share_accepted',
@@ -270,6 +272,7 @@ export type NotificationPayload =
   | TrackerAiMatchesNotificationPayload
   | GoalReachedNotificationPayload
   | UnrealizedLossAlertNotificationPayload
+  | WatchlistAlertNotificationPayload
   | ShareInvitationNotificationPayload
   | ShareLifecycleNotificationPayload
   | ShareInvitationSendFailedPayload

@@ -181,6 +181,42 @@ const HOLDINGS = {
   WMT: [[10, 30]],
 };
 
+const OLD_PORTFOLIO = 'Old Brokerage';
+const DIVIDENDS = { VOO: 1.74, KO: 0.51 };
+
+// [symbol, section, buy-below as a share of the last close, note, alerts]
+const WATCHLIST = [
+  ['SPY', null, null, 'Benchmark for the core ETFs', []],
+  ['UBER', null, 0.92, null, []],
+  [
+    'AVGO',
+    'Buy candidates',
+    0.9,
+    'Wait for a pullback after earnings',
+    [
+      { type: 'close_below', priceShare: 0.9, frequency: 'once', notifyInApp: true, notifyEmail: false },
+      { type: 'daily_move', percent: 5, frequency: 'every_time', notifyInApp: true, notifyEmail: true },
+    ],
+  ],
+  ['ADBE', 'Buy candidates', 1.04, 'Cheap vs. its 5-year average', []],
+  [
+    'NVDA',
+    'Buy candidates',
+    0.9,
+    'Add more on dips',
+    [{ type: 'daily_move', percent: 4, frequency: 'every_time', notifyInApp: true, notifyEmail: false }],
+  ],
+  ['SHOP', 'Buy candidates', null, null, []],
+  ['O', 'Dividend ideas', 0.93, 'Monthly dividend payer', []],
+  [
+    'MCD',
+    'Dividend ideas',
+    0.92,
+    null,
+    [{ type: 'close_below', priceShare: 0.92, frequency: 'once', notifyInApp: true, notifyEmail: false }],
+  ],
+];
+
 const found = ({ item, what }) => {
   if (!item) throw new Error(`not found: ${what}`);
   return item;
@@ -463,5 +499,132 @@ export async function seedShowcase({ call, log }) {
       });
     }
     log(`${PORTFOLIO}: ${trades.length} trades added`);
+  }
+
+  const transfers = await call({ path: `/investments/portfolios/${portfolioId}/transfers?limit=100` }).then(
+    (r) => r.data,
+  );
+  if (!transfers.some((t) => t.description === 'Monthly contribution')) {
+    for (let monthsAgo = MONTHS - 1; monthsAgo >= 0; monthsAgo--) {
+      const time = at({ monthsAgo, day: 27 });
+      if (time > now) continue;
+      await call({
+        method: 'POST',
+        path: `/investments/portfolios/${portfolioId}/transfer/from-account`,
+        body: {
+          accountId: account(CHECKING),
+          amount: monthsAgo % 4 === 1 ? '2500' : '1000',
+          date: ymd(time),
+          description: 'Monthly contribution',
+        },
+      });
+    }
+    log(`${PORTFOLIO}: monthly contributions from ${CHECKING} added`);
+  }
+
+  if (!transfers.some((t) => t.fromPortfolio?.name === OLD_PORTFOLIO)) {
+    let oldPortfolio = portfolios.find((p) => p.name === OLD_PORTFOLIO);
+    // An existing one already got its deposit; only the transfer failed last run.
+    if (!oldPortfolio) {
+      oldPortfolio = await call({ method: 'POST', path: '/investments/portfolios', body: { name: OLD_PORTFOLIO } });
+      await call({
+        method: 'POST',
+        path: `/investments/portfolios/${oldPortfolio.id}/cash-transaction`,
+        body: { type: 'deposit', amount: '6000', currencyCode: 'USD', date: ymd(at({ monthsAgo: 8, day: 2 })) },
+      });
+    }
+    await call({
+      method: 'POST',
+      path: `/investments/portfolios/${oldPortfolio.id}/transfer`,
+      body: {
+        toPortfolioId: portfolioId,
+        currencyCode: 'USD',
+        amount: '6000',
+        date: ymd(at({ monthsAgo: 8, day: 6 })),
+        description: 'Consolidate old brokerage',
+      },
+    });
+    log(`${OLD_PORTFOLIO}: moved into ${PORTFOLIO}`);
+  }
+
+  const holdings = await call({ path: `/investments/portfolios/${portfolioId}/holdings` });
+  for (const [symbol, perShare] of Object.entries(DIVIDENDS)) {
+    const holding = found({ item: holdings.find((h) => h.security.symbol === symbol), what: `holding ${symbol}` });
+    if (Number(holding.dividendIncome)) continue;
+    for (const monthsAgo of [11, 8, 5, 2]) {
+      await call({
+        method: 'POST',
+        path: '/investments/transaction',
+        body: {
+          portfolioId,
+          securityId: holding.securityId,
+          category: 'dividend',
+          date: ymd(at({ monthsAgo, day: 15 })),
+          quantity: String(Number(holding.quantity)),
+          price: String(perShare),
+          fees: '0',
+        },
+      });
+    }
+    log(`${PORTFOLIO}: ${symbol} dividends added`);
+  }
+
+  const watchlistPath = `/investments/portfolios/${portfolioId}/watchlist`;
+  const watchlist = await call({ path: watchlistPath });
+  const sections = [...watchlist.sections];
+  const watched = [...watchlist.ungroupedItems, ...watchlist.sections.flatMap((section) => section.items)];
+  const sectionId = async (name) => {
+    if (!name) return null;
+    let section = sections.find((s) => s.name === name);
+    if (!section) {
+      section = await call({ method: 'POST', path: `${watchlistPath}/sections`, body: { name } });
+      if (!section?.id) throw new Error(`watchlist section ${name}: no id in response`);
+      sections.push(section);
+    }
+    return section.id;
+  };
+  const pricedSecurityId = async (symbol) => {
+    const held = holdings.find((h) => h.security.symbol === symbol);
+    if (held) return held.securityId;
+    const from = at({ monthsAgo: 1 }).toISOString();
+    const candidates = securities
+      .filter((s) => s.symbol === symbol && s.currencyCode === 'USD' && s.assetClass !== 'crypto')
+      .sort((a, b) => a.id.localeCompare(b.id));
+    for (const candidate of candidates) {
+      const prices = await call({ path: `/investments/prices?securityId=${candidate.id}&from=${from}` });
+      if (prices.length) return candidate.id;
+    }
+    throw new Error(`no priced security ${symbol}`);
+  };
+  for (const [symbol, section, targetShare, note, alerts] of WATCHLIST) {
+    if (watched.some((item) => item.security.symbol === symbol)) continue;
+    const item = await call({
+      method: 'POST',
+      path: `${watchlistPath}/items`,
+      body: { securityId: await pricedSecurityId(symbol), sectionId: await sectionId(section), note },
+    });
+    // A rerun skips watched symbols, so a half-seeded item must not survive.
+    try {
+      const close = Number(item.lastClose);
+      if (!close) throw new Error(`watchlist ${symbol}: no last close`);
+      if (targetShare) {
+        await call({
+          method: 'PATCH',
+          path: `${watchlistPath}/items/${item.id}`,
+          body: { targetPrice: (close * targetShare).toFixed(2) },
+        });
+      }
+      for (const { priceShare, ...alert } of alerts) {
+        await call({
+          method: 'POST',
+          path: `${watchlistPath}/items/${item.id}/alerts`,
+          body: priceShare ? { ...alert, price: (close * priceShare).toFixed(2) } : alert,
+        });
+      }
+    } catch (error) {
+      await call({ method: 'DELETE', path: `${watchlistPath}/items/${item.id}` });
+      throw error;
+    }
+    log(`watchlist: ${symbol} added`);
   }
 }

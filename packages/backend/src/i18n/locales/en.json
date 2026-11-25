@@ -289,6 +289,27 @@
     "unrealizedLossAlert": {
       "title_one": "{{count}} holding crossed your loss alert",
       "title_other": "{{count}} holdings crossed your loss alert"
+    },
+    "watchlist": {
+      "itemNotFound": "Watchlist item not found",
+      "sectionNotFound": "Watchlist section not found",
+      "alertNotFound": "Watchlist alert not found",
+      "securityAlreadyWatched": "This security is already on the watchlist",
+      "layoutInvalid": "The layout must list every section once and each item at most once",
+      "alertThresholdInvalid": "A price alert needs a price and a daily move alert needs a percentage",
+      "alertChannelRequired": "Choose at least one way to be notified",
+      "tooManyItems": "A watchlist can hold at most {{max}} securities",
+      "tooManySections": "A watchlist can have at most {{max}} sections",
+      "tooManyAlerts": "A watchlist security can have at most {{max}} alerts"
+    },
+    "watchlistAlert": {
+      "closeAbove": "{{symbol}} closed above {{price}} {{currency}}",
+      "closeBelow": "{{symbol}} closed below {{price}} {{currency}}",
+      "dailyMove": "{{symbol}} moved {{change}}% in a day",
+      "message": "Close on {{date}}: {{close}} {{currency}}",
+      "emailCta": "Open watchlist",
+      "emailFooter": "You get this email because you turned on email for these watchlist alerts.",
+      "digestSubject": "{{count}} watchlist alerts fired"
     }
   },
   "landingFaq": {

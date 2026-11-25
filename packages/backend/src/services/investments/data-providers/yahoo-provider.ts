@@ -17,7 +17,14 @@ import {
   toProviderSymbol,
 } from './base-provider';
 import { resolveByIsinFallback } from './yahoo/isin-resolver';
-import { ISIN_PATTERN, mapYahooTypeToAssetClass, remapUcitsType, toIsoCurrency, toMajorUnit } from './yahoo/utils';
+import {
+  ISIN_PATTERN,
+  mapYahooTypeToAssetClass,
+  mapYahooTypeToSecurityType,
+  remapUcitsType,
+  toIsoCurrency,
+  toMajorUnit,
+} from './yahoo/utils';
 
 const DEFAULT_HISTORY_YEARS = 5;
 const CURRENCY_RESOLVE_CONCURRENCY = 5;
@@ -91,6 +98,7 @@ export class YahooDataProvider extends BaseSecurityDataProvider {
         // so genuine mutual funds still route to `fixed_income`.
         const rawType = typeof q.typeDisp === 'string' ? q.typeDisp : undefined;
         const effectiveType = remapUcitsType({ rawType, isIsinQuery });
+        const rawQuoteType = typeof q.quoteType === 'string' ? q.quoteType : rawType;
 
         seenSymbols.add(symbol);
         results.push({
@@ -98,6 +106,7 @@ export class YahooDataProvider extends BaseSecurityDataProvider {
           providerSymbol: symbol,
           name,
           assetClass: mapYahooTypeToAssetClass(effectiveType),
+          securityType: mapYahooTypeToSecurityType({ rawType: remapUcitsType({ rawType: rawQuoteType, isIsinQuery }) }),
           providerName: this.providerName,
           exchangeName: typeof q.exchDisp === 'string' ? q.exchDisp : undefined,
           exchangeAcronym: typeof q.exchange === 'string' ? q.exchange : undefined,
@@ -201,6 +210,7 @@ export class YahooDataProvider extends BaseSecurityDataProvider {
 
       const results: PriceData[] = [];
       const currency = chartResult.meta?.currency;
+      const securityType = mapYahooTypeToSecurityType({ rawType: chartResult.meta?.instrumentType });
       for (const q of chartResult.quotes) {
         if (q.close == null) continue;
 
@@ -210,6 +220,7 @@ export class YahooDataProvider extends BaseSecurityDataProvider {
           priceClose: toMajorUnit({ price: q.adjclose ?? q.close, currency }),
           priceAsOf: new Date(q.date),
           providerName: SECURITY_PROVIDER.yahoo,
+          securityType,
         });
       }
 

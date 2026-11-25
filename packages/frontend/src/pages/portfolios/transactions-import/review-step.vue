@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { executeInvestmentImport } from '@/api/investment-transactions-import';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useAllCurrencies } from '@/composable/data-queries/currencies';
+import { invalidatePortfolioState } from '@/composable/data-queries/invalidate-portfolio-state';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { extractApiErrorMessage } from '@/js/errors';
 import {
@@ -170,10 +170,7 @@ const execute = useMutation({
       skipTempIds: Array.from(skipTempIds.value),
     }),
   onSuccess: (result) => {
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.holdingsList });
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioInvestmentTransactions });
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioSummary });
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioBalances });
+    invalidatePortfolioState({ queryClient });
     addNotification({
       text: t('investmentsImport.notifications.imported', { count: result.createdTransactions }),
       type: NotificationType.success,

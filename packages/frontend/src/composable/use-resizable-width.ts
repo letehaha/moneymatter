@@ -5,9 +5,9 @@ import { type MaybeRefOrGetter, computed, readonly, ref, toValue } from 'vue';
 export const SUB_NAV_WIDTH = { minWidth: 140, maxWidth: 360, defaultWidth: 208 } as const;
 
 /**
- * Drag-to-resize width persisted in localStorage. `edge` is the side the handle sits on:
- * dragging a left-edge handle leftwards widens the element. `maxWidth` wins over `minWidth`
- * when a dynamic max drops below the min.
+ * Drag-to-resize size persisted in localStorage. `edge` is the side the handle sits on:
+ * dragging a left-edge handle leftwards widens the element; a `top`/`bottom` edge resizes the
+ * height instead, returned as `width`. `maxWidth` wins over `minWidth` when a dynamic max drops below the min.
  */
 export const useResizableWidth = ({
   storageKey,
@@ -20,7 +20,7 @@ export const useResizableWidth = ({
   minWidth: number;
   maxWidth: MaybeRefOrGetter<number>;
   defaultWidth: number;
-  edge: 'left' | 'right';
+  edge: 'left' | 'right' | 'top' | 'bottom';
 }) => {
   // useLocalStorage catches storage errors, so blocked storage keeps the width in memory for the session.
   const storedWidth = useLocalStorage(storageKey, defaultWidth);
@@ -38,9 +38,10 @@ export const useResizableWidth = ({
   const startResize = (event: PointerEvent) => {
     if (stopDrag) return;
     const handle = event.currentTarget as HTMLElement;
-    const startX = event.clientX;
+    const axis = edge === 'top' || edge === 'bottom' ? 'clientY' : 'clientX';
+    const startPosition = event[axis];
     const startWidth = width.value;
-    const direction = edge === 'left' ? -1 : 1;
+    const direction = edge === 'left' || edge === 'top' ? -1 : 1;
     handle.setPointerCapture(event.pointerId);
     isResizing.value = true;
 
@@ -51,7 +52,7 @@ export const useResizableWidth = ({
       isResizing.value = false;
     };
     const onMove = (move: PointerEvent) => {
-      storedWidth.value = clampWidth({ width: startWidth + (move.clientX - startX) * direction });
+      storedWidth.value = clampWidth({ width: startWidth + (move[axis] - startPosition) * direction });
     };
     window.addEventListener('pointermove', onMove, { signal: controller.signal });
     window.addEventListener('pointerup', stopDrag, { signal: controller.signal });

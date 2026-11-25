@@ -1,4 +1,4 @@
-import type { ASSET_CLASS, SECURITY_PROVIDER, SecuritySearchResult } from '@bt/shared/types/investments';
+import type { ASSET_CLASS, SECURITY_PROVIDER, SECURITY_TYPE, SecuritySearchResult } from '@bt/shared/types/investments';
 import { logger } from '@js/utils';
 import { isAxiosError } from 'axios';
 import { inspect } from 'node:util';
@@ -43,6 +43,8 @@ export interface PriceData {
    */
   priceAsOf: Date;
   providerName: SECURITY_PROVIDER;
+  /** Instrument type, when the price response carries one. */
+  securityType?: SECURITY_TYPE | null;
 }
 
 /**

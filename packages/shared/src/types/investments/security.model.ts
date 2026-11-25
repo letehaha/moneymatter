@@ -1,4 +1,4 @@
-import { ASSET_CLASS, SECURITY_PROVIDER } from './enums';
+import { ASSET_CLASS, SECURITY_PROVIDER, SECURITY_TYPE } from './enums';
 import { HoldingModel } from './holding.model';
 import { InvestmentTransactionModel } from './investment-transaction.model';
 import { SecurityPricingModel } from './security-pricing.model';
@@ -131,6 +131,7 @@ export interface SecurityModel {
    * Enumerated values represent different classes of assets such as stocks, bonds, etc.
    */
   assetClass: ASSET_CLASS;
+  securityType: SECURITY_TYPE | null;
   createdAt: Date;
   updatedAt: Date;
 
@@ -162,6 +163,7 @@ export interface SecuritySearchResult {
   priceSourceSymbol?: string | null;
   name: string;
   assetClass: ASSET_CLASS;
+  securityType?: SECURITY_TYPE | null;
   providerName: SECURITY_PROVIDER; // The provider that sourced this security data.
   exchangeAcronym?: string;
   exchangeMic?: string;

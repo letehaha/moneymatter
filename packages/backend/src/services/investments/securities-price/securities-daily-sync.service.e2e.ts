@@ -1,4 +1,5 @@
-import { ASSET_CLASS, SECURITY_PROVIDER } from '@bt/shared/types/investments';
+import { PORTFOLIO_BENCHMARKS } from '@bt/shared/types';
+import { ASSET_CLASS, SECURITY_PROVIDER, SECURITY_TYPE } from '@bt/shared/types/investments';
 import Coingecko from '@coingecko/coingecko-typescript';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import Holdings from '@models/investments/holdings.model';
@@ -240,6 +241,87 @@ describe('Securities Daily Sync Service (via API Endpoint)', () => {
       expect(isToday(securities.find((i) => i.id === usSecurity.id)!.pricingLastSyncedAt!)).toBe(true);
       expect(isToday(securities.find((i) => i.id === nonUsSecurity.id)!.pricingLastSyncedAt!)).toBe(true);
       expect(isToday(securities.find((i) => i.id === securityWithStaleData.id)!.pricingLastSyncedAt!)).toBe(true);
+    });
+
+    it('backfills securityType from the chart instrument type on untyped securities only', async () => {
+      await Securities.update({ securityType: SECURITY_TYPE.bond }, { where: { id: nonUsSecurity.id } });
+
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+      mockedYahooChart.mockImplementation(async (symbol: string) => ({
+        meta: { currency: 'USD', instrumentType: symbol === 'AAPL' ? 'EQUITY' : 'MUTUALFUND' },
+        quotes: [{ date: new Date(yesterday), close: 100, adjclose: 100 }],
+      }));
+
+      expect((await helpers.triggerSecuritiesSync()).statusCode).toBe(200);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const securities = await helpers.getAllSecurities({ raw: true });
+      const typeOf = ({ id }: { id: string }) => securities.find((security) => security.id === id)!.securityType;
+      expect(typeOf({ id: usSecurity.id })).toBe(SECURITY_TYPE.stock);
+      expect(typeOf({ id: nonUsSecurity.id })).toBe(SECURITY_TYPE.bond);
+      // A stocks row Yahoo calls a mutual fund is a UCITS ETF.
+      expect(typeOf({ id: securityWithStaleData.id })).toBe(SECURITY_TYPE.etf);
+    });
+  });
+
+  describe('Watchlist securities', () => {
+    it('syncs securities on a live watchlist and skips those of a portfolio in the trash', async () => {
+      const [watched, trashedWatch] = await helpers.seedSecurities([
+        { symbol: 'WTCH', name: 'Watched Corp', currencyCode: 'USD' },
+        { symbol: 'TRSH', name: 'Trashed Corp', currencyCode: 'USD' },
+      ]);
+      const trashedPortfolio = await helpers.createPortfolio({
+        payload: helpers.buildPortfolioPayload({ name: 'Trashed' }),
+        raw: true,
+      });
+      await helpers.createWatchlistItem({ portfolioId: investmentPortfolio.id, payload: { securityId: watched!.id } });
+      await helpers.createWatchlistItem({
+        portfolioId: trashedPortfolio.id,
+        payload: { securityId: trashedWatch!.id },
+      });
+      await helpers.deletePortfolio({ portfolioId: trashedPortfolio.id });
+
+      // Drain the backfills that adding to the watchlist started before snapshotting.
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const ids = [watched!.id, trashedWatch!.id];
+      await Securities.update({ pricingLastSyncedAt: null }, { where: { id: ids } });
+      await SecurityPricing.destroy({ where: { securityId: ids } });
+      mockedYahooChart.mockClear();
+
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+      mockedYahooChart.mockResolvedValue({ quotes: [{ date: new Date(yesterday), close: 50, adjclose: 50 }] });
+
+      expect((await helpers.triggerSecuritiesSync()).statusCode).toBe(200);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      const chartedSymbols = mockedYahooChart.mock.calls.map((call) => call[0]);
+      expect(chartedSymbols).toContain('WTCH');
+      expect(chartedSymbols).not.toContain('TRSH');
+      expect(await SecurityPricing.count({ where: { securityId: watched!.id } })).toBeGreaterThan(0);
+      expect(await SecurityPricing.count({ where: { securityId: trashedWatch!.id } })).toBe(0);
+    });
+  });
+
+  describe('Benchmark securities', () => {
+    it('syncs a portfolio benchmark that no holding or watchlist references', async () => {
+      const { providerSymbol, currencyCode, name } = PORTFOLIO_BENCHMARKS.sp500;
+      const benchmark = await Securities.create({
+        symbol: providerSymbol,
+        providerSymbol,
+        currencyCode,
+        name,
+        providerName: SECURITY_PROVIDER.yahoo,
+        assetClass: ASSET_CLASS.stocks,
+      });
+
+      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+      mockedYahooChart.mockResolvedValue({ quotes: [{ date: new Date(yesterday), close: 5000, adjclose: 5000 }] });
+
+      expect((await helpers.triggerSecuritiesSync()).statusCode).toBe(200);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      expect(mockedYahooChart.mock.calls.map((call) => call[0])).toContain(providerSymbol);
+      expect(await SecurityPricing.count({ where: { securityId: benchmark.id } })).toBeGreaterThan(0);
     });
   });
 

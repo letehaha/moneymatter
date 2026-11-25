@@ -3585,7 +3585,7 @@
     "definition": "Current worth of a whole portfolio: market value of all holdings plus cash. Not total cost (what was paid for the holdings).",
     "translatable": true,
     "uk": "загальна вартість",
-    "ukNote": "'Total Cost' in the holdings table (portfolioDetail.holdingsTable.headers.totalCost) is currently also «Загальна вартість», although it is the summed cost basis (базова вартість, uk.md §5)."
+    "ukNote": "Keep it apart from cost basis (portfolioDetail.hero.stats.costBasis), which is «Базова вартість» (uk.md §5)."
   },
   {
     "term": "tracker",

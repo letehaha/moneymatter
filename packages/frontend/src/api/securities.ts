@@ -1,6 +1,7 @@
 import { api } from '@/api/_api';
 import {
   type ASSET_CLASS,
+  type SecurityPricingModel,
   type SecuritySearchResult,
   type SecuritySearchResultFormatted,
 } from '@bt/shared/types/investments';
@@ -54,3 +55,7 @@ export const bulkUploadPrices = async (payload: BulkUploadPricesPayload): Promis
   const res: BulkUploadPricesResponse = await api.post('/investments/securities/prices/bulk-upload', payload);
   return res;
 };
+
+/** One close per UTC day (the day's last stored price), oldest first. */
+export const getSecurityPrices = async ({ securityId }: { securityId: string }): Promise<SecurityPricingModel[]> =>
+  api.get('/investments/prices', { securityId, daily: true });

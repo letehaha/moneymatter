@@ -1,6 +1,7 @@
 import { logger } from '@js/utils';
 import { checkUnrealizedLossAlerts } from '@root/services/investments/holdings/check-unrealized-loss-alerts';
 import { securitiesPricesStocksDailySync } from '@root/services/investments/securities-price/securities-daily-sync.service';
+import { checkWatchlistAlertsAfterSync } from '@root/services/investments/watchlist/check-watchlist-alerts';
 
 import { createScheduledSync } from './lib/create-scheduled-sync';
 
@@ -17,7 +18,7 @@ export const securitiesDailySyncCron = createScheduledSync({
   cronExpression: '0 6 * * *',
   timeZone: 'America/New_York',
   scheduleDescription: 'runs every day at 6:00 AM EST',
-  // Loss alerts run after the sync so they compare against the prices it just stored.
+  // Alerts run after the sync so they compare against the prices it just stored.
   run: async () => {
     const syncResult = await securitiesPricesStocksDailySync();
     const lossAlerts = await checkUnrealizedLossAlerts().catch((error: unknown) => {
@@ -34,6 +35,7 @@ export const securitiesDailySyncCron = createScheduledSync({
         lossAlertsNotified: lossAlerts.notified,
         lossAlertsFailed: lossAlerts.failed,
       }),
+      ...(await checkWatchlistAlertsAfterSync({ crypto: false })),
     };
   },
 });

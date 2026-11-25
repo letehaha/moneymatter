@@ -1,0 +1,124 @@
+---
+title: Portfolio analytics
+description: The Analytics tab of a portfolio. Time-weighted and money-weighted return, max drawdown, fees, a holdings-vs-portfolio chart with benchmarks, returns per holding, allocation and market gain by month.
+sidebar:
+  order: 3
+  badge:
+    text: Plus
+    variant: tip
+---
+
+import { Aside, Badge } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+<Badge text="Plus" variant="tip" /> The **Analytics** tab answers "how well is this portfolio actually doing?" It separates your investment results from the money you moved in and out, compares your holdings with each other and with a market index, and shows where your money sits.
+
+Open a portfolio and click the **Analytics** tab. Without Plus, see [Plans and free trial](#plans-and-free-trial).
+
+## Pick a period
+
+The period buttons (**1M**, **3M**, **YTD**, **1Y**, **All**) sit on the **Holdings vs portfolio** card and on the **Market gain by month** card. Each card keeps its own period, and both start on **1Y**. Shift-click a period to apply it to both cards at once.
+
+## Key numbers
+
+The top of the **Holdings vs portfolio** card shows four numbers:
+
+| Number | What it shows |
+|---|---|
+| **Time-weighted return** | How much the investments grew over the period, with deposits and withdrawals taken out. |
+| **Max drawdown** | The biggest fall from a high point during the period, with its dates. |
+| **Money-weighted return** | Your yearly return on the money you put in, counting when you put it in. Always since your first deposit, whatever the period. |
+| **Fees paid** | Fees on the period's transactions, and what share of the period's buys they made up ("0.4% of buys"). |
+
+<Screenshot
+  src="/screenshots/investments/analytics-overview.png"
+  alt="The Analytics tab with the Holdings vs portfolio card: the benchmark picker and period buttons, the Time-weighted return, Max drawdown, Money-weighted return and Fees paid numbers, and the chart with the portfolio line, a benchmark line and five holding lines."
+  hint="Open /portfolios/<id>?tab=analytics for a portfolio with at least 7 months of history (so Money-weighted return shows a value), 5+ holdings and a recorded dip so Max drawdown has dates. Benchmark S&P 500, period 1Y. Crop to the Holdings vs portfolio card."
+/>
+
+### Time-weighted and money-weighted return
+
+Both returns leave out the deposits themselves, so putting in $1,000 never shows as a 1,000 gain. They differ in whether the timing of your deposits counts.
+
+- **Time-weighted return** measures the investments only. It's the same number whether you invested $100 or $100,000, and whenever you added money. Use it to compare the portfolio with a market index or with another portfolio. It's also what the **Return %** chart on the portfolio page shows.
+- **Money-weighted return** measures your experience as an investor. Money you added just before a rise helps it, money added just before a fall hurts it. It's shown per year, measured since your first deposit, and the period buttons don't change it.
+
+For example, you invest $1,000 and it grows 10% to $1,100. Then you add $10,000, and the market falls 5%, leaving $10,545. The time-weighted return is +4.5% (+10%, then −5%). But you put in $11,000 and now have $10,545, so your money-weighted return is negative: most of your money was invested during the fall.
+
+Money-weighted return needs at least six months of history, counted from your first deposit. Until then it shows "Needs 6+ months of history". A yearly figure worked out from a few weeks would swing wildly.
+
+### Max drawdown
+
+Max drawdown is the largest drop from a high point to a later low point during the period, for example "−12.3%, Feb 19 → Apr 8, recovered Jul 2". If the portfolio hasn't climbed back to that high yet, it says "not yet recovered". If it never fell below an earlier high, it says "No drawdown in this period".
+
+It's measured on the time-weighted return, so a deposit can't hide a drop and a withdrawal doesn't count as one.
+
+## Holdings vs portfolio
+
+The chart puts the portfolio's time-weighted return next to the price return of your holdings. Every line starts at 0% on the first day of the period. Holdings use their own currency.
+
+- At first, the chart compares your five largest holdings. Click **Add more** to pick others, up to 10. Click the **×** next to a holding to remove it from the comparison.
+- Click a line's name under the chart to hide or show it.
+- Hover the chart to read every line's return on that day.
+
+Your choice of holdings is remembered per portfolio in this browser.
+
+### Benchmark
+
+Use the benchmark picker (**No benchmark** at first) to add a market index to the chart: **S&P 500**, **Nasdaq 100**, **MSCI World** or **Euro Stoxx 50**. Each one includes reinvested dividends. Where no such index is available, a fund that tracks it stands in, and the picker says which one, for example "via IWDA.AS".
+
+The benchmark is converted to the portfolio's currency and starts at the same point as the portfolio line, so the two compare directly. If its prices haven't loaded yet, the chart says "Benchmark prices are not available yet". Your benchmark is remembered per portfolio in this browser.
+
+## Performance
+
+The **Performance** table lists each holding with its **Weight**, **Value** and price return over **1M**, **3M**, **6M**, **YTD** and **1Y**. Returns are in each holding's own currency and always run up to the latest close, whatever period you picked above. A dash means there's no price that far back, or the price stopped updating.
+
+**Weight** here is each holding's share of the whole portfolio, cash included. The table shows the eight largest holdings. Click **Show all** to see the rest. Click a holding to open its [holding page](/investments/holding-page/).
+
+<Screenshot
+  src="/screenshots/investments/analytics-performance-table.png"
+  alt="The Performance table with Holding, Weight, Value and 1M, 3M, 6M, YTD and 1Y returns, positive returns in green and negative in red."
+  hint="On the same Analytics tab, scroll to the Performance card. Use a portfolio with more than 8 holdings so 'Show all N' appears. Crop to the card."
+/>
+
+## Allocation
+
+**Allocation** shows what the portfolio is made of right now, cash included. Switch between:
+
+- **Holding**: each holding and your cash.
+- **Type**: **Stocks**, **ETFs**, **Funds**, **Bonds**, **Crypto**, **Options**, **Cash** and **Other**.
+- **Currency**: holdings and cash by currency.
+
+Each entry is a block sized by its share of the portfolio. Entries under 2% are grouped into **Other** when there are at least two of them.
+
+## Market gain by month
+
+**Market gain by month** shows, for each month, how much the value changed minus the money you deposited that month. A month where you added $500 and the value rose by $700 shows a $200 market gain. The caption has the total for the period, and the bottom line names the **Best** and **Worst** month.
+
+<Screenshot
+  src="/screenshots/investments/analytics-allocation-monthly.png"
+  alt="The Allocation card on the Holding view, with a block per holding and one for cash, next to the Market gain by month bar chart with positive and negative months and the Best and Worst months below it."
+  hint="On the same Analytics tab, Allocation on Holding (dev securities carry no security type, so Type shows only Other and Cash), monthly period 1Y. Use a wide window so the two cards sit side by side. Crop to both cards."
+/>
+
+## Plans and free trial
+
+Portfolio analytics is part of **Plus**, and of the 40-day trial every new account starts with.
+
+Without Plus, the **Analytics** tab offers **Start 14-day free trial**. How the trial works is in [Plans and billing](/settings/plans-and-billing/#portfolio-analytics-and-watchlist-free-trials).
+
+<Screenshot
+  src="/screenshots/investments/analytics-trial-prompt.png"
+  alt="The Analytics tab for an account without Plus, with the blurred placeholder behind a card saying Try it free for 14 days, the description, and the Start 14-day free trial and See plans buttons."
+  hint="mockEntitlements with ENTITLEMENTS.essentialNoTrials(). Open /portfolios/<id>?tab=analytics (the locked tabs move to the end of the row). Crop to the tab row and the trial card."
+/>
+
+<Aside type="note" title="How values are worked out">
+Analytics reads the same daily history as the portfolio's value chart, in the portfolio's display currency. A holding without a price for a day is counted at its cost for that day.
+</Aside>
+
+## Related
+
+- [Portfolios](/investments/portfolios/), for net deposits and the value chart
+- [Holding page](/investments/holding-page/)
+- [FIRE planner](/stats/fire-planner/)

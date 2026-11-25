@@ -28,7 +28,7 @@ function providerKey({ providerName, providerSymbol }: Row): string {
  * Resolve every backup security against the target catalog by natural key
  * (isin → cusip → symbol+currencyCode+providerName → providerName+providerSymbol)
  * and create the ones that don't exist, keeping the backup UUID when free so
- * holdings/investment transactions referencing it need no remap. The
+ * holdings, investment transactions and watchlist items referencing it need no remap. The
  * providerName+providerSymbol pair is the table's real DB uniqueness (a unique
  * index), so it must be a resolution key — otherwise a backup security matching
  * an existing one only on that pair slips past the natural-key checks and

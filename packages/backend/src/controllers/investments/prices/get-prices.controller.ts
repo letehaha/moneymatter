@@ -4,10 +4,11 @@ import { getPrices } from '@root/services/investments/securities-price/get-price
 import { z } from 'zod';
 
 export default createController(z.object({ query: securityPricesQuerySchema }), async (req) => {
-  const { securityId, from, to } = req.query;
+  const { securityId, from, to, daily } = req.query;
 
   const prices = await getPrices({
     securityId,
+    daily,
     from: from ? new Date(from) : undefined,
     to: to ? new Date(to) : undefined,
   });

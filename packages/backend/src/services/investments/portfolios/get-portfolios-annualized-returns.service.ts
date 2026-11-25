@@ -17,12 +17,7 @@ import {
 import { differenceInDays, endOfDay, format, parseISO, startOfDay, subDays } from 'date-fns';
 import { Op } from 'sequelize';
 
-/**
- * Minimum tracked history (in days) before an annualized figure is shown.
- * Annualizing a return from a few weeks of data inflates noise into a wild
- * yearly number, so anything shorter is reported as "not enough history".
- */
-const MIN_HISTORY_DAYS = 180;
+import { MIN_HISTORY_DAYS } from './return-constants';
 
 /**
  * Days of price/rate history to pre-fetch before the first trade so the

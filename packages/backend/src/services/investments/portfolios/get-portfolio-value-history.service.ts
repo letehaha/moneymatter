@@ -1,6 +1,5 @@
-import type { PortfolioValueHistoryModel } from '@bt/shared/types';
+import type { PortfolioValueHistoryInterval, PortfolioValueHistoryModel } from '@bt/shared/types';
 import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
-import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -11,6 +10,11 @@ import Portfolios from '@models/investments/portfolios.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRealizedGains } from '@services/investments/gains/gains-calculator.utils';
 import { computeHoldingTotals } from '@services/investments/holdings/holding-totals';
+import {
+  computeTimeWeightedReturns,
+  toMoneyString,
+  toRatioString,
+} from '@services/investments/portfolios/analytics/analytics-math';
 import type { SecurityRow } from '@services/stats/get-combined-balance-history/types';
 import { buildDenseDateRange } from '@services/stats/get-net-worth-drivers/date-range';
 import {
@@ -18,7 +22,7 @@ import {
   type ValuationTransactionRow,
 } from '@services/stats/get-net-worth-history/portfolio-value';
 import { Big } from 'big.js';
-import { format } from 'date-fns';
+import { format, isSameWeek, parseISO } from 'date-fns';
 import { Op } from 'sequelize';
 
 /** One security's cost basis and cumulative FIFO realized gain, in its own currency, at the end of each trading day. */
@@ -95,23 +99,65 @@ const resolveFirstEventDate = async ({ portfolioId }: { portfolioId: string }): 
   );
 };
 
-const toDecimalString = (amount: number): string => Money.fromDecimal(amount).toNumber().toFixed(2);
+/**
+ * Signed base-currency flows across the portfolio's boundary, by day. Adjustments are performance, not
+ * deposits. An `affectsCash: false` row is a deposit whose money the replayed cash already holds, so it
+ * stays out of the TWR flows.
+ */
+const loadExternalFlows = async ({
+  userId,
+  portfolioId,
+  endDate,
+}: {
+  userId: number;
+  portfolioId: string;
+  endDate: string;
+}) => {
+  const transfers = await PortfolioTransfers.findAll({
+    where: {
+      userId,
+      isAdjustment: false,
+      date: { [Op.lte]: endDate },
+      [Op.or]: [{ fromPortfolioId: portfolioId }, { toPortfolioId: portfolioId }],
+    },
+    attributes: ['fromPortfolioId', 'toPortfolioId', 'refAmount', 'date', 'affectsCash'],
+  });
+
+  const depositsByDate = new Map<string, number>();
+  const twrFlowsByDate = new Map<string, number>();
+  for (const { fromPortfolioId, toPortfolioId, refAmount, date, affectsCash } of transfers) {
+    if (fromPortfolioId === toPortfolioId) continue;
+    const signed = toPortfolioId === portfolioId ? refAmount.toNumber() : -refAmount.toNumber();
+    depositsByDate.set(date, (depositsByDate.get(date) ?? 0) + signed);
+    if (affectsCash) twrFlowsByDate.set(date, (twrFlowsByDate.get(date) ?? 0) + signed);
+  }
+  return { depositsByDate, twrFlowsByDate };
+};
 
 /**
  * Daily portfolio value in the summary's currency. Cost basis and realized gain
  * are converted at each day's rate, as the summary converts them at today's.
+ * `toDisplayRate` converts base into `currencyCode` on a day; `foreignToDisplayRate` does the same for an
+ * `extraCurrencyCodes` entry and returns null when no rate is stored for it.
  */
-export const getPortfolioValueHistory = async ({
+export const buildPortfolioValueHistory = async ({
   userId,
   portfolioId,
   from,
   to,
+  extraCurrencyCodes = [],
 }: {
   userId: number;
   portfolioId: string;
   from?: string;
   to?: string;
-}): Promise<PortfolioValueHistoryModel> => {
+  extraCurrencyCodes?: string[];
+}): Promise<
+  PortfolioValueHistoryModel & {
+    toDisplayRate: (params: { date: string }) => number;
+    foreignToDisplayRate: (params: { currencyCode: string; date: string }) => number | null;
+  }
+> => {
   const portfolio = await findOrThrowNotFound({
     query: Portfolios.findOne({ where: { id: portfolioId, userId } }),
     message: t({ key: 'investments.portfolioNotFound' }),
@@ -137,13 +183,15 @@ export const getPortfolioValueHistory = async ({
     baseCurrencyCode,
     snapshotDates: dates,
     denseDates: dates,
-    extraCurrencyCodes: [currencyCode],
+    extraCurrencyCodes: [currencyCode, ...extraCurrencyCodes],
     floorHoldingValues: false,
   });
 
   if (!valuation) {
     return {
       currencyCode,
+      toDisplayRate: () => 1,
+      foreignToDisplayRate: () => null,
       points: dates.map((date) => ({
         date,
         totalValue: '0.00',
@@ -151,6 +199,8 @@ export const getPortfolioValueHistory = async ({
         cashValue: '0.00',
         costBasis: '0.00',
         realizedGain: '0.00',
+        netDeposits: '0.00',
+        timeWeightedReturn: toRatioString({ ratio: 0 }),
       })),
     };
   }
@@ -158,16 +208,34 @@ export const getPortfolioValueHistory = async ({
   const { transactions, securitiesById, holdingsValueByDate, cashInBaseByDate, getExchangeRate } = valuation;
 
   // A currency lands in `missingRateCurrencies` only when no rate is stored for it at all, so probing a
-  // single day decides the whole series: fall back to the base currency rather than convert 1:1.
-  if (currencyCode !== baseCurrencyCode) {
-    getExchangeRate(currencyCode, endDate);
-    if (valuation.missingRateCurrencies.delete(currencyCode)) currencyCode = baseCurrencyCode;
-  }
+  // single day decides the whole series. A probe un-records only what it added, so a 1:1 fallback the
+  // replay already made still reaches the error log below.
+  const missingBeforeProbe = new Set(valuation.missingRateCurrencies);
+  const hasStoredRate = ({ code }: { code: string }) => {
+    getExchangeRate(code, endDate);
+    if (!valuation.missingRateCurrencies.has(code)) return true;
+    if (!missingBeforeProbe.has(code)) valuation.missingRateCurrencies.delete(code);
+    return false;
+  };
 
+  if (currencyCode !== baseCurrencyCode && !hasStoredRate({ code: currencyCode })) currencyCode = baseCurrencyCode;
+
+  const toDisplayRate = ({ date }: { date: string }) =>
+    currencyCode === baseCurrencyCode ? 1 : 1 / getExchangeRate(currencyCode, date);
+
+  const ratedExtraCurrencies = new Set(extraCurrencyCodes.filter((code) => hasStoredRate({ code })));
+  const foreignToDisplayRate = ({ currencyCode: foreignCode, date }: { currencyCode: string; date: string }) =>
+    ratedExtraCurrencies.has(foreignCode) ? getExchangeRate(foreignCode, date) * toDisplayRate({ date }) : null;
+
+  const { depositsByDate, twrFlowsByDate } = await loadExternalFlows({ userId, portfolioId, endDate });
+  let netDeposits = 0;
+  for (const [date, flow] of depositsByDate) {
+    if (date < dates[0]!) netDeposits += flow * toDisplayRate({ date });
+  }
   const timelines = buildSecurityTimelines({ transactions, securitiesById });
   const cursors = timelines.map(() => -1);
 
-  const points = dates.map((date) => {
+  const days = dates.map((date) => {
     let costBasis = 0;
     let realizedGain = 0;
     timelines.forEach(({ currencyCode: securityCurrency, entries }, index) => {
@@ -181,19 +249,34 @@ export const getPortfolioValueHistory = async ({
       realizedGain += entry.realizedGain * rate;
     });
 
-    const toDisplayRate = currencyCode === baseCurrencyCode ? 1 : 1 / getExchangeRate(currencyCode, date);
-    const holdingsValue = toDecimalString((holdingsValueByDate.get(date) ?? 0) * toDisplayRate);
-    const cashValue = toDecimalString((cashInBaseByDate.get(date) ?? 0) * toDisplayRate);
+    const displayRate = toDisplayRate({ date });
+    const holdingsValue = toMoneyString({ amount: (holdingsValueByDate.get(date) ?? 0) * displayRate });
+    const cashValue = toMoneyString({ amount: (cashInBaseByDate.get(date) ?? 0) * displayRate });
+
+    netDeposits += (depositsByDate.get(date) ?? 0) * displayRate;
 
     return {
       date,
-      totalValue: toDecimalString(Number(holdingsValue) + Number(cashValue)),
+      totalValue: toMoneyString({ amount: Number(holdingsValue) + Number(cashValue) }),
       holdingsValue,
       cashValue,
-      costBasis: toDecimalString(costBasis * toDisplayRate),
-      realizedGain: toDecimalString(realizedGain * toDisplayRate),
+      costBasis: toMoneyString({ amount: costBasis * displayRate }),
+      realizedGain: toMoneyString({ amount: realizedGain * displayRate }),
+      netDeposits: toMoneyString({ amount: netDeposits }),
     };
   });
+
+  const returns = computeTimeWeightedReturns({
+    days: days.map(({ date, holdingsValue, cashValue }) => ({
+      holdingsValue: Number(holdingsValue),
+      cashValue: Number(cashValue),
+      flow: (twrFlowsByDate.get(date) ?? 0) * toDisplayRate({ date }),
+    })),
+  });
+  const points = days.map((point, index) => ({
+    ...point,
+    timeWeightedReturn: toRatioString({ ratio: returns[index]! }),
+  }));
 
   if (valuation.missingRateCurrencies.size > 0) {
     logger.error('Portfolio value history exchange rate fallback to 1:1', {
@@ -212,5 +295,25 @@ export const getPortfolioValueHistory = async ({
     });
   }
 
-  return { currencyCode, points };
+  return { currencyCode, points, toDisplayRate, foreignToDisplayRate };
+};
+
+const WEEKLY_AFTER_POINTS = 2 * 366;
+
+const toWeekly = ({ points }: { points: PortfolioValueHistoryModel['points'] }) =>
+  points.filter((point, index) => {
+    const next = points[index + 1];
+    if (index === 0 || !next) return true;
+    return !isSameWeek(parseISO(point.date), parseISO(next.date), { weekStartsOn: 1 });
+  });
+
+export const getPortfolioValueHistory = async ({
+  interval = 'day',
+  ...params
+}: Parameters<typeof buildPortfolioValueHistory>[0] & {
+  interval?: PortfolioValueHistoryInterval;
+}): Promise<PortfolioValueHistoryModel> => {
+  const { currencyCode, points } = await buildPortfolioValueHistory(params);
+  const isWeekly = interval === 'auto' && points.length > WEEKLY_AFTER_POINTS;
+  return { currencyCode, points: isWeekly ? toWeekly({ points }) : points };
 };

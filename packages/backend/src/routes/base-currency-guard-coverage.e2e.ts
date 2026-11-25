@@ -88,6 +88,18 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   // so a base-currency migration and a run cannot corrupt each other.
   'POST /api/v1/user/ai/categorization/trigger',
 
+  // Watchlist prices are in the security's own currency; nothing here holds a ref amount.
+  'PUT /api/v1/investments/portfolios/:id/watchlist/layout',
+  'POST /api/v1/investments/portfolios/:id/watchlist/sections',
+  'PATCH /api/v1/investments/portfolios/:id/watchlist/sections/:sectionId',
+  'DELETE /api/v1/investments/portfolios/:id/watchlist/sections/:sectionId',
+  'POST /api/v1/investments/portfolios/:id/watchlist/items',
+  'PATCH /api/v1/investments/portfolios/:id/watchlist/items/:itemId',
+  'DELETE /api/v1/investments/portfolios/:id/watchlist/items/:itemId',
+  'POST /api/v1/investments/portfolios/:id/watchlist/items/:itemId/alerts',
+  'PATCH /api/v1/investments/portfolios/:id/watchlist/items/:itemId/alerts/:alertId',
+  'DELETE /api/v1/investments/portfolios/:id/watchlist/items/:itemId/alerts/:alertId',
+
   // Attachments are files on a transaction; they touch no amounts.
   'DELETE /api/v1/attachments/:id',
   'POST /api/v1/transactions/:transactionId/attachments',
