@@ -2,6 +2,7 @@ import {
   PORTFOLIO_TYPE,
   type PortfolioActivityFilter,
   type PortfolioActivityResponse,
+  type PortfolioValueHistoryInterval,
 } from '@bt/shared/types/investments';
 import { removeUndefinedKeys } from '@js/helpers';
 import { getPortfolioAnalytics as _getPortfolioAnalytics } from '@services/investments/portfolios/analytics/get-portfolio-analytics.service';
@@ -215,17 +216,19 @@ export async function getPortfolioValueHistory<R extends boolean | undefined = f
   portfolioId,
   from,
   to,
+  interval,
   raw,
 }: {
   portfolioId: string;
   from?: string;
   to?: string;
+  interval?: PortfolioValueHistoryInterval;
   raw?: R;
 }) {
   return makeRequest<Awaited<ReturnType<typeof _getPortfolioValueHistory>>, R>({
     method: 'get',
     url: `/investments/portfolios/${portfolioId}/value-history`,
-    payload: removeUndefinedKeys({ from, to }),
+    payload: removeUndefinedKeys({ from, to, interval }),
     raw,
   });
 }

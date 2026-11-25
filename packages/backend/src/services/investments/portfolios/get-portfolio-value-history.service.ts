@@ -1,4 +1,4 @@
-import type { PortfolioValueHistoryModel } from '@bt/shared/types';
+import type { PortfolioValueHistoryInterval, PortfolioValueHistoryModel } from '@bt/shared/types';
 import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
 import { toUtcDateString } from '@common/utils/date';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
@@ -22,7 +22,7 @@ import {
   type ValuationTransactionRow,
 } from '@services/stats/get-net-worth-history/portfolio-value';
 import { Big } from 'big.js';
-import { format } from 'date-fns';
+import { format, isSameWeek, parseISO } from 'date-fns';
 import { Op } from 'sequelize';
 
 /** One security's cost basis and cumulative FIFO realized gain, in its own currency, at the end of each trading day. */
@@ -298,9 +298,22 @@ export const buildPortfolioValueHistory = async ({
   return { currencyCode, points, toDisplayRate, foreignToDisplayRate };
 };
 
-export const getPortfolioValueHistory = async (
-  params: Parameters<typeof buildPortfolioValueHistory>[0],
-): Promise<PortfolioValueHistoryModel> => {
+const WEEKLY_AFTER_POINTS = 2 * 366;
+
+const toWeekly = ({ points }: { points: PortfolioValueHistoryModel['points'] }) =>
+  points.filter((point, index) => {
+    const next = points[index + 1];
+    if (index === 0 || !next) return true;
+    return !isSameWeek(parseISO(point.date), parseISO(next.date), { weekStartsOn: 1 });
+  });
+
+export const getPortfolioValueHistory = async ({
+  interval = 'day',
+  ...params
+}: Parameters<typeof buildPortfolioValueHistory>[0] & {
+  interval?: PortfolioValueHistoryInterval;
+}): Promise<PortfolioValueHistoryModel> => {
   const { currencyCode, points } = await buildPortfolioValueHistory(params);
-  return { currencyCode, points };
+  const isWeekly = interval === 'auto' && points.length > WEEKLY_AFTER_POINTS;
+  return { currencyCode, points: isWeekly ? toWeekly({ points }) : points };
 };

@@ -1,4 +1,4 @@
-import type { PortfolioValueHistoryPointModel } from '@bt/shared/types/investments';
+import type { PortfolioValueHistoryInterval, PortfolioValueHistoryPointModel } from '@bt/shared/types/investments';
 import { format, startOfYear, subDays, subMonths, subYears } from 'date-fns';
 
 export const CHART_PERIODS = ['1W', '1M', '3M', 'YTD', '1Y', 'ALL'] as const;
@@ -31,6 +31,18 @@ export const getPeriodStartDate = ({ period, today }: { period: PeriodKey; today
   };
   const start = starts[period];
   return start ? format(start, 'yyyy-MM-dd') : null;
+};
+
+/** All-time asks the server to thin a long history to weekly points; other periods fetch daily points from their start. */
+export const getHistoryRange = ({
+  period,
+  today,
+}: {
+  period: ChartPeriod;
+  today: Date;
+}): { from: string } | { interval: PortfolioValueHistoryInterval } => {
+  const from = getPeriodStartDate({ period, today });
+  return from ? { from } : { interval: 'auto' };
 };
 
 const hasFiniteValues = (point: PortfolioValueHistoryPointModel) =>

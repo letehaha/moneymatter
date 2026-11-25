@@ -8,7 +8,7 @@ import SecurityPricing from '@models/investments/security-pricing.model';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import * as helpers from '@tests/helpers';
 import { AED_PER_USD, EUR_PER_USD } from '@tests/mocks/exchange-rates/data';
-import { format, subDays } from 'date-fns';
+import { format, getISODay, parseISO, subDays } from 'date-fns';
 
 // getHoldingValues deduplicates identical requests for 1 second; the summary
 // call must outwait it after the setup calls primed it.
@@ -391,6 +391,49 @@ describe('Portfolio value history (GET /investments/portfolios/:id/value-history
     });
 
     expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
+
+  describe('interval=auto', () => {
+    it('keeps daily points for a history of two years or less', async () => {
+      const portfolio = await createEmptyPortfolio({ name: 'Short Auto' });
+      await directCash({ portfolioId: portfolio.id, type: 'deposit', amount: '100', date: daysAgo(700) });
+
+      const history = await helpers.getPortfolioValueHistory({
+        portfolioId: portfolio.id,
+        interval: 'auto',
+        raw: true,
+      });
+
+      expect(history.points).toHaveLength(701);
+    });
+
+    it('sends the first day, each week end and today for a longer history', async () => {
+      const portfolio = await createEmptyPortfolio({ name: 'Long Auto' });
+      await directCash({ portfolioId: portfolio.id, type: 'deposit', amount: '100', date: daysAgo(1000) });
+      await directCash({ portfolioId: portfolio.id, type: 'deposit', amount: '50', date: daysAgo(400) });
+
+      const history = await helpers.getPortfolioValueHistory({
+        portfolioId: portfolio.id,
+        interval: 'auto',
+        raw: true,
+      });
+      const dates = history.points.map((point) => point.date);
+
+      expect(dates[0]).toBe(daysAgo(1000));
+      expect(dates.at(-1)).toBe(TODAY);
+      expect(dates.slice(1, -1).every((date) => getISODay(parseISO(date)) === 7)).toBe(true);
+      expect(history.points.length).toBeLessThan(150);
+      expect(history.points.at(-1)!.netDeposits).toBe('150.00');
+    });
+
+    it('keeps daily points without the param', async () => {
+      const portfolio = await createEmptyPortfolio({ name: 'Long Daily' });
+      await directCash({ portfolioId: portfolio.id, type: 'deposit', amount: '100', date: daysAgo(1000) });
+
+      const history = await helpers.getPortfolioValueHistory({ portfolioId: portfolio.id, raw: true });
+
+      expect(history.points).toHaveLength(1001);
+    });
   });
 
   describe('net deposits', () => {

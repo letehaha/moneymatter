@@ -10,7 +10,10 @@ import {
 } from '@bt/shared/types/investments';
 import type { PortfolioAnnualizedReturnModel } from '@bt/shared/types/investments/portfolio-annualized-return.model';
 import type { PortfolioSummaryModel } from '@bt/shared/types/investments/portfolio-summary.model';
-import type { PortfolioValueHistoryModel } from '@bt/shared/types/investments/portfolio-value-history.model';
+import type {
+  PortfolioValueHistoryInterval,
+  PortfolioValueHistoryModel,
+} from '@bt/shared/types/investments/portfolio-value-history.model';
 
 interface CreatePortfolioRequest {
   name: string;
@@ -275,6 +278,11 @@ export const getPortfoliosAnnualizedReturns = async ({ asOf }: { asOf?: string }
 
 export const getPortfolioValueHistory = async ({
   portfolioId,
+  from,
+  interval,
 }: {
   portfolioId: string;
-}): Promise<PortfolioValueHistoryModel> => api.get(`/investments/portfolios/${portfolioId}/value-history`);
+  from?: string;
+  interval?: PortfolioValueHistoryInterval;
+}): Promise<PortfolioValueHistoryModel> =>
+  api.get(`/investments/portfolios/${portfolioId}/value-history`, { from, interval });

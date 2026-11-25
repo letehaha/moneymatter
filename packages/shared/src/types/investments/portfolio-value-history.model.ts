@@ -1,3 +1,7 @@
+/** `auto` sends the first point, the last point of each ISO week and the final point once there are more than 732 daily points (~2 years). */
+export const PORTFOLIO_VALUE_HISTORY_INTERVALS = ['day', 'auto'] as const;
+export type PortfolioValueHistoryInterval = (typeof PORTFOLIO_VALUE_HISTORY_INTERVALS)[number];
+
 /** One day of `GET /investments/portfolios/:id/value-history`; money values are 2-dp decimal strings in the response's `currencyCode`. */
 export interface PortfolioValueHistoryPointModel {
   /** YYYY-MM-DD */

@@ -1,5 +1,6 @@
 import { getPortfolioSummaries, getPortfolioSummary, getPortfolioValueHistory } from '@/api/portfolios';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import type { PortfolioValueHistoryInterval } from '@bt/shared/types/investments';
 import { useQuery } from '@tanstack/vue-query';
 import { type MaybeRefOrGetter, computed, toValue } from 'vue';
 
@@ -32,11 +33,20 @@ export const usePortfolioSummaries = ({ enabled = true }: { enabled?: MaybeRefOr
     enabled,
   });
 
-/** Full daily history of the portfolio; periods are sliced client-side so one request serves every range. */
-export const usePortfolioValueHistory = ({ portfolioId }: { portfolioId: MaybeRefOrGetter<string> }) =>
+export const usePortfolioValueHistory = ({
+  portfolioId,
+  range,
+}: {
+  portfolioId: MaybeRefOrGetter<string>;
+  range: MaybeRefOrGetter<{ from: string } | { interval: PortfolioValueHistoryInterval }>;
+}) =>
   useQuery({
-    queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.portfolioValueHistory, toValue(portfolioId)] as const),
-    queryFn: () => getPortfolioValueHistory({ portfolioId: toValue(portfolioId) }),
+    queryKey: computed(
+      () => [...VUE_QUERY_CACHE_KEYS.portfolioValueHistory, toValue(portfolioId), toValue(range)] as const,
+    ),
+    queryFn: () => getPortfolioValueHistory({ portfolioId: toValue(portfolioId), ...toValue(range) }),
     enabled: computed(() => Boolean(toValue(portfolioId))),
     staleTime: PORTFOLIO_SUMMARY_STALE_TIME,
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey.at(-2) === toValue(portfolioId) ? previous : undefined,
   });

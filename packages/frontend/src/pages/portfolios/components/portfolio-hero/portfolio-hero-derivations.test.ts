@@ -1,6 +1,12 @@
 import type { PortfolioValueHistoryPointModel } from '@bt/shared/types/investments';
 
-import { buildChartPoints, getPeriodStartDate, getPeriodStats, getTotalReturn } from './portfolio-hero-derivations';
+import {
+  buildChartPoints,
+  getHistoryRange,
+  getPeriodStartDate,
+  getPeriodStats,
+  getTotalReturn,
+} from './portfolio-hero-derivations';
 
 const point = ({
   date,
@@ -45,6 +51,13 @@ describe('getPeriodStartDate', () => {
     expect(getPeriodStartDate({ period: '1M', today: monthEnd })).toBe('2026-02-28');
     expect(getPeriodStartDate({ period: '3M', today: monthEnd })).toBe('2025-12-31');
     expect(getPeriodStartDate({ period: '6M', today: monthEnd })).toBe('2025-09-30');
+  });
+});
+
+describe('getHistoryRange', () => {
+  it('fetches a period from its start and all-time with server thinning', () => {
+    expect(getHistoryRange({ period: '1W', today: TODAY })).toEqual({ from: '2026-11-17' });
+    expect(getHistoryRange({ period: 'ALL', today: TODAY })).toEqual({ interval: 'auto' });
   });
 });
 

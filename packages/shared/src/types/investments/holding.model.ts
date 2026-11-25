@@ -1,6 +1,19 @@
 import { PortfolioModel } from './portfolio-models';
 import { SecurityModel } from './security.model';
 
+/** The security fields `GET /investments/portfolios/:id/holdings` sends. */
+export const HOLDING_SECURITY_FIELDS = [
+  'id',
+  'symbol',
+  'name',
+  'currencyCode',
+  'assetClass',
+  'logoUrl',
+  'exchangeName',
+  'exchangeAcronym',
+] as const satisfies readonly (keyof SecurityModel)[];
+export type HoldingSecurityModel = Pick<SecurityModel, (typeof HOLDING_SECURITY_FIELDS)[number]>;
+
 export interface HoldingModel {
   portfolioId: string;
   securityId: string;
@@ -9,7 +22,7 @@ export interface HoldingModel {
   refCostBasis: string;
   currencyCode: string;
   excluded: boolean;
-  security?: SecurityModel;
+  security?: HoldingSecurityModel;
   portfolio?: PortfolioModel;
   // Dynamic calculated fields (only present when fetched with price data)
   latestPrice?: string;

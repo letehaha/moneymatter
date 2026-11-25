@@ -26,6 +26,7 @@ import {
   type ChartMode,
   type ChartPeriod,
   buildChartPoints,
+  getHistoryRange,
   getPeriodStats,
 } from './portfolio-hero-derivations';
 import PortfolioHeroStats from './portfolio-hero-stats.vue';
@@ -51,18 +52,21 @@ const {
   error: summaryError,
   refetch: refetchSummary,
 } = usePortfolioSummary(() => props.portfolioId);
-const {
-  data: history,
-  isLoading: isHistoryLoading,
-  error: historyError,
-  refetch: refetchHistory,
-} = usePortfolioValueHistory({ portfolioId: () => props.portfolioId });
-
 const mode = ref<ChartMode>('value');
 const storedPeriod = useLocalStorage<ChartPeriod>('portfolio:chart-period', '1Y');
 const period = computed<ChartPeriod>({
   get: () => (CHART_PERIODS.includes(storedPeriod.value) ? storedPeriod.value : '1Y'),
   set: (value) => (storedPeriod.value = value),
+});
+const {
+  data: history,
+  isLoading: isHistoryLoading,
+  isPlaceholderData: isHistoryPlaceholder,
+  error: historyError,
+  refetch: refetchHistory,
+} = usePortfolioValueHistory({
+  portfolioId: () => props.portfolioId,
+  range: () => getHistoryRange({ period: period.value, today: new Date() }),
 });
 const storedLayout = useLocalStorage<ChartLayout>('portfolio:chart-layout', 'floating');
 const layout = computed<ChartLayout>({
@@ -176,7 +180,7 @@ const statsProps = computed(() =>
           v-if="statsProps"
           :variant="layout === 'panel' ? 'panel' : 'card'"
           v-bind="statsProps"
-          :class="layout === 'panel' && !isNarrow ? 'w-80 shrink-0' : ''"
+          :class="cn(layout === 'panel' && !isNarrow && 'w-80 shrink-0', isHistoryPlaceholder && 'opacity-60')"
         />
         <div v-else-if="isSummaryLoading" class="bg-muted h-32 animate-pulse rounded-xl" />
       </template>
@@ -294,6 +298,7 @@ const statsProps = computed(() =>
           :deposits-own-scale="depositsAxis === 'own'"
           :min-height="chartMinHeight"
           :floating-card="isFloating && Boolean(statsProps)"
+          :class="cn('transition-opacity', isHistoryPlaceholder && 'pointer-events-none opacity-60')"
         >
           <template #card>
             <PortfolioHeroStats v-if="statsProps" variant="card" v-bind="statsProps" />

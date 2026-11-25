@@ -1,9 +1,11 @@
+import { HOLDING_SECURITY_FIELDS } from '@bt/shared/types/investments';
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { createHoldingBodySchema, deleteHoldingBodySchema } from '@controllers/investments/holdings/schemas';
 import { createHoldingFromInput } from '@services/investments/holdings/create-holding-from-input.service';
 import { deleteHolding } from '@services/investments/holdings/delete-holding.service';
 import { getHoldings } from '@services/investments/holdings/get-holdings.service';
+import pick from 'lodash/pick';
 import { z } from 'zod';
 
 export const createHoldingController = createController(
@@ -35,7 +37,12 @@ export const getHoldingsController = createController(
       date: query.date,
     });
 
-    return { data: holdings };
+    return {
+      data: holdings.map(({ security, ...holding }) => ({
+        ...holding,
+        security: security && pick(security, HOLDING_SECURITY_FIELDS),
+      })),
+    };
   },
 );
 
