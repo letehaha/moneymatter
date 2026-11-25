@@ -17,6 +17,23 @@
       "voteOnRoadmap": "Vota sulla roadmap",
       "roadmapNote": "Nessun costo. Votare la funzione e verrà inviata una notifica al rilascio.",
       "saveUpTo": "Risparmia fino al {percent}%",
+      "promotion": {
+        "title": "{name}: {percent}% di sconto sul primo pagamento",
+        "subtitle": "Applicato automaticamente al momento del pagamento, nessun codice necessario. Termina il {date}.",
+        "badge": "{name} −{percent}%",
+        "firstCycle": {
+          "year": "/ primo anno",
+          "month": "/ primo mese"
+        },
+        "renews": {
+          "year": "Poi {amount}/anno",
+          "month": "Poi {amount}/mese"
+        },
+        "billedToday": "Addebito di oggi: {amount}. Annullabile in qualsiasi momento.",
+        "names": {
+          "blackFriday2026": "Black Friday"
+        }
+      },
       "portalFailed": "Impossibile aprire il portale di fatturazione. Riprovare.",
       "pastDueNote": "L'ultimo pagamento non è riuscito. Stripe ritenterà automaticamente l'addebito sulla carta nei prossimi giorni. Aggiornare il metodo di pagamento tramite Gestisci fatturazione per mantenere l'accesso dopo il {date}.",
       "priceNote": "I prezzi sono in USD, IVA esclusa. La valuta locale e le eventuali imposte applicabili vengono mostrate al checkout.",
@@ -119,7 +136,7 @@
             "bankProviders": "Connessioni bancarie (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
             "ourAiKey": "Funzioni IA con la nostra chiave, con limite di utilizzo equo",
             "firePlanner": "Pianificatore FIRE",
-            "customCurrencies": "Custom currencies",
+            "customCurrencies": "Valute personalizzate",
             "seats": "5 posti nel Nucleo Familiare"
           }
         },

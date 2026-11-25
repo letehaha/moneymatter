@@ -372,7 +372,7 @@
           "syncFailed": "Avvio della sincronizzazione non riuscito"
         },
         "actions": {
-          "openExternalUrl": "Open external link",
+          "openExternalUrl": "Apri link esterno",
           "renameButton": "Modifica connessione",
           "disconnectButton": "Disconnetti integrazione",
           "manage": "Gestisci"
@@ -432,7 +432,7 @@
           "title": "Modifica connessione",
           "description": "Aggiornare il nome visualizzato o il link al portale dell'istituto per questa connessione.",
           "label": "Nome della connessione",
-          "externalUrlLabel": "External URL (optional)",
+          "externalUrlLabel": "URL esterno (facoltativo)",
           "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Salvataggio...",
           "save": "Salva"

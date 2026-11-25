@@ -320,6 +320,7 @@
         "mainCategoryLabel": "Main category",
         "selectCategoryPlaceholder": "Select category",
         "amountPlaceholder": "0",
+        "notePlaceholder": "Note (optional)",
         "addCategoryButton": "Add category",
         "removeRowLabel": "Remove category",
         "totalAmountLabel": "Total amount",

@@ -326,17 +326,28 @@
       "saved": "Priradenie uložené",
       "error": "Priradenie sa nepodarilo uložiť"
     },
+    "move": {
+      "menuItem": "Presunúť peniaze",
+      "title": "Presunúť peniaze",
+      "description": "Presunie priradené peniaze z jedného riadka do druhého v tomto období.",
+      "fromLabel": "Odkiaľ",
+      "toLabel": "Kam",
+      "pickPlaceholder": "Vyberte riadok",
+      "swap": "Vymeniť Odkiaľ a Kam",
+      "amountLabel": "Koľko?",
+      "tooMuch": "Riadok {line} môže poskytnúť najviac {amount}",
+      "chipCover": "Pokryť prečerpanie · {amount}",
+      "chipAll": "Všetko, čo môže poskytnúť · {amount}",
+      "submit": "Presunúť {amount}",
+      "submitInstead": "Presunúť namiesto toho {amount}",
+      "toast": "Presunuté {amount} z {from} do {to}"
+    },
     "unbudgeted": {
       "summary": "Výdavky mimo vašich riadkov: {amount} v {count} kategórii | Výdavky mimo vašich riadkov: {amount} v {count} kategóriách | Výdavky mimo vašich riadkov: {amount} v {count} kategóriách"
     },
     "pool": {
       "readyToAssign": "Pripravené na priradenie",
       "assign": "Priradiť",
-      "assignTitle": "Priradiť zo spoločného fondu",
-      "toLabel": "Komu",
-      "toPlaceholder": "Vyberte riadok",
-      "amountLabel": "Suma",
-      "assignSubmit": "Priradiť {amount}",
       "calc": {
         "title": "Výpočet rozpočtu",
         "cash": "Peniaze na rozpočtovanie",
@@ -369,11 +380,81 @@
       "allAssigned": "Všetky peniaze priradené",
       "overAssigned": "Nadpriradené o {amount}",
       "fix": "Opraviť",
-      "fixTitle": "Znížiť nadpriradenie",
-      "fromLabel": "Vziať z",
-      "fromPlaceholder": "Vyberte riadok",
-      "fixSubmit": "Vziať späť {amount}",
-      "fixNoLines": "V tomto období nie je čo vziať späť."
+      "fixNoLines": "V tomto období nie je čo vziať späť.",
+      "notInLine": "Zatiaľ v žiadnom riadku",
+      "addLine": "Pridať riadok",
+      "menu": {
+        "assignTitle": "Určte, na čo použiť {amount}",
+        "assignSubtitle": "Vyberte návrh alebo si riadok zvoľte sami. Nič sa neuloží, kým to nepotvrdíte.",
+        "goalsTitle": "Financujte svoje ciele",
+        "goalsDescription": "{count} riadok ešte potrebuje peniaze v tomto mesiaci | {count} riadky ešte potrebujú peniaze v tomto mesiaci | {count} riadkov ešte potrebuje peniaze v tomto mesiaci",
+        "overspendingTitle": "Pokryť prečerpanie",
+        "overspendingOne": "Riadok {line} je prečerpaný o {amount}",
+        "overspendingMany": "{count} riadok je prečerpaný | {count} riadky sú prečerpané | {count} riadkov je prečerpaných",
+        "repeatTitle": "Zopakovať minulý mesiac",
+        "repeatDescription": "Doplniť {count} riadok na sumu z minulého mesiaca | Doplniť {count} riadky na sumy z minulého mesiaca | Doplniť {count} riadkov na sumy z minulého mesiaca",
+        "oneLineTitle": "Priradiť jednému riadku",
+        "oneLineDescription": "Vyberte ľubovoľný riadok a zadajte sumu",
+        "noSuggestions": "Momentálne nie sú žiadne návrhy. Zobrazia sa, keď má riadok cieľ, je prečerpaný alebo minulý mesiac dostal viac."
+      },
+      "freeUp": {
+        "title": "Uvoľniť {amount}",
+        "subtitle": "Vezmite peniaze späť z riadkov, v ktorých ešte niečo zostalo. Peniaze, ktoré ste už minuli, sa nemenia.",
+        "leftoversTitle": "Vziať späť zo zostatkov",
+        "leftoversOne": "Z riadka {line}, v ktorom zostáva najviac",
+        "leftoversTwo": "Z riadkov {first} a {second}, v ktorých zostáva najviac",
+        "oneLineTitle": "Vziať z jedného riadka",
+        "oneLineDescription": "Vyberte riadok a zadajte sumu",
+        "laterIncome": "Nie je to naliehavé? Neskorší príjem medzeru vyplní sám."
+      },
+      "review": {
+        "goalsHint": "Každý riadok dostane to, čo jeho cieľ ešte potrebuje v tomto mesiaci.",
+        "overspendingHint": "Každý riadok dostane dosť na to, aby sa vrátil na nulu.",
+        "repeatHint": "Každý riadok sa doplní na sumu z minulého mesiaca.",
+        "leftoversHint": "Peniaze sa vrátia z riadkov, v ktorých zostáva najviac. Peniaze, ktoré ste už minuli, sa nemenia.",
+        "goalNeeds": "Potrebuje {amount} v tomto mesiaci",
+        "goalPartial": "Dostane {amount} z potrebných {need}",
+        "overBy": "Prečerpané o {amount}",
+        "lastMonth": "Minulý mesiac dostal {amount}",
+        "leftAvailable": "Zostáva {amount}",
+        "goalsShort": "Vaše ciele potrebujú {total}, ale máte {available}. Najskôr sa dopĺňajú ciele s najbližším termínom.",
+        "short": "Tieto riadky potrebujú {total}, ale máte {available}. Najskôr sa dopĺňajú riadky vyššie v zozname.",
+        "tooMuch": "Späť sa dá vrátiť len {amount}",
+        "readyNow": "Pripravené na priradenie teraz",
+        "goesTo": "Pôjde do {count} riadka | Pôjde do {count} riadkov | Pôjde do {count} riadkov",
+        "stillToAssign": "Zostáva priradiť po tomto",
+        "overBySummary": "Prečerpané o",
+        "takenBack": "Vzaté späť",
+        "readyAfter": "Pripravené na priradenie potom",
+        "assignSubmit": "Priradiť {amount}",
+        "takeBackSubmit": "Vziať späť {amount}"
+      },
+      "line": {
+        "pickLabel": "Riadok",
+        "pickPlaceholder": "Vyberte riadok",
+        "goalHint": "Cieľ potrebuje {amount} v tomto mesiaci",
+        "overspentHint": "Prečerpané o {amount}",
+        "availableNow": "Teraz k dispozícii {available}",
+        "availableNowGoal": "Teraz k dispozícii {available} · cieľ potrebuje {need}",
+        "amountLabel": "Koľko?",
+        "chipGoal": "Čo cieľ potrebuje · {amount}",
+        "chipAll": "Celé · {amount}",
+        "previewAvailable": "{line} k dispozícii",
+        "overWarning": "To je o {amount} viac, než máte na priradenie. Stále to môžete urobiť, ale Pripravené na priradenie zčervená, kým rozdiel nevezmete späť z iného riadka.",
+        "assignAnyway": "Priradiť {amount} aj tak",
+        "assignInstead": "Priradiť namiesto toho {amount}",
+        "tooMuch": "Riadok {line} môže vrátiť najviac {amount}"
+      },
+      "toast": {
+        "assignedOne": "Priradené {amount} riadku {line}",
+        "assignedTwo": "Priradené {amount} riadkom {first} a {second}",
+        "assignedMany": "Priradené {amount} {count} riadku | Priradené {amount} {count} riadkom | Priradené {amount} {count} riadkom",
+        "tookBackOne": "Vzaté späť {amount} z riadka {line}",
+        "tookBackTwo": "Vzaté späť {amount} z riadkov {first} a {second}",
+        "tookBackMany": "Vzaté späť {amount} z {count} riadka | Vzaté späť {amount} z {count} riadkov | Vzaté späť {amount} z {count} riadkov",
+        "undone": "Vrátené späť",
+        "undoError": "Vrátenie späť zlyhalo. Nič sa nezmenilo."
+      }
     },
     "panel": {
       "summary": "Súhrn",
@@ -438,6 +519,12 @@
         "title": "Usporiadať sekcie",
         "description": "Presunutím zmeníte poradie sekcií panela, vypnutím sekciu skryjete. Niektoré sekcie sa zobrazia len pri vybranom riadku alebo v prehľade obdobia.",
         "reset": "Obnoviť predvolené"
+      },
+      "note": {
+        "label": "Poznámka",
+        "placeholder": "Pridať poznámku k tomuto obdobiu",
+        "gridIcon": "Má poznámku",
+        "error": "Poznámku sa nepodarilo uložiť"
       }
     },
     "groups": {

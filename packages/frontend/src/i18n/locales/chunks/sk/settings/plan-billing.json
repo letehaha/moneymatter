@@ -17,6 +17,23 @@
       "voteOnRoadmap": "Hlasujte na roadmape",
       "roadmapNote": "Bez poplatku. Podporte to hlasom a dáme vám vedieť, keď to bude hotové.",
       "saveUpTo": "Ušetríte až {percent} %",
+      "promotion": {
+        "title": "{name}: zľava {percent} % na prvú platbu",
+        "subtitle": "Uplatní sa automaticky pri platbe, kód nie je potrebný. Platí do {date}.",
+        "badge": "{name} −{percent} %",
+        "firstCycle": {
+          "year": "/ prvý rok",
+          "month": "/ prvý mesiac"
+        },
+        "renews": {
+          "year": "Potom {amount}/rok",
+          "month": "Potom {amount}/mesiac"
+        },
+        "billedToday": "Účtované dnes: {amount}. Kedykoľvek môžete zrušiť.",
+        "names": {
+          "blackFriday2026": "Black Friday"
+        }
+      },
       "portalFailed": "Fakturačný portál sa nepodarilo otvoriť. Skúste to znova, prosím.",
       "pastDueNote": "Vaša posledná platba zlyhala. Stripe sa automaticky pokúsi vašu kartu zaúčtovať znova v priebehu nasledujúcich dní. Ak si chcete zachovať prístup po {date}, aktualizujte spôsob platby cez Spravovať fakturáciu.",
       "priceNote": "Ceny sú v USD bez dane. Vaša miestna mena a prípadná daň sa zobrazia pri platbe.",

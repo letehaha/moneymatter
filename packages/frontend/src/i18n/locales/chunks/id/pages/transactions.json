@@ -11,7 +11,10 @@
           "thisMonth": "Bulan ini",
           "last3Months": "3 bulan terakhir",
           "last6Months": "6 bulan terakhir",
-          "last12Months": "12 bulan terakhir"
+          "last12Months": "12 bulan terakhir",
+          "lastMonth": "Last month",
+          "thisYear": "This year",
+          "lastYear": "Last year"
         }
       },
       "transactionType": {

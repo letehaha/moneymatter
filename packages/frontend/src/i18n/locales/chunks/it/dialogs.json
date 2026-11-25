@@ -52,7 +52,7 @@
         },
         "descriptionLabel": "Descrizione (facoltativa)",
         "descriptionPlaceholder": "Una breve descrizione di questo portafoglio...",
-        "externalUrlLabel": "External URL (optional)",
+        "externalUrlLabel": "URL esterno (facoltativo)",
         "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Crea portafoglio",
         "submitButtonLoading": "Creazione..."
@@ -320,6 +320,7 @@
         "mainCategoryLabel": "Categoria principale",
         "selectCategoryPlaceholder": "Selezionare la categoria",
         "amountPlaceholder": "0",
+        "notePlaceholder": "Nota (facoltativa)",
         "addCategoryButton": "Aggiungi categoria",
         "removeRowLabel": "Rimuovi categoria",
         "totalAmountLabel": "Importo totale",
