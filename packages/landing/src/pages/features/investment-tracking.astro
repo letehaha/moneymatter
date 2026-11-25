@@ -8,15 +8,58 @@ const SECTIONS = [
     bullets: ['Your portfolios count toward your net worth alongside your accounts'],
     screenshot: {
       name: 'investments',
-      alt: 'A portfolio page with total value, cost basis, unrealized and realized gain and total return above a holdings table showing shares, price, cost, market value and gains per symbol, with Import transactions and Add symbol buttons',
+      alt: 'A portfolio page with the value chart, its total value, return and market gain, net deposits, total return and unrealized gain, above the Holdings, Analytics, Activity and Watchlist tabs and a holdings table with shares, price, market value, weight and unrealized gain',
       width: 758,
       height: 670,
     },
   },
   {
-    heading: 'Cost basis, realized and unrealized gains per holding',
-    text: 'Each portfolio shows its total value, cost basis, unrealized and realized gains, and total return. Each holding shows its own cost, market value and both kinds of gain, so you can see which positions make money and which lose it. Fees on buys count toward your cost, and fees on sells reduce your gain.',
-    bullets: ['Positions you have fully sold move to their own closed list and keep their realized gain'],
+    heading: 'See what the market earned, apart from the money you put in',
+    text: 'A portfolio that grew from $10,000 to $15,000 only gained if you did not add the $5,000 yourself. The value chart draws your net deposits, the money you moved in minus what you took out, as a dashed line under the value, so the gap between them is your real gain. Switch to Return % to see the time-weighted return, which leaves deposits and withdrawals out.',
+    bullets: [
+      'Market gain for each period: the change in value minus what you deposited in that period',
+      'Periods from one week to all time, with an optional cost basis line',
+    ],
+  },
+  {
+    heading: 'Portfolio analytics: returns, drawdowns, benchmarks and allocation',
+    text: 'The Analytics tab tells you how well a portfolio is actually doing. It shows the time-weighted return, your money-weighted return since the first deposit, the biggest drop and when it recovered, and the fees you paid. A chart puts the portfolio next to your holdings and a market index, each starting at 0% on the first day of the period.',
+    bullets: [
+      'Compare with the S&P 500, Nasdaq 100, MSCI World or Euro Stoxx 50, including reinvested dividends',
+      'Returns per holding over 1M, 3M, 6M, YTD and 1Y',
+      'Allocation by holding, asset type or currency, with cash included',
+      'Market gain by month, with your best and worst month',
+    ],
+    screenshot: {
+      name: 'investments-analytics',
+      alt: 'The Holdings vs portfolio chart with the portfolio, the S&P 500 and five holdings as lines starting at 0%, with the time-weighted return, max drawdown, money-weighted return and fees paid above it',
+      width: 752,
+      height: 376,
+    },
+  },
+  {
+    heading: 'A watchlist with buy prices and price alerts',
+    text: "Keep the stocks, ETFs and coins you are thinking of buying on each portfolio's watchlist. Write down why you are watching one and the price you would buy at, and the watchlist shows how far the price still has to fall. Group securities into sections, and record a purchase straight from a row.",
+    bullets: [
+      'Last close, the daily change and where the price sits in its 52-week range',
+      'Alerts when a close goes above or below a price, or moves at least a percentage in a day',
+      'Alerts fire once or every time, in the app, by email or both',
+    ],
+    screenshot: {
+      name: 'investments-watchlist',
+      alt: 'A watchlist with securities in sections, each row showing the last close, daily change, 52-week range, buy-below price with how far it has to go, a note and an alert bell',
+      width: 752,
+      height: 500,
+    },
+  },
+  {
+    heading: 'Cost basis, gains and a page for every holding',
+    text: 'Each holding shows its shares, price, market value, weight among your holdings and unrealized gain, so you can see which positions make money and which lose it. Open one to see its price chart with your buys and sells marked on it, a line at your average cost, and its cost basis, realized gain and dividends. Fees on buys count toward your cost, and fees on sells reduce your gain.',
+    bullets: [
+      'Open lots show each purchase you still hold, with its cost and current gain',
+      'Your timing compares your average buy price with the average price since your first buy',
+      'Positions you have fully sold move to their own closed list and keep their realized gain',
+    ],
   },
   {
     heading: 'Import your trade history from a broker statement, CSV or PDF',
@@ -32,8 +75,8 @@ const SECTIONS = [
     ],
   },
   {
-    heading: 'Investment reports, growth projections and loss alerts',
-    text: 'Analytics has three investment reports, and General settings has an alert for losing positions.',
+    heading: 'Reports across all your portfolios, growth projections and loss alerts',
+    text: 'Besides the Analytics tab of each portfolio, the Analytics section of the app has three reports across all your investments, and General settings has an alert for losing positions.',
     bullets: [
       'Net Worth Drivers: how much of your growth you saved and how much the market returned',
       'Contributions: how much cash you moved into your portfolios over time, and where it went',
@@ -45,7 +88,8 @@ const SECTIONS = [
 
 const GOOD_TO_KNOW = [
   'Bonds, mutual funds and options cannot be added as holdings. For funds your bank manages, use an investment account and update its balance from your statement.',
-  'Total Return adds your unrealized and realized gains. Dividends go to your cash balance, so they raise the portfolio value without showing in that figure.',
+  'Total return is the portfolio value minus your net deposits, so dividends and fees count in it.',
+  'Prices are daily closes, and watchlist alerts are checked once a day after the close, so neither follows the price during the trading day.',
   'You cannot choose which lot a sale uses, and there is no capital-gains or tax report.',
 ];
 
@@ -59,6 +103,21 @@ const FAQ = [
     question: 'Does MoneyMatter use average cost or FIFO for cost basis?',
     answer:
       "Both. In MoneyMatter, a holding's cost basis is the average cost of your current position, and realized gains use FIFO, matching each sale to your oldest shares first. Selling a whole position resets its cost basis, so buying back in starts fresh.",
+  },
+  {
+    question: 'Does MoneyMatter track realized and unrealized gains?',
+    answer:
+      'Yes. Each holding shows its unrealized gain, and the portfolio shows the total. Open a holding to see the realized gain from its sales. Positions you have fully sold move to their own closed list and keep their realized gain, so past profits and losses stay visible.',
+  },
+  {
+    question: 'Can I compare my portfolio with the S&P 500?',
+    answer:
+      "Yes. The Analytics tab of a portfolio can add the S&P 500, Nasdaq 100, MSCI World or Euro Stoxx 50 to its chart, with reinvested dividends and converted to the portfolio's currency. The portfolio line uses the time-weighted return, so your deposits do not distort the comparison.",
+  },
+  {
+    question: 'Can I get an alert when a stock reaches my target price?',
+    answer:
+      'Yes. Add the stock to a watchlist and set an alert for a close above or below a price, or for a daily move of a percentage you choose. MoneyMatter notifies you in the app, by email or both. Alerts use daily closing prices, so they are not meant for trading during the day.',
   },
   {
     question: 'Can I track dividends?',
@@ -78,11 +137,15 @@ const FAQ = [
   {
     question: 'Which plans include investment tracking?',
     answer:
-      'Investment tracking is part of Essential, at $5 a month or $30 a year before tax, Plus and the 40-day free trial. The only plan difference is AI import, which needs your own AI model on Essential and uses the included AI on Plus. A self-hosted install has every feature with no plan to buy, but crypto prices need your own CoinGecko API key.',
+      'Investment tracking is part of Essential, at $5 a month or $30 a year before tax, Plus and the 40-day free trial. Portfolio analytics and the watchlist are part of Plus, and on Essential each one offers its own 14-day free trial. AI import needs your own AI model on Essential and uses the included AI on Plus. A self-hosted install has every feature with no plan to buy, but crypto prices need your own CoinGecko API key.',
   },
 ];
 
 const GUIDES = [
+  { label: 'Portfolios', href: 'https://docs.moneymatter.app/investments/portfolios/' },
+  { label: 'Portfolio analytics', href: 'https://docs.moneymatter.app/investments/portfolio-analytics/' },
+  { label: 'Watchlist', href: 'https://docs.moneymatter.app/investments/watchlist/' },
+  { label: 'Holding page', href: 'https://docs.moneymatter.app/investments/holding-page/' },
   {
     label: 'Savings and investment accounts',
     href: 'https://docs.moneymatter.app/accounts/savings-and-investment-accounts/',
@@ -95,10 +158,10 @@ const RELATED = ['/features/net-worth-tracker', '/features/fire-planner', '/feat
 ---
 
 <FeatureLayout
-  title="Investment Portfolio Tracker with Cost Basis | MoneyMatter"
-  description="An investment portfolio tracker for stocks, ETFs and crypto. See cost basis and gains per holding, record dividends and import trades from broker files."
+  title="Investment Portfolio Tracker with Analytics and Price Alerts | MoneyMatter"
+  description="An investment portfolio tracker for stocks, ETFs and crypto. See cost basis and real returns, compare with the S&P 500, watch prices with alerts and import trades from broker files."
   heading="Investment portfolio tracker for stocks, ETFs and crypto, next to your budget"
-  intro="MoneyMatter is an investment portfolio tracker that shows what your holdings cost, what they are worth and what they have returned, in the same app as your accounts and budget. Prices update automatically, and you can import past trades from a broker statement."
+  intro="MoneyMatter is an investment portfolio tracker that shows what your holdings cost, what they are worth and what they have returned, in the same app as your accounts and budget. Compare your returns with a market index, keep a watchlist with price alerts, and import past trades from a broker statement."
   sections={SECTIONS}
   goodToKnow={GOOD_TO_KNOW}
   faq={FAQ}

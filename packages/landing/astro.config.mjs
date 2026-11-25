@@ -37,5 +37,8 @@ export default defineConfig({
     plugins: [tailwindcss()],
     envDir: '../../',
     envPrefix: 'VITE_',
+    // Prerender chunks in dist/ resolve externals from the repo root, where the backend's cookie@0.x
+    // shadows the cookie@2 Astro needs (a frontend+landing-only install, like Docker's, doesn't hit this).
+    environments: { prerender: { resolve: { noExternal: ['cookie'] } } },
   },
 });

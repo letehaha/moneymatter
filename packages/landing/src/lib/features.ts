@@ -102,7 +102,7 @@ export const FEATURE_GROUPS = [
         label: 'Investment Tracking',
         href: '/features/investment-tracking',
         icon: 'candlestick-chart',
-        summary: 'Follow stocks, ETFs and crypto with cost basis, gains and dividends.',
+        summary: 'Follow stocks, ETFs and crypto with cost basis, real returns, benchmarks and price alerts.',
       },
       {
         label: 'Loan Tracking',

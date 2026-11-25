@@ -3,7 +3,7 @@
 import { existsSync } from 'node:fs';
 import sharp from 'sharp';
 
-import { APP, STATE, bothThemes, open } from './helper.mjs';
+import { APP, STATE, bothThemes, innermost, open } from './helper.mjs';
 import { ENTITLEMENTS, mockEntitlements } from './mocks.mjs';
 
 const LANDING = new URL('../../../landing/', import.meta.url).pathname;
@@ -14,6 +14,30 @@ const openFromList = async ({ page, path, item, ready }) => {
   await page.goto(APP + path);
   await page.getByText(item).first().click();
   await page.getByText(ready).waitFor();
+};
+
+const openPortfolio = async ({ page }) => {
+  await page.goto(APP + '/investments');
+  await page.getByText('Brokerage', { exact: true }).first().click();
+  await page.getByRole('tab', { name: /Holdings/ }).waitFor();
+};
+
+const openPortfolioTab = async ({ page, tab }) => {
+  await openPortfolio({ page });
+  await page.getByRole('tab', { name: tab }).click();
+};
+
+// From the value chart down, full content width, at the `size` aspect ratio.
+const belowPortfolioHeader = async ({ page, size: [w, h] }) => {
+  const header = await page.getByTestId('portfolio-header').boundingBox();
+  const width = header.width + 32;
+  return { x: header.x - 16, y: header.y + header.height + 8, width, height: (width * h) / w };
+};
+
+const aroundCard = async ({ card, size: [w, h] }) => {
+  const box = await card.boundingBox();
+  const width = box.width + 32;
+  return { x: box.x - 16, y: box.y - 16, width, height: (width * h) / w };
 };
 
 // `size` is in CSS px: the @1x file's size, half the @2x file's.
@@ -67,14 +91,35 @@ const VIEWS = {
   investments: {
     size: [757.5, 670],
     viewport: { height: 1300 },
-    go: ({ page }) => openFromList({ page, path: '/investments', item: 'Brokerage', ready: 'Holdings' }),
+    go: openPortfolio,
     ready: 'VOO',
     // The holdings table needs ~1100px for all its columns, so this frame is taken larger and scaled down.
-    clip: async ({ page }) => {
-      const card = await page.getByText('Total value', { exact: true }).locator('xpath=../../..').boundingBox();
-      const width = card.width + 32;
-      return { x: card.x - 16, y: card.y - 16, width, height: (width * 670) / 757.5 };
+    clip: belowPortfolioHeader,
+  },
+  'investments-analytics': {
+    size: [752, 376],
+    viewport: { height: 1300 },
+    go: async ({ page }) => {
+      await openPortfolioTab({ page, tab: 'Analytics' });
+      await page
+        .getByRole('combobox')
+        .filter({ hasText: /benchmark|S&P 500/ })
+        .first()
+        .click();
+      await page.getByRole('option', { name: /^S&P 500/ }).click();
+      await page.waitForTimeout(500);
+      await page.evaluate(() => document.activeElement?.blur());
     },
+    ready: 'Time-weighted return',
+    clip: ({ page, size }) =>
+      aroundCard({ card: innermost({ page, has: ['Holdings vs portfolio', 'Add more'] }), size }),
+  },
+  'investments-watchlist': {
+    size: [752, 500],
+    viewport: { height: 1300 },
+    go: ({ page }) => openPortfolioTab({ page, tab: 'Watchlist' }),
+    ready: '52-week range',
+    clip: ({ page, size }) => aroundCard({ card: page.locator('[class*="@container/watchlist"]'), size }),
   },
   'money-flow': {
     size: [752, 627],
@@ -140,16 +185,18 @@ const VIEWS = {
   },
   'home/shot-investments': {
     jpeg: true,
+    size: [1516, 800],
     viewport: { width: 1440, height: 900 },
     collapsed: true,
-    go: ({ page }) => openFromList({ page, path: '/investments', item: 'Brokerage', ready: 'Holdings' }),
+    go: openPortfolio,
     ready: 'VOO',
+    clip: belowPortfolioHeader,
   },
 };
 
 async function clipOf({ page, view }) {
   const [width, height] = view.size;
-  if (view.clip) return { width, height, ...(await view.clip({ page })) };
+  if (view.clip) return { width, height, ...(await view.clip({ page, size: view.size })) };
   const { x, y } = await view.anchor({ page }).boundingBox();
   return { x: x + view.offset[0], y: y + view.offset[1], width, height };
 }
