@@ -66,6 +66,10 @@ export const getSecurityPricesTool = defineTool({
       `Start of the range, ISO 8601 UTC (e.g. "2026-01-01T00:00:00Z"). Default: ${DEFAULT_WINDOW_DAYS} days before to (or before now)`,
     ),
     to: shape.to.describe('End of the range, ISO 8601 UTC. Default: no upper bound'),
+    daily: z
+      .boolean()
+      .optional()
+      .describe("true: one close per UTC day, the day's last stored price. Crypto stores several prices a day"),
     limit: z
       .number()
       .int()
@@ -76,7 +80,7 @@ export const getSecurityPricesTool = defineTool({
   },
   run: async ({ args }) => {
     // The REST query rule, `from` on or before `to`, which a plain input shape cannot carry.
-    const { securityId: givenId, from, to } = securityPricesQuerySchema.parse(args);
+    const { securityId: givenId, from, to, daily } = securityPricesQuerySchema.parse(args);
     const { symbol, providerName } = args;
 
     const securityId = await resolveSecurityId({ securityId: givenId, symbol, providerName });
@@ -85,7 +89,7 @@ export const getSecurityPricesTool = defineTool({
     // Prices are shared by all users and can be hourly, so an open range is cut to a year.
     const fromDate = from ? new Date(from) : subDays(toDate ?? new Date(), DEFAULT_WINDOW_DAYS);
 
-    const prices = await getPrices({ securityId, from: fromDate, to: toDate });
+    const prices = await getPrices({ securityId, from: fromDate, to: toDate, daily });
 
     const ordered = prices.toSorted((a, b) => a.date.getTime() - b.date.getTime());
 

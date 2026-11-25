@@ -1,6 +1,6 @@
 <template>
   <!-- Loading -->
-  <div v-if="isLoading" class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+  <div v-if="isLoading" class="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-3">
     <div v-for="i in 2" :key="i" class="bg-muted/30 flex items-center gap-3 rounded-lg p-3">
       <div class="bg-muted size-8 animate-pulse rounded-full" />
       <div class="flex-1 space-y-1.5">
@@ -19,7 +19,7 @@
   </p>
 
   <!-- Balances grid -->
-  <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
+  <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(min(300px,100%),1fr))] gap-3">
     <div
       v-for="balance in nonZeroBalances"
       :key="balance.currencyCode"

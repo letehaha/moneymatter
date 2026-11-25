@@ -2,7 +2,6 @@
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import PortfolioSettingsForm from '@/components/forms/portfolio-settings-form.vue';
 import type { PortfolioModel } from '@bt/shared/types/investments';
-import { ref } from 'vue';
 
 interface Emit {
   (e: 'updated'): void;
@@ -11,7 +10,7 @@ interface Emit {
 defineProps<{ portfolio: PortfolioModel }>();
 const emit = defineEmits<Emit>();
 
-const isOpen = ref(false);
+const isOpen = defineModel<boolean>('open', { default: false });
 
 const handleUpdated = () => {
   isOpen.value = false;

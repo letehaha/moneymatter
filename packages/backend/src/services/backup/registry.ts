@@ -30,7 +30,8 @@ export type BackupParentScope =
   | 'budgetPlans'
   | 'budgetLines'
   | 'trackerLines'
-  | 'goals';
+  | 'goals'
+  | 'watchlistItems';
 
 /**
  * How a table's rows are selected for the current user.
@@ -346,6 +347,27 @@ const TABLE_DEFS = [
     model: models.PortfolioBalances,
     tier: 4,
     scope: { strategy: 'viaParent', fk: 'portfolioId', parent: 'portfolios' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'watchlist-sections',
+    model: models.WatchlistSections,
+    tier: 4,
+    scope: { strategy: 'viaParent', fk: 'portfolioId', parent: 'portfolios' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'watchlist-items',
+    model: models.WatchlistItems,
+    tier: 5,
+    scope: { strategy: 'viaParent', fk: 'portfolioId', parent: 'portfolios' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'watchlist-alerts',
+    model: models.WatchlistAlerts,
+    tier: 6,
+    scope: { strategy: 'viaParent', fk: 'itemId', parent: 'watchlistItems' },
     restoreMode: 'insert',
   },
   {

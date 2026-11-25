@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { searchSecurities } from '@/api/securities';
+import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import SecurityLogo from '@/components/common/security-logo.vue';
@@ -54,7 +55,9 @@ const apiAssetClass = computed<ASSET_CLASS | undefined>(() =>
   assetClassFilter.value === 'all' ? undefined : assetClassFilter.value,
 );
 
-const key = computed(() => ['sec-search', debounced.value, props.portfolioId, assetClassFilter.value] as const);
+const key = computed(
+  () => [...VUE_QUERY_CACHE_KEYS.securitySearch, debounced.value, props.portfolioId, assetClassFilter.value] as const,
+);
 
 const query = useQuery({
   queryKey: key,

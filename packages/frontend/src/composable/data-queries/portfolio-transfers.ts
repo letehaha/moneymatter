@@ -4,7 +4,6 @@ import {
   createPortfolioTransfer,
   deletePortfolioTransfer,
   exchangeCurrency,
-  getPortfolioTransfers,
   getTransactionPortfolioLink,
   linkTransactionToPortfolio,
   portfolioToAccountTransfer,
@@ -12,7 +11,6 @@ import {
   unlinkTransactionFromPortfolio,
 } from '@/api/portfolios';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
-import { useOffsetHistoryQuery } from '@/composable/use-offset-history-query';
 import type { QueryClient } from '@tanstack/vue-query';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { type MaybeRef, unref } from 'vue';
@@ -23,9 +21,11 @@ export type TransferType = 'portfolio-to-portfolio' | 'portfolio-to-account' | '
 
 /** Invalidates all queries affected by portfolio transfer operations. */
 export function invalidateTransferRelatedQueries(queryClient: QueryClient): void {
-  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioTransfers });
+  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioActivity });
   queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioBalances });
   queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioSummary });
+  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioValueHistory });
+  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioAnalytics });
   queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfoliosList });
   queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.allAccounts });
   // Account-to-portfolio and portfolio-to-account transfers create/delete rows in Transactions,
@@ -134,11 +134,3 @@ export const useUnlinkTransactionFromPortfolio = () => {
     },
   });
 };
-
-export const usePortfolioTransfers = (portfolioId: MaybeRef<string>) =>
-  useOffsetHistoryQuery({
-    queryKey: [...VUE_QUERY_CACHE_KEYS.portfolioTransfers, portfolioId],
-    fetchPage: async ({ limit, offset }) => ({
-      items: await getPortfolioTransfers({ portfolioId: unref(portfolioId), limit, offset }),
-    }),
-  });

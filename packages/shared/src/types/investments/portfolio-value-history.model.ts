@@ -10,6 +10,10 @@ export interface PortfolioValueHistoryPointModel {
   costBasis: string;
   /** Cumulative FIFO realized gain through that day. */
   realizedGain: string;
+  /** Cumulative transfers into minus out of this portfolio, adjustments and same-portfolio exchanges excluded. */
+  netDeposits: string;
+  /** Cumulative time-weighted return since the first point, as a decimal fraction (0.0457 = 4.57%). Not a money value. */
+  timeWeightedReturn: string;
 }
 
 export interface PortfolioValueHistoryModel {

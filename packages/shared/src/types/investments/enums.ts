@@ -18,6 +18,17 @@ export enum ASSET_CLASS {
   other = 'other',
 }
 
+/** The instrument type a provider reports; finer than `ASSET_CLASS`. Null on a security whose provider has not reported one yet. */
+export enum SECURITY_TYPE {
+  stock = 'stock',
+  etf = 'etf',
+  mutual_fund = 'mutual_fund',
+  bond = 'bond',
+  crypto = 'crypto',
+  option = 'option',
+  other = 'other',
+}
+
 /**
  * Asset classes the product currently supports for user-facing search and
  * holding creation. Anything else is filtered from search results and rejected

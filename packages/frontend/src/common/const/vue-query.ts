@@ -198,19 +198,22 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   portfoliosList: [securityPriceChange, 'portfolios'] as const,
   portfoliosTrashList: [securityPriceChange, 'portfolios-trash'] as const,
   portfolioDetails: [securityPriceChange, 'portfolio-details'] as const,
-  portfolioTransfers: [securityPriceChange, 'portfolio-transfers'] as const,
+  portfolioActivity: [securityPriceChange, 'portfolio-activity'] as const,
   portfolioSummary: [securityPriceChange, 'portfolio-summary'] as const,
   // Must stay nested under portfolioSummary: invalidating that prefix is what refetches the batch.
   portfolioSummaries: [securityPriceChange, 'portfolio-summary', 'all'] as const,
   portfolioAnnualizedReturns: [securityPriceChange, 'portfolio-annualized-returns'] as const,
+  portfolioValueHistory: [securityPriceChange, 'portfolio-value-history'] as const,
+  portfolioAnalytics: [securityPriceChange, 'portfolio-analytics'] as const,
+  portfolioWatchlist: [securityPriceChange, 'portfolio-watchlist'] as const,
   portfolioBalances: [securityPriceChange, 'portfolio-balances'] as const,
   transactionPortfolioLink: [transactionChange, 'transaction-portfolio-link'] as const,
-
-  portfolioInvestmentTransactions: [securityPriceChange, 'portfolio-investment-transactions'] as const,
 
   // holdings
   holdingsList: [securityPriceChange, 'holdings'] as const,
   holdingTransactions: [securityPriceChange, 'holding-transactions'] as const,
+  securityPrices: [securityPriceChange, 'security-prices'] as const,
+  securitySearch: ['security-search'] as const,
 
   // transactions import (AI-parsed)
   investmentImportSecuritySearch: ['investment-import', 'security-search'] as const,

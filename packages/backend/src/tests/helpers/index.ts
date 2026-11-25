@@ -44,6 +44,7 @@ export * from './investments/transactions';
 export * from './investments/transactions-import';
 export * from './investments/portfolios';
 export * from './investments/portfolio-transfers';
+export * from './investments/watchlist';
 export * from './venture/platforms';
 export * from './venture/deals';
 export * from './venture/events';

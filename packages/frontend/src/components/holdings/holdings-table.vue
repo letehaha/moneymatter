@@ -1,19 +1,15 @@
 <script setup lang="ts">
+import { formatShare } from '@/common/utils/percentage';
 import PrecisionNumber from '@/components/common/precision-number.vue';
-import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
-import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
-import InvestmentTransactionForm from '@/components/forms/investment-transaction-form.vue';
+import SecurityLogo from '@/components/common/security-logo.vue';
 import { Button } from '@/components/lib/ui/button';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
-import { useNotificationCenter } from '@/components/notification-center';
-import { useDeleteHolding } from '@/composable/data-queries/holdings';
 import { useFormatCurrency } from '@/composable/formatters';
-import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import { getGainColorClass } from '@/composable/gain-color';
 import { useDateLocale } from '@/composable/use-date-locale';
-import { getApiErrorMessage } from '@/js/errors';
-import { captureException } from '@/lib/sentry';
+import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
+import { ROUTES_NAMES } from '@/routes/constants';
 import { useCurrenciesStore } from '@/stores/currencies';
 import { ASSET_CLASS, type HoldingModel } from '@bt/shared/types/investments';
 import {
@@ -27,25 +23,12 @@ import {
   PackageOpenIcon,
   PlusIcon,
   SearchXIcon,
-  Trash2Icon,
 } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 
-import SecurityLogo from '@/components/common/security-logo.vue';
-
-import HoldingTransactionsSection from './holding-transactions-section.vue';
-import { useHoldingRowExpansion } from './composables/use-holding-row-expansion';
-import {
-  type HoldingSortKey,
-  getAverageCost,
-  getPrice,
-  getTotalCost,
-  groupHoldings,
-  isPriceStale,
-  sortHoldings,
-} from './utils/holding-display';
+import AddHoldingTransactionDialog from './add-holding-transaction-dialog.vue';
+import { type HoldingSortKey, getPrice, groupHoldings, isPriceStale, sortHoldings } from './utils/holding-display';
 
 // Crypto trades in much smaller units than typical stock fractional shares, so
 // it needs more visible precision before falling back to a hover-reveal.
@@ -58,6 +41,9 @@ const props = defineProps<{
   loading?: boolean;
   error?: boolean;
   portfolioId: string;
+  portfolioName?: string;
+  /** Share of the whole portfolio per securityId, computed from the unfiltered holdings. */
+  weights: ReadonlyMap<string, number | null>;
   // When the user is filtering via search, closed positions are shown inline
   // alongside active ones (no collapsible section).
   isFiltering?: boolean;
@@ -68,18 +54,15 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ (e: 'addSymbol'): void; (e: 'importTransactions'): void; (e: 'clearFilter'): void }>();
 
-const { t } = useI18n();
-const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
-
 const isTransactionModalOpen = ref(false);
 const selectedHolding = ref<HoldingModel | null>(null);
 
-const openTransactionModal = (holding: HoldingModel | null = null) => {
+const openTransactionModal = (holding: HoldingModel) => {
   selectedHolding.value = holding;
   isTransactionModalOpen.value = true;
 };
 
-const sortKey = ref<HoldingSortKey>('totalCost');
+const sortKey = ref<HoldingSortKey>('value');
 const sortDir = ref<'asc' | 'desc'>('desc');
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
@@ -114,7 +97,12 @@ const groupedHoldings = computed(() =>
   }),
 );
 
-type DisplayRow = { kind: 'holding'; holding: HoldingModel } | { kind: 'closedToggle'; count: number };
+type DisplayRow =
+  | { kind: 'holding'; holding: HoldingModel; weight: number | null }
+  | { kind: 'closedToggle'; count: number };
+
+const toHoldingRow = ({ holding }: { holding: HoldingModel }) =>
+  ({ kind: 'holding', holding, weight: props.weights.get(holding.securityId) ?? null }) as const;
 
 /**
  * Flat list of rows to render. While filtering we show every match in one
@@ -124,41 +112,27 @@ type DisplayRow = { kind: 'holding'; holding: HoldingModel } | { kind: 'closedTo
 const displayRows = computed<DisplayRow[]>(() => {
   if (props.isFiltering) {
     return sortHoldings({ holdings: props.holdings ?? [], sortKey: sortKey.value, sortDir: sortDir.value }).map(
-      (holding) => ({ kind: 'holding', holding }),
+      (holding) => toHoldingRow({ holding }),
     );
   }
 
   const { justAdded, active, closed } = groupedHoldings.value;
   const rows: DisplayRow[] = [
-    ...justAdded.map((holding) => ({ kind: 'holding', holding }) as const),
-    ...active.map((holding) => ({ kind: 'holding', holding }) as const),
+    ...justAdded.map((holding) => toHoldingRow({ holding })),
+    ...active.map((holding) => toHoldingRow({ holding })),
   ];
 
   if (closed.length > 0) {
     rows.push({ kind: 'closedToggle', count: closed.length });
     if (closedExpanded.value) {
-      rows.push(...closed.map((holding) => ({ kind: 'holding', holding }) as const));
+      rows.push(...closed.map((holding) => toHoldingRow({ holding })));
     }
   }
 
   return rows;
 });
 
-const getUnrealizedGain = (holding: HoldingModel) => {
-  return {
-    value: Number(holding.unrealizedGainValue || 0),
-    percent: Number(holding.unrealizedGainPercent || 0),
-  };
-};
-
-const getRealizedGain = (holding: HoldingModel) => {
-  return {
-    value: Number(holding.realizedGainValue || 0),
-    percent: Number(holding.realizedGainPercent || 0),
-  };
-};
-
-// Money columns render display-currency values when present; Price and AC/Share stay native.
+// Money columns render display-currency values when present; Price stays native.
 const formatMoneyCell = ({
   holding,
   native,
@@ -172,53 +146,17 @@ const formatMoneyCell = ({
     ? formatCurrency(Number(display), holding.displayCurrencyCode)
     : formatCurrency(native, holding.currencyCode);
 
-const { isExpanded, toggleExpand, collapseIfMatches } = useHoldingRowExpansion();
+const holdingRoute = (holding: HoldingModel) => ({
+  name: ROUTES_NAMES.portfolioHolding,
+  params: { portfolioId: props.portfolioId, securityId: holding.securityId },
+});
 
-// Delete holding flow
-const deleteHoldingMutation = useDeleteHolding();
-const deleteConfirmOpen = ref(false);
-const holdingPendingDelete = ref<HoldingModel | null>(null);
-
-const openDeleteConfirm = (holding: HoldingModel) => {
-  holdingPendingDelete.value = holding;
-  deleteConfirmOpen.value = true;
-};
-
-const confirmDeleteHolding = async () => {
-  const target = holdingPendingDelete.value;
-  if (!target) return;
-  try {
-    await deleteHoldingMutation.mutateAsync({
-      portfolioId: props.portfolioId,
-      securityId: target.securityId,
-      force: true,
-    });
-    addSuccessNotification(t('portfolioDetail.holdingsTable.deleteHolding.success'));
-    collapseIfMatches(target.securityId);
-  } catch (err) {
-    const message = getApiErrorMessage({
-      e: err,
-      t,
-      conflictKey: 'portfolioDetail.holdingsTable.deleteHolding.error',
-      fallbackKey: 'portfolioDetail.holdingsTable.deleteHolding.error',
-    });
-    addErrorNotification(message);
-    captureException({
-      error: err,
-      context: { source: 'confirmDeleteHolding', portfolioId: props.portfolioId, securityId: target.securityId },
-    });
-  } finally {
-    deleteConfirmOpen.value = false;
-    holdingPendingDelete.value = null;
-  }
-};
-
-const cellStyles = 'py-0.5';
+const cellStyles = 'py-2';
 const theadCellStyles = 'py-2';
 const theadBgStyles = 'bg-table-header';
-// Chevron + Symbol cells pin to the left during horizontal scroll. They need
-// an opaque bg (scrolled columns would show through), so the row's translucent
-// hover color is layered over the card bg as a background image.
+// The symbol cell pins to the left during horizontal scroll. It needs an opaque
+// bg (scrolled columns would show through), so the row's translucent hover
+// color is layered over the card bg as a background image.
 const stickyBodyCellStyles =
   'sticky z-1 bg-card group-hover:bg-[linear-gradient(var(--color-hover),var(--color-hover))]';
 // Single-line header labels: the cap keeps long (localized) labels from
@@ -305,16 +243,13 @@ const theadLabelStyles = 'block max-w-32 truncate';
     </div>
 
     <!-- Holdings Table -->
-    <!-- @container: the expanded transactions section sizes itself to 100cqw. -->
-    <ScrollArea v-else class="@container" viewport-class="overscroll-x-none" with-horizontal-scrollbar>
+    <ScrollArea v-else viewport-class="overscroll-x-none" with-horizontal-scrollbar>
       <!-- pb-2.5 keeps the overlay horizontal scrollbar off the last row. -->
       <div class="pb-2.5">
-        <table class="w-full min-w-235">
+        <table class="w-full min-w-190">
           <thead class="text-muted-foreground">
             <tr class="text-xs font-medium tracking-wider uppercase">
-              <!-- Chevron + symbol share one sticky cell: separate cells leave a
-                   seam where scrolled columns peek through between them. -->
-              <th :class="[theadCellStyles, theadBgStyles, 'sticky left-0 z-1 pr-3 pl-13 text-left']">
+              <th :class="[theadCellStyles, theadBgStyles, 'sticky left-0 z-1 px-3 text-left']">
                 <button
                   class="hover:text-foreground flex items-center gap-1 transition-colors"
                   @click="toggleSort('symbol')"
@@ -323,9 +258,6 @@ const theadLabelStyles = 'block max-w-32 truncate';
                   <ArrowUpIcon v-if="sortKey === 'symbol' && sortDir === 'asc'" class="size-3" />
                   <ArrowDownIcon v-if="sortKey === 'symbol' && sortDir === 'desc'" class="size-3" />
                 </button>
-              </th>
-              <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-left']">
-                <span :class="theadLabelStyles">{{ $t('portfolioDetail.holdingsTable.headers.name') }}</span>
               </th>
               <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-right']">
                 <button
@@ -343,34 +275,15 @@ const theadLabelStyles = 'block max-w-32 truncate';
               <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-right']">
                 <button
                   class="hover:text-foreground flex w-full items-center justify-end gap-1 transition-colors"
-                  @click="toggleSort('avgCost')"
-                >
-                  <span :class="theadLabelStyles">{{
-                    $t('portfolioDetail.holdingsTable.headers.avgCostPerShare')
-                  }}</span>
-                  <ArrowUpIcon v-if="sortKey === 'avgCost' && sortDir === 'asc'" class="size-3" />
-                  <ArrowDownIcon v-if="sortKey === 'avgCost' && sortDir === 'desc'" class="size-3" />
-                </button>
-              </th>
-              <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-right']">
-                <button
-                  class="hover:text-foreground flex w-full items-center justify-end gap-1 transition-colors"
-                  @click="toggleSort('totalCost')"
-                >
-                  <span :class="theadLabelStyles">{{ $t('portfolioDetail.holdingsTable.headers.totalCost') }}</span>
-                  <ArrowUpIcon v-if="sortKey === 'totalCost' && sortDir === 'asc'" class="size-3" />
-                  <ArrowDownIcon v-if="sortKey === 'totalCost' && sortDir === 'desc'" class="size-3" />
-                </button>
-              </th>
-              <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-right']">
-                <button
-                  class="hover:text-foreground flex w-full items-center justify-end gap-1 transition-colors"
                   @click="toggleSort('value')"
                 >
                   <span :class="theadLabelStyles">{{ $t('portfolioDetail.holdingsTable.headers.marketValue') }}</span>
                   <ArrowUpIcon v-if="sortKey === 'value' && sortDir === 'asc'" class="size-3" />
                   <ArrowDownIcon v-if="sortKey === 'value' && sortDir === 'desc'" class="size-3" />
                 </button>
+              </th>
+              <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-right']">
+                <span :class="theadLabelStyles">{{ $t('portfolioDetail.holdingsTable.headers.weight') }}</span>
               </th>
               <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-right']">
                 <button
@@ -384,17 +297,7 @@ const theadLabelStyles = 'block max-w-32 truncate';
                   <ArrowDownIcon v-if="sortKey === 'unrealizedGain' && sortDir === 'desc'" class="size-3" />
                 </button>
               </th>
-              <th :class="[theadCellStyles, theadBgStyles, 'px-3 text-right']">
-                <button
-                  class="hover:text-foreground flex w-full items-center justify-end gap-1 transition-colors"
-                  @click="toggleSort('realizedGain')"
-                >
-                  <span :class="theadLabelStyles">{{ $t('portfolioDetail.holdingsTable.headers.realizedGain') }}</span>
-                  <ArrowUpIcon v-if="sortKey === 'realizedGain' && sortDir === 'asc'" class="size-3" />
-                  <ArrowDownIcon v-if="sortKey === 'realizedGain' && sortDir === 'desc'" class="size-3" />
-                </button>
-              </th>
-              <th :class="[theadCellStyles, theadBgStyles, 'w-10 text-right']"></th>
+              <th :class="[theadCellStyles, theadBgStyles, 'w-24']"></th>
             </tr>
           </thead>
           <tbody class="divide-border divide-y">
@@ -403,180 +306,133 @@ const theadLabelStyles = 'block max-w-32 truncate';
               :key="row.kind === 'closedToggle' ? 'closed-positions-toggle' : row.holding.securityId"
             >
               <!-- Inline collapsible "Closed positions" section header -->
-              <tr
-                v-if="row.kind === 'closedToggle'"
-                class="bg-muted/40 hover:bg-muted/70 cursor-pointer text-sm transition-colors"
-                @click="closedExpanded = !closedExpanded"
-              >
-                <td :class="[cellStyles, 'py-1']">
-                  <Button variant="ghost" size="icon-sm" @click.stop="closedExpanded = !closedExpanded">
+              <tr v-if="row.kind === 'closedToggle'" class="bg-muted/40 text-sm">
+                <td colspan="7" class="p-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    class="text-muted-foreground w-full justify-start"
+                    :aria-expanded="closedExpanded"
+                    @click="closedExpanded = !closedExpanded"
+                  >
                     <ChevronDownIcon v-if="closedExpanded" class="size-4" />
                     <ChevronRightIcon v-else class="size-4" />
-                  </Button>
-                </td>
-                <td colspan="9" :class="[cellStyles, 'px-3']">
-                  <div class="text-muted-foreground flex items-center gap-2 font-medium">
                     <ArchiveIcon class="size-4" />
                     {{ $t('portfolioDetail.holdingsTable.closedPositions', { count: row.count }) }}
+                  </Button>
+                </td>
+              </tr>
+              <tr v-else class="hover:bg-hover group text-sm">
+                <td :class="[cellStyles, stickyBodyCellStyles, 'left-0 max-w-72 px-3']">
+                  <RouterLink :to="holdingRoute(row.holding)" class="flex min-w-0 items-center gap-3">
+                    <SecurityLogo v-if="row.holding.security" :security="row.holding.security" />
+                    <span class="min-w-0">
+                      <span class="block font-semibold">{{ row.holding.security?.symbol }}</span>
+                      <span class="text-muted-foreground block truncate text-xs">{{ row.holding.security?.name }}</span>
+                    </span>
+                  </RouterLink>
+                </td>
+                <td :class="[cellStyles, 'px-3 text-right tabular-nums']">
+                  <PrecisionNumber
+                    :value="row.holding.quantity"
+                    :max-decimals="decimalsForAssetClass(row.holding.security?.assetClass)"
+                  />
+                </td>
+                <td :class="[cellStyles, 'px-3 text-right tabular-nums']">
+                  {{ formatCurrency(getPrice(row.holding), row.holding.currencyCode) }}
+                  <DesktopOnlyTooltip
+                    v-if="isPriceStale({ holding: row.holding })"
+                    content-class-name="max-w-60"
+                    :content="$t('portfolioDetail.holdingsTable.stalePrice')"
+                  >
+                    <div class="text-warning-text flex items-center justify-end gap-1 text-xs">
+                      <ClockAlertIcon class="size-3" />
+                      {{ formatDate(row.holding.priceDate!, 'd MMM') }}
+                    </div>
+                  </DesktopOnlyTooltip>
+                </td>
+                <td :class="[cellStyles, 'px-3 text-right font-semibold tabular-nums']">
+                  {{
+                    formatMoneyCell({
+                      holding: row.holding,
+                      native: Number(row.holding.marketValue || 0),
+                      display: row.holding.displayMarketValue,
+                    })
+                  }}
+                </td>
+                <td :class="[cellStyles, 'px-3 text-right tabular-nums']">
+                  <span v-if="row.weight === null">—</span>
+                  <div v-else class="flex flex-col items-end gap-1">
+                    <span>{{ formatShare({ fraction: row.weight }) }}</span>
+                    <span class="bg-muted h-1 w-16 overflow-hidden rounded-full">
+                      <span
+                        class="bg-muted-foreground block h-full rounded-full"
+                        :style="{ width: `${Math.min(100, row.weight * 100)}%` }"
+                      />
+                    </span>
+                  </div>
+                </td>
+                <td :class="[cellStyles, 'px-3 text-right']">
+                  <div
+                    :class="getGainColorClass({ gainValue: Number(row.holding.unrealizedGainValue || 0) })"
+                    class="tabular-nums"
+                  >
+                    <div class="font-semibold">
+                      {{
+                        formatMoneyCell({
+                          holding: row.holding,
+                          native: Number(row.holding.unrealizedGainValue || 0),
+                          display: row.holding.displayUnrealizedGainValue,
+                        })
+                      }}
+                    </div>
+                    <div class="text-xs">{{ Number(row.holding.unrealizedGainPercent || 0).toFixed(2) }}%</div>
+                  </div>
+                </td>
+                <td :class="[cellStyles, 'pr-2 text-right']">
+                  <div class="flex items-center justify-end gap-1">
+                    <DesktopOnlyTooltip :content="$t('portfolioDetail.holdingsTable.actions.addTransaction')">
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        :aria-label="
+                          $t('portfolioDetail.holdingsTable.actions.addTransactionFor', {
+                            symbol: row.holding.security?.symbol ?? '',
+                          })
+                        "
+                        @click="openTransactionModal(row.holding)"
+                      >
+                        <PlusIcon class="size-4" />
+                      </Button>
+                    </DesktopOnlyTooltip>
+                    <DesktopOnlyTooltip :content="$t('portfolioDetail.holdingsTable.actions.openHolding')">
+                      <Button variant="ghost" size="icon-sm" class="hover:bg-transparent" as-child>
+                        <RouterLink
+                          :to="holdingRoute(row.holding)"
+                          :aria-label="
+                            $t('portfolioDetail.holdingsTable.actions.openHoldingFor', {
+                              symbol: row.holding.security?.symbol ?? '',
+                            })
+                          "
+                        >
+                          <ChevronRightIcon class="size-4" />
+                        </RouterLink>
+                      </Button>
+                    </DesktopOnlyTooltip>
                   </div>
                 </td>
               </tr>
-              <template v-else>
-                <tr class="hover:bg-hover group text-sm">
-                  <td :class="[cellStyles, stickyBodyCellStyles, 'left-0 py-1 pr-3 font-semibold']">
-                    <div class="flex items-center gap-2">
-                      <Button variant="ghost" size="icon-sm" @click="toggleExpand(row.holding.securityId)">
-                        <ChevronDownIcon v-if="isExpanded(row.holding.securityId)" class="size-4" />
-                        <ChevronRightIcon v-else class="size-4" />
-                      </Button>
-                      <SecurityLogo v-if="row.holding.security" :security="row.holding.security" />
-                      <span>{{ row.holding.security?.symbol }}</span>
-                    </div>
-                  </td>
-                  <td :class="[cellStyles, 'text-muted-foreground max-w-50 truncate px-3']">
-                    {{ row.holding.security?.name }}
-                  </td>
-                  <td :class="[cellStyles, 'px-3 text-right tabular-nums']">
-                    <PrecisionNumber
-                      :value="row.holding.quantity"
-                      :max-decimals="decimalsForAssetClass(row.holding.security?.assetClass)"
-                    />
-                  </td>
-                  <td :class="[cellStyles, 'px-3 text-right tabular-nums']">
-                    {{ formatCurrency(getPrice(row.holding), row.holding.currencyCode) }}
-                    <DesktopOnlyTooltip
-                      v-if="isPriceStale({ holding: row.holding })"
-                      content-class-name="max-w-60"
-                      :content="$t('portfolioDetail.holdingsTable.stalePrice')"
-                    >
-                      <div class="text-warning-text flex items-center justify-end gap-1 text-xs">
-                        <ClockAlertIcon class="size-3" />
-                        {{ formatDate(row.holding.priceDate!, 'd MMM') }}
-                      </div>
-                    </DesktopOnlyTooltip>
-                  </td>
-                  <td :class="[cellStyles, 'text-muted-foreground px-3 text-right tabular-nums']">
-                    {{ formatCurrency(getAverageCost(row.holding), row.holding.currencyCode) }}
-                  </td>
-                  <td :class="[cellStyles, 'px-3 text-right tabular-nums']">
-                    {{
-                      formatMoneyCell({
-                        holding: row.holding,
-                        native: getTotalCost(row.holding),
-                        display: row.holding.displayCostBasis,
-                      })
-                    }}
-                  </td>
-                  <td :class="[cellStyles, 'px-3 text-right font-medium tabular-nums']">
-                    {{
-                      formatMoneyCell({
-                        holding: row.holding,
-                        native: Number(row.holding.marketValue || 0),
-                        display: row.holding.displayMarketValue,
-                      })
-                    }}
-                  </td>
-                  <td :class="[cellStyles, 'px-3 text-right']">
-                    <div
-                      :class="getGainColorClass({ gainValue: getUnrealizedGain(row.holding).value })"
-                      class="tabular-nums"
-                    >
-                      <div class="font-semibold">
-                        {{
-                          formatMoneyCell({
-                            holding: row.holding,
-                            native: getUnrealizedGain(row.holding).value,
-                            display: row.holding.displayUnrealizedGainValue,
-                          })
-                        }}
-                      </div>
-                      <div class="text-xs">{{ getUnrealizedGain(row.holding).percent.toFixed(2) }}%</div>
-                    </div>
-                  </td>
-                  <td :class="[cellStyles, 'px-3 text-right']">
-                    <div
-                      :class="getGainColorClass({ gainValue: getRealizedGain(row.holding).value })"
-                      class="tabular-nums"
-                    >
-                      <div class="font-semibold">
-                        {{
-                          formatMoneyCell({
-                            holding: row.holding,
-                            native: getRealizedGain(row.holding).value,
-                            display: row.holding.displayRealizedGainValue,
-                          })
-                        }}
-                      </div>
-                      <div class="text-xs">{{ getRealizedGain(row.holding).percent.toFixed(2) }}%</div>
-                    </div>
-                  </td>
-                  <td :class="[cellStyles, 'py-1 pr-2 text-right']">
-                    <DesktopOnlyTooltip :content="$t('portfolioDetail.holdingsTable.deleteHolding.ariaLabel')">
-                      <Button
-                        variant="ghost-destructive"
-                        size="icon-sm"
-                        :aria-label="$t('portfolioDetail.holdingsTable.deleteHolding.ariaLabel')"
-                        @click="openDeleteConfirm(row.holding)"
-                      >
-                        <Trash2Icon class="size-4" />
-                      </Button>
-                    </DesktopOnlyTooltip>
-                  </td>
-                </tr>
-                <!-- Expanded transactions section -->
-                <tr v-if="isExpanded(row.holding.securityId)" class="bg-muted/20">
-                  <td colspan="10" class="p-0">
-                    <HoldingTransactionsSection
-                      :portfolio-id="portfolioId"
-                      :security-id="row.holding.securityId"
-                      @add-transaction="openTransactionModal(row.holding)"
-                    />
-                  </td>
-                </tr>
-              </template>
             </template>
           </tbody>
         </table>
       </div>
     </ScrollArea>
 
-    <ResponsiveDialog v-model:open="isTransactionModalOpen" dialog-content-class="sm:max-w-2xl">
-      <template #title>{{ $t('portfolioDetail.holdingsTable.addTransactionDialog.title') }}</template>
-      <template #description>
-        {{ $t('portfolioDetail.holdingsTable.addTransactionDialog.description') }}
-      </template>
-      <InvestmentTransactionForm
-        :portfolio-id="portfolioId"
-        :securities="
-          holdings.map((hh) => ({
-            value: String(hh.securityId),
-            label: hh.security?.name
-              ? `${hh.security.name} (${hh.security.symbol})`
-              : (hh.security?.symbol ?? 'Unknown'),
-            currencyCode: hh.currencyCode,
-          }))
-        "
-        :security-id="selectedHolding?.securityId ? String(selectedHolding.securityId) : undefined"
-        @success="isTransactionModalOpen = false"
-        @cancel="isTransactionModalOpen = false"
-      />
-    </ResponsiveDialog>
-
-    <ResponsiveAlertDialog
-      v-model:open="deleteConfirmOpen"
-      :confirm-label="$t('portfolioDetail.holdingsTable.deleteHolding.confirmLabel')"
-      confirm-variant="destructive"
-      :confirm-disabled="deleteHoldingMutation.isPending.value"
-      @confirm="confirmDeleteHolding"
-    >
-      <template #title>{{ $t('portfolioDetail.holdingsTable.deleteHolding.title') }}</template>
-      <template #description>
-        <i18n-t keypath="portfolioDetail.holdingsTable.deleteHolding.description" tag="span">
-          <template #symbol>
-            <strong>{{ holdingPendingDelete?.security?.symbol ?? '' }}</strong>
-          </template>
-        </i18n-t>
-      </template>
-    </ResponsiveAlertDialog>
+    <AddHoldingTransactionDialog
+      v-model:open="isTransactionModalOpen"
+      :portfolio-id="portfolioId"
+      :holding="selectedHolding"
+      :portfolio-name="portfolioName"
+    />
   </div>
 </template>

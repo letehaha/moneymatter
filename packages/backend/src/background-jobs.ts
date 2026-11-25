@@ -26,6 +26,7 @@ import { tagRemindersCron } from './crons/tag-reminders-check';
 import { trackerRulesSyncCron } from './crons/tracker-rules-sync';
 import { trackerSmartScanCron } from './crons/tracker-smart-scan';
 import { transactionsTrashPurgeCron } from './crons/transactions-trash-purge';
+import { watchlistAlertEmailsCron } from './crons/watchlist-alert-emails';
 import { initializeHistoricalRates } from './services/exchange-rates/initialize-historical-rates.service';
 
 const allEnvCrons = [demoCleanupCron, demoTemplateRefreshCron];
@@ -52,6 +53,7 @@ const prodOnlyCrons = [
   trackerSmartScanCron,
   trackerRulesSyncCron,
   aiUsageMonthEndCron,
+  watchlistAlertEmailsCron,
 ];
 
 export function initializeBackgroundJobs() {

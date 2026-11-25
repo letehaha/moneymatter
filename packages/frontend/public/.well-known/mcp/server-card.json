@@ -984,7 +984,7 @@
     {
       "name": "get_portfolio_value_history",
       "toolset": "investments",
-      "description": "Daily value history of one portfolio: total value, holdings value, cash, cost basis of open positions and cumulative realized gain per day."
+      "description": "Daily value history of one portfolio: total value, holdings value, cash, cost basis of open positions, cumulative realized gain, cumulative net deposits and cumulative time-weighted return per day."
     },
     {
       "name": "get_portfolio",

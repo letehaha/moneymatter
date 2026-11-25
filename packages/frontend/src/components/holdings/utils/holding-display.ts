@@ -1,14 +1,7 @@
 import type { HoldingModel } from '@bt/shared/types/investments';
 import { differenceInCalendarDays } from 'date-fns';
 
-export type HoldingSortKey =
-  | 'symbol'
-  | 'quantity'
-  | 'value'
-  | 'avgCost'
-  | 'totalCost'
-  | 'unrealizedGain'
-  | 'realizedGain';
+export type HoldingSortKey = 'symbol' | 'quantity' | 'value' | 'unrealizedGain';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -20,14 +13,6 @@ export const getPrice = (holding: HoldingModel) => {
   const marketValue = Number(holding.marketValue || 0);
   return quantity > 0 && marketValue > 0 ? marketValue / quantity : 0;
 };
-
-export const getAverageCost = (holding: HoldingModel) => {
-  const quantity = Number(holding.quantity);
-  const costBasis = Number(holding.costBasis);
-  return quantity > 0 && costBasis > 0 ? costBasis / quantity : 0;
-};
-
-export const getTotalCost = (holding: HoldingModel) => Number(holding.costBasis);
 
 // Fixed calendar-day window – wide enough for a weekend plus a market
 // holiday and the provider's one-day EOD lag. Per-exchange calendars if it misfires.
@@ -54,6 +39,9 @@ export const isClosedPosition = (holding: HoldingModel) => {
   return costBasis > 0 || realizedGain !== 0;
 };
 
+const getComparableMarketValue = ({ holding }: { holding: HoldingModel }) =>
+  Number(holding.displayMarketValue ?? holding.refMarketValue ?? holding.marketValue ?? 0);
+
 const compareHoldings = ({
   a,
   b,
@@ -78,24 +66,12 @@ const compareHoldings = ({
       bv = Number(b.quantity);
       break;
     case 'value':
-      av = Number(a.marketValue || 0);
-      bv = Number(b.marketValue || 0);
-      break;
-    case 'avgCost':
-      av = getAverageCost(a);
-      bv = getAverageCost(b);
-      break;
-    case 'totalCost':
-      av = getTotalCost(a);
-      bv = getTotalCost(b);
+      av = getComparableMarketValue({ holding: a });
+      bv = getComparableMarketValue({ holding: b });
       break;
     case 'unrealizedGain':
       av = Number(a.unrealizedGainValue || 0);
       bv = Number(b.unrealizedGainValue || 0);
-      break;
-    case 'realizedGain':
-      av = Number(a.realizedGainValue || 0);
-      bv = Number(b.realizedGainValue || 0);
       break;
   }
 
@@ -155,4 +131,27 @@ export const groupHoldings = ({
     active: sortHoldings({ holdings: active, sortKey, sortDir }),
     closed: sortHoldings({ holdings: closed, sortKey, sortDir }),
   };
+};
+
+// A priced holding with a zero base value means the FX conversion failed, not that it's worthless.
+const getBaseMarketValue = ({ holding }: { holding: HoldingModel }) => {
+  if (!holding.refMarketValue) return null;
+  const value = Number(holding.refMarketValue);
+  if (value === 0 && Number(holding.marketValue || 0) > 0) return null;
+  return value;
+};
+
+/**
+ * Share of the portfolio's holdings value, measured in the base currency so mixed-currency holdings compare.
+ * Null for a holding without a base-currency value; those stay out of the total.
+ */
+export const getHoldingWeights = ({ holdings }: { holdings: HoldingModel[] }): Map<string, number | null> => {
+  const values = holdings.map((holding) => ({ id: holding.securityId, value: getBaseMarketValue({ holding }) }));
+  const total = values.reduce((sum, { value }) => sum + (value ?? 0), 0);
+  return new Map(
+    values.map(({ id, value }) => {
+      if (value === null) return [id, null];
+      return [id, total > 0 ? value / total : 0];
+    }),
+  );
 };

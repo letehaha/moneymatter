@@ -1,4 +1,4 @@
-import { ASSET_CLASS, SECURITY_PROVIDER, SecuritySearchResult } from '@bt/shared/types/investments';
+import { ASSET_CLASS, SECURITY_PROVIDER, SECURITY_TYPE, SecuritySearchResult } from '@bt/shared/types/investments';
 import type Coingecko from '@coingecko/coingecko-typescript';
 import { logger } from '@js/utils';
 import { subYears } from 'date-fns';
@@ -131,6 +131,7 @@ export class CoinGeckoDataProvider extends BaseSecurityDataProvider {
           providerSymbol: coin.id!,
           name: coin.name ?? symbolUpper,
           assetClass: ASSET_CLASS.crypto,
+          securityType: SECURITY_TYPE.crypto,
           providerName: this.providerName,
           // CoinGecko itself isn't an exchange, but the UI expects a label.
           exchangeName: 'CoinGecko',

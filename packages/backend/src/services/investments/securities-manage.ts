@@ -16,6 +16,7 @@ const REFRESHABLE_FIELDS = [
   'cryptoCurrencyCode',
   'logoUrl',
   'priceSourceSymbol',
+  'securityType',
 ] as const;
 
 const findByIdentity = async ({ identities }: { identities: SecurityIdentity[] }) => {
@@ -81,6 +82,7 @@ const upsertSecuritiesFromSearchImpl = async ({
         priceSourceSymbol: security.priceSourceSymbol ?? null,
         name: security.name,
         assetClass: security.assetClass,
+        securityType: security.securityType ?? null,
         providerName: security.providerName,
         currencyCode: security.currencyCode.toUpperCase(),
         cryptoCurrencyCode: security.cryptoCurrencyCode ?? null,

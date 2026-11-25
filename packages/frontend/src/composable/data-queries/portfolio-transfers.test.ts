@@ -33,6 +33,38 @@ describe('invalidateTransferRelatedQueries', () => {
     });
   });
 
+  it('invalidates the portfolio value history and analytics', () => {
+    const queryClient = new QueryClient();
+    const keys = [
+      [...VUE_QUERY_CACHE_KEYS.portfolioValueHistory, 'portfolio-id'],
+      [...VUE_QUERY_CACHE_KEYS.portfolioAnalytics, 'portfolio-id', null, null],
+    ];
+
+    keys.forEach((k) => queryClient.setQueryData(k, ['stale']));
+
+    invalidateTransferRelatedQueries(queryClient);
+
+    keys.forEach((k) => {
+      expect(queryClient.getQueryState(k)?.isInvalidated).toBe(true);
+    });
+  });
+
+  it('invalidates the portfolio activity list for every filter', () => {
+    const queryClient = new QueryClient();
+    const keys = [
+      [...VUE_QUERY_CACHE_KEYS.portfolioActivity, 'portfolio-id', 'all'],
+      [...VUE_QUERY_CACHE_KEYS.portfolioActivity, 'portfolio-id', 'cash'],
+    ];
+
+    keys.forEach((k) => queryClient.setQueryData(k, ['stale']));
+
+    invalidateTransferRelatedQueries(queryClient);
+
+    keys.forEach((k) => {
+      expect(queryClient.getQueryState(k)?.isInvalidated).toBe(true);
+    });
+  });
+
   it('invalidates all transactionChange-tracked queries (widgets, analytics, records)', () => {
     const queryClient = new QueryClient();
     const keys = [
