@@ -1,0 +1,156 @@
+---
+title: Portfolios
+description: Track stocks, ETFs and crypto in a portfolio. Read the value chart, see what net deposits count, and find your way around the Holdings, Analytics, Activity and Watchlist tabs.
+sidebar:
+  order: 1
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+A portfolio holds the securities you pick yourself, such as stocks, ETFs and crypto, plus the cash you keep with your broker. You record your buys, sells and dividends, and MoneyMatter values the portfolio every day from market prices.
+
+If your bank manages the investments for you and you only see a total, track it as an account instead. See [Savings and investment accounts](/accounts/savings-and-investment-accounts/).
+
+## Create a portfolio
+
+<Steps>
+
+1. In the sidebar's Accounts panel, click **+** and choose **New portfolio**.
+2. Enter a **Portfolio name** and choose a **Portfolio type**: **Investment**, **Retirement**, **Savings** or **Other**.
+3. Optionally add a description and an **External URL (optional)**, such as your broker's website.
+4. Click **Create portfolio**.
+
+</Steps>
+
+Your portfolios are listed under **Portfolios** in the sidebar, and on the **Investments** page, which also has a **Create portfolio** button. Click a portfolio to open it.
+
+## The portfolio page
+
+The header shows the portfolio's name with **Transfer** and **Edit** buttons. The ⋯ menu next to them has **Delete**. On a narrow screen, **Transfer** and **Edit** move into that menu too.
+
+Below the header are the value chart and four tabs:
+
+- **Holdings**: what you own, and the portfolio's cash.
+- **Analytics** (Plus): returns, drawdowns and allocation. See [Portfolio analytics](/investments/portfolio-analytics/).
+- **Activity**: every trade, deposit, withdrawal and transfer, newest first.
+- **Watchlist** (Plus): securities you're watching, with price alerts. See [Watchlist](/investments/watchlist/).
+
+Unless you pay for Plus, **Analytics** and **Watchlist** carry a **Plus** label. If your plan or trial doesn't include them, they also move to the end of the row.
+
+<Screenshot
+  src="/screenshots/investments/portfolio-page.png"
+  alt="A portfolio page with the header, the value chart with its floating stats card, and the Holdings, Analytics, Activity and Watchlist tabs, with the Holdings tab open."
+  hint="Open /portfolios/<id> for a portfolio with about a year of history, 5–8 holdings, a few deposits and some cash. Period 1Y, Value mode, Floating card layout, default lines (Value and Net deposits). Capture the full content area from the header down to the first rows of the holdings table."
+/>
+
+## The value chart
+
+The chart shows the portfolio's total value (holdings plus cash) over time. Above it:
+
+- **Value** and **Return %** switch what the chart plots.
+- **1W**, **1M**, **3M**, **YTD**, **1Y** and **All** pick the period.
+- The **Settings** button at the right has the chart options described below.
+
+Hover the chart to see a day's **Value**, **Net deposits** and **Gain**, which is the value minus net deposits on that day.
+
+The numbers are in the portfolio's display currency, which is your base currency unless you picked another one for the portfolio.
+
+### Value and Return %
+
+In **Value** mode, the solid line is the portfolio's value. The dashed line is **Net deposits**, the money you've put in minus what you've taken out. The gap between the two lines is your gain or loss.
+
+In **Return %** mode, the chart shows how much the portfolio grew from the first day of the period. Deposits and withdrawals are taken out of this number, so moving money in never shows as a jump. This is the time-weighted return. See [Portfolio analytics](/investments/portfolio-analytics/#time-weighted-and-money-weighted-return) for how it differs from the money-weighted return.
+
+<Screenshot
+  src="/screenshots/investments/value-chart-return-mode.png"
+  alt="The value chart in Return % mode, with the return line, a dashed zero line, a hover tooltip showing Return, Value, Net deposits and Gain, and the caption below the chart."
+  hint="On the same portfolio, switch the chart to Return % with period 1Y. Hover a point in the second half of the year so the tooltip shows Return, Value, Net deposits and Gain. Include the caption 'Return excludes deposits and withdrawals…'. Crop to the chart card."
+/>
+
+### The stats card
+
+Next to the chart, a stats card shows:
+
+- **Total value**, and its value in your base currency if the portfolio uses another currency.
+- The return and the market gain or loss over the chosen period. Market gain is the change in value minus the deposits you made in that period, so new money never counts as profit.
+- **Net deposits**, **Total return** (value minus net deposits) and **Unrealized** gain.
+
+### Chart settings
+
+Click **Settings** above the chart:
+
+- **Chart layout**: **Floating card** shows the stats card on top of the chart. It fades while you hover the chart. **Side panel** puts the stats in a panel beside the chart, with extra rows for **Cost basis**, **Realized** gain and **Cash**. On a narrow screen, the stats always sit above the chart.
+- **Lines**: turn **Value**, **Net deposits** and **Cost basis** on or off. **Cost basis** is off at first. At least one line stays on.
+- **Deposits axis**: **Shared** draws net deposits on the same scale as the value. **Own scale** gives them their own axis on the right, which helps when deposits are much smaller than the value. This only shows while the **Net deposits** line is on.
+- **Reset chart height**: puts the chart back to its default height.
+
+To make the chart taller or shorter, drag the handle under it. Double-click the handle to reset the height.
+
+Your period, layout, lines and height are remembered in this browser.
+
+<Screenshot
+  src="/screenshots/investments/value-chart-settings.png"
+  alt="The chart settings menu open, showing Chart layout with Floating card and Side panel, Lines with Value, Net deposits and Cost basis, Deposits axis with Shared and Own scale, and Reset chart height."
+  hint="On the same portfolio, open the Settings (sliders icon) button at the top right of the chart card. Keep Floating card selected and Value and Net deposits on. Crop to the chart's top bar and the open menu."
+/>
+
+<Screenshot
+  src="/screenshots/investments/value-chart-side-panel.png"
+  alt="The value chart in the Side panel layout, with Total value, period return and market gain, Net deposits, Cost basis, Unrealized, Realized, Cash and Total return in a panel to the left of the chart."
+  hint="On the same portfolio, choose Chart layout → Side panel in the chart settings, period 1Y, Value mode. Use a wide window so the panel sits beside the chart. Crop to the panel and the chart card."
+/>
+
+## What net deposits count
+
+**Net deposits** add up the money that crossed the portfolio's boundary:
+
+- **Counted:** deposits and withdrawals, transfers to and from your accounts, and transfers to and from your other portfolios. Money in adds to net deposits, money out subtracts.
+- **Not counted:** cash transactions marked as a balance correction (they show an **Adjustment** badge in **Activity**), and currency exchanges inside the portfolio. Those change the value, not what you put in.
+
+Buying and selling inside the portfolio doesn't change net deposits either. It only moves money between cash and holdings.
+
+<Aside type="tip" title="Mark corrections as adjustments">
+If you add cash just to fix a balance that was off, mark it as a correction so it doesn't count as money you put in. In **Activity**, open the transaction's actions, choose **Edit** and tick **This is a balance correction**. The cash balance still changes, but the money no longer counts as a contribution. A real contribution should stay unticked.
+</Aside>
+
+## Holdings tab
+
+The **Holdings** tab lists what the portfolio owns: **Symbol**, **Shares**, **Price**, **Market value**, **Weight** and **Unrealized gain**. Weight here is each holding's share of the holdings' value, without cash. Click a column header to sort. Positions you've fully sold are folded into **Closed positions** at the bottom.
+
+If a price is old, a clock icon and the price's date show under it. Hover it to read "Last available price. Market value and gains may be outdated."
+
+- **Add symbol** adds a security to the portfolio.
+- **Import** brings in trades from a file. See [AI features](/ai/ai-features/#investment-transactions-import) for the AI import.
+- The **+** button on a row (**Add transaction**) opens a transaction form for that holding, so you can record a buy, sell or dividend without leaving the list.
+- The **›** button on a row (**Open holding**), or a click on the symbol, opens the [holding page](/investments/holding-page/).
+
+<Screenshot
+  src="/screenshots/investments/holdings-table.png"
+  alt="The Holdings tab with the filter box, Import and Add symbol buttons, and a table of holdings with Symbol, Shares, Price, Market value, Weight and Unrealized gain, and the add-transaction and open buttons on each row."
+  hint="On the same portfolio, open the Holdings tab. Show at least 5 holdings with a mix of gains and losses. Hover one row so its + (Add transaction) button is clearly visible. Crop to the holdings card."
+/>
+
+### Cash
+
+Under the holdings, the **Cash** card shows the portfolio's cash in each currency, with its value in your base currency for foreign currencies. From it you can:
+
+- **Add cash transaction**: record a **Deposit** or **Withdrawal**, either directly or as a transfer from or to one of your accounts. Tick **This is a balance correction** if it only fixes the balance.
+- **Transfer**: move money from the portfolio **To another portfolio** or **To account**. The same button is in the page header.
+- **Exchange currency**: convert cash from one currency to another inside the portfolio. This doesn't change net deposits.
+
+## Activity tab
+
+**Activity** lists everything that happened in the portfolio, newest first. Filter it with **All**, **Trades**, **Cash** (deposits, withdrawals, transfers and currency exchanges) and **Income** (dividends).
+
+- Click a trade to open its [holding page](/investments/holding-page/).
+- Cash rows are labelled **Deposit**, **Withdrawal**, **Transfer in**, **Transfer out** or **Currency exchange**. A correction shows an **Adjustment** badge.
+- Use a cash row's actions to **Edit** whether it counts as a correction, or to **Delete** it. If a transfer is linked to a transaction in one of your accounts, you choose whether to keep that transaction or delete it too.
+
+## Related
+
+- [Holding page](/investments/holding-page/)
+- [Portfolio analytics](/investments/portfolio-analytics/)
+- [Watchlist](/investments/watchlist/)
+- [How transfers work](/transfers-and-refunds/how-transfers-work/)
+- [FIRE planner](/stats/fire-planner/), which can use a portfolio's return

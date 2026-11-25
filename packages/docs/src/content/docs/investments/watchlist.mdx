@@ -1,0 +1,131 @@
+---
+title: Watchlist
+description: Keep an eye on securities you don't own yet. Set a buy-below price, sort them into sections, and get alerted in the app or by email when the price crosses your targets.
+sidebar:
+  order: 4
+  badge:
+    text: Plus
+    variant: tip
+---
+
+import { Aside, Badge, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+<Badge text="Plus" variant="tip" /> The watchlist keeps track of stocks, ETFs and coins you're thinking of buying. For each one you can write a note, set the price you'd buy at, and set alerts that tell you when the price gets there.
+
+Each portfolio has its own watchlist. Open a portfolio and click the **Watchlist** tab. Without Plus, see [Plans and free trial](#plans-and-free-trial).
+
+## Add a security
+
+<Steps>
+
+1. On the **Watchlist** tab, click **Add security**.
+2. Search for a stock, ETF or coin by symbol or name, and pick it.
+3. Optionally choose a **Section**, or create one with **New section**.
+4. Optionally enter a **Buy below** price, in the security's currency, and a **Note**, for example why you're watching it.
+5. Click **Add to watchlist**.
+
+</Steps>
+
+A security can be on a portfolio's watchlist only once.
+
+<Screenshot
+  src="/screenshots/investments/watchlist-add-dialog.png"
+  alt="The Add to watchlist dialog with a security picked, the Section field, the Buy below field with its currency, and the Note field."
+  hint="Open /portfolios/<id>?tab=watchlist, click Add security, pick COST, choose Buy candidates and type a short note. Don't submit. Crop to the dialog."
+/>
+
+## Read the watchlist
+
+<Screenshot
+  src="/screenshots/investments/watchlist.png"
+  alt="The Watchlist tab with the filter box and buttons, two ungrouped securities, a section with its summary of buy-zone securities and alerts, rows showing last close, 1D change, the 52-week range bar, buy-below price with 'in buy zone' or '% to go', notes, alert bell, Buy button, and the prices footnote."
+  hint="Seeded Brokerage watchlist (WATCHLIST in seed-showcase.mjs): 2 ungrouped, Buy candidates and Dividend ideas, NVDA held, ADBE in the buy zone, 3 securities with alerts. Open /portfolios/<id>?tab=watchlist. Crop to the tab content including the footnote."
+/>
+
+Each row shows:
+
+| Column | What it shows |
+|---|---|
+| **Security** | The symbol and name. **Held** means the portfolio owns some, and clicking the security opens its [holding page](/investments/holding-page/). |
+| **Last close** | The latest daily closing price, with its date. |
+| **1D** | The change from the close before it. |
+| **52-week range** | Where the last close sits between the lowest and highest close of the past year. Shows "Not enough history" with less than a year of prices. |
+| **Buy below** | Your buy-below price. Under it, **In buy zone** when the last close is at or below that price, or how far the price still has to fall ("8.2% to go"). |
+| **Note** | Your note. |
+
+Prices are daily closes of completed days (UTC). They update once a day after markets close, so the watchlist never shows today's moving price.
+
+At the end of each row:
+
+- The bell button opens the security's alerts. It shows how many alerts are on.
+- **Buy** opens the add-transaction form for this security, so you can record a purchase straight from the watchlist. If the portfolio doesn't hold the security yet, closing the form without saving leaves nothing behind.
+- The ⋯ menu has **Edit note and target**, **Move to section** and **Remove**. Removing a security also deletes its note, buy-below price and alerts.
+
+Use the filter box to find a security by symbol or name.
+
+## Sections
+
+Sections group your watchlist, for example "Buy candidates" and "Dividend ideas". Securities that aren't in a section are listed first, above the sections.
+
+- Click **New section** to add one. A section's ⋯ menu has **Rename** and **Delete section**. Deleting a section keeps its securities on the watchlist; they move to **Not in a section**.
+- Click a section's name to collapse or expand it, or use **Collapse all** and **Expand all**. Next to the name, a summary shows how many of its securities are in the buy zone and how many alerts are on.
+- Click **Manage layout** to drag sections into a new order and drag securities between sections. To move a single security, you can also use **Move to section** in its ⋯ menu.
+
+## Price alerts
+
+Click the bell on a row to open **Alerts** for that security. The dialog shows its last close, the alerts you have, and a form for a **New alert**.
+
+<Screenshot
+  src="/screenshots/investments/watchlist-alerts-dialog.png"
+  alt="The alerts dialog for a security, showing the last close, two existing alerts with their descriptions, frequency, channels and on/off switches, and the New alert form on Daily move with a 3% threshold, Every time selected, and the In-app and Email options."
+  hint="Seeded watchlist → AVGO bell ('Closes below …' Once/In-app and 'Moves 5% or more in a day' Every time/In-app + Email). In New alert pick Daily move, enter 3 and choose Every time. Crop to the dialog."
+/>
+
+### Kinds of alerts
+
+- **Price target**: fires when the daily close is **Above** or **Below** a price you set (a close exactly at the price counts too). The form starts on **Below**, with your buy-below price filled in.
+- **Daily move**: fires when the close moves at least the percentage you set from the close before it, up or down. You can enter 0.1% to 100%.
+
+Alerts compare the closing price only. A close that jumps past your price in one day still counts.
+
+### Once or every time
+
+- **Once** turns the alert off after it fires. Switch it back on in the alert list to use it again.
+- **Every time** fires each time the condition starts to hold, then waits until the price crosses back before it can fire again. For example, a "closes below 100" alert fires on the first close under 100, stays quiet while the price stays under 100, and can fire again after a close back above 100 and a new drop below.
+
+If you create an **Every time** alert whose condition already holds, it waits for the price to cross back first. Changing an alert's price, percentage or frequency, or switching it back on, arms it again against the latest close.
+
+### How you're notified
+
+Under **Notify me via**, pick **In-app**, **Email**, or both. At least one is needed.
+
+- **In-app**: a notification such as "AAPL closed below 180 USD" with the close and its date. Clicking it opens the portfolio's watchlist.
+- **Email**: sent to your account's email address. If several alerts fire around the same time, you get one email listing them all. Emails can arrive up to about half an hour after the alert fires.
+
+### When alerts are checked
+
+Alerts are checked once a day, right after the daily price update, against the close of the last completed day. Each close is checked once, so an alert fires at most once per close. A close older than a week, for example from a delisted security, never fires an alert.
+
+## Limits
+
+- Up to **200** securities per watchlist. When you reach it, **Add security** is turned off.
+- Up to **30** sections.
+- Up to **10** alerts per security.
+- Notes can be up to 1,000 characters.
+
+## Plans and free trial
+
+The watchlist is part of **Plus**, and of the 40-day trial every new account starts with.
+
+Without Plus, the **Watchlist** tab offers **Start 14-day free trial**. How the trial works is in [Plans and billing](/settings/plans-and-billing/#portfolio-analytics-and-watchlist-free-trials).
+
+<Aside type="caution" title="Alerts need access">
+Alerts only fire while your plan or trial includes the watchlist. When it runs out, alerts stop, including email alerts that hadn't been sent yet.
+</Aside>
+
+## Related
+
+- [Portfolios](/investments/portfolios/)
+- [Holding page](/investments/holding-page/)
+- [Portfolio analytics](/investments/portfolio-analytics/)
