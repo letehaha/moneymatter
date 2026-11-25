@@ -1,0 +1,82 @@
+---
+title: Holding page
+description: One holding in detail. Its price chart with your buys and sells, average cost, open lots, how your buy timing compares to the market, and every transaction.
+sidebar:
+  order: 2
+---
+
+import Screenshot from '~/components/screenshot.astro';
+
+Each holding in a portfolio has its own page. To open it, click the holding's symbol or its **›** button (**Open holding**) on the **Holdings** tab. A trade in **Activity**, a row in the Analytics **Performance** table and a held security on the watchlist also lead here.
+
+The header shows the symbol, its exchange and currency, and the security's name. The arrow at the top left takes you back to the portfolio.
+
+## Price chart
+
+The chart shows the security's daily closing price, in its own currency. Above it are the holding's **Market value** and its **unrealized** gain or loss. Pick a period: **1M**, **3M**, **6M**, **YTD**, **1Y** or **All**. The period is remembered in this browser.
+
+- Markers on the price line show your **Buys** (round, in the income colour) and **Sells** (square, in the expense colour). Trades on the same day share one marker. Hover it to see each trade's shares and price, that day's close and the total amount.
+- A dashed line marks your average cost, labelled "Avg cost" with the price.
+
+The buttons under the chart turn **Buys**, **Sells** and **Avg cost** on and off.
+
+<Screenshot
+  src="/screenshots/investments/holding-price-chart.png"
+  alt="A holding's price chart over one year with a round buy marker, the dashed average cost line, and a square sell marker whose tooltip shows the shares sold, the close and the amount, with Market value and unrealized gain above and the Buys, Sells and Avg cost toggles below."
+  hint="Seeded Brokerage → VOO (2 buys, 1 sell, quarterly dividends). Open /portfolios/<id>/holdings/<securityId>, period 1Y, hover the sell marker so its tooltip shows. Crop to the chart card."
+/>
+
+## Stats
+
+Below the chart:
+
+| Stat | What it shows |
+|---|---|
+| **Shares** | How many you hold, and how many open lots they're in. |
+| **Avg cost** | Cost basis divided by shares. |
+| **Cost basis** | What the shares you hold cost you. |
+| **Unrealized** | Market value minus cost basis, with the percentage. |
+| **Realized** | Gain or loss from what you've sold. |
+| **Dividends** | Dividends you've recorded for this holding. |
+| **Weight** | The holding's share of the portfolio's holdings value, without cash. |
+| **First purchase** | The date of your first buy. |
+
+## Your timing
+
+The **Your timing** card compares your average buy price with the average daily close since your first buy. For example: "Your average buy price $182.40 is 4.1% below the average daily close since your first buy on Mar 3, 2025 ($190.20)." Below the average means you've tended to buy on cheaper days.
+
+The card only shows when there's price history from around your first buy onwards, and at least five closes.
+
+<Screenshot
+  src="/screenshots/investments/holding-stats-timing.png"
+  alt="The holding's stats grid with Shares, Avg cost, Cost basis, Unrealized, Realized, Dividends, Weight and First purchase, and the Your timing card below it."
+  hint="Seeded VOO holding page (has dividends, so Dividends isn't zero). Crop to the stats grid and the Your timing card."
+/>
+
+## Transactions and open lots
+
+At the bottom, two tabs:
+
+- **Transactions**: every transaction for this holding.
+- **Open lots**: the shares you still hold, by purchase. Lots are matched **first in, first out**: a sale uses up your oldest shares first. Each lot shows when you bought it (**Purchased**), **Shares**, **Cost per share** (including that buy's fees), **Current value** and **Gain**.
+
+The **Cost basis** stat uses your average cost, so after a sale the lot totals can differ from it.
+
+<Screenshot
+  src="/screenshots/investments/holding-open-lots.png"
+  alt="The Open lots tab with the first in, first out note and a table of lots with Purchased, Shares, Cost per share, Current value and Gain."
+  hint="Seeded VOO holding page, Open lots tab: the sell took 8 shares from the oldest lot, so 2 lots remain. Crop to the tabs card."
+/>
+
+## Add a transaction
+
+Click **Add transaction** at the top of the holding page to record a buy, sell, dividend or other transaction for this holding. The same form opens from the **+** button on the holding's row in the **Holdings** tab.
+
+## Delete a holding
+
+Open the ⋯ menu at the top right and choose **Delete holding**. This permanently deletes the holding and all of its transactions, and can't be undone. Afterwards you're taken back to the portfolio.
+
+## Related
+
+- [Portfolios](/investments/portfolios/)
+- [Portfolio analytics](/investments/portfolio-analytics/)

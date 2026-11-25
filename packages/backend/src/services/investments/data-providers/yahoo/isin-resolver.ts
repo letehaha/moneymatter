@@ -6,6 +6,7 @@ import {
   ISIN_EXCHANGE_SUFFIXES,
   isExpectedNotFoundError,
   mapYahooTypeToAssetClass,
+  mapYahooTypeToSecurityType,
   remapUcitsType,
   toIsoCurrency,
 } from './utils';
@@ -166,6 +167,7 @@ function buildIsinFallbackResult({ quote, isin }: { quote: YahooQuoteResult; isi
     providerSymbol: symbol,
     name: longName ?? shortName ?? symbol,
     assetClass: mapYahooTypeToAssetClass(effectiveType),
+    securityType: mapYahooTypeToSecurityType({ rawType: effectiveType }),
     providerName: SECURITY_PROVIDER.yahoo,
     exchangeName: fullExchangeName,
     exchangeAcronym: quote.exchange,

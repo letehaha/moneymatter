@@ -21,17 +21,18 @@ const STORIES = [
     frame: 'frame-worth',
     images: { light: networthLight, dark: networthDark },
     alt: 'Net worth history chart with assets by week',
+    crop: true,
   },
   {
     idx: '02',
     title: 'Investments next to everything else',
     href: getFeaturePage({ slug: 'investment-tracking' }).href,
-    text: 'Holdings, cost basis and realized and unrealized gains, for stocks, ETFs and crypto.',
-    ticks: ['Total return per holding', 'Cash balances inside each portfolio', 'Import trades from a file'],
-    bar: 'Growth Portfolio',
+    text: 'Stocks, ETFs and crypto with their cost basis and real returns, measured against the money you put in and against the market.',
+    ticks: ['Value and return charts against your net deposits', 'Benchmarks, drawdowns and allocation', 'A watchlist with price alerts'],
+    bar: 'Brokerage',
     frame: 'frame-invest',
     images: { light: investmentsLight, dark: investmentsDark },
-    alt: 'Portfolio with total value, gains and a table of holdings',
+    alt: 'Portfolio value chart with net deposits, total value and return, above the holdings table',
     flip: true,
   },
 ];
@@ -77,7 +78,7 @@ const ALSO = [
               <i />
               <span>{s.bar}</span>
             </div>
-            <div class={`pframe ${s.frame} crop-app`}>
+            <div class:list={['pframe', s.frame, { 'crop-app': s.crop }]}>
               {(['light', 'dark'] as const).map((theme) => (
                 <picture class={`shot shot-${theme}`}>
                   <Image
@@ -85,7 +86,7 @@ const ALSO = [
                     alt={t(s.alt)}
                     format="webp"
                     widths={[960, 1440, 1920, 2880]}
-                    sizes="(min-width: 900px) 970px, 132vw"
+                    sizes={`(min-width: 900px) 970px, ${s.crop ? 132 : 100}vw`}
                     loading="lazy"
                     decoding="async"
                   />

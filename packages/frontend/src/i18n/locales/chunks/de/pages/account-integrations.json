@@ -372,7 +372,7 @@
           "syncFailed": "Synchronisierung konnte nicht gestartet werden"
         },
         "actions": {
-          "openExternalUrl": "Open external link",
+          "openExternalUrl": "Externen Link öffnen",
           "renameButton": "Verbindung bearbeiten",
           "disconnectButton": "Integration trennen",
           "manage": "Verwalten"
@@ -432,7 +432,7 @@
           "title": "Verbindung bearbeiten",
           "description": "Aktualisiere den Anzeigenamen oder den Portal-Link des Instituts für diese Verbindung.",
           "label": "Verbindungsname",
-          "externalUrlLabel": "External URL (optional)",
+          "externalUrlLabel": "Externe URL (optional)",
           "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Speichern...",
           "save": "Speichern"

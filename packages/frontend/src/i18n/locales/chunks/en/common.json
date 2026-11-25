@@ -476,6 +476,12 @@
       "plus": "Included in the Plus plan",
       "hint": "Your current plan doesn't include this feature. Upgrade to unlock it."
     },
+    "featureTrialGate": {
+      "title": "Try it free for {days} days",
+      "startTrial": "Start {days}-day free trial",
+      "trialEnded": "Your free trial has ended. Upgrade to Plus to keep using it.",
+      "daysLeft": "Your free trial ends in {n} day | Your free trial ends in {n} days"
+    },
     "banner": {
       "trial": "{count} day left in your trial · {link} | {count} days left in your trial · {link}",
       "readOnly": "Your trial has ended. You can view and export your data; subscribe to keep editing. {link}",

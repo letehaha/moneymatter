@@ -11,7 +11,10 @@
           "thisMonth": "Tento mesiac",
           "last3Months": "Posledné 3 mesiace",
           "last6Months": "Posledných 6 mesiacov",
-          "last12Months": "Posledných 12 mesiacov"
+          "last12Months": "Posledných 12 mesiacov",
+          "lastMonth": "Posledný mesiac",
+          "thisYear": "Tento rok",
+          "lastYear": "Posledný rok"
         }
       },
       "transactionType": {

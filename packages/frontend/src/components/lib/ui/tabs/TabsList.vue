@@ -20,7 +20,7 @@ provide(TabsVariantKey, variant);
     :class="
       cn(
         variant === 'underline'
-          ? 'border-border no-scrollbar relative flex w-full items-center gap-4 overflow-x-auto border-b'
+          ? 'border-border no-scrollbar relative flex w-full items-center gap-4 overflow-x-auto overflow-y-hidden border-b'
           : `bg-muted text-muted-foreground relative inline-flex ${controlHeight.default} items-center justify-center rounded-md p-1`,
         props.class,
       )
@@ -32,7 +32,7 @@ provide(TabsVariantKey, variant);
         cn(
           'pointer-events-none absolute left-0 transition-[width,transform] duration-200 ease-out motion-reduce:transition-none',
           variant === 'underline'
-            ? 'bg-primary -bottom-px h-0.5'
+            ? 'bg-foreground -bottom-px h-0.5'
             : 'bg-card dark:bg-background inset-y-1 rounded-[inherit] shadow-sm',
           props.indicatorClass,
         )

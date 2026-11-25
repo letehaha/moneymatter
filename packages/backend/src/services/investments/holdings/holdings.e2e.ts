@@ -148,6 +148,26 @@ describe('Investment holdings', () => {
     vooSecurity = firstSecurity;
   });
 
+  describe('GET /investments/portfolios/:id/holdings', () => {
+    it('sends only the security fields clients read', async () => {
+      await helpers.createHolding({ payload: { portfolioId: investmentPortfolio.id, securityId: vooSecurity.id } });
+
+      const [holding] = await helpers.getHoldings({ portfolioId: investmentPortfolio.id, payload: {}, raw: true });
+
+      expect(Object.keys(holding!.security!).toSorted()).toEqual([
+        'assetClass',
+        'currencyCode',
+        'exchangeAcronym',
+        'exchangeName',
+        'id',
+        'logoUrl',
+        'name',
+        'symbol',
+      ]);
+      expect(holding!.security).toMatchObject({ id: vooSecurity.id, symbol: 'VOO', name: 'Vanguard S&P 500 ETF' });
+    });
+  });
+
   describe('DELETE /investments/holding (delete holding)', () => {
     it('should delete a holding successfully', async () => {
       await helpers.createHolding({

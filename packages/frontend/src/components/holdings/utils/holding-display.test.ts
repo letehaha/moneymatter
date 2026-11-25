@@ -1,6 +1,6 @@
 import type { HoldingModel } from '@bt/shared/types/investments';
 
-import { groupHoldings, isClosedPosition, isPriceStale, sortHoldings } from './holding-display';
+import { getHoldingWeights, groupHoldings, isClosedPosition, isPriceStale, sortHoldings } from './holding-display';
 
 const makeHolding = (overrides: Partial<HoldingModel> & { symbol?: string }): HoldingModel => {
   const { symbol, ...rest } = overrides;
@@ -98,6 +98,30 @@ describe('sortHoldings', () => {
     ]);
   });
 
+  it('sorts by the base-currency value across currencies', () => {
+    const holdings = [
+      makeHolding({ symbol: 'JPY', currencyCode: 'JPY', marketValue: '100000', refMarketValue: '700' }),
+      makeHolding({ symbol: 'USD', marketValue: '1000', refMarketValue: '1000' }),
+    ];
+
+    expect(sortHoldings({ holdings, sortKey: 'value', sortDir: 'asc' }).map((h) => h.security?.symbol)).toEqual([
+      'JPY',
+      'USD',
+    ]);
+  });
+
+  it('prefers the display-currency value when present', () => {
+    const holdings = [
+      makeHolding({ symbol: 'A', marketValue: '100', refMarketValue: '100', displayMarketValue: '900' }),
+      makeHolding({ symbol: 'B', marketValue: '500', refMarketValue: '500', displayMarketValue: '450' }),
+    ];
+
+    expect(sortHoldings({ holdings, sortKey: 'value', sortDir: 'asc' }).map((h) => h.security?.symbol)).toEqual([
+      'B',
+      'A',
+    ]);
+  });
+
   it('does not mutate the input array', () => {
     const holdings = [makeHolding({ symbol: 'B', quantity: '1' }), makeHolding({ symbol: 'A', quantity: '1' })];
     sortHoldings({ holdings, sortKey: 'symbol', sortDir: 'asc' });
@@ -180,5 +204,39 @@ describe('groupHoldings', () => {
 
     expect(justAdded.map((h) => h.security?.symbol)).toEqual(['NEW']);
     expect(active.map((h) => h.security?.symbol)).toEqual(['SONY']);
+  });
+});
+
+describe('getHoldingWeights', () => {
+  it('weighs holdings by their base-currency market value', () => {
+    const weights = getHoldingWeights({
+      holdings: [
+        makeHolding({ symbol: 'A', refMarketValue: '300' }),
+        makeHolding({ symbol: 'B', refMarketValue: '100' }),
+        makeHolding({ symbol: 'C' }),
+      ],
+    });
+
+    expect(weights.get('A')).toBe(0.75);
+    expect(weights.get('B')).toBe(0.25);
+    expect(weights.get('C')).toBeNull();
+  });
+
+  it('leaves a priced holding whose base value failed to convert out of the total', () => {
+    const weights = getHoldingWeights({
+      holdings: [
+        makeHolding({ symbol: 'A', marketValue: '300', refMarketValue: '300' }),
+        makeHolding({ symbol: 'B', marketValue: '100', refMarketValue: '100' }),
+        makeHolding({ symbol: 'C', marketValue: '500', refMarketValue: '0' }),
+      ],
+    });
+
+    expect(weights.get('A')).toBe(0.75);
+    expect(weights.get('B')).toBe(0.25);
+    expect(weights.get('C')).toBeNull();
+  });
+
+  it('returns zero weights when every value is zero', () => {
+    expect(getHoldingWeights({ holdings: [makeHolding({ symbol: 'A', refMarketValue: '0' })] }).get('A')).toBe(0);
   });
 });

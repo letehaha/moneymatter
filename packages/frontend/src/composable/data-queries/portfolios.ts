@@ -69,9 +69,11 @@ export const useUpdatePortfolio = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfoliosList });
       queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioDetails });
-      // Summary and holdings values depend on the portfolio's displayCurrencyCode
+      // These values are converted to the portfolio's displayCurrencyCode
       queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioSummary });
       queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.holdingsList });
+      queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioValueHistory });
+      queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.portfolioAnalytics });
       queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.transactionPortfolioLink });
     },
   });

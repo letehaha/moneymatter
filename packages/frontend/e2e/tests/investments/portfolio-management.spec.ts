@@ -64,20 +64,21 @@ async function openCashTransactionDialog({ page }: { page: import('@playwright/t
 }
 
 async function openHoldingTransactionDialog({ page }: { page: import('@playwright/test').Page }): Promise<void> {
-  const etestRow = page.locator('table tbody tr').filter({ hasText: 'ETEST' }).first();
-  await expect(etestRow).toBeVisible({ timeout: 10_000 });
-  await etestRow.locator('button').first().click();
-
-  const expandedArea = page
-    .locator('table tbody tr')
-    .filter({ has: page.locator('td[colspan]') })
-    .first();
-  await expect(expandedArea).toBeVisible({ timeout: 5_000 });
-
-  const addTxBtn = expandedArea.getByRole('button').filter({ hasText: /add/i }).first();
-  await addTxBtn.click();
-
+  await page.getByRole('button', { name: 'Add transaction for ETEST' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
+}
+
+async function openActivity({
+  page,
+  filter,
+}: {
+  page: import('@playwright/test').Page;
+  filter: 'trades' | 'cash';
+}): Promise<import('@playwright/test').Locator> {
+  await page.getByRole('tab', { name: /^activity$/i }).click();
+  const panel = page.getByRole('tabpanel', { name: /^activity$/i });
+  await panel.locator(`button[data-value="${filter}"]`).click();
+  return panel;
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────
@@ -134,8 +135,8 @@ test.describe('Portfolio Management', () => {
       await dialog.locator('button[type="submit"]').click();
       await waitForSuccessToast({ page });
 
-      await page.locator('button[data-value="cash-transactions"]').click();
-      await expect(page.locator('text=/\\+\\$500/')).toBeVisible({ timeout: 10_000 });
+      const panel = await openActivity({ page, filter: 'cash' });
+      await expect(panel.getByText(/\+\$500/)).toBeVisible({ timeout: 10_000 });
     });
 
     test('create withdrawal via UI and verify it appears', async ({ page }) => {
@@ -153,24 +154,22 @@ test.describe('Portfolio Management', () => {
       await dialog.locator('button[type="submit"]').click();
       await waitForSuccessToast({ page });
 
-      await page.locator('button[data-value="cash-transactions"]').click();
-      await expect(page.locator('text=/-\\$200/')).toBeVisible({ timeout: 10_000 });
+      const panel = await openActivity({ page, filter: 'cash' });
+      await expect(panel.getByText(/-\$200/)).toBeVisible({ timeout: 10_000 });
     });
 
     test('delete cash transaction via UI', async ({ page }) => {
       await page.goto(`/portfolios/${portfolioId}`);
       await page.waitForSelector('h1');
 
-      await page.locator('button[data-value="cash-transactions"]').click();
+      const panel = await openActivity({ page, filter: 'cash' });
 
-      const cashTxContent = page.locator('.divide-y');
-      const transactionRows = cashTxContent.locator('> div');
-      await expect(transactionRows.first()).toBeVisible({ timeout: 10_000 });
+      const deleteButtons = panel.getByRole('button', { name: /^delete$/i });
+      await expect(deleteButtons.first()).toBeVisible({ timeout: 10_000 });
 
-      const countBefore = await transactionRows.count();
+      const countBefore = await deleteButtons.count();
 
-      const deleteBtn = transactionRows.first().locator('button').last();
-      await deleteBtn.click();
+      await deleteButtons.first().click();
 
       const alertDialog = page.getByRole('alertdialog');
       await expect(alertDialog).toBeVisible({ timeout: 5_000 });
@@ -181,7 +180,7 @@ test.describe('Portfolio Management', () => {
         .click();
 
       await expect(alertDialog).not.toBeVisible({ timeout: 10_000 });
-      await expect(transactionRows).toHaveCount(countBefore - 1, { timeout: 10_000 });
+      await expect(deleteButtons).toHaveCount(countBefore - 1, { timeout: 10_000 });
     });
   });
 
@@ -202,9 +201,8 @@ test.describe('Portfolio Management', () => {
       await page.getByRole('dialog').locator('button[type="submit"]').click();
       await waitForSuccessToast({ page });
 
-      await page.locator('button[data-value="buys-sells"]').click();
-      await expect(page.locator('text=/buy/i').first()).toBeVisible({ timeout: 10_000 });
-      await expect(page.locator('text=ETEST')).toBeVisible();
+      const panel = await openActivity({ page, filter: 'trades' });
+      await expect(panel.getByRole('link', { name: /buy.*ETEST/i }).first()).toBeVisible({ timeout: 10_000 });
     });
 
     test('sell transaction via UI', async ({ page }) => {
@@ -222,8 +220,8 @@ test.describe('Portfolio Management', () => {
       await page.getByRole('dialog').locator('button[type="submit"]').click();
       await waitForSuccessToast({ page });
 
-      await page.locator('button[data-value="buys-sells"]').click();
-      await expect(page.locator('text=/sell/i').first()).toBeVisible({ timeout: 10_000 });
+      const panel = await openActivity({ page, filter: 'trades' });
+      await expect(panel.getByRole('link', { name: /sell.*ETEST/i }).first()).toBeVisible({ timeout: 10_000 });
     });
   });
 
@@ -241,10 +239,10 @@ test.describe('Portfolio Management', () => {
       await page.goto(`/portfolios/${emptyPortfolioId}`);
       await page.waitForSelector('h1');
 
-      await page.locator('button[data-value="cash-transactions"]').click();
-
-      const emptyState = page.locator('text=/no.*transaction/i').or(page.locator('.text-muted-foreground.text-center'));
-      await expect(emptyState.first()).toBeVisible({ timeout: 10_000 });
+      const panel = await openActivity({ page, filter: 'cash' });
+      await expect(panel.getByRole('heading', { name: /nothing to show for this filter/i })).toBeVisible({
+        timeout: 10_000,
+      });
     });
   });
 });

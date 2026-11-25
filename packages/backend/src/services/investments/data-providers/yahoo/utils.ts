@@ -1,4 +1,4 @@
-import { ASSET_CLASS } from '@bt/shared/types/investments';
+import { ASSET_CLASS, SECURITY_TYPE } from '@bt/shared/types/investments';
 
 // ISO 6166 ISIN: 2-letter country code, 9 alphanumerics, 1 check digit.
 // The check digit isn't validated – we only need to know whether the
@@ -66,3 +66,18 @@ export function mapYahooTypeToAssetClass(typeDisp?: string): ASSET_CLASS {
 
   return ASSET_CLASS.stocks;
 }
+
+// Keys are Yahoo's `quoteType` / `typeDisp` / chart `instrumentType`, lowercased.
+const YAHOO_SECURITY_TYPES: Record<string, SECURITY_TYPE> = {
+  equity: SECURITY_TYPE.stock,
+  etf: SECURITY_TYPE.etf,
+  mutualfund: SECURITY_TYPE.mutual_fund,
+  fund: SECURITY_TYPE.mutual_fund,
+  moneymarket: SECURITY_TYPE.mutual_fund,
+  bond: SECURITY_TYPE.bond,
+  cryptocurrency: SECURITY_TYPE.crypto,
+  option: SECURITY_TYPE.option,
+};
+
+export const mapYahooTypeToSecurityType = ({ rawType }: { rawType: string | undefined }): SECURITY_TYPE | null =>
+  rawType ? (YAHOO_SECURITY_TYPES[rawType.toLowerCase()] ?? SECURITY_TYPE.other) : null;

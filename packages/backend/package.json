@@ -23,8 +23,7 @@
     "knip": "npx knip",
     "backfill:payee-logos": "cross-env NODE_ENV=production ts-node -r tsconfig-paths/register src/scripts/backfill-payee-logos.ts",
     "fixtures:ms-money": "ts-node -T scripts/fetch-ms-money-fixtures.ts",
-    "mcp:generate-metadata": "cross-env NODE_ENV=development ts-node -T -r tsconfig-paths/register src/scripts/generate-mcp-metadata.ts && node ../../scripts/regen-agent-skills-index.mjs",
-    "check:money-migration": "ts-node -T scripts/check-money-migration.ts"
+    "mcp:generate-metadata": "cross-env NODE_ENV=development ts-node -T -r tsconfig-paths/register src/scripts/generate-mcp-metadata.ts && node ../../scripts/regen-agent-skills-index.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.1",

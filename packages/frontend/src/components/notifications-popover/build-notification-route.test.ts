@@ -372,4 +372,26 @@ describe('buildNotificationRoute', () => {
       ).toEqual(investments);
     });
   });
+
+  describe('watchlist_alert', () => {
+    it('opens the portfolio on its watchlist tab', () => {
+      expect(
+        buildNotificationRoute(
+          baseNotification({ type: NOTIFICATION_TYPES.watchlistAlert, payload: { portfolioId: 'p1' } as never }),
+        ),
+      ).toEqual({
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.portfolioDetail, params: { portfolioId: 'p1' }, query: { tab: 'watchlist' } },
+      });
+    });
+
+    it('falls back to the investments page without a portfolioId', () => {
+      expect(
+        buildNotificationRoute(baseNotification({ type: NOTIFICATION_TYPES.watchlistAlert, payload: {} })),
+      ).toEqual({
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.investments },
+      });
+    });
+  });
 });

@@ -17,6 +17,7 @@ import {
   type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
 import {
+  BellRingIcon,
   CalendarCheckIcon,
   CalendarClockIcon,
   ClockIcon,
@@ -104,6 +105,8 @@ const getIcon = (notification: NotificationStruct) => {
       return FlagIcon;
     case NOTIFICATION_TYPES.unrealizedLossAlert:
       return TrendingDownIcon;
+    case NOTIFICATION_TYPES.watchlistAlert:
+      return BellRingIcon;
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return MailIcon;
@@ -159,6 +162,8 @@ const getIconBg = (notification: NotificationStruct) => {
       return 'bg-success';
     case NOTIFICATION_TYPES.unrealizedLossAlert:
       return 'bg-destructive';
+    case NOTIFICATION_TYPES.watchlistAlert:
+      return 'bg-primary';
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return 'bg-violet-500';

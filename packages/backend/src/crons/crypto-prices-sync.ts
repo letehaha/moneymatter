@@ -1,6 +1,7 @@
 import { minutesToCronExpression } from '@common/utils/minutes-to-cron';
 import { logger } from '@js/utils';
 import { securitiesPricesCryptoSync } from '@root/services/investments/securities-price/securities-daily-sync.service';
+import { checkWatchlistAlertsAfterSync } from '@root/services/investments/watchlist/check-watchlist-alerts';
 
 import { createScheduledSync } from './lib/create-scheduled-sync';
 
@@ -55,5 +56,9 @@ export const cryptoPricesSyncCron = createScheduledSync({
   cronExpression,
   timeZone: 'UTC',
   scheduleDescription: `runs every ${intervalMinutes} minutes (UTC)`,
-  run: securitiesPricesCryptoSync,
+  // Alerts read completed UTC days only, so the runs after the first on a new day find nothing to evaluate.
+  run: async () => ({
+    ...(await securitiesPricesCryptoSync()),
+    ...(await checkWatchlistAlertsAfterSync({ crypto: true })),
+  }),
 });

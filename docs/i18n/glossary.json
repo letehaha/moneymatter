@@ -2033,6 +2033,13 @@
     "variants": ["mark paid"]
   },
   {
+    "term": "market gain",
+    "partOfSpeech": "noun",
+    "definition": "Change in a portfolio's value over a period minus the deposits made in it, i.e. what the market earned. Can be negative.",
+    "translatable": true,
+    "uk": "ринковий прибуток"
+  },
+  {
     "term": "market value",
     "partOfSpeech": "noun",
     "definition": "A holding's current worth at the latest market price (quantity × price). Not the cost basis, which is what the user paid.",
@@ -2203,6 +2210,13 @@
     "ukAvoid": ["баланс"],
     "ukNote": "Here сальдо means inflow minus outflow, never an account's balance. Compounds keep чистий: чистий потік, чисті заощадження, чистий дохід.",
     "variants": ["Net Balance"]
+  },
+  {
+    "term": "net deposits",
+    "partOfSpeech": "noun",
+    "definition": "Money moved into a portfolio minus money taken out. Separates what the user put in from what the market earned.",
+    "translatable": true,
+    "uk": "чисті поповнення"
   },
   {
     "term": "net flow",
@@ -3574,7 +3588,7 @@
   {
     "term": "total return",
     "partOfSpeech": "noun",
-    "definition": "A portfolio's overall investment performance, combining realized and unrealized gains. An investment return, not a refund of money.",
+    "definition": "A portfolio's overall investment result: its value minus net deposits, so dividends and fees count in it. An investment return, not a refund of money.",
     "translatable": true,
     "uk": "загальна дохідність",
     "ukAvoid": ["повернення", "дохід"]
@@ -3585,7 +3599,7 @@
     "definition": "Current worth of a whole portfolio: market value of all holdings plus cash. Not total cost (what was paid for the holdings).",
     "translatable": true,
     "uk": "загальна вартість",
-    "ukNote": "'Total Cost' in the holdings table (portfolioDetail.holdingsTable.headers.totalCost) is currently also «Загальна вартість», although it is the summed cost basis (базова вартість, uk.md §5)."
+    "ukNote": "Keep it apart from cost basis (portfolioDetail.hero.stats.costBasis), which is «Базова вартість» (uk.md §5)."
   },
   {
     "term": "tracker",
@@ -3898,11 +3912,11 @@
   {
     "term": "watchlist",
     "partOfSpeech": "noun",
-    "definition": "Dashboard widget that tracks spending and income for categories the user picks, like a stock watchlist. A widget name, not a to-do list.",
+    "definition": "Two features. A dashboard widget tracking spending for chosen categories, and a per-portfolio list of securities to buy, with target prices and price alerts. Not a to-do list.",
     "translatable": true,
     "uk": "спостереження",
-    "ukNote": "Widget name: «Спостереження за категоріями» (sentence case; спостереження за + instrumental, as in «Спостереження за продуктами»).",
-    "variants": ["Categories Watchlist"]
+    "ukNote": "Dashboard widget: «Спостереження за категоріями» (спостереження за + instrumental). Portfolio tab and feature: «Список спостереження».",
+    "variants": ["Categories Watchlist", "Watchlist"]
   },
   {
     "term": "WebP",

@@ -2,12 +2,18 @@ import { api } from '@/api/_api';
 import type { EntityLogoFields, NonImageLogoPayload } from '@bt/shared/types';
 import {
   PORTFOLIO_TYPE,
+  type PortfolioActivityFilter,
+  type PortfolioActivityResponse,
   PortfolioBalanceModel,
   PortfolioModel,
   PortfolioTransferModel,
 } from '@bt/shared/types/investments';
 import type { PortfolioAnnualizedReturnModel } from '@bt/shared/types/investments/portfolio-annualized-return.model';
 import type { PortfolioSummaryModel } from '@bt/shared/types/investments/portfolio-summary.model';
+import type {
+  PortfolioValueHistoryInterval,
+  PortfolioValueHistoryModel,
+} from '@bt/shared/types/investments/portfolio-value-history.model';
 
 interface CreatePortfolioRequest {
   name: string;
@@ -144,18 +150,18 @@ export const getPortfolioBalances = async ({
   return result;
 };
 
-export const getPortfolioTransfers = async ({
+export const getPortfolioActivity = async ({
   portfolioId,
+  type,
   limit,
   offset,
 }: {
   portfolioId: string;
-  limit?: number;
-  offset?: number;
-}): Promise<PortfolioTransferModel[]> => {
-  const result = await api.get(`/investments/portfolios/${portfolioId}/transfers`, { limit, offset });
-  return result.data;
-};
+  type: PortfolioActivityFilter;
+  limit: number;
+  offset: number;
+}): Promise<PortfolioActivityResponse> =>
+  api.get(`/investments/portfolios/${portfolioId}/activity`, { type, limit, offset });
 
 interface DirectCashTransactionRequest {
   type: 'deposit' | 'withdrawal';
@@ -269,3 +275,14 @@ export const getPortfoliosAnnualizedReturns = async ({ asOf }: { asOf?: string }
   const result = await api.get('/investments/portfolios/annualized-returns', asOf ? { asOf } : undefined);
   return result;
 };
+
+export const getPortfolioValueHistory = async ({
+  portfolioId,
+  from,
+  interval,
+}: {
+  portfolioId: string;
+  from?: string;
+  interval?: PortfolioValueHistoryInterval;
+}): Promise<PortfolioValueHistoryModel> =>
+  api.get(`/investments/portfolios/${portfolioId}/value-history`, { from, interval });

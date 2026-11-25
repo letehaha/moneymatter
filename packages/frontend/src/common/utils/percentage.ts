@@ -58,3 +58,13 @@ export function isPercentInputValid(val: string): boolean {
   const n = Number(val);
   return Number.isFinite(n) && n >= 0 && n <= 100;
 }
+
+/** Unsigned share with one decimal (`0.123` → `"12.3%"`); `—` when not finite. */
+export const formatShare = ({ fraction }: { fraction: number | null }) =>
+  formatFractionAsPercent(fraction, { maximumFractionDigits: 1, stripTrailingZeros: false });
+
+/** Signed percent with two decimals (`0.05` → `"+5.00%"`); `—` when not finite. */
+export const formatSignedPercent = ({ fraction }: { fraction: number | null }) => {
+  const text = formatFractionAsPercent(fraction, { maximumFractionDigits: 2, stripTrailingZeros: false });
+  return fraction !== null && Number.isFinite(fraction) && fraction >= 0 ? `+${text}` : text;
+};

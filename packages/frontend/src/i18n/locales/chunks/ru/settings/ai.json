@@ -1,11 +1,11 @@
 {
   "settings": {
     "ai": {
-      "title": "Настройки AI",
+      "title": "Настройки ИИ",
       "description": "Настройте функции на базе AI, например автоматическую категоризацию транзакций",
       "tabs": {
-        "features": "AI-функции",
-        "models": "AI models",
+        "features": "ИИ функции",
+        "models": "ИИ модели",
         "connectedApps": "Connectors (MCP)",
         "invalidConnectionsTooltip": "Одна из ваших моделей ИИ требует внимания"
       },
@@ -65,11 +65,11 @@
           "resetFailed": "Не удалось восстановить модель по умолчанию"
         },
         "empty": {
-          "title": "No AI model yet",
+          "title": "Нет ИИ моделей",
           "description": "Добавьте свою собственную ИИ модель для использования этой функции."
         },
         "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
-        "allConnectionsDownLink": "AI models"
+        "allConnectionsDownLink": "ИИ модели"
       },
       "modelGuide": {
         "trigger": "Какая модель подходит?",
@@ -88,7 +88,7 @@
           "runsOften": "Runs on every sync",
           "longAnswers": "Long answers",
           "readsFiles": "Reads images & PDFs",
-          "structuredAnswers": "Structured answers"
+          "structuredAnswers": "Структурированные ответы"
         },
         "why": {
           "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
@@ -133,25 +133,25 @@
             "fail": "PDF files won't work."
           },
           "longAnswers": {
-            "label": "Long answers",
+            "label": "Развёрнутые ответы",
             "ok": "Writes up to {tokens} tokens.",
             "fail": "Writes up to {tokens} tokens, so long files get cut off."
           },
           "structuredAnswers": {
-            "label": "Structured answers",
+            "label": "Структурированные ответы",
             "fail": "Its answers may come back in a shape the app can't read."
           }
         },
         "unknown": {
-          "title": "Can't check this model",
+          "title": "Не удается проверить модель",
           "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
         }
       },
       "connections": {
-        "title": "AI models",
+        "title": "ИИ модели",
         "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
         "tip": {
-          "ariaLabel": "About AI models",
+          "ariaLabel": "О моделях ИИ",
           "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
         },
         "addButton": "Добавить модель",
@@ -174,20 +174,20 @@
         },
         "actions": {
           "menuAriaLabel": "AI model actions",
-          "duplicate": "Duplicate",
-          "setDefault": "Set as default",
-          "remove": "Remove",
-          "reconnect": "Reconnect",
-          "enterKey": "Enter API key"
+          "duplicate": "Дублировать",
+          "setDefault": "Установить по умолчанию",
+          "remove": "Удалить",
+          "reconnect": "Переподключить",
+          "enterKey": "Введите API-ключ"
         },
         "removeDialog": {
-          "title": "Remove this AI model?",
+          "title": "Удалить эту модель ИИ?",
           "description": "\"{name}\" and its saved API key will be removed.",
           "pinnedFeatures": "These features will switch to automatic: {features}.",
-          "confirm": "Remove"
+          "confirm": "Удалить"
         },
         "removeKeyDialog": {
-          "title": "Remove the API key?",
+          "title": "Удалить API-ключ?",
           "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
           "confirm": "Remove key"
         },
@@ -196,39 +196,39 @@
           "failed": "Couldn't reach the model."
         },
         "notifications": {
-          "saveSuccess": "AI model saved",
-          "saveFailed": "Couldn't save the AI model",
-          "removeSuccess": "AI model removed",
-          "removeFailed": "Couldn't remove the AI model",
-          "setDefaultSuccess": "\"{name}\" is now your default model",
-          "setDefaultFailed": "Couldn't change the default model",
-          "removeKeySuccess": "API key removed",
-          "removeKeyFailed": "Couldn't remove the API key",
+          "saveSuccess": "Модель ИИ сохранена",
+          "saveFailed": "Не удалось сохранить ИИ модель",
+          "removeSuccess": "Модель ИИ удалена",
+          "removeFailed": "Не удалось удалить ИИ модель",
+          "setDefaultSuccess": "\"{name}\" теперь модель по умолчанию",
+          "setDefaultFailed": "Не удалось изменить модель по умолчанию",
+          "removeKeySuccess": "API ключ удалён",
+          "removeKeyFailed": "Не удалось удалить API ключ",
           "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
           "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
         },
         "form": {
-          "titleAdd": "Add AI model",
-          "titleEdit": "Edit AI model",
+          "titleAdd": "Добавить ИИ модель",
+          "titleEdit": "Изменить ИИ модель",
           "titleDuplicate": "Duplicate AI model",
-          "providerLabel": "Provider",
-          "providerPlaceholder": "Select a provider",
-          "nameLabel": "Name",
-          "baseUrlLabel": "Base URL",
+          "providerLabel": "Провайдер",
+          "providerPlaceholder": "Выберите провайдера",
+          "nameLabel": "Название",
+          "baseUrlLabel": "Основной URL-адрес",
           "baseUrlPlaceholder": "https://example.com/v1",
-          "apiKeyLabel": "API key",
+          "apiKeyLabel": "API ключ",
           "apiKeyPlaceholder": "Paste your API key",
           "apiKeyGetHint": "Get a key at {link}.",
           "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
           "apiKeySavedHint": "Leave blank to keep the saved key.",
           "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
-          "removeApiKeyButton": "Remove API key",
-          "modelLabel": "Model",
+          "removeApiKeyButton": "Удалить API ключ",
+          "modelLabel": "Модель",
           "modelPlaceholder": "Type or pick a model",
           "modelListEmpty": "No models to pick from. Type the model name your server uses.",
           "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
-          "testButton": "Test connection",
-          "saveButton": "Save changes",
+          "testButton": "Проверить подключение",
+          "saveButton": "Сохранить изменения",
           "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
           "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
         },

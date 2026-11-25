@@ -10,6 +10,7 @@ export const ENTITLEMENTS = {
     subscriptions: [
       {
         externalSubscriptionId: 'sub_docs',
+        provider: 'stripe',
         tier: 'plus',
         status: 'active',
         billingCycle: 'year',
@@ -18,6 +19,22 @@ export const ENTITLEMENTS = {
       },
     ],
   }),
+  /** Essential subscriber who never started a day trial, so Plus-only tabs offer one. */
+  essentialNoTrials: () => {
+    const plus = ENTITLEMENTS.activePlusYearly();
+    return {
+      ...plus,
+      seats: 2,
+      // Mirrors ESSENTIAL_FEATURES in packages/shared/src/types/billing.ts.
+      features: ['backup_export', 'backup_restore', 'data_export', 'attachments', 'budget_plan', 'goals'],
+      featureTrials: {},
+      budgetPlanTrialEndsAt: null,
+      trialUsage: {},
+      subscriptions: [
+        { ...plus.subscriptions[0], tier: 'essential', billingCycle: 'month', currentPeriodEndsAt: daysFromNow(20) },
+      ],
+    };
+  },
   trialEnded: () => ({
     plan: null,
     trialEndsAt: daysFromNow(-4),

@@ -13,6 +13,7 @@ export async function getSecuritiesPricesByDate<R extends boolean | undefined = 
     securityId?: string;
     from?: Date;
     to?: Date;
+    daily?: boolean;
   };
   raw?: R;
 }) {
@@ -26,6 +27,9 @@ export async function getSecuritiesPricesByDate<R extends boolean | undefined = 
   }
   if (params.to) {
     queryParams.push(`to=${params.to.toISOString()}`);
+  }
+  if (params.daily !== undefined) {
+    queryParams.push(`daily=${params.daily}`);
   }
 
   const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';

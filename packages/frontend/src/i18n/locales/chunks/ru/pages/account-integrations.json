@@ -311,8 +311,8 @@
           "step2": "Create a personal app (or open an existing one) — connect your bank accounts in Akahu first.",
           "step3": "Copy the User Access Token and the App ID Token and paste both into the fields above."
         },
-        "backButton": "Back",
-        "connectingButton": "Connecting...",
+        "backButton": "Назад",
+        "connectingButton": "Подключение...",
         "connectButton": "Connect",
         "loadingAccounts": "Loading accounts...",
         "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",

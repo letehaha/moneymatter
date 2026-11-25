@@ -39,7 +39,7 @@
       "noteReplace": "Notiz festlegen",
       "noteAppend": "anfügen",
       "notePrepend": "voranstellen",
-      "excludeFromStats": "excluded from stats",
+      "excludeFromStats": "von Statistiken ausgeschlossen",
       "note": {
         "containsAny": "Notiz enthält",
         "notContainsAny": "Notiz enthält nicht",
@@ -113,7 +113,7 @@
       "set_payee": "Zahlungsempfänger festlegen",
       "add_tags": "Tags hinzufügen",
       "set_note": "Notiz festlegen",
-      "exclude_from_stats": "Exclude from stats",
+      "exclude_from_stats": "Von Statistiken ausschließen",
       "noteMode": {
         "replace": "Ersetzen",
         "append": "Anfügen",

@@ -1,3 +1,4 @@
+import { FEATURES } from '@bt/shared/types';
 import { isTestSeedingEnabled } from '@common/utils/env';
 import {
   estimateCostController as importEstimateCostController,
@@ -17,6 +18,8 @@ import deletePortfolioTransferController from '@controllers/investments/portfoli
 import directCashTransactionController from '@controllers/investments/portfolios/direct-cash-transaction';
 import exchangeCurrencyController from '@controllers/investments/portfolios/exchange-currency';
 import getPortfolioController from '@controllers/investments/portfolios/get-portfolio';
+import getPortfolioActivityController from '@controllers/investments/portfolios/get-portfolio-activity';
+import getPortfolioAnalyticsController from '@controllers/investments/portfolios/get-portfolio-analytics.controller';
 import getPortfolioBalanceController from '@controllers/investments/portfolios/get-portfolio-balance';
 import getPortfolioSummariesController from '@controllers/investments/portfolios/get-portfolio-summaries.controller';
 import getPortfolioSummaryController from '@controllers/investments/portfolios/get-portfolio-summary.controller';
@@ -39,10 +42,24 @@ import createInvestmentTransactionController from '@controllers/investments/tran
 import deleteInvestmentTransactionController from '@controllers/investments/transactions/delete-tx.controller';
 import getTransactionsController from '@controllers/investments/transactions/get-transactions.controller';
 import updateInvestmentTransactionController from '@controllers/investments/transactions/update-tx.controller';
+import {
+  createAlertController as createWatchlistAlertController,
+  createItemController as createWatchlistItemController,
+  createSectionController as createWatchlistSectionController,
+  deleteAlertController as deleteWatchlistAlertController,
+  deleteItemController as deleteWatchlistItemController,
+  deleteSectionController as deleteWatchlistSectionController,
+  getWatchlistController,
+  setLayoutController as setWatchlistLayoutController,
+  updateAlertController as updateWatchlistAlertController,
+  updateItemController as updateWatchlistItemController,
+  updateSectionController as updateWatchlistSectionController,
+} from '@controllers/investments/watchlist.controller';
 import { adminOnly } from '@middlewares/admin-only';
 import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
+import { requireFeature } from '@middlewares/entitlements';
 import { priceSyncRateLimit, securitiesPricesBulkUploadRateLimit } from '@middlewares/rate-limit';
 import { Router } from 'express';
 
@@ -70,6 +87,21 @@ router.get('/portfolios/:id/summary', getPortfolioSummaryController);
 
 router.get('/portfolios/:id/value-history', getPortfolioValueHistoryController);
 
+router.get('/portfolios/:id/analytics', requireFeature(FEATURES.portfolio_analytics), getPortfolioAnalyticsController);
+
+const watchlistGate = requireFeature(FEATURES.watchlist);
+router.get('/portfolios/:id/watchlist', watchlistGate, getWatchlistController);
+router.put('/portfolios/:id/watchlist/layout', watchlistGate, setWatchlistLayoutController);
+router.post('/portfolios/:id/watchlist/sections', watchlistGate, createWatchlistSectionController);
+router.patch('/portfolios/:id/watchlist/sections/:sectionId', watchlistGate, updateWatchlistSectionController);
+router.delete('/portfolios/:id/watchlist/sections/:sectionId', watchlistGate, deleteWatchlistSectionController);
+router.post('/portfolios/:id/watchlist/items', watchlistGate, createWatchlistItemController);
+router.patch('/portfolios/:id/watchlist/items/:itemId', watchlistGate, updateWatchlistItemController);
+router.delete('/portfolios/:id/watchlist/items/:itemId', watchlistGate, deleteWatchlistItemController);
+router.post('/portfolios/:id/watchlist/items/:itemId/alerts', watchlistGate, createWatchlistAlertController);
+router.patch('/portfolios/:id/watchlist/items/:itemId/alerts/:alertId', watchlistGate, updateWatchlistAlertController);
+router.delete('/portfolios/:id/watchlist/items/:itemId/alerts/:alertId', watchlistGate, deleteWatchlistAlertController);
+
 // Test-only cash seeding: writes `PortfolioBalances` directly, bypassing the
 // InvestmentTransaction/PortfolioTransfers audit trail. Production cash moves
 // through transfers and cash-transactions instead, so this stays off there.
@@ -88,6 +120,8 @@ router.post('/portfolios/:id/transfer/from-account', checkBaseCurrencyLock, acco
 router.post('/portfolios/:id/transfer/to-account', checkBaseCurrencyLock, portfolioToAccountTransferController);
 
 router.get('/portfolios/:id/transfers', listPortfolioTransfersController);
+
+router.get('/portfolios/:id/activity', getPortfolioActivityController);
 
 router.patch(
   '/portfolios/:id/transfers/:transferId/adjustment',

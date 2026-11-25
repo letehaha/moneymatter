@@ -13,6 +13,8 @@
   "The goal shows Reached, moves to the Ended section and you get an in-app notification. If the balance later drops below the target, the goal stays Reached until 30 days after you hit it, a period you can change for each goal, and then returns to Active.": "Ціль отримує статус «Досягнуто» й переходить у розділ «Завершені», а ви отримуєте сповіщення в застосунку. Якщо баланс згодом опуститься нижче цільової суми, ціль залишається досягнутою ще 30 днів після досягнення (цей період можна змінити для кожної цілі), а потім знову стає активною.",
   "How are savings goals different from budget goals?": "Чим цілі заощаджень відрізняються від цілей у бюджеті?",
   "A savings goal reads the balances of your accounts, while a budget goal sits on a budget line and tells you how much to assign to it each period. They are separate features.": "Ціль заощаджень зчитує баланси ваших рахунків, а ціль у бюджеті прив'язана до рядка бюджету й підказує, скільки виділяти на нього в кожному періоді. Це окремі функції.",
+  "Can I have several savings goals at once?": "Чи можна мати кілька цілей заощаджень одночасно?",
+  "Yes. MoneyMatter has no limit on the number of savings goals, and each one has its own target, accounts and finish date. The Goals page also checks whether you can afford all your active goals at once, and shows which ones fit if you cannot.": "Так. MoneyMatter не обмежує кількість цілей заощаджень, і в кожної є своя цільова сума, свої рахунки та своя дата завершення. Сторінка «Цілі» також перевіряє, чи вистачить вам на всі активні цілі одночасно, а якщо ні — показує, які з них вкладаються.",
   "Goals": "Цілі",
   "Create and edit a goal": "Створення й редагування цілі",
   "How progress is calculated": "Як розраховується прогрес",

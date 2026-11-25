@@ -1,4 +1,4 @@
-import { nextTick } from 'vue';
+import { effectScope, nextTick } from 'vue';
 
 import { useResizableWidth } from './use-resizable-width';
 
@@ -34,6 +34,22 @@ describe('useResizableWidth', () => {
     expect(left.width.value).toBe(150);
   });
 
+  it('grows a bottom-edge handle on a downward drag', () => {
+    const resizable = useResizableWidth({
+      storageKey: STORAGE_KEY,
+      minWidth: 100,
+      maxWidth: 400,
+      defaultWidth: 200,
+      edge: 'bottom',
+    });
+    const handle = document.createElement('div');
+    handle.setPointerCapture = () => {};
+    resizable.startResize({ currentTarget: handle, clientX: 0, clientY: 300, pointerId: 1 } as unknown as PointerEvent);
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 999, clientY: 340 }));
+    release();
+    expect(resizable.width.value).toBe(240);
+  });
+
   it('clamps drags to the bounds, persists, and resets to the default', async () => {
     const resizable = setup({ edge: 'right' });
     drag({ resizable, deltaX: 1000 });
@@ -65,5 +81,29 @@ describe('useResizableWidth', () => {
   it('falls back to the default for a corrupted stored value', () => {
     localStorage.setItem(STORAGE_KEY, 'abc');
     expect(setup({ edge: 'right' }).width.value).toBe(200);
+  });
+
+  it('lets the max win when it drops below the min', () => {
+    const resizable = useResizableWidth({
+      storageKey: STORAGE_KEY,
+      minWidth: 100,
+      maxWidth: 80,
+      defaultWidth: 200,
+      edge: 'right',
+    });
+    expect(resizable.width.value).toBe(80);
+  });
+
+  it('ends an in-progress drag when its scope is disposed', () => {
+    const scope = effectScope();
+    const resizable = scope.run(() => setup({ edge: 'right' }))!;
+    drag({ resizable, deltaX: 10 });
+    expect(resizable.isResizing.value).toBe(true);
+
+    scope.stop();
+    expect(resizable.isResizing.value).toBe(false);
+
+    window.dispatchEvent(new MouseEvent('pointermove', { clientX: 900 }));
+    expect(resizable.width.value).toBe(210);
   });
 });

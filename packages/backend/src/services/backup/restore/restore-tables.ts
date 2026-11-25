@@ -69,7 +69,7 @@ function buildRowOverrides({
   if (hasColumn({ plan, field: 'userId' })) overrides.userId = ctx.targetUserId;
   if (hasColumn({ plan, field: 'ownerUserId' })) overrides.ownerUserId = ctx.targetUserId;
 
-  // securityId → resolved catalog id (only Holdings + InvestmentTransactions
+  // securityId → resolved catalog id (Holdings, InvestmentTransactions and WatchlistItems
   // carry it; kept-if-free ids aren't in the map and stay verbatim).
   if (hasColumn({ plan, field: 'securityId' }) && typeof row.securityId === 'string') {
     const resolved = ctx.securitiesRemap.get(row.securityId);
@@ -100,6 +100,9 @@ function buildRowOverrides({
     const metadata = (row.metadata && typeof row.metadata === 'object' ? row.metadata : {}) as Row;
     overrides.metadata = { ...metadata, deactivationReason: DEACTIVATION_REASON.RESTORED };
   }
+
+  // A digest left pending in the archive was meant for the source instance; it never sends from a restore.
+  if (def.fileName === 'watchlist-alerts') overrides.pendingEmailPayload = null;
 
   return overrides;
 }
@@ -402,7 +405,7 @@ export async function insertRestoreTables({
   // Owned ids embedded in JSONB / array columns aren't reachable by the scalar FK
   // remap above and some point across tiers, so rewrite them once every owned map
   // is complete.
-  await remapEmbeddedReferences({ archive, insertedIds, transaction });
+  await remapEmbeddedReferences({ archive, insertedIds, securitiesRemap, transaction });
 
   return { insertedByTable, warnings, insertedIds };
 }

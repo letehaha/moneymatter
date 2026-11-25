@@ -320,6 +320,7 @@
         "mainCategoryLabel": "Основная категория",
         "selectCategoryPlaceholder": "Выберите категорию",
         "amountPlaceholder": "0",
+        "notePlaceholder": "Note (optional)",
         "addCategoryButton": "Добавить категорию",
         "removeRowLabel": "Удалить категорию",
         "totalAmountLabel": "Общая сумма",
@@ -570,7 +571,7 @@
       "inheritParentColor": "Использовать цвет родительской категории",
       "iconLabel": "Значок",
       "iconPlaceholder": "Выберите значок",
-      "defaultTagsLabel": "Default tags",
+      "defaultTagsLabel": "Теги по умолчанию",
       "defaultTagsPlaceholder": "Select tags",
       "defaultTagsHint": "Added to a transaction when you pick this category.",
       "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
@@ -632,7 +633,7 @@
       "invoice": {
         "number": "Invoice №",
         "issued": "Issued",
-        "total": "Total"
+        "total": "Итого"
       },
       "fixDetails": "Fix details",
       "form": {
@@ -642,7 +643,7 @@
         "customerPlaceholder": "Who the invoice is billed to",
         "total": "Total",
         "totalPlaceholder": "0.00",
-        "currency": "Currency",
+        "currency": "Валюта",
         "currencyPlaceholder": "EUR",
         "issued": "Invoice date",
         "submit": "Search again"
@@ -775,7 +776,7 @@
       "decline": "Отклонить",
       "close": "Закрыть",
       "goToAccount": "Перейти к счёту",
-      "goToBudget": "Перейти к бюджету",
+      "goToBudget": "Перейти к трекеру",
       "updateBaseCurrency": "Изменить базовую валюту",
       "acceptSuccess": "Теперь у вас есть доступ к этому общему ресурсу.",
       "acceptError": "Не удалось принять приглашение. Попробуйте снова.",

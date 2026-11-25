@@ -1,4 +1,4 @@
-import { ASSET_CLASS, SECURITY_PROVIDER, type SecuritySearchResult } from '@bt/shared/types/investments';
+import { ASSET_CLASS, SECURITY_PROVIDER, SECURITY_TYPE, type SecuritySearchResult } from '@bt/shared/types/investments';
 import { isTestSeedingEnabled } from '@common/utils/env';
 
 const TEST_FIXTURE_SECURITIES: SecuritySearchResult[] = [
@@ -9,6 +9,7 @@ const TEST_FIXTURE_SECURITIES: SecuritySearchResult[] = [
   providerSymbol: symbol,
   name,
   assetClass: ASSET_CLASS.stocks,
+  securityType: SECURITY_TYPE.stock,
   providerName: SECURITY_PROVIDER.fmp,
   currencyCode: 'USD',
 }));

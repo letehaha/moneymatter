@@ -1,45 +1,38 @@
 <template>
-  <Card class="min-w-0">
+  <Card class="@container/holdings min-w-0">
     <CardHeader class="pb-4">
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-3">
-          <div class="bg-primary/10 flex size-9 items-center justify-center rounded-lg">
-            <LayoutListIcon class="text-primary-text size-5" />
-          </div>
-          <div>
-            <CardTitle class="text-lg">{{ $t('portfolioDetail.holdings.title') }}</CardTitle>
-            <p v-if="holdings" class="text-muted-foreground text-sm">
-              {{ $t('portfolioDetail.holdings.subtitle', { count: holdings.length }) }}
-            </p>
-          </div>
-        </div>
+      <div class="flex flex-col gap-3 @lg/holdings:flex-row @lg/holdings:items-center @lg/holdings:justify-between">
+        <InputField
+          v-model="filterText"
+          size="sm"
+          class="w-full @lg/holdings:max-w-80"
+          trailing-icon-css-class="px-2"
+          :placeholder="$t('portfolioDetail.holdings.filterPlaceholder')"
+        >
+          <template #iconLeading>
+            <SearchIcon class="text-muted-foreground size-4" />
+          </template>
+          <template v-if="filterText" #iconTrailing>
+            <DesktopOnlyTooltip :content="$t('portfolioDetail.holdingsTable.clearFilterButton')">
+              <UiButton
+                variant="ghost"
+                size="icon-sm"
+                :aria-label="$t('portfolioDetail.holdingsTable.clearFilterButton')"
+                @click="filterText = ''"
+              >
+                <XIcon class="size-4" />
+              </UiButton>
+            </DesktopOnlyTooltip>
+          </template>
+        </InputField>
 
-        <div class="flex items-center gap-3">
-          <!-- Search Filter -->
-          <div class="relative flex-1 sm:w-64">
-            <SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <input
-              v-model="filterText"
-              type="text"
-              :placeholder="$t('portfolioDetail.holdings.filterPlaceholder')"
-              class="border-input bg-input-background placeholder:text-muted-foreground focus-visible:ring-ring h-9 w-full rounded-md border pr-8 pl-9 text-sm focus-visible:ring-1 focus-visible:outline-none"
-            />
-            <button
-              v-if="filterText"
-              @click="filterText = ''"
-              class="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2"
-            >
-              <XIcon class="size-4" />
-            </button>
-          </div>
-
-          <RouterLink :to="{ name: ROUTES_NAMES.portfolioTransactionsImport, params: { portfolioId } }">
-            <UiButton size="sm" variant="outline">
+        <div class="flex items-center gap-2">
+          <UiButton size="sm" variant="outline" as-child>
+            <RouterLink :to="{ name: ROUTES_NAMES.portfolioTransactionsImport, params: { portfolioId } }">
               <FileUpIcon class="size-4" />
-              <span class="md:hidden">{{ $t('portfolioDetail.holdings.importButtonShort') }}</span>
-              <span class="hidden md:inline">{{ $t('portfolioDetail.holdings.importButton') }}</span>
-            </UiButton>
-          </RouterLink>
+              {{ $t('portfolioDetail.holdings.importButtonShort') }}
+            </RouterLink>
+          </UiButton>
 
           <AddSymbolsDialog v-model:open="isAddSymbolsOpen" :portfolio-id="portfolioId" @updated="onHoldingAdded">
             <UiButton size="sm">
@@ -56,6 +49,8 @@
         :loading="isLoading"
         :error="!!error"
         :portfolio-id="portfolioId"
+        :portfolio-name="portfolioName"
+        :weights="weights"
         :is-filtering="isFiltering"
         :just-added-ids="justAddedIds"
         @add-symbol="isAddSymbolsOpen = true"
@@ -70,14 +65,17 @@
 import AddSymbolsDialog from '@/components/dialogs/add-symbols-dialog.vue';
 import HoldingsTable from '@/components/holdings/holdings-table.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/lib/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/lib/ui/card';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import InputField from '@/components/fields/input-field.vue';
+import { getHoldingWeights } from '@/components/holdings/utils/holding-display';
 import { useHoldings } from '@/composable/data-queries/holdings';
 import { ROUTES_NAMES } from '@/routes';
-import { FileUpIcon, LayoutListIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
+import { FileUpIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
-const props = defineProps<{ portfolioId: string }>();
+const props = defineProps<{ portfolioId: string; portfolioName?: string }>();
 const portfolioId = toRef(props, 'portfolioId');
 const router = useRouter();
 
@@ -102,6 +100,8 @@ const onHoldingAdded = ({ securityId }: { securityId: string }) => {
 function goToImport() {
   router.push({ name: ROUTES_NAMES.portfolioTransactionsImport, params: { portfolioId: portfolioId.value } });
 }
+
+const weights = computed(() => getHoldingWeights({ holdings: holdings.value ?? [] }));
 
 const isFiltering = computed(() => !!filterText.value.trim());
 

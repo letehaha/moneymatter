@@ -320,6 +320,7 @@
         "mainCategoryLabel": "Kategori Utama",
         "selectCategoryPlaceholder": "Pilih kategori",
         "amountPlaceholder": "0",
+        "notePlaceholder": "Note (optional)",
         "addCategoryButton": "Tambah kategori",
         "removeRowLabel": "Hapus kategori",
         "totalAmountLabel": "Jumlah total",

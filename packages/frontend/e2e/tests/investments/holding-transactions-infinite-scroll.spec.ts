@@ -16,6 +16,7 @@ const TX_COUNT = 45;
 const creds = buildTestCredentials({ prefix: 'hts' });
 
 let portfolioId: string;
+let securityId: string;
 let dataSeeded = false;
 
 test.describe.configure({ mode: 'serial' });
@@ -37,7 +38,7 @@ async function seedTestData({ request }: { request: import('@playwright/test').A
     portfolioId,
     symbol: 'ISCRL',
   });
-  const securityId = holdingRes.response.securityId;
+  securityId = holdingRes.response.securityId;
 
   // Unique sequential dates so the list (sorted by date desc) has a known
   // oldest transaction that can only arrive with the second page.
@@ -70,12 +71,7 @@ test.describe('Holding transactions infinite scroll', () => {
   });
 
   test('scrolling the transactions list loads the next page', async ({ page }) => {
-    await page.goto(`/portfolios/${portfolioId}`);
-
-    const holdingRow = page.locator('table tbody tr').filter({ hasText: 'ISCRL' }).first();
-    await expect(holdingRow).toBeVisible({ timeout: 10_000 });
-    // First button in the row is the expand chevron
-    await holdingRow.locator('button').first().click();
+    await page.goto(`/portfolios/${portfolioId}/holdings/${securityId}`);
 
     // The ScrollArea viewport is both the scrollable element and the
     // virtualizer's scroll element.
@@ -91,7 +87,7 @@ test.describe('Holding transactions infinite scroll', () => {
     await expect(scrollContainer.getByText('01/01/2025')).not.toBeAttached();
 
     const nextPageRequest = page.waitForRequest(
-      (req) => req.url().includes('/transactions') && req.url().includes('offset=30'),
+      (req) => req.url().includes('/transactions') && req.url().includes('limit=30') && req.url().includes('offset=30'),
       { timeout: 15_000 },
     );
 

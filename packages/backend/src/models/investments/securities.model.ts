@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { SECURITY_PROVIDER, ASSET_CLASS } from '@bt/shared/types/investments';
+import { SECURITY_PROVIDER, ASSET_CLASS, SECURITY_TYPE } from '@bt/shared/types/investments';
 import { IdColumn } from '@common/types/id-column';
 import { Table, Column, Model, DataType, HasMany, Index, BeforeCreate, BeforeUpdate } from 'sequelize-typescript';
 
@@ -82,6 +82,9 @@ export default class Securities extends Model {
 
   @Column({ type: DataType.STRING, allowNull: false })
   assetClass!: ASSET_CLASS;
+
+  @Column({ type: DataType.STRING(32), allowNull: true })
+  securityType!: SECURITY_TYPE | null;
 
   @Column({ type: DataType.DATE, allowNull: false })
   declare createdAt: Date;

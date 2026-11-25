@@ -6,6 +6,7 @@ import Categories from '@models/categories.model';
 import Goals from '@models/goals.model';
 import ImportBatches from '@models/import-batches.model';
 import Portfolios from '@models/investments/portfolios.model';
+import WatchlistItems from '@models/investments/watchlist-items.model';
 import Payees from '@models/payees.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -71,6 +72,11 @@ export function createScopeResolver({ userId }: { userId: number }) {
       return idsWhere({ model: TrackerLines, where: { trackerId: { [Op.in]: trackerIds } } });
     },
     goals: () => idsWhere({ model: Goals, where: { userId } }),
+    watchlistItems: async () => {
+      const portfolioIds = await getScope({ scope: 'portfolios' });
+      if (portfolioIds.length === 0) return [];
+      return idsWhere({ model: WatchlistItems, where: { portfolioId: { [Op.in]: portfolioIds } } });
+    },
   };
 
   function getScope({ scope }: { scope: BackupParentScope }): Promise<RecordId[]> {

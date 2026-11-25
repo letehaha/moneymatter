@@ -17,6 +17,23 @@
       "voteOnRoadmap": "Bình chọn cho lộ trình phát triển",
       "roadmapNote": "Không mất phí. Hãy bình chọn ủng hộ, chúng tôi sẽ báo cho bạn khi tính năng được phát hành.",
       "saveUpTo": "Tiết kiệm đến {percent}%",
+      "promotion": {
+        "title": "{name}: {percent}% off your first payment",
+        "subtitle": "Applied automatically at checkout, no code needed. Ends {date}.",
+        "badge": "{name} −{percent}%",
+        "firstCycle": {
+          "year": "/ first year",
+          "month": "/ first month"
+        },
+        "renews": {
+          "year": "Then {amount}/year",
+          "month": "Then {amount}/month"
+        },
+        "billedToday": "Billed today: {amount}. Cancel anytime.",
+        "names": {
+          "blackFriday2026": "Black Friday"
+        }
+      },
       "portalFailed": "Không thể mở cổng thanh toán. Vui lòng thử lại.",
       "pastDueNote": "Lần thanh toán gần nhất của bạn thất bại. Stripe sẽ tự động thử lại thẻ trong vài ngày tới. Hãy cập nhật phương thức thanh toán trong mục Quản lý thanh toán để tiếp tục sử dụng sau {date}.",
       "priceNote": "Giá được tính bằng USD và chưa bao gồm thuế. Đơn vị tiền tệ địa phương và các khoản thuế áp dụng sẽ hiển thị khi thanh toán.",

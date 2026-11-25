@@ -3,11 +3,10 @@ import {
   createInvestmentTransaction,
   deleteInvestmentTransaction,
   getHoldingTransactions,
-  getPortfolioInvestmentTransactions,
 } from '@/api/investment-transactions';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { MaybeRef, Ref, computed, toRef } from 'vue';
+import { MaybeRef, type MaybeRefOrGetter, computed, toRef, toValue } from 'vue';
 
 import { invalidatePortfolioState } from './invalidate-portfolio-state';
 
@@ -31,28 +30,6 @@ export const useDeleteInvestmentTransaction = () => {
     onSuccess: () => {
       invalidatePortfolioState({ queryClient });
     },
-  });
-};
-
-export const usePortfolioInvestmentTransactions = (
-  portfolioId: MaybeRef<string | undefined>,
-  page: Ref<number>,
-  limit: Ref<number>,
-) => {
-  const portfolioIdRef = toRef(portfolioId);
-  const offset = computed(() => (page.value - 1) * limit.value);
-
-  return useQuery<HoldingTransactionsResponse | undefined>({
-    queryKey: [...VUE_QUERY_CACHE_KEYS.portfolioInvestmentTransactions, portfolioIdRef, page, limit],
-    queryFn: () => {
-      if (!portfolioIdRef.value) return Promise.resolve(undefined);
-      return getPortfolioInvestmentTransactions({
-        portfolioId: portfolioIdRef.value,
-        limit: limit.value,
-        offset: offset.value,
-      });
-    },
-    enabled: computed(() => !!portfolioIdRef.value),
   });
 };
 
@@ -81,3 +58,51 @@ export const useGetHoldingTransactionsInfinite = (
     enabled: computed(() => !!portfolioIdRef.value && !!securityIdRef.value),
   });
 };
+
+const MAX_TRANSACTIONS_PAGE_SIZE = 100;
+
+/** Pages until the reported total arrives; a page without a total, or running dry early, throws instead of truncating. */
+export const fetchAllTransactionPages = async ({
+  fetchPage,
+  pageSize,
+}: {
+  fetchPage: ({ limit, offset }: { limit: number; offset: number }) => Promise<HoldingTransactionsResponse>;
+  pageSize: number;
+}) => {
+  const transactions: HoldingTransactionsResponse['transactions'] = [];
+  let total = Infinity;
+  while (transactions.length < total) {
+    const page = await fetchPage({ limit: pageSize, offset: transactions.length });
+    if (typeof page.total !== 'number' || !Number.isFinite(page.total)) {
+      throw new Error('Holding transactions page is missing its total');
+    }
+    total = page.total;
+    if (page.transactions.length === 0) {
+      if (transactions.length < total) throw new Error('Holding transactions ended before the reported total');
+      break;
+    }
+    transactions.push(...page.transactions);
+  }
+  return transactions;
+};
+
+/** Every transaction of the holding, newest first; pages through the API's size cap. */
+export const useAllHoldingTransactions = ({
+  portfolioId,
+  securityId,
+}: {
+  portfolioId: MaybeRefOrGetter<string>;
+  securityId: MaybeRefOrGetter<string>;
+}) =>
+  useQuery({
+    queryKey: computed(
+      () => [...VUE_QUERY_CACHE_KEYS.holdingTransactions, 'all', toValue(portfolioId), toValue(securityId)] as const,
+    ),
+    queryFn: () =>
+      fetchAllTransactionPages({
+        pageSize: MAX_TRANSACTIONS_PAGE_SIZE,
+        fetchPage: ({ limit, offset }) =>
+          getHoldingTransactions({ portfolioId: toValue(portfolioId), securityId: toValue(securityId), limit, offset }),
+      }),
+    enabled: computed(() => Boolean(toValue(portfolioId)) && Boolean(toValue(securityId))),
+  });

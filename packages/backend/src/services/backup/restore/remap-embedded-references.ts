@@ -17,6 +17,8 @@ import BudgetLines from '@models/budget-lines.model';
 import Categories from '@models/categories.model';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Portfolios from '@models/investments/portfolios.model';
+import WatchlistAlerts from '@models/investments/watchlist-alerts.model';
+import WatchlistItems from '@models/investments/watchlist-items.model';
 import Notifications from '@models/notifications.model';
 import Payees from '@models/payees.model';
 import SubscriptionCandidates from '@models/subscription-candidates.model';
@@ -129,10 +131,12 @@ async function rewriteColumn({
 export async function remapEmbeddedReferences({
   archive,
   insertedIds,
+  securitiesRemap,
   transaction,
 }: {
   archive: ParsedArchive;
   insertedIds: InsertedIds;
+  securitiesRemap: Map<string, string>;
   transaction: Transaction;
 }): Promise<void> {
   // DB table names read live so they can't drift from the models.
@@ -147,6 +151,9 @@ export async function remapEmbeddedReferences({
     accountGroups: String(AccountGroup.getTableName()),
     bankConnections: String(BankDataProviderConnections.getTableName()),
     transactionAutomations: String(TransactionAutomations.getTableName()),
+    portfolios: String(Portfolios.getTableName()),
+    watchlistItems: String(WatchlistItems.getTableName()),
+    watchlistAlerts: String(WatchlistAlerts.getTableName()),
   };
 
   // Shared by the two link tables that snapshot a transaction's pre-link state.
@@ -290,7 +297,8 @@ export async function remapEmbeddedReferences({
     },
   });
 
-  // 6. Notifications.payload → trackerId (Trackers), tagId (Tags), transactionIds[] (Transactions).
+  // 6. Notifications.payload → trackerId (Trackers), tagId (Tags), transactionIds[] (Transactions),
+  //    and a watchlist alert's portfolioId, itemId, alertId and securityId (resolved catalog id).
   //    Share payloads' invitationId/shareId/resourceId reference cross-user data
   //    that isn't restored, so they're left verbatim.
   await rewriteColumn({
@@ -307,6 +315,13 @@ export async function remapEmbeddedReferences({
         p.trackerId = remapId({ insertedIds, targetTable: tables.trackers, oldId: p.trackerId });
       if (typeof p.tagId === 'string') p.tagId = remapId({ insertedIds, targetTable: tables.tags, oldId: p.tagId });
       remapIdArrayInPlace({ arr: p.transactionIds, targetTable: tables.transactions, insertedIds });
+      if (typeof p.portfolioId === 'string')
+        p.portfolioId = remapId({ insertedIds, targetTable: tables.portfolios, oldId: p.portfolioId });
+      if (typeof p.itemId === 'string')
+        p.itemId = remapId({ insertedIds, targetTable: tables.watchlistItems, oldId: p.itemId });
+      if (typeof p.alertId === 'string')
+        p.alertId = remapId({ insertedIds, targetTable: tables.watchlistAlerts, oldId: p.alertId });
+      if (typeof p.securityId === 'string') p.securityId = securitiesRemap.get(p.securityId) ?? p.securityId;
     },
   });
 

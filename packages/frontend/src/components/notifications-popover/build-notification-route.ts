@@ -1,5 +1,6 @@
 import type { NotificationStruct } from '@/api/notifications';
 import { isHttpsUrl } from '@/common/utils/external-url';
+import { PORTFOLIO_TABS } from '@/pages/portfolios/portfolio-tabs';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
   type GoalReachedNotificationPayload,
@@ -11,6 +12,7 @@ import {
   type SystemNotificationPayload,
   type TrackerAiMatchesNotificationPayload,
   type UnrealizedLossAlertNotificationPayload,
+  type WatchlistAlertNotificationPayload,
 } from '@bt/shared/types';
 
 /**
@@ -152,6 +154,15 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
         return { kind: 'spa', to: { name: ROUTES_NAMES.portfolioDetail, params: { portfolioId } } };
       }
       return { kind: 'spa', to: { name: ROUTES_NAMES.investments } };
+    }
+
+    case NOTIFICATION_TYPES.watchlistAlert: {
+      const portfolioId = (notification.payload as WatchlistAlertNotificationPayload | undefined)?.portfolioId;
+      if (!portfolioId) return { kind: 'spa', to: { name: ROUTES_NAMES.investments } };
+      return {
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.portfolioDetail, params: { portfolioId }, query: { tab: PORTFOLIO_TABS.watchlist } },
+      };
     }
 
     case NOTIFICATION_TYPES.plannedConfirmed: {

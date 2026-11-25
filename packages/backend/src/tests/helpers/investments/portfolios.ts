@@ -1,5 +1,11 @@
-import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
+import {
+  PORTFOLIO_TYPE,
+  type PortfolioActivityFilter,
+  type PortfolioActivityResponse,
+  type PortfolioValueHistoryInterval,
+} from '@bt/shared/types/investments';
 import { removeUndefinedKeys } from '@js/helpers';
+import { getPortfolioAnalytics as _getPortfolioAnalytics } from '@services/investments/portfolios/analytics/get-portfolio-analytics.service';
 import { getPortfolioBalances as _getPortfolioBalances } from '@services/investments/portfolios/balances';
 import { updatePortfolioBalance as _updatePortfolioBalance } from '@services/investments/portfolios/balances';
 import { createPortfolio as _createPortfolio } from '@services/investments/portfolios/create.service';
@@ -210,17 +216,40 @@ export async function getPortfolioValueHistory<R extends boolean | undefined = f
   portfolioId,
   from,
   to,
+  interval,
   raw,
 }: {
   portfolioId: string;
   from?: string;
   to?: string;
+  interval?: PortfolioValueHistoryInterval;
   raw?: R;
 }) {
   return makeRequest<Awaited<ReturnType<typeof _getPortfolioValueHistory>>, R>({
     method: 'get',
     url: `/investments/portfolios/${portfolioId}/value-history`,
-    payload: removeUndefinedKeys({ from, to }),
+    payload: removeUndefinedKeys({ from, to, interval }),
+    raw,
+  });
+}
+
+export async function getPortfolioAnalytics<R extends boolean | undefined = false>({
+  portfolioId,
+  from,
+  to,
+  benchmark,
+  raw,
+}: {
+  portfolioId: string;
+  from?: string;
+  to?: string;
+  benchmark?: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _getPortfolioAnalytics>>, R>({
+    method: 'get',
+    url: `/investments/portfolios/${portfolioId}/analytics`,
+    payload: removeUndefinedKeys({ from, to, benchmark }),
     raw,
   });
 }
@@ -248,6 +277,27 @@ export async function getPortfoliosAnnualizedReturns<R extends boolean | undefin
     method: 'get',
     url: '/investments/portfolios/annualized-returns',
     payload: asOf === undefined ? undefined : { asOf },
+    raw,
+  });
+}
+
+export async function getPortfolioActivity<R extends boolean | undefined = false>({
+  portfolioId,
+  type,
+  limit,
+  offset,
+  raw,
+}: {
+  portfolioId: string;
+  type?: PortfolioActivityFilter;
+  limit?: number;
+  offset?: number;
+  raw?: R;
+}) {
+  return makeRequest<PortfolioActivityResponse, R>({
+    method: 'get',
+    url: `/investments/portfolios/${portfolioId}/activity`,
+    payload: removeUndefinedKeys({ type, limit, offset }),
     raw,
   });
 }

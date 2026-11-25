@@ -1,12 +1,10 @@
-import { ASSET_CLASS, SECURITY_PROVIDER } from '@bt/shared/types';
+import { ASSET_CLASS, PORTFOLIO_BENCHMARKS, SECURITY_PROVIDER, SECURITY_TYPE } from '@bt/shared/types';
 import { logger } from '@js/utils';
-import Holdings from '@models/investments/holdings.model';
-import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
 import SecurityPricing from '@models/investments/security-pricing.model';
 import { withLock } from '@services/common/lock';
 import { subDays } from 'date-fns';
-import { Op, WhereOptions } from 'sequelize';
+import { Op, WhereOptions, literal } from 'sequelize';
 
 import { dataProviderFactory } from '../data-providers';
 import { BulkPriceData, toProviderSymbol } from '../data-providers/base-provider';
@@ -19,6 +17,13 @@ import { bucketByUtcDay, startOfDayUtc } from './pricing-anchor';
  * this many trailing days; upserts on (securityId, date) make overlap free.
  */
 export const STOCKS_LOOKBACK_DAYS = 7;
+
+// A benchmark resolves to its Yahoo row, or to another provider's row with the same symbol and currency.
+const BENCHMARK_SYMBOLS = Object.values(PORTFOLIO_BENCHMARKS).map(({ providerSymbol }) => providerSymbol);
+const BENCHMARK_LISTINGS = Object.values(PORTFOLIO_BENCHMARKS).map(({ providerSymbol, currencyCode }) => ({
+  symbol: providerSymbol,
+  currencyCode,
+}));
 
 /**
  * Sentry alert fires only when both hold: a quarter of the queue failed AND
@@ -42,7 +47,7 @@ interface SyncOptions {
   /**
    * Sequelize WHERE clause restricting which securities are processed. Stocks
    * sync excludes crypto via `Op.notIn`; crypto sync whitelists crypto via
-   * `Op.in`. Pass `undefined` to process every security with an active holding.
+   * `Op.in`. Pass `undefined` to process every held, watched or benchmark security.
    */
   assetClassWhere: WhereOptions | undefined;
   /**
@@ -68,10 +73,22 @@ interface SyncOptions {
 }
 
 /**
+ * The type to backfill onto an untyped security. A stocks row Yahoo calls a mutual fund is a
+ * UCITS ETF: search maps genuine mutual funds to fixed income, which can't be added.
+ */
+const typeToBackfill = ({ security, bars }: { security: Securities; bars: BulkPriceData[] }) => {
+  if (security.securityType) return null;
+  const reported = bars[0]?.securityType;
+  return reported === SECURITY_TYPE.mutual_fund && security.assetClass === ASSET_CLASS.stocks
+    ? SECURITY_TYPE.etf
+    : reported;
+};
+
+/**
  * Securities price sync that prioritizes securities with stale pricing data.
  *
  * Features:
- * 1. Queries securities connected to holdings, scoped by `assetClassWhere`.
+ * 1. Queries held or watched securities, scoped by `assetClassWhere`.
  * 2. Prioritizes by pricingLastSyncedAt (oldest first).
  * 3. Uses composite data provider for automatic provider routing.
  * 4. Stores one row per bar returned by `prepareBars`.
@@ -87,38 +104,40 @@ const securitiesPricesSyncImpl = async (options: SyncOptions): Promise<Securitie
   const { assetClassWhere, forDate, fetchStartDate, prepareBars, label } = options;
   logger.info(`[${label}] Starting securities prices sync`);
 
-  // Query securities with holdings, prioritized by staleness.
+  // Securities with a non-excluded holding or on a watchlist, in live portfolios, plus the portfolio
+  // benchmarks, prioritized by staleness.
   // `providerSymbol` is the canonical id since crypto display symbols are not unique;
   // a security may still have a NULL legacy `symbol`, but `providerSymbol` is NOT NULL.
   const securitiesFromDb = await Securities.findAll({
-    where: assetClassWhere,
-    include: [
-      {
-        model: Holdings,
-        required: true, // INNER JOIN - only securities with holdings
-        attributes: [],
-        where: {
-          excluded: false, // Only exclude securities marked as excluded
+    where: {
+      [Op.and]: [
+        assetClassWhere ?? {},
+        {
+          [Op.or]: [
+            {
+              id: {
+                [Op.in]: literal(`(
+                  SELECT h."securityId" FROM "Holdings" h
+                  JOIN "Portfolios" p ON p."id" = h."portfolioId" AND p."deletedAt" IS NULL
+                  WHERE h."excluded" = false
+                  UNION
+                  SELECT w."securityId" FROM "WatchlistItems" w
+                  JOIN "Portfolios" p ON p."id" = w."portfolioId" AND p."deletedAt" IS NULL
+                )`),
+              },
+            },
+            { providerName: SECURITY_PROVIDER.yahoo, providerSymbol: { [Op.in]: BENCHMARK_SYMBOLS } },
+            { assetClass: { [Op.ne]: ASSET_CLASS.crypto }, [Op.or]: BENCHMARK_LISTINGS },
+          ],
         },
-        // Chain through Portfolios so paranoid filtering drops holdings whose
-        // parent portfolio is soft-deleted (trash) — otherwise we'd waste sync
-        // budget on prices nobody needs.
-        include: [
-          {
-            model: Portfolios,
-            required: true,
-            attributes: [],
-          },
-        ],
-      },
-    ],
-    group: ['Securities.id'], // Deduplicate securities held by multiple users
+      ],
+    },
     order: [['pricingLastSyncedAt', 'ASC NULLS FIRST']], // Prioritize oldest/never-synced first
     raw: false, // Need model instances to update pricingLastSyncedAt
   });
 
   if (securitiesFromDb.length === 0) {
-    logger.info(`[${label}] No securities with holdings found for sync`);
+    logger.info(`[${label}] No held or watched securities found for sync`);
     return {
       totalProcessed: 0,
       successfulUpdates: 0,
@@ -139,9 +158,6 @@ const securitiesPricesSyncImpl = async (options: SyncOptions): Promise<Securitie
   // Use composite provider to fetch all prices efficiently
   const compositeProvider = dataProviderFactory.getProvider(SECURITY_PROVIDER.composite);
 
-  // `securitiesById` is only used to recover symbol text for error logging in
-  // the individual-upsert fallback path. The composite returns a Map keyed by
-  // securityId, so primary-flow matching needs no lookup table.
   const securitiesById = new Map<string, Securities>(securitiesFromDb.map((s) => [s.id, s]));
   const securitiesInputs = securitiesFromDb.map((s) => ({
     securityId: s.id,
@@ -190,6 +206,7 @@ const securitiesPricesSyncImpl = async (options: SyncOptions): Promise<Securitie
   }[] = [];
 
   let securitiesIdsToPatch: string[] = [];
+  const securityIdsByBackfillType = new Map<SECURITY_TYPE, string[]>();
 
   // Store fetched prices and update timestamps
   for (const [securityId, rawBars] of fetchedPrices) {
@@ -202,6 +219,11 @@ const securitiesPricesSyncImpl = async (options: SyncOptions): Promise<Securitie
           `(providerSymbol "${rawBars[0]?.providerSymbol}" from ${rawBars[0]?.providerName}). Dropping.`,
       );
       continue;
+    }
+
+    const backfillType = typeToBackfill({ security: securitiesById.get(securityId)!, bars: rawBars });
+    if (backfillType) {
+      securityIdsByBackfillType.set(backfillType, [...(securityIdsByBackfillType.get(backfillType) ?? []), securityId]);
     }
 
     for (const priceData of prepareBars(rawBars)) {
@@ -336,6 +358,20 @@ const securitiesPricesSyncImpl = async (options: SyncOptions): Promise<Securitie
         error: patchError instanceof Error ? patchError : new Error(String(patchError)),
       });
       throw patchError instanceof Error ? patchError : new Error(String(patchError));
+    }
+  }
+
+  for (const [securityType, ids] of securityIdsByBackfillType) {
+    try {
+      await Securities.update({ securityType }, { where: { id: { [Op.in]: ids }, securityType: null } });
+    } catch (error) {
+      logger.error(
+        {
+          message: `[${label}] Failed to backfill securityType for ${ids.length} securities`,
+          error: error as Error,
+        },
+        { code: 'SECURITY_TYPE_BACKFILL_FAILED' },
+      );
     }
   }
 

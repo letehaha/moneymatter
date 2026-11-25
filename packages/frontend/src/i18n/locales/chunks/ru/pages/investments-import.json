@@ -77,8 +77,8 @@
     },
     "errors": {
       "csv": {
-        "empty": "CSV file is empty.",
-        "noHeaders": "CSV file has no header row.",
+        "empty": "Пустой файл CSV.",
+        "noHeaders": "В CSV-файле отсутствуют заголовки.",
         "forbiddenHeader": "CSV header uses a reserved name (e.g. __proto__).",
         "tooManyRows": "Превышен лимит в {max} строк.",
         "parseError": "Couldn't parse the CSV file. Check that it's a valid CSV."

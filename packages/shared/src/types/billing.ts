@@ -58,6 +58,8 @@ export const FEATURES = {
   smart_tracking: 'smart_tracking',
   goals: 'goals',
   custom_currencies: 'custom_currencies',
+  portfolio_analytics: 'portfolio_analytics',
+  watchlist: 'watchlist',
 } as const;
 export type Feature = (typeof FEATURES)[keyof typeof FEATURES];
 
@@ -72,6 +74,8 @@ export const FEATURE_TRIAL_DAYS = {
   [FEATURES.fire_planner]: 14,
   [FEATURES.smart_tracking]: 14,
   [FEATURES.goals]: 14,
+  [FEATURES.portfolio_analytics]: 14,
+  [FEATURES.watchlist]: 14,
 } as const satisfies Partial<Record<Feature, number>>;
 export type DayTrialableFeature = keyof typeof FEATURE_TRIAL_DAYS;
 export const DAY_TRIALABLE_FEATURES = Object.keys(FEATURE_TRIAL_DAYS) as DayTrialableFeature[];
@@ -97,6 +101,8 @@ const PLUS_FEATURES: readonly Feature[] = [
   FEATURES.fire_planner,
   FEATURES.smart_tracking,
   FEATURES.custom_currencies,
+  FEATURES.portfolio_analytics,
+  FEATURES.watchlist,
 ];
 /** Plus as of launch (2026-09-15), inlined: a feature added to ESSENTIAL_FEATURES later is paid for early adopters. */
 const EARLY_ADOPTER_FEATURES: readonly Feature[] = [

@@ -320,6 +320,7 @@
         "mainCategoryLabel": "主分类",
         "selectCategoryPlaceholder": "选择分类",
         "amountPlaceholder": "0",
+        "notePlaceholder": "Note (optional)",
         "addCategoryButton": "添加分类",
         "removeRowLabel": "移除类别",
         "totalAmountLabel": "总金额",
