@@ -11,7 +11,7 @@ import {
   SECURITY_PROVIDER,
   SECURITY_TYPE,
 } from '@bt/shared/types';
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import ExchangeRates from '@models/exchange-rates.model';
 import Portfolios from '@models/investments/portfolios.model';
@@ -743,6 +743,28 @@ describe('Portfolio analytics (GET /investments/portfolios/:id/analytics)', () =
   });
 
   describe('benchmark', () => {
+    // ExchangeRates outlives truncation, so rows left by earlier suites in the worker would
+    // vary the USD benchmark's conversion day to day. One old row pins it for the whole window.
+    const usdToBaseWhere = { baseCode: API_LAYER_BASE_CURRENCY_CODE, quoteCode: global.BASE_CURRENCY_CODE };
+    let storedRates: Pick<ExchangeRates, 'baseCode' | 'quoteCode' | 'date' | 'rate' | 'source'>[] = [];
+
+    beforeEach(async () => {
+      storedRates = (await ExchangeRates.findAll({ where: usdToBaseWhere, raw: true })).map(
+        ({ baseCode, quoteCode, date, rate, source }) => ({ baseCode, quoteCode, date, rate, source }),
+      );
+      await ExchangeRates.destroy({ where: usdToBaseWhere });
+      await ExchangeRates.create({
+        ...usdToBaseWhere,
+        rate: AED_PER_USD,
+        date: new Date(`${daysAgo({ days: 400 })}T00:00:00.000Z`),
+      });
+    });
+
+    afterEach(async () => {
+      await ExchangeRates.destroy({ where: usdToBaseWhere });
+      await ExchangeRates.bulkCreate(storedRates, { ignoreDuplicates: true });
+    });
+
     const SP500_PRICES: SeededPrice[] = [
       { days: 60, price: 100 },
       { days: 30, price: 120 },
