@@ -9,7 +9,11 @@
     />
 
     <template v-else>
-      <div ref="headerRef" class="@container/portfolio-header mb-6 flex items-center gap-3">
+      <div
+        ref="headerRef"
+        data-testid="portfolio-header"
+        class="@container/portfolio-header mb-6 flex items-center gap-3"
+      >
         <DesktopOnlyTooltip :content="$t('portfolioDetail.backToInvestments')">
           <UiButton as-child variant="ghost" size="icon-sm" class="-ml-2 shrink-0">
             <router-link :to="{ name: ROUTES_NAMES.investments }" :aria-label="$t('portfolioDetail.backToInvestments')">

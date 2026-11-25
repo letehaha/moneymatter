@@ -45,6 +45,14 @@ async function seedTestData({ request }: { request: import('@playwright/test').A
 
 // ─── UI helpers specific to this suite ───────────────────────────────
 
+async function openTransferDialog({ page }: { page: import('@playwright/test').Page }): Promise<void> {
+  await page
+    .getByTestId('portfolio-header')
+    .getByRole('button', { name: /^transfer$/i })
+    .click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+}
+
 async function submitTransferAndConfirm({ page }: { page: import('@playwright/test').Page }): Promise<void> {
   const dialog = page.getByRole('dialog');
 
@@ -82,8 +90,7 @@ test.describe('Portfolio Transfers', () => {
     await page.goto(`/portfolios/${portfolioA.id}`);
     await page.waitForSelector('h1');
 
-    await page.getByRole('button', { name: /^transfer$/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await openTransferDialog({ page });
 
     await pickDialogSelect({ page, nth: 2, optionName: portfolioB.name });
     await pickDialogSelect({ page, nth: 3, optionName: CURRENCY });
@@ -97,8 +104,7 @@ test.describe('Portfolio Transfers', () => {
     await page.goto(`/portfolios/${portfolioA.id}`);
     await page.waitForSelector('h1');
 
-    await page.getByRole('button', { name: /^transfer$/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await openTransferDialog({ page });
 
     await pickDialogSelect({ page, nth: 0, optionName: /account/i });
 
@@ -128,8 +134,7 @@ test.describe('Portfolio Transfers', () => {
     await page.goto(`/portfolios/${portfolioA.id}`);
     await page.waitForSelector('h1');
 
-    await page.getByRole('button', { name: /^transfer$/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await openTransferDialog({ page });
 
     const submitBtn = page
       .getByRole('dialog')

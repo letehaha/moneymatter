@@ -58,17 +58,7 @@ async function seedTestData({ request }: { request: APIRequestContext }): Promis
 // ─── UI helpers ──────────────────────────────────────────────────────
 
 async function openHoldingTransactionDialog({ page }: { page: Page }): Promise<void> {
-  const etestRow = page.locator('table tbody tr').filter({ hasText: 'ETEST' }).first();
-  await expect(etestRow).toBeVisible({ timeout: 10_000 });
-  await etestRow.locator('button').first().click();
-
-  const expandedArea = page
-    .locator('table tbody tr')
-    .filter({ has: page.locator('td[colspan]') })
-    .first();
-  await expect(expandedArea).toBeVisible({ timeout: 5_000 });
-
-  await expandedArea.getByRole('button').filter({ hasText: /add/i }).first().click();
+  await page.getByRole('button', { name: 'Add transaction for ETEST' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 }
 
