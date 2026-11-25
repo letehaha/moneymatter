@@ -39,7 +39,7 @@
       "noteReplace": "imposta nota",
       "noteAppend": "aggiungi in coda",
       "notePrepend": "aggiungi in testa",
-      "excludeFromStats": "excluded from stats",
+      "excludeFromStats": "escluso dalle statistiche",
       "note": {
         "containsAny": "nota contiene",
         "notContainsAny": "nota non contiene",
@@ -113,7 +113,7 @@
       "set_payee": "Imposta beneficiario",
       "add_tags": "Aggiungi etichette",
       "set_note": "Imposta nota",
-      "exclude_from_stats": "Exclude from stats",
+      "exclude_from_stats": "Escludi dalle statistiche",
       "noteMode": {
         "replace": "Sostituisci",
         "append": "Aggiungi in coda",

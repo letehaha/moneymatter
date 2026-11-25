@@ -33,14 +33,14 @@
       "deleteError": "Impossibile spostare il budget nel cestino"
     },
     "carryReset": {
-      "action": "Reset rollover",
-      "undo": "Undo reset",
-      "confirmTitle": "Reset rollover for this period?",
-      "confirmDescription": "Every line starts this period with only what you assign. Leftovers and overspending from earlier periods don't carry in. You can undo this.",
-      "confirm": "Reset",
-      "resetDone": "Rollover reset",
-      "undone": "Reset undone",
-      "error": "Couldn't update the rollover"
+      "action": "Azzera riporto",
+      "undo": "Annulla azzeramento",
+      "confirmTitle": "Azzerare il riporto per questo periodo?",
+      "confirmDescription": "Ogni voce inizia questo periodo solo con quanto assegnato. Avanzi e sforamenti dei periodi precedenti non vengono riportati. È possibile annullare l'operazione.",
+      "confirm": "Azzera",
+      "resetDone": "Riporto azzerato",
+      "undone": "Azzeramento annullato",
+      "error": "Impossibile aggiornare il riporto"
     },
     "lineCount": "{count} voce | {count} voci",
     "trialNotice": {
@@ -326,17 +326,28 @@
       "saved": "Assegnazione salvata",
       "error": "Impossibile salvare l'assegnazione"
     },
+    "move": {
+      "menuItem": "Sposta denaro",
+      "title": "Sposta denaro",
+      "description": "Sposta denaro assegnato da una voce a un'altra per questo periodo.",
+      "fromLabel": "Da",
+      "toLabel": "A",
+      "pickPlaceholder": "Scegliere una voce",
+      "swap": "Inverti Da e A",
+      "amountLabel": "Quanto?",
+      "tooMuch": "{line} può cedere al massimo {amount}",
+      "chipCover": "Copri lo sforamento · {amount}",
+      "chipAll": "Tutto ciò che può cedere · {amount}",
+      "submit": "Sposta {amount}",
+      "submitInstead": "Sposta invece {amount}",
+      "toast": "Spostati {amount} da {from} a {to}"
+    },
     "unbudgeted": {
       "summary": "Spese fuori dalle voci: {amount} in {count} categoria | Spese fuori dalle voci: {amount} in {count} categorie"
     },
     "pool": {
       "readyToAssign": "Da assegnare",
       "assign": "Assegna",
-      "assignTitle": "Assegnare dal fondo",
-      "toLabel": "A",
-      "toPlaceholder": "Selezionare una voce",
-      "amountLabel": "Importo",
-      "assignSubmit": "Assegna {amount}",
       "calc": {
         "title": "Calcolo del budget",
         "cash": "Denaro disponibile per il budget",
@@ -369,11 +380,81 @@
       "allAssigned": "Tutto il denaro è assegnato",
       "overAssigned": "Assegnato in eccesso di {amount}",
       "fix": "Correggi",
-      "fixTitle": "Ridurre l'eccesso di assegnazione",
-      "fromLabel": "Preleva da",
-      "fromPlaceholder": "Selezionare una voce",
-      "fixSubmit": "Recupera {amount}",
-      "fixNoLines": "Non c'è nulla da recuperare in questo periodo."
+      "fixNoLines": "Non c'è nulla da recuperare in questo periodo.",
+      "notInLine": "Non ancora in nessuna voce",
+      "addLine": "Aggiungi una voce",
+      "menu": {
+        "assignTitle": "Dare un compito a {amount}",
+        "assignSubtitle": "Scegliere un suggerimento o una voce. Nulla viene salvato fino alla conferma.",
+        "goalsTitle": "Finanzia gli obiettivi",
+        "goalsDescription": "{count} voce ha ancora bisogno di denaro questo mese | {count} voci hanno ancora bisogno di denaro questo mese",
+        "overspendingTitle": "Copri gli sforamenti",
+        "overspendingOne": "{line} ha sforato di {amount}",
+        "overspendingMany": "{count} voce ha sforato | {count} voci hanno sforato",
+        "repeatTitle": "Ripeti il mese scorso",
+        "repeatDescription": "Integrare {count} voce fino a quanto ricevuto il mese scorso | Integrare {count} voci fino a quanto ricevuto il mese scorso",
+        "oneLineTitle": "Assegna a una voce",
+        "oneLineDescription": "Scegliere una voce qualsiasi e inserire l'importo",
+        "noSuggestions": "Nessun suggerimento al momento. Compaiono quando una voce ha un obiettivo, sfora o ha ricevuto di più il mese scorso."
+      },
+      "freeUp": {
+        "title": "Libera {amount}",
+        "subtitle": "Recuperare denaro dalle voci che hanno ancora un residuo. Il denaro già speso non viene toccato.",
+        "leftoversTitle": "Recupera dagli avanzi",
+        "leftoversOne": "Da {line}, che ha il residuo maggiore",
+        "leftoversTwo": "Da {first} e {second}, che hanno il residuo maggiore",
+        "oneLineTitle": "Recupera da una voce",
+        "oneLineDescription": "Scegliere una voce e inserire l'importo",
+        "laterIncome": "Non è urgente? Le entrate in arrivo più avanti coprono la differenza da sole."
+      },
+      "review": {
+        "goalsHint": "Ogni voce riceve quanto il suo obiettivo richiede ancora questo mese.",
+        "overspendingHint": "Ogni voce riceve quanto basta per tornare a zero.",
+        "repeatHint": "Ogni voce viene integrata fino a quanto ricevuto il mese scorso.",
+        "leftoversHint": "Il denaro viene recuperato dalle voci con il residuo maggiore. Il denaro già speso non viene toccato.",
+        "goalNeeds": "Richiede {amount} questo mese",
+        "goalPartial": "Riceve {amount} dei {need} richiesti",
+        "overBy": "Sforato di {amount}",
+        "lastMonth": "Ha ricevuto {amount} il mese scorso",
+        "leftAvailable": "Restano {amount}",
+        "goalsShort": "Gli obiettivi richiedono {total}, ma sono disponibili {available}. Gli obiettivi con la scadenza più vicina vengono finanziati per primi.",
+        "short": "Queste voci richiedono {total}, ma sono disponibili {available}. Le voci più in alto vengono finanziate per prime.",
+        "tooMuch": "Recuperabili solo {amount}",
+        "readyNow": "Da assegnare ora",
+        "goesTo": "Va a {count} voce | Va a {count} voci",
+        "stillToAssign": "Ancora da assegnare dopo questa operazione",
+        "overBySummary": "Sforato di",
+        "takenBack": "Recuperato",
+        "readyAfter": "Da assegnare dopo",
+        "assignSubmit": "Assegna {amount}",
+        "takeBackSubmit": "Recupera {amount}"
+      },
+      "line": {
+        "pickLabel": "Voce",
+        "pickPlaceholder": "Scegliere una voce",
+        "goalHint": "L'obiettivo richiede {amount} questo mese",
+        "overspentHint": "Sforato di {amount}",
+        "availableNow": "Disponibile ora {available}",
+        "availableNowGoal": "Disponibile ora {available} · l'obiettivo richiede {need}",
+        "amountLabel": "Quanto?",
+        "chipGoal": "Quanto richiede l'obiettivo · {amount}",
+        "chipAll": "Tutto · {amount}",
+        "previewAvailable": "{line} disponibile",
+        "overWarning": "Sono {amount} in più di quanto è disponibile da assegnare. È comunque possibile procedere, ma «Da assegnare» resterà rosso finché la differenza non verrà recuperata da un'altra voce.",
+        "assignAnyway": "Assegna comunque {amount}",
+        "assignInstead": "Assegna invece {amount}",
+        "tooMuch": "{line} può restituire al massimo {amount}"
+      },
+      "toast": {
+        "assignedOne": "Assegnati {amount} a {line}",
+        "assignedTwo": "Assegnati {amount} a {first} e {second}",
+        "assignedMany": "Assegnati {amount} a {count} voce | Assegnati {amount} a {count} voci",
+        "tookBackOne": "Recuperati {amount} da {line}",
+        "tookBackTwo": "Recuperati {amount} da {first} e {second}",
+        "tookBackMany": "Recuperati {amount} da {count} voce | Recuperati {amount} da {count} voci",
+        "undone": "Annullato",
+        "undoError": "Impossibile annullare. Non è stato modificato nulla."
+      }
     },
     "panel": {
       "summary": "Riepilogo",
@@ -410,34 +491,40 @@
       "goals": "Obiettivi",
       "goal": "Obiettivo",
       "lineTransactions": {
-        "title": "Transactions",
-        "empty": "No transactions in this period",
-        "more": "{count} more",
-        "seeAll": "See all in Transactions"
+        "title": "Transazioni",
+        "empty": "Nessuna transazione in questo periodo",
+        "more": "Altre {count}",
+        "seeAll": "Vedi tutte in Transazioni"
       },
       "averages": {
-        "title": "Averages",
-        "setAssigned": "Set Assigned to",
-        "now": "now {amount}",
-        "lastAssigned": "Last assigned",
-        "lastSpent": "Last spent",
-        "avgAssigned": "Avg assigned",
-        "avgSpent": "Avg spent",
-        "noChange": "no change",
-        "hint": "Avg of the last period · sets Assigned for this period only | Avg of last {count} periods · sets Assigned for this period only"
+        "title": "Medie",
+        "setAssigned": "Imposta Assegnato a",
+        "now": "ora {amount}",
+        "lastAssigned": "Ultimo assegnato",
+        "lastSpent": "Ultimo speso",
+        "avgAssigned": "Media assegnato",
+        "avgSpent": "Media speso",
+        "noChange": "nessuna variazione",
+        "hint": "Media dell'ultimo periodo · imposta Assegnato solo per questo periodo | Media degli ultimi {count} periodi · imposta Assegnato solo per questo periodo"
       },
       "notCovered": {
-        "title": "Not covered",
-        "count": "{count} not covered | {count} not covered",
-        "covered": "Covered",
-        "pill": "Not covered · {amount} short",
-        "shortForScheduled": "{amount} short for what's still scheduled",
-        "assign": "Assign {amount}"
+        "title": "Non coperto",
+        "count": "{count} non coperta | {count} non coperte",
+        "covered": "Coperto",
+        "pill": "Non coperto · mancano {amount}",
+        "shortForScheduled": "Mancano {amount} per quanto ancora pianificato",
+        "assign": "Assegna {amount}"
       },
       "arrange": {
-        "title": "Arrange sections",
-        "description": "Drag to reorder the panel sections, or switch one off to hide it. Some sections only appear for a selected line or for the period overview.",
-        "reset": "Reset to default"
+        "title": "Disponi sezioni",
+        "description": "Trascinare per riordinare le sezioni del pannello, oppure disattivarne una per nasconderla. Alcune sezioni compaiono solo per una voce selezionata o per la panoramica del periodo.",
+        "reset": "Ripristina predefinite"
+      },
+      "note": {
+        "label": "Nota",
+        "placeholder": "Aggiungere una nota per questo periodo",
+        "gridIcon": "Ha una nota",
+        "error": "Impossibile salvare la nota"
       }
     },
     "groups": {

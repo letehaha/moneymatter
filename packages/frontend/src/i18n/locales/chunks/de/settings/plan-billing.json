@@ -17,6 +17,23 @@
       "voteOnRoadmap": "Über Roadmap abstimmen",
       "roadmapNote": "Kostenlos. Stimme dafür ab und wir informieren dich, sobald es verfügbar ist.",
       "saveUpTo": "Spare bis zu {percent}%",
+      "promotion": {
+        "title": "{name}: {percent}% Rabatt auf deine erste Zahlung",
+        "subtitle": "Wird an der Kasse automatisch angewendet, kein Code erforderlich. Endet am {date}.",
+        "badge": "{name} –{percent}%",
+        "firstCycle": {
+          "year": "/ erstes Jahr",
+          "month": "/ erster Monat"
+        },
+        "renews": {
+          "year": "Danach {amount}/Jahr",
+          "month": "Danach {amount}/Monat"
+        },
+        "billedToday": "Heute abgebucht: {amount}. Jederzeit kündbar.",
+        "names": {
+          "blackFriday2026": "Black Friday"
+        }
+      },
       "portalFailed": "Abrechnungsportal konnte nicht geöffnet werden. Bitte versuche es erneut.",
       "pastDueNote": "Deine letzte Zahlung ist fehlgeschlagen. Stripe wird deine Karte in den nächsten Tagen automatisch erneut belasten. Aktualisiere deine Zahlungsmethode über \"Abrechnung verwalten\", um den Zugriff nach dem {date} zu behalten.",
       "priceNote": "Preise sind in USD, exklusive Steuern. Deine lokale Währung und alle anfallenden Steuern werden beim Checkout angezeigt.",
@@ -119,7 +136,7 @@
             "bankProviders": "Bankverbindungen (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
             "ourAiKey": "KI-Funktionen mit unserem Schlüssel, begrenzt durch Fair-Use",
             "firePlanner": "FIRE-Planer",
-            "customCurrencies": "Custom currencies",
+            "customCurrencies": "Benutzerdefinierte Währungen",
             "seats": "5 Haushaltsplätze"
           }
         },

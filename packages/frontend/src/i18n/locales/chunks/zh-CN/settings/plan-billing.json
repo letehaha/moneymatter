@@ -17,6 +17,23 @@
       "voteOnRoadmap": "在未来规划投票",
       "roadmapNote": "无收费。投票后我们会让你知道几时能达到目标。",
       "saveUpTo": "最高可省 {percent}%",
+      "promotion": {
+        "title": "{name}: {percent}% off your first payment",
+        "subtitle": "Applied automatically at checkout, no code needed. Ends {date}.",
+        "badge": "{name} −{percent}%",
+        "firstCycle": {
+          "year": "/ first year",
+          "month": "/ first month"
+        },
+        "renews": {
+          "year": "Then {amount}/year",
+          "month": "Then {amount}/month"
+        },
+        "billedToday": "Billed today: {amount}. Cancel anytime.",
+        "names": {
+          "blackFriday2026": "Black Friday"
+        }
+      },
       "portalFailed": "无法打开支付页面。请重试。",
       "pastDueNote": "Your last payment failed. Stripe will retry your card automatically over the next few days. Update your payment method via Manage billing to keep access after {date}.",
       "priceNote": "Prices are in USD, excluding tax. Your local currency and any applicable tax are shown at checkout.",

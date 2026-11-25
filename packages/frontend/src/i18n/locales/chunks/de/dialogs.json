@@ -52,7 +52,7 @@
         },
         "descriptionLabel": "Beschreibung (optional)",
         "descriptionPlaceholder": "Eine kurze Beschreibung dieses Portfolios...",
-        "externalUrlLabel": "External URL (optional)",
+        "externalUrlLabel": "Externe URL (optional)",
         "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Portfolio erstellen",
         "submitButtonLoading": "Wird erstellt..."
@@ -320,6 +320,7 @@
         "mainCategoryLabel": "Hauptkategorie",
         "selectCategoryPlaceholder": "Kategorie auswählen",
         "amountPlaceholder": "0",
+        "notePlaceholder": "Notiz (optional)",
         "addCategoryButton": "Kategorie hinzufügen",
         "removeRowLabel": "Kategorie löschen",
         "totalAmountLabel": "Gesamtbetrag",

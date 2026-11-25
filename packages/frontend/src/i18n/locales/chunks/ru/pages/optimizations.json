@@ -180,14 +180,14 @@
       "tabs": {
         "transactions": "Transactions",
         "stuckPending": "Stuck pending",
-        "history": "History"
+        "history": "История"
       },
       "table": {
         "hint": "Select bank transactions to merge duplicates or remove extras"
       },
       "actions": {
-        "merge": "Merge",
-        "remove": "Remove"
+        "merge": "Объединить",
+        "remove": "Удалить"
       },
       "blockReasons": {
         "header": {
@@ -215,7 +215,7 @@
           "booked": "Booked"
         },
         "keep": "Keep",
-        "remove": "Remove",
+        "remove": "Удалить",
         "sameInAll": "Same in all:",
         "confirm": "Merge and remove {count} | Merge and remove {count}"
       },

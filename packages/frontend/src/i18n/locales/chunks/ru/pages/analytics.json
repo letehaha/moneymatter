@@ -97,9 +97,9 @@
       },
       "scope": {
         "label": "Category scope",
-        "all": "All categories",
+        "all": "Все категории",
         "up": "Up one level",
-        "transactions": "Transactions",
+        "transactions": "Транзакции",
         "count": "{count} category | {count} categories",
         "more": "+{count}",
         "allExcept": "All except {list}",
@@ -233,11 +233,11 @@
         "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to world stocks.",
         "customMissing": "Enter a custom return. Until then, the plan uses world stocks.",
         "historyDegraded": "Some holdings are valued at cost, or an exchange rate is missing. Your balance may be understated until prices sync.",
-        "hide": "Hide warning",
-        "hideTitle": "Hide this warning?",
+        "hide": "Скрыть предупреждение",
+        "hideTitle": "Скрыть это предупреждение?",
         "hideDescription": "It comes back the next time you open the planner.",
-        "dontShowAgain": "Don't show again",
-        "hideConfirm": "Hide"
+        "dontShowAgain": "Больше не показывать",
+        "hideConfirm": "Скрыть"
       },
       "assumptions": {
         "title": "Assumptions",
@@ -258,7 +258,7 @@
         "countsCash": "Cash & bank accounts",
         "countsPortfolios": "Investment portfolios",
         "countsVentures": "Ventures",
-        "countsVehicles": "Vehicles",
+        "countsVehicles": "Транспорт",
         "countsLoans": "Loans",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",

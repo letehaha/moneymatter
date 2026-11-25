@@ -326,17 +326,28 @@
       "saved": "Assignment saved",
       "error": "Could not save the assignment"
     },
+    "move": {
+      "menuItem": "Move money",
+      "title": "Move money",
+      "description": "Moves assigned money from one line to another for this period.",
+      "fromLabel": "From",
+      "toLabel": "To",
+      "pickPlaceholder": "Pick a line",
+      "swap": "Swap From and To",
+      "amountLabel": "How much?",
+      "tooMuch": "{line} can give {amount} at most",
+      "chipCover": "Cover the overspend · {amount}",
+      "chipAll": "All it can give · {amount}",
+      "submit": "Move {amount}",
+      "submitInstead": "Move {amount} instead",
+      "toast": "Moved {amount} from {from} to {to}"
+    },
     "unbudgeted": {
       "summary": "Spending outside your lines: {amount} in {count} category | Spending outside your lines: {amount} in {count} categories"
     },
     "pool": {
       "readyToAssign": "Ready to assign",
       "assign": "Assign",
-      "assignTitle": "Assign from the pool",
-      "toLabel": "To",
-      "toPlaceholder": "Select a line",
-      "amountLabel": "Amount",
-      "assignSubmit": "Assign {amount}",
       "calc": {
         "title": "Budget calculation",
         "cash": "Budgetable money",
@@ -369,11 +380,81 @@
       "allAssigned": "All money assigned",
       "overAssigned": "Over-assigned by {amount}",
       "fix": "Fix this",
-      "fixTitle": "Reduce over-assigning",
-      "fromLabel": "Take from",
-      "fromPlaceholder": "Select a line",
-      "fixSubmit": "Take back {amount}",
-      "fixNoLines": "There is nothing to take back in this period."
+      "fixNoLines": "There is nothing to take back in this period.",
+      "notInLine": "Not in any line yet",
+      "addLine": "Add a line",
+      "menu": {
+        "assignTitle": "Give {amount} a job",
+        "assignSubtitle": "Pick a suggestion or choose a line yourself. Nothing is saved until you confirm.",
+        "goalsTitle": "Fund your goals",
+        "goalsDescription": "{count} line still needs money this month | {count} lines still need money this month",
+        "overspendingTitle": "Cover overspending",
+        "overspendingOne": "{line} went over by {amount}",
+        "overspendingMany": "{count} line went over | {count} lines went over",
+        "repeatTitle": "Repeat last month",
+        "repeatDescription": "Top up {count} line to what it got last month | Top up {count} lines to what they got last month",
+        "oneLineTitle": "Assign to one line",
+        "oneLineDescription": "Pick any line and type the amount",
+        "noSuggestions": "No suggestions right now. They show up when a line has a goal, goes over, or got more last month."
+      },
+      "freeUp": {
+        "title": "Free up {amount}",
+        "subtitle": "Take money back from lines that still have some left. Money you've already spent isn't touched.",
+        "leftoversTitle": "Take back from leftovers",
+        "leftoversOne": "From {line}, which has the most left",
+        "leftoversTwo": "From {first} and {second}, which have the most left",
+        "oneLineTitle": "Take from one line",
+        "oneLineDescription": "Pick a line and type the amount",
+        "laterIncome": "Not urgent? Income that comes in later fills the gap on its own."
+      },
+      "review": {
+        "goalsHint": "Each line gets what its goal still needs this month.",
+        "overspendingHint": "Each line gets enough to bring it back to zero.",
+        "repeatHint": "Each line is topped up to what it got last month.",
+        "leftoversHint": "Money comes back from the lines with the most left. Money you've already spent isn't touched.",
+        "goalNeeds": "Needs {amount} this month",
+        "goalPartial": "Gets {amount} of the {need} it needs",
+        "overBy": "Over by {amount}",
+        "lastMonth": "Got {amount} last month",
+        "leftAvailable": "{amount} left",
+        "goalsShort": "Your goals need {total}, but you have {available}. The goals due soonest are filled first.",
+        "short": "These lines need {total}, but you have {available}. Lines higher up are filled first.",
+        "tooMuch": "Only {amount} can come back",
+        "readyNow": "Ready to Assign now",
+        "goesTo": "Goes to {count} line | Goes to {count} lines",
+        "stillToAssign": "Still to assign after this",
+        "overBySummary": "Over by",
+        "takenBack": "Taken back",
+        "readyAfter": "Ready to Assign after",
+        "assignSubmit": "Assign {amount}",
+        "takeBackSubmit": "Take back {amount}"
+      },
+      "line": {
+        "pickLabel": "Line",
+        "pickPlaceholder": "Pick a line",
+        "goalHint": "Goal needs {amount} this month",
+        "overspentHint": "Overspent by {amount}",
+        "availableNow": "Available now {available}",
+        "availableNowGoal": "Available now {available} · goal needs {need}",
+        "amountLabel": "How much?",
+        "chipGoal": "What the goal needs · {amount}",
+        "chipAll": "All of it · {amount}",
+        "previewAvailable": "{line} available",
+        "overWarning": "That's {amount} more than you have to assign. You can still do it, but Ready to Assign will turn red until you take the difference back from another line.",
+        "assignAnyway": "Assign {amount} anyway",
+        "assignInstead": "Assign {amount} instead",
+        "tooMuch": "{line} can give back at most {amount}"
+      },
+      "toast": {
+        "assignedOne": "Assigned {amount} to {line}",
+        "assignedTwo": "Assigned {amount} to {first} and {second}",
+        "assignedMany": "Assigned {amount} to {count} line | Assigned {amount} to {count} lines",
+        "tookBackOne": "Took back {amount} from {line}",
+        "tookBackTwo": "Took back {amount} from {first} and {second}",
+        "tookBackMany": "Took back {amount} from {count} line | Took back {amount} from {count} lines",
+        "undone": "Undone",
+        "undoError": "Couldn't undo. Nothing was changed."
+      }
     },
     "panel": {
       "summary": "Summary",
@@ -438,6 +519,12 @@
         "title": "Arrange sections",
         "description": "Drag to reorder the panel sections, or switch one off to hide it. Some sections only appear for a selected line or for the period overview.",
         "reset": "Reset to default"
+      },
+      "note": {
+        "label": "Note",
+        "placeholder": "Add a note for this period",
+        "gridIcon": "Has a note",
+        "error": "Couldn't save the note"
       }
     },
     "groups": {

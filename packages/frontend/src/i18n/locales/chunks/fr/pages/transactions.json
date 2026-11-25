@@ -11,7 +11,10 @@
           "thisMonth": "Ce mois-ci",
           "last3Months": "3 derniers mois",
           "last6Months": "6 derniers mois",
-          "last12Months": "12 derniers mois"
+          "last12Months": "12 derniers mois",
+          "lastMonth": "Last month",
+          "thisYear": "This year",
+          "lastYear": "Last year"
         }
       },
       "transactionType": {

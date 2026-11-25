@@ -11,7 +11,10 @@
           "thisMonth": "Этот месяц",
           "last3Months": "Последние 3 месяца",
           "last6Months": "Последние 6 месяцев",
-          "last12Months": "Последние 12 месяцев"
+          "last12Months": "Последние 12 месяцев",
+          "lastMonth": "Last month",
+          "thisYear": "This year",
+          "lastYear": "Last year"
         }
       },
       "transactionType": {
@@ -347,7 +350,7 @@
         "counterpartInTrash": "Comes back when the linked transaction is restored too.",
         "links": {
           "refund": "Refund link with \"{name}\"",
-          "tracker": "Tracker \"{name}\"",
+          "tracker": "Трекер \"{name}\"",
           "group": "Group \"{name}\"",
           "subscription": "Subscription \"{name}\"",
           "subscriptionPeriod": "Subscription payment due {name}",

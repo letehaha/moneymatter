@@ -32,7 +32,7 @@
   "sidebar": {
     "collapse": "Seitenleiste einklappen",
     "expand": "Seitenleiste aufklappen",
-    "hideAmounts": "Hide amounts",
+    "hideAmounts": "Beträge ausblenden",
     "resize": "Seitenleiste anpassen",
     "settings": {
       "title": "Einstellungen",

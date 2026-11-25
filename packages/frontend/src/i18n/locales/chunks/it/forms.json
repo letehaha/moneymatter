@@ -66,7 +66,7 @@
       "displayCurrencyPlaceholder": "Selezionare la valuta di visualizzazione",
       "displayCurrencyBaseOption": "Valuta di base ({code})",
       "displayCurrencyDescription": "Il valore e le statistiche del portafoglio vengono convertiti in questa valuta al tasso di cambio corrente.",
-      "externalUrlLabel": "External URL (optional)",
+      "externalUrlLabel": "URL esterno (facoltativo)",
       "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Annulla",
       "submitButton": "Salva modifiche",
@@ -139,7 +139,7 @@
       "creditLimitLabel": "Limite di credito",
       "creditLimitPlaceholder": "Limite di credito",
       "defaultPaymentTypeLabel": "Tipo di pagamento predefinito",
-      "externalUrlLabel": "External URL (optional)",
+      "externalUrlLabel": "URL esterno (facoltativo)",
       "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Crea",
       "submitButtonLoading": "Creazione...",
@@ -194,10 +194,10 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Inserire un importo valido (fino a 1 decimale) | Inserire un importo valido (fino a {decimals} decimali)",
-      "invalidCurrencyWholeAmount": "Enter a whole amount",
+      "invalidCurrencyWholeAmount": "Inserire un importo intero",
       "mustBePositive": "L'importo deve essere positivo",
-      "httpUrl": "Enter a valid http(s) URL",
-      "maxLength": "Must not exceed {max} characters"
+      "httpUrl": "Inserire un URL http(s) valido",
+      "maxLength": "Non deve superare {max} caratteri"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Valuta di origine",

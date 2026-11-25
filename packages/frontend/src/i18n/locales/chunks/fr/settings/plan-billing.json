@@ -17,6 +17,23 @@
       "voteOnRoadmap": "Voter sur la feuille de route",
       "roadmapNote": "Gratuit. Votez et nous vous préviendrons dès sa sortie.",
       "saveUpTo": "Jusqu'à {percent} % d'économie",
+      "promotion": {
+        "title": "{name}: {percent}% off your first payment",
+        "subtitle": "Applied automatically at checkout, no code needed. Ends {date}.",
+        "badge": "{name} −{percent}%",
+        "firstCycle": {
+          "year": "/ first year",
+          "month": "/ first month"
+        },
+        "renews": {
+          "year": "Then {amount}/year",
+          "month": "Then {amount}/month"
+        },
+        "billedToday": "Billed today: {amount}. Cancel anytime.",
+        "names": {
+          "blackFriday2026": "Black Friday"
+        }
+      },
       "portalFailed": "Impossible d'ouvrir le portail de facturation. Veuillez réessayer.",
       "pastDueNote": "Votre dernier paiement a échoué. Stripe réessaiera de débiter votre carte automatiquement dans les prochains jours. Mettez à jour votre moyen de paiement via Gérer la facturation pour conserver votre accès après le {date}.",
       "priceNote": "Les prix sont en USD, hors taxes. Votre devise locale et les taxes applicables sont indiquées lors du paiement.",
