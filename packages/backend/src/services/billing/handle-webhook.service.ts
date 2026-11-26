@@ -6,6 +6,7 @@ import Users from '@models/users.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { UniqueConstraintError } from 'sequelize';
 
+import { requeueGifts } from './gifts/queue-gifts';
 import { sendSubscriptionWelcomeEmail } from './send-subscription-welcome-email';
 import type { ParsedSubscriptionEvent } from './stripe/parse-webhook';
 
@@ -82,6 +83,7 @@ const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEv
   };
   if (existing) {
     await existing.update(fields);
+    await requeueGifts({ userId });
     return { outcome: 'processed' };
   }
 
@@ -91,6 +93,7 @@ const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEv
     externalSubscriptionId: event.externalSubscriptionId,
     ...fields,
   });
+  await requeueGifts({ userId });
   return {
     outcome: 'processed',
     ...(event.status !== SUBSCRIPTION_STATUSES.canceled && { startedForUserId: userId }),

@@ -43,3 +43,7 @@ export const getStripeClient = (): Stripe => {
   }
   return client;
 };
+
+/** Stripe returns a referenced object as its id, or expanded. */
+export const idOf = ({ ref }: { ref: string | { id: string } | null | undefined }): string | null =>
+  typeof ref === 'string' ? ref : (ref?.id ?? null);

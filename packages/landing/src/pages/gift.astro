@@ -1,0 +1,116 @@
+---
+import BaseLayout from '@/layouts/base-layout.astro';
+import '@/styles/feature-page.css';
+import '@/styles/gift-page.css';
+import LandingHeader from '@/components/landing-header.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import LucideIcon from '@/components/lucide-icon.astro';
+import FaqDetails from '@/components/faq-details.astro';
+import FaqContact from '@/components/faq-contact.astro';
+import GiftForm from '@/components/gift-form.vue';
+import { GIFT_FORM_STRINGS } from '@/i18n/client';
+import { SUPPORT_EMAIL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
+
+const { t, clientProps } = useI18n(Astro);
+
+const STEPS = [
+  { icon: 'credit-card', title: 'You pay once', text: '12 months of Essential or Plus. No renewal, no recurring charge.' },
+  { icon: 'mail', title: 'They get a private code by email', text: 'Right after payment, or on the date you pick.' },
+  {
+    icon: 'gift',
+    title: 'They redeem it in the app',
+    text: 'In Settings → Plan & billing. New users create a free account first.',
+  },
+];
+
+const FAQ = [
+  {
+    question: 'What exactly does the recipient get?',
+    answer:
+      "12 months of every feature in the plan you chose. The gift doesn't renew. When it ends, they can subscribe if they want to.",
+  },
+  {
+    question: 'What if they already subscribe?',
+    answer:
+      "The gifted year starts when their current paid period ends. A subscription bought on the web stops renewing automatically when they redeem the code. If they subscribe through the App Store, they turn off auto-renew in their Apple settings first. A lifetime plan that already includes the gifted plan can't redeem it, so they can pass the code on to someone else.",
+  },
+  {
+    question: 'How long is the code valid?',
+    answer: "12 months from the day it's emailed. It works once, for one account.",
+  },
+  {
+    question: 'What about taxes and currency?',
+    answer:
+      'Prices are in USD before tax. Stripe runs the checkout as the merchant of record. It adds VAT or sales tax where required and may show the price in your local currency.',
+  },
+  {
+    question: 'Wrong email, or need a refund?',
+    answer:
+      'Write to {email}. A full refund cancels the code, or ends the gifted access if it was already redeemed.',
+  },
+].map((item) => ({ question: t(item.question), answer: t(item.answer, { email: SUPPORT_EMAIL }) }));
+---
+
+<BaseLayout
+  title={t('Gift a MoneyMatter Subscription | MoneyMatter')}
+  description={t(
+    'Give someone 12 months of MoneyMatter Essential or Plus. You pay once, with no renewal, and they get a private code by email.',
+  )}
+>
+  <LandingHeader />
+  <main id="main">
+    <section class="sec fp-hero gift-hero">
+      <div class="wrap">
+        <p class="eyebrow">{t('Gift')}</p>
+        <h1>{t('Give a year of MoneyMatter')}</h1>
+        <p class="fp-intro">
+          {t('Pay once for 12 months of Essential or Plus. No renewal, no recurring charge, and no account needed to buy.')}
+        </p>
+      </div>
+    </section>
+
+    <section class="sec sec-soft gift-main">
+      <div class="wrap">
+        <div class="gift-grid">
+          <GiftForm client:load {...clientProps({ texts: GIFT_FORM_STRINGS })} />
+          <aside class="gift-steps">
+            <h2>{t('How it works')}</h2>
+            <ol>
+              {
+                STEPS.map((step, index) => (
+                  <li>
+                    <span class="itile">
+                      <LucideIcon name={step.icon} class="ic" />
+                    </span>
+                    <div>
+                      <span class="idx">{String(index + 1).padStart(2, '0')}</span>
+                      <strong>{t(step.title)}</strong>
+                      <p>{t(step.text)}</p>
+                    </div>
+                  </li>
+                ))
+              }
+            </ol>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="faq">
+      <div class="wrap">
+        <div class="faq2">
+          <div>
+            <p class="eyebrow">{t('FAQ')}</p>
+            <h2>{t('Gift questions')}</h2>
+            <FaqContact />
+          </div>
+          <div class="faq2-main">
+            <FaqDetails items={FAQ} />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <LandingFooter />
+</BaseLayout>

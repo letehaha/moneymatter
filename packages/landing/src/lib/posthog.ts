@@ -2,6 +2,7 @@ import type { PostHog } from 'posthog-js';
 
 import type { FaqOutcome } from './ask-faq';
 import { config } from './config';
+import type { GiftCheckoutBody, GiftCheckoutOutcome } from './gift-checkout';
 
 export type DemoStartLocation = 'hero' | 'hero_screenshot' | 'demo_link' | 'cta_section';
 
@@ -40,6 +41,10 @@ type LandingAnalyticsEvent =
   | {
       event: 'demo_setup_failed';
       properties: { reason: 'rate_limited' | 'server_error' | 'network'; status?: number };
+    }
+  | {
+      event: 'landing_gift_checkout_started';
+      properties: { tier: GiftCheckoutBody['tier']; scheduled: boolean; outcome: GiftCheckoutOutcome; status?: number };
     }
   | {
       event: 'landing_faq_asked';

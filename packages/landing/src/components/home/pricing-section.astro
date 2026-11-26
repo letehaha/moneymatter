@@ -1,67 +1,10 @@
 ---
 import '@/styles/home/pricing.css';
 import { GITHUB_URL } from '@/lib/github-api';
+import { PLANS } from '@/lib/plans';
 import { useI18n } from '@/i18n';
 
-const { t } = useI18n(Astro);
-
-const plans: {
-  name: string;
-  tagline: string;
-  yearly: number;
-  monthly: number;
-  tag?: string;
-  highlight?: boolean;
-  planned?: boolean;
-  lead?: number;
-  features: string[];
-}[] = [
-  {
-    name: 'Essential',
-    tagline: 'Manual entry and everything that is local math.',
-    yearly: 30,
-    monthly: 5,
-    features: [
-      'Imports: CSV, OFX, YNAB, Wallet, MS Money',
-      'Investments, loans, vehicles, venture',
-      'AI features with your own API key',
-      'Backup export and restore',
-      'MCP server for AI agents',
-      '2 household seats',
-    ],
-  },
-  {
-    name: 'Plus',
-    tagline: 'Everything around bring-your-own bank connections.',
-    yearly: 55,
-    monthly: 8,
-    tag: 'Includes bank sync',
-    highlight: true,
-    lead: 1,
-    features: [
-      'Everything in Essential',
-      'Bank sync: LunchFlow, SimpleFIN, Monobank, Akahu',
-      'AI features on our key, no setup',
-      'FIRE planner',
-      '5 household seats',
-    ],
-  },
-  {
-    name: 'Premium',
-    tagline: 'Bank connections we run for you.',
-    planned: true,
-    yearly: 80,
-    monthly: 12,
-    features: [
-      'Everything in Plus',
-      'Bank sync we run: no API keys, no provider subscription',
-      '2 banks included (unlimited accounts), extra banks $2/mo',
-      'Real-time security prices',
-      'Higher AI usage cap',
-      '10 household seats',
-    ],
-  },
-];
+const { t, url } = useI18n(Astro);
 ---
 
 <section class="sec sec-soft" id="pricing">
@@ -71,7 +14,7 @@ const plans: {
     <p class="lede">{t('Try every cloud feature for 40 days, no card needed.')}</p>
     <div class="tiers">
       {
-        plans.map((plan) => (
+        PLANS.map((plan) => (
           <article class:list={['plate tier', { 'tier-main': plan.highlight, 'tier-soon': plan.planned }]}>
             <div class="tier-top">
               <h3>{t(plan.name)}</h3>
@@ -129,7 +72,10 @@ const plans: {
         >{t('Self-host guide')}<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
       >
     </div>
-    <p class="plans-note">{t('Prices in USD. Taxes are calculated at checkout. Cancel anytime.')}</p>
+    <p class="plans-note">
+      {t('Prices in USD. Taxes are calculated at checkout. Cancel anytime.')}
+      <a class="gift-link" href={url({ href: '/gift' })}>{t('Give a year as a gift')}</a>
+    </p>
   </div>
 
   <dialog id="premium-early-access-dialog" class="ea-dialog" aria-labelledby="premium-early-access-title" closedby="any">

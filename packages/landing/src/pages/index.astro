@@ -17,6 +17,7 @@ import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 
 import { FAQ_ITEMS } from '@/lib/faq';
+import { PLANS } from '@/lib/plans';
 import { useI18n } from '@/i18n';
 
 const { t, url, locale } = useI18n(Astro);
@@ -48,10 +49,7 @@ const homeUrl = new URL(url({ href: '/' }), Astro.site).href;
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Web",
         "browserRequirements": t("Requires JavaScript. Works best in modern browsers."),
-        "offers": [
-          { "@type": "Offer", "name": "Essential", "price": "30", "priceCurrency": "USD" },
-          { "@type": "Offer", "name": "Plus", "price": "55", "priceCurrency": "USD" }
-        ],
+        "offers": PLANS.filter((plan) => !plan.planned).map((plan) => ({ "@type": "Offer", "name": plan.name, "price": String(plan.yearly), "priceCurrency": "USD" })),
         "featureList": [
           "Bank account synchronization",
           "AI-powered transaction categorization",

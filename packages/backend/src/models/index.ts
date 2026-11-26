@@ -26,6 +26,7 @@ import CurrenciesModel from './currencies.model';
 import DeviceTokensModel from './device-tokens.model';
 import ExchangeRatesModel from './exchange-rates.model';
 import FeatureUsagesModel from './feature-usages.model';
+import GiftsModel from './gifts.model';
 import GoalAccountsModel from './goal-accounts.model';
 import GoalsModel from './goals.model';
 import ImportBatchAccountEffectsModel from './import-batch-account-effects.model';
@@ -186,6 +187,7 @@ const models = [
   GoalsModel,
   GoalAccountsModel,
   DeviceTokensModel,
+  GiftsModel,
 ];
 
 const sequelize = new Sequelize({

@@ -11,11 +11,41 @@ export type Plan = (typeof PLANS)[keyof typeof PLANS];
 export type BillingTier = Exclude<Plan, typeof PLANS.early_adopter>;
 export const BILLING_TIERS = [PLANS.essential, PLANS.plus] as const satisfies readonly BillingTier[];
 
+export const parseBillingTier = ({ value }: { value: string | null | undefined }): BillingTier | null =>
+  value && (BILLING_TIERS as readonly string[]).includes(value) ? (value as BillingTier) : null;
+
 export const BILLING_CYCLES = { month: 'month', year: 'year' } as const;
 export type BillingCycle = (typeof BILLING_CYCLES)[keyof typeof BILLING_CYCLES];
 
-export const BILLING_PROVIDERS = { stripe: 'stripe', apple: 'apple' } as const;
+/** `gift` rows are written on redemption of a gift code; no provider API stands behind them. */
+export const BILLING_PROVIDERS = { stripe: 'stripe', apple: 'apple', gift: 'gift' } as const;
 export type BillingProvider = (typeof BILLING_PROVIDERS)[keyof typeof BILLING_PROVIDERS];
+
+export const GIFT_DURATION_MONTHS = 12;
+/** An unredeemed code stops working this long after its email is sent. */
+export const GIFT_CODE_VALID_MONTHS = 12;
+export const GIFT_MAX_DELIVERY_DAYS = 365;
+export const GIFT_MESSAGE_MAX_LENGTH = 500;
+export const GIFT_NAME_MAX_LENGTH = 100;
+
+export interface CreateGiftCheckoutBody {
+  tier: BillingTier;
+  buyerName: string;
+  buyerEmail: string;
+  recipientName: string;
+  recipientEmail: string;
+  message?: string;
+  /** ISO instant the recipient email goes out; omitted or past means right after payment. */
+  deliverAt?: string;
+  /** Landing page path the checkout returns to, e.g. `/gift` or `/uk/gift`. */
+  returnPath?: string;
+}
+
+export interface RedeemGiftResponse {
+  tier: BillingTier;
+  currentPeriodStartsAt: string;
+  currentPeriodEndsAt: string;
+}
 
 export const SUBSCRIPTION_STATUSES = {
   active: 'active',
@@ -169,6 +199,8 @@ export interface BillingSubscriptionSummary {
   status: SubscriptionStatus;
   billingCycle: BillingCycle;
   currentPeriodEndsAt: string;
+  /** Set on a gift queued behind other paid access; it grants nothing before this. */
+  currentPeriodStartsAt?: string | null;
   scheduledChange: ScheduledChange | null;
 }
 
@@ -188,16 +220,21 @@ export interface Entitlements {
   featureTrials: Partial<Record<Feature, FeatureTrial>>;
 }
 
-/** Access continues while the status is entitled and the paid period has not elapsed. */
+/** Access runs while the status is entitled and `now` falls inside the paid period. */
 export const isEntitledSubscription = ({
   status,
   currentPeriodEndsAt,
+  currentPeriodStartsAt,
   now = Date.now(),
 }: {
   status: SubscriptionStatus;
   currentPeriodEndsAt: Date | string;
+  currentPeriodStartsAt?: Date | string | null;
   now?: number;
-}): boolean => ENTITLED_SUBSCRIPTION_STATUSES.includes(status) && new Date(currentPeriodEndsAt).getTime() > now;
+}): boolean =>
+  ENTITLED_SUBSCRIPTION_STATUSES.includes(status) &&
+  new Date(currentPeriodEndsAt).getTime() > now &&
+  (!currentPeriodStartsAt || new Date(currentPeriodStartsAt).getTime() <= now);
 
 /** Early adopters and trials hold Plus features without paying for Plus. */
 export const hasPaidPlus = ({

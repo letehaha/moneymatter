@@ -4,12 +4,14 @@ import { appName, buildEmailShell, escapeHtml, fromEmail } from '@services/email
 import { sendEmail } from '@services/email/send-email';
 import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
 
-const SUPPORT_EMAIL = 'support@moneymatter.app';
+export const SUPPORT_EMAIL = 'support@moneymatter.app';
 
-const buildSubscriptionWelcomeHtml = ({ planName }: { planName: string }): string =>
+export const planName = ({ tier }: { tier: string }) => `${appName} ${tier.charAt(0).toUpperCase()}${tier.slice(1)}`;
+
+const buildSubscriptionWelcomeHtml = ({ name }: { name: string }): string =>
   buildEmailShell({
     innerHtml: `
-          <tr><td style="padding: 28px 40px 0 40px;"><h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">Welcome to ${escapeHtml(planName)}</h1></td></tr>
+          <tr><td style="padding: 28px 40px 0 40px;"><h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">Welcome to ${escapeHtml(name)}</h1></td></tr>
           <tr><td style="padding: 16px 40px 36px 40px; font-size: 15px; color: #1a1a1a; line-height: 1.5;">
             <p style="margin: 0 0 12px 0;">Your support is what keeps ${escapeHtml(appName)} independent, and I really appreciate it.</p>
             <p style="margin: 0 0 12px 0;">If something isn't working the way you expect, or you have an idea that would make the app better for you, just reply to this email or write to <a href="mailto:${SUPPORT_EMAIL}" style="color: #7c3aed;">${SUPPORT_EMAIL}</a>. I read every message myself.</p>
@@ -33,13 +35,13 @@ export const sendSubscriptionWelcomeEmail = async ({
       return;
     }
 
-    const planName = `${appName} ${tier.charAt(0).toUpperCase()}${tier.slice(1)}`;
+    const name = planName({ tier });
     const result = await sendEmail({
       from: `${appName} <${fromEmail}>`,
       to,
       replyTo: SUPPORT_EMAIL,
-      subject: `Thank you for subscribing to ${planName}`,
-      html: buildSubscriptionWelcomeHtml({ planName }),
+      subject: `Thank you for subscribing to ${name}`,
+      html: buildSubscriptionWelcomeHtml({ name }),
     });
     if (result?.error) throw new Error(`${result.error.name}: ${result.error.message}`);
     if (result) logger.info(`[SubscriptionWelcomeEmail] Sent to user ${userId}, resendId: ${result.data?.id}`);

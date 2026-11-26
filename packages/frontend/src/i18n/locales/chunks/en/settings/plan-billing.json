@@ -58,7 +58,8 @@
         "cancelNote": "Changed your mind? Renew in the billing portal and your renewal date stays the same.",
         "monthlyHint": "Switch to yearly and save {amount} a year.",
         "noCard": "No card on file",
-        "readOnlyHelp": "What does read-only mean?"
+        "readOnlyHelp": "What does read-only mean?",
+        "gift": "{tier} gift"
       },
       "status": {
         "pastDue": "Payment failed",
@@ -68,7 +69,8 @@
         "trial": "Plus features",
         "processing": "Processing",
         "earlyAdopter": "Early adopter",
-        "endsOn": "Ends {date}"
+        "endsOn": "Ends {date}",
+        "gift": "Gift"
       },
       "cta": {
         "activating": "Activating…",
@@ -82,7 +84,17 @@
         "viaPortal": "Changed in the billing portal.",
         "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Billed today. Cancel anytime.",
-        "earlyAdopter": "50% off for life, applied at checkout"
+        "earlyAdopter": "50% off for life, applied at checkout",
+        "afterGift": "Available after your gift ends on {date}"
+      },
+      "gift": {
+        "title": "Redeem a gift code",
+        "description": "Got a gift subscription? Enter the code from your email.",
+        "placeholder": "Enter your gift code",
+        "redeem": "Redeem",
+        "redeemed": "Gift redeemed: {tier} until {date}",
+        "redeemedQueued": "Gift redeemed. {tier} starts on {start} and runs until {date}.",
+        "redeemFailed": "Couldn't redeem the gift code. Try again."
       },
       "plans": {
         "essential": "Essential",

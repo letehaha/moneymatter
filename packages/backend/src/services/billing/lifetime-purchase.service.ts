@@ -1,4 +1,4 @@
-import { BILLING_PROVIDERS, BILLING_TIERS, type BillingTier, isTerminalSubscription } from '@bt/shared/types';
+import { BILLING_PROVIDERS, type BillingTier, isTerminalSubscription, parseBillingTier } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import { captureException } from '@js/utils/sentry';
 import { invalidateAppUserCache } from '@middlewares/better-auth';
@@ -10,7 +10,7 @@ import { findUserByEmail } from '@services/sharing/find-user-by-email.service';
 import type Stripe from 'stripe';
 
 import { sendSubscriptionWelcomeEmail } from './send-subscription-welcome-email';
-import { getStripeClient } from './stripe/client';
+import { getStripeClient, idOf } from './stripe/client';
 
 type LifetimeCheckoutEvent = Stripe.CheckoutSessionCompletedEvent | Stripe.CheckoutSessionAsyncPaymentSucceededEvent;
 
@@ -29,10 +29,8 @@ export const isLifetimeCheckoutEvent = (event: Stripe.Event): event is LifetimeC
 const LIFETIME_PLAN_KEY = 'lifetime_plan';
 const LIFETIME_USER_KEY = 'userId';
 
-const parseLifetimePlan = ({ metadata }: { metadata: Stripe.Metadata | null | undefined }): BillingTier | null => {
-  const value = metadata?.[LIFETIME_PLAN_KEY];
-  return value && (BILLING_TIERS as readonly string[]).includes(value) ? (value as BillingTier) : null;
-};
+const parseLifetimePlan = ({ metadata }: { metadata: Stripe.Metadata | null | undefined }): BillingTier | null =>
+  parseBillingTier({ value: metadata?.[LIFETIME_PLAN_KEY] });
 
 const parseUserId = ({ value }: { value: string | null | undefined }): number | null => {
   const id = Number(value);
@@ -51,15 +49,15 @@ const findBuyer = async ({ session }: { session: Stripe.Checkout.Session }): Pro
   return email ? ((await findUserByEmail({ email }))?.appUser ?? null) : null;
 };
 
-/** Lifetime replaces a subscription the buyer already pays for; the paid period still runs out. */
-const stopRenewals = async ({ userId, stripe }: { userId: number; stripe: Stripe }): Promise<void> => {
+/** Lifetime or a gift replaces a subscription the user already pays for; the paid period still runs out. */
+export const stopRenewals = async ({ userId, stripe }: { userId: number; stripe: Stripe }): Promise<void> => {
   const live = (await BillingSubscriptions.findAll({ where: { userId } })).filter((s) => !isTerminalSubscription(s));
   for (const subscription of live) {
     if (subscription.provider === BILLING_PROVIDERS.stripe) {
       await stripe.subscriptions.update(subscription.externalSubscriptionId, { cancel_at_period_end: true });
-    } else {
+    } else if (subscription.provider === BILLING_PROVIDERS.apple && subscription.scheduledChange?.action !== 'cancel') {
       captureException({
-        error: new Error('Lifetime buyer still has an App Store subscription to cancel by hand'),
+        error: new Error('User still has an App Store subscription to cancel by hand'),
         context: { userId, subscriptionId: subscription.externalSubscriptionId },
       });
     }
@@ -86,7 +84,7 @@ export async function handleLifetimePurchase({ event }: { event: LifetimeCheckou
   if (session.mode !== 'payment' || session.payment_status !== 'paid') return 'ignored';
   const plan = parseLifetimePlan({ metadata: session.metadata });
   if (!plan) {
-    // Lifetime is the only one-time product, so a paid session without the marker is a mistagged link.
+    // A paid one-time session without the marker is a mistagged Payment Link.
     captureException({
       error: new Error('Paid one-time checkout carries no valid lifetime_plan'),
       context: { eventId: event.id, sessionId: session.id, metadata: session.metadata },
@@ -115,8 +113,7 @@ export async function handleLifetimePurchase({ event }: { event: LifetimeCheckou
   }
 
   const stripe = getStripeClient();
-  const paymentIntentId =
-    typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
+  const paymentIntentId = idOf({ ref: session.payment_intent });
   if (paymentIntentId) {
     await stripe.paymentIntents.update(paymentIntentId, {
       metadata: { [LIFETIME_USER_KEY]: String(user.id), [LIFETIME_PLAN_KEY]: plan },

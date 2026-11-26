@@ -9,6 +9,7 @@ import {
   isTerminalStripeStatus,
   isTerminalSubscription,
 } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { captureException } from '@js/utils/sentry';
 import BillingSubscriptions from '@models/billing-subscriptions.model';
@@ -54,6 +55,19 @@ export async function createCheckoutSession({
   });
   if (subscriptions.some((s) => s.provider === BILLING_PROVIDERS.stripe && !isTerminalSubscription(s))) {
     throw new ValidationError({ message: ALREADY_SUBSCRIBED });
+  }
+  const gift = subscriptions.find(
+    (s) =>
+      s.provider === BILLING_PROVIDERS.gift &&
+      isEntitledSubscription({ status: s.status, currentPeriodEndsAt: s.currentPeriodEndsAt }),
+  );
+  if (gift) {
+    throw new ValidationError({
+      message: t({
+        key: 'gifts.checkoutBlocked',
+        variables: { date: gift.currentPeriodEndsAt.toISOString().slice(0, 10) },
+      }),
+    });
   }
   // Apple keeps a failed renewal in billing retry for up to 60 days with no access, so only
   // an entitled Apple row blocks paying on the web.
