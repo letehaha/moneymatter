@@ -2288,13 +2288,13 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const [settingsRow] = restored.readData({ name: 'user-settings' }) as Row[];
       const settings = settingsRow!.settings as {
-        notifications: { types: Row };
+        notifications: Row;
         savedTransactionViews: { filters: Row }[];
         ui: { transactionsTable: { extraFilters: string[] } };
         onboarding: { completedTasks: string[] };
       };
-      expect(settings.notifications.types.tracker_alert).toBe(false);
-      expect(settings.notifications.types).not.toHaveProperty('budget_alert');
+      // The retired `{ enabled, types }` preferences restore as empty rather than resetting the settings.
+      expect(settings.notifications).toEqual({});
       expect(settings.savedTransactionViews[0]!.filters).toEqual({
         trackerIds: [restoredTrackerId],
         excludedTrackerIds: [restoredTrackerId],

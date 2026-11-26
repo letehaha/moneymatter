@@ -122,6 +122,7 @@ export const createNotification = createController(
       payload: body.payload,
       priority: body.priority,
       expiresAt: body.expiresAt,
+      applyPreferences: false,
     });
 
     return { data: notification };

@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import SecurityPricing from '@models/investments/security-pricing.model';
 import WatchlistAlerts from '@models/investments/watchlist-alerts.model';
 import * as sendEmailModule from '@services/email/send-email';
+import * as apns from '@services/notifications/apns';
 import * as helpers from '@tests/helpers';
 import { addHours } from 'date-fns';
 
@@ -294,6 +295,42 @@ describe('Watchlist alerts check', () => {
     expect(ungroupedItems[0]).toMatchObject({ lastClose: '90.0000000000', lastCloseDate: dayKey({ days: 1 }) });
   });
 
+  it('pushes only when the alert and the user allow it, always with its in-app notification', async () => {
+    jest.spyOn(apns, 'isApnsConfigured').mockReturnValue(true);
+    const pushSpy = jest.spyOn(apns, 'sendNotificationPush').mockResolvedValue(undefined);
+    const fire = async ({ symbol, notifyPush }: { symbol: string; notifyPush: boolean }) => {
+      const { portfolio, item } = await seedWatch({ symbol });
+      await createAlert({
+        portfolioId: portfolio.id,
+        itemId: item.id,
+        payload: { type: WATCHLIST_ALERT_TYPES.closeAbove, price: '90', notifyPush },
+      });
+      expect((await checkWatchlistAlerts({ crypto: false })).fired).toBe(1);
+    };
+
+    await fire({ symbol: 'PUSHA', notifyPush: true });
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+    expect(pushSpy).toHaveBeenCalledWith({
+      notification: expect.objectContaining({ id: expect.any(String), type: NOTIFICATION_TYPES.watchlistAlert }),
+    });
+
+    await fire({ symbol: 'PUSHB', notifyPush: false });
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+
+    await helpers.patchUserSettings({ raw: true, patch: { notifications: { watchlistAlerts: { push: false } } } });
+    await fire({ symbol: 'PUSHC', notifyPush: true });
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+
+    // Push keeps the in-app notification even when in-app is stored off.
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { watchlistAlerts: { push: true, inApp: false } } },
+    });
+    await fire({ symbol: 'PUSHD', notifyPush: true });
+    expect(pushSpy).toHaveBeenCalledTimes(2);
+    expect(await alertNotifications()).toHaveLength(4);
+  });
+
   it('records an email-only alert without an in-app notification', async () => {
     const { portfolio, item } = await seedWatch({ symbol: 'MAIL' });
     await createAlert({
@@ -365,6 +402,25 @@ describe('Watchlist alerts check', () => {
       expect(subject).toBe('2 watchlist alerts fired');
       expect(html).toContain('BATCHA closed above 90 USD');
       expect(html).toContain('BATCHB closed above 95 USD');
+    });
+
+    it('sends neither the in-app notification nor the email when the user turned them off', async () => {
+      const sendSpy = mockSend();
+      await helpers.patchUserSettings({
+        raw: true,
+        patch: { notifications: { watchlistAlerts: { inApp: false, push: false, email: false } } },
+      });
+      const { portfolio, item } = await seedWatch({ symbol: 'MUTED' });
+      await createAlert({
+        portfolioId: portfolio.id,
+        itemId: item.id,
+        payload: { type: WATCHLIST_ALERT_TYPES.closeAbove, price: '90', notifyInApp: true, notifyEmail: true },
+      });
+
+      expect((await checkWatchlistAlerts({ crypto: false })).fired).toBe(1);
+      expect(await alertNotifications()).toHaveLength(0);
+      expect(await sendWatchlistAlertEmails()).toEqual({ sent: 0, skipped: 0, failed: 0 });
+      expect(sendSpy).not.toHaveBeenCalled();
     });
 
     it('drops a failed send without retrying it, and keeps the alert fired', async () => {

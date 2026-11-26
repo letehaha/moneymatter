@@ -2,6 +2,7 @@ import {
   NOTIFICATION_TYPES,
   UNREALIZED_LOSS_ALERT_DEFAULTS,
   type UnrealizedLossAlertNotificationPayload,
+  getNotificationChannels,
 } from '@bt/shared/types';
 import { getConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
@@ -14,7 +15,11 @@ import type { SettingsSchema } from '@models/user-settings.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { appName, appUrl, buildAlertEmail, fromEmail } from '@services/email';
+import { sendEmail } from '@services/email/send-email';
 import * as notificationsService from '@services/notifications';
+import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
+import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { QueryTypes } from 'sequelize';
 
 import { getHoldingValues } from './get-holding-values.service';
@@ -27,12 +32,16 @@ const latchAndNotify = withTransaction(
   async ({
     userId,
     currencyCode,
+    percentThreshold,
+    amountThreshold,
     candidates,
   }: {
     userId: number;
     currencyCode: string;
+    percentThreshold: number;
+    amountThreshold: number;
     candidates: AlertedHolding[];
-  }): Promise<number> => {
+  }): Promise<AlertedHolding[]> => {
     const now = new Date();
     const claimed: AlertedHolding[] = [];
     for (const holding of candidates) {
@@ -42,17 +51,64 @@ const latchAndNotify = withTransaction(
       );
       if (count) claimed.push(holding);
     }
-    if (!claimed.length) return 0;
+    if (!claimed.length) return claimed;
 
     await notificationsService.createNotification({
       userId,
       type: NOTIFICATION_TYPES.unrealizedLossAlert,
       title: t({ key: 'investments.unrealizedLossAlert.title', variables: { count: claimed.length } }),
-      payload: { currencyCode, holdings: claimed } satisfies UnrealizedLossAlertNotificationPayload,
+      payload: {
+        currencyCode,
+        percentThreshold,
+        amountThreshold,
+        holdings: claimed,
+      } satisfies UnrealizedLossAlertNotificationPayload,
+      push: true,
     });
-    return claimed.length;
+    return claimed;
   },
 );
+
+/** Best-effort: the alert has already fired in-app, so a failed send is only logged. */
+const sendLossEmail = async ({ userId, holdings }: { userId: number; holdings: AlertedHolding[] }) => {
+  try {
+    const { locale, notifications } = await getUserSettings({ userId });
+    if (!getNotificationChannels({ category: 'unrealizedLoss', preferences: notifications }).email) return;
+    const to = await getEmailForUser({ userId });
+    if (!to) {
+      logger.warn('[UnrealizedLossAlertEmail] User has no email address', {
+        code: 'UNREALIZED_LOSS_ALERT_EMAIL_NO_ADDRESS',
+        userId,
+      });
+      return;
+    }
+
+    const subject = t({ key: 'investments.unrealizedLossAlert.title', variables: { count: holdings.length }, locale });
+    const portfolioIds = new Set(holdings.map((holding) => holding.portfolioId));
+    const result = await sendEmail({
+      from: `${appName} <${fromEmail}>`,
+      to,
+      subject,
+      html: buildAlertEmail({
+        title: subject,
+        items: holdings.map(({ symbol, lossPercent, portfolioName }) => ({
+          heading: symbol,
+          text: `−${lossPercent}%`,
+          caption: portfolioName,
+        })),
+        link: portfolioIds.size === 1 ? `${appUrl}/portfolios/${holdings[0]!.portfolioId}` : `${appUrl}/investments`,
+        cta: t({ key: 'investments.unrealizedLossAlert.emailCta', locale }),
+        footer: t({ key: 'investments.unrealizedLossAlert.emailFooter', locale }),
+      }),
+    });
+    if (result?.error) throw new Error(`${result.error.name}: ${result.error.message}`);
+  } catch (error) {
+    logger.error(
+      { message: 'Unrealized loss alert email failed', error: error as Error },
+      { code: 'UNREALIZED_LOSS_ALERT_EMAIL_FAILED', userId },
+    );
+  }
+};
 
 const checkUser = async ({ userId, config }: { userId: number; config: AlertConfig }): Promise<number> => {
   const percentThreshold = config.percentThreshold ?? UNREALIZED_LOSS_ALERT_DEFAULTS.percentThreshold;
@@ -110,6 +166,8 @@ const checkUser = async ({ userId, config }: { userId: number; config: AlertConf
           portfolioName: portfolio.name,
           securityId: holding.securityId,
           symbol: value.security?.symbol ?? value.security?.name ?? '',
+          assetClass: value.security?.assetClass,
+          logoUrl: value.security?.logoUrl ?? null,
           lossPercent: Number(lossPercent.toFixed(2)),
           lossAmount,
         });
@@ -126,7 +184,15 @@ const checkUser = async ({ userId, config }: { userId: number; config: AlertConf
   }
 
   if (!candidates.length) return 0;
-  return latchAndNotify({ userId, currencyCode: baseCurrencyCode, candidates });
+  const claimed = await latchAndNotify({
+    userId,
+    currencyCode: baseCurrencyCode,
+    percentThreshold,
+    amountThreshold,
+    candidates,
+  });
+  if (claimed.length) await sendLossEmail({ userId, holdings: claimed });
+  return claimed.length;
 };
 
 export const checkUnrealizedLossAlerts = async () => {

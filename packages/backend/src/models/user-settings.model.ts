@@ -20,7 +20,7 @@ import {
   MAX_CATEGORY_MAPPING_PRESETS,
   MAX_SAVED_TRANSACTION_VIEWS,
   type MutuallyAssignable,
-  NOTIFICATION_TYPES,
+  type NotificationPreferences,
   PAYMENT_TYPES,
   PIVOT_GRANULARITIES,
   PIVOT_MEASURES,
@@ -92,13 +92,20 @@ const ZodAiSettingsSchema = z.object({
   connections: z.array(ZodAiConnectionSchema).max(MAX_AI_CONNECTIONS).optional(),
 });
 
+const optionalFlag = z.boolean().optional();
+
+// No `.default()`: unset reads from `NOTIFICATION_PREFERENCE_DEFAULTS`, and the PATCH merge keeps stored values.
+// Only the top level is lenient, so the retired `{ enabled, types }` shape in old rows and archives is dropped,
+// not rejected; the PATCH schema adds `.strict()` so a misspelled category fails instead of saving nothing.
 const ZodNotificationPreferencesSchema = z.object({
-  enabled: z.boolean().default(true),
-  types: z.object({
-    [NOTIFICATION_TYPES.trackerAlert]: z.boolean().default(true),
-    [NOTIFICATION_TYPES.system]: z.boolean().default(true),
-    [NOTIFICATION_TYPES.changelog]: z.boolean().default(true),
-  }),
+  watchlistAlerts: z
+    .strictObject({ enabled: optionalFlag, inApp: optionalFlag, push: optionalFlag, email: optionalFlag })
+    .optional(),
+  unrealizedLoss: z.strictObject({ inApp: optionalFlag, push: optionalFlag, email: optionalFlag }).optional(),
+  subscriptionReminders: z
+    .strictObject({ enabled: optionalFlag, inApp: optionalFlag, push: optionalFlag, email: optionalFlag })
+    .optional(),
+  invitations: z.strictObject({ enabled: optionalFlag, inApp: optionalFlag, push: optionalFlag }).optional(),
 });
 
 // Onboarding state schema for Quick Start feature
@@ -438,18 +445,7 @@ export const ZodSettingsPatchSchema = z.object({
       customInstructions: z.string().max(AI_CUSTOM_INSTRUCTIONS_MAX_LENGTH).optional(),
     })
     .optional(),
-  notifications: z
-    .object({
-      enabled: z.boolean().optional(),
-      types: z
-        .object({
-          [NOTIFICATION_TYPES.trackerAlert]: z.boolean().optional(),
-          [NOTIFICATION_TYPES.system]: z.boolean().optional(),
-          [NOTIFICATION_TYPES.changelog]: z.boolean().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
+  notifications: ZodNotificationPreferencesSchema.strict().optional(),
   dashboard: z
     .object({
       widgets: z.array(ZodDashboardWidgetSchema).optional(),
@@ -556,6 +552,11 @@ export type SettingsPatchSchemaIsInSync = Expect<Equals<SettingsPatchSchema, Dee
 /** @public exported only so the assertion isn't flagged as unused. */
 export type UnrealizedLossAlertsSchemaIsInSync = Expect<
   Equals<z.infer<typeof ZodUnrealizedLossAlertsSchema>, UnrealizedLossAlertsSettings>
+>;
+
+/** @public exported only so the assertion isn't flagged as unused. */
+export type NotificationPreferencesSchemaIsInSync = Expect<
+  Equals<z.infer<typeof ZodNotificationPreferencesSchema>, NotificationPreferences>
 >;
 
 /** @public exported only so the assertion isn't flagged as unused. */

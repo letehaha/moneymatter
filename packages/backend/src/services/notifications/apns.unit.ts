@@ -87,6 +87,25 @@ const notification = {
   },
 } as unknown as NotificationModel;
 
+const holding = ({ portfolioId, securityId = 's1' }: { portfolioId: string; securityId?: string }) => ({
+  portfolioId,
+  portfolioName: `P ${portfolioId}`,
+  securityId,
+  symbol: securityId.toUpperCase(),
+  assetClass: 'stocks',
+  logoUrl: 'http://cdn.example/s.png',
+  lossPercent: 12.5,
+  lossAmount: null,
+});
+const lossAlert = ({ holdings }: { holdings: unknown[] }) =>
+  ({
+    userId: 1,
+    type: NOTIFICATION_TYPES.unrealizedLossAlert,
+    title: 'Loss',
+    message: null,
+    payload: { currencyCode: 'USD', percentThreshold: 10, amountThreshold: 500, holdings },
+  }) as NotificationModel;
+
 const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
 
 describe('sendNotificationPush', () => {
@@ -196,6 +215,135 @@ describe('sendNotificationPush', () => {
       notificationId: 'n1',
       type: 'system',
     });
+  });
+
+  it('sends an unrealized loss card, routed to its portfolio only when every holding is in it', async () => {
+    findAll.mockResolvedValue([device('aa')]);
+
+    await sendNotificationPush({
+      notification: lossAlert({ holdings: [holding({ portfolioId: 'p1' }), holding({ portfolioId: 'p1' })] }),
+    });
+    await sendNotificationPush({
+      notification: lossAlert({
+        holdings: ['a', 'b', 'c', 'd', 'e', 'f'].map((securityId, index) =>
+          holding({ portfolioId: `p${index % 2}`, securityId }),
+        ),
+      }),
+    });
+
+    expect(requests[0]!.body).toEqual({
+      aps: {
+        alert: { title: 'Loss' },
+        sound: 'default',
+        'thread-id': 'p1',
+        'mutable-content': 1,
+        category: 'UNREALIZED_LOSS_ALERT',
+      },
+      type: 'unrealized_loss_alert',
+      portfolioId: 'p1',
+      portfolioName: 'P p1',
+      currencyCode: 'USD',
+      percentThreshold: 10,
+      amountThreshold: '500',
+      holdingsCount: 2,
+      holdings: [1, 2].map(() => ({
+        securityId: 's1',
+        symbol: 'S1',
+        assetClass: 'stocks',
+        portfolioId: 'p1',
+        portfolioName: 'P p1',
+        lossPercent: 12.5,
+      })),
+    });
+    expect(requests[1]!.body).not.toHaveProperty('portfolioId');
+    expect(requests[1]!.body).toMatchObject({ aps: { 'thread-id': 'unrealized_loss_alert' }, holdingsCount: 6 });
+    expect((requests[1]!.body as { holdings: unknown[] }).holdings).toHaveLength(5);
+  });
+
+  it('sends a subscription reminder card with amounts as decimal strings', async () => {
+    findAll.mockResolvedValue([device('aa')]);
+
+    await sendNotificationPush({
+      notification: {
+        ...notification,
+        type: NOTIFICATION_TYPES.subscriptionReminder,
+        payload: {
+          subscriptionId: 'sub1',
+          periodId: 'per1',
+          dueDate: '2026-12-01',
+          preset: '3_days',
+          expectedAmount: 15.99,
+          currencyCode: 'USD',
+          name: 'Netflix',
+          frequency: 'monthly',
+          intervalCount: null,
+          intervalUnit: null,
+          categoryName: 'Streaming',
+          accountName: null,
+          logoDomain: 'netflix.com',
+          logoInitials: null,
+          logoColor: null,
+          baseAmount: 650.5,
+          baseCurrencyCode: 'UAH',
+        },
+      },
+    });
+
+    expect(requests[0]!.body).toEqual({
+      aps: {
+        alert: { title: 'AAPL closed above 200', body: 'Closed at 201' },
+        sound: 'default',
+        'thread-id': 'subscription_reminder',
+        'mutable-content': 1,
+        category: 'SUBSCRIPTION_REMINDER',
+      },
+      notificationId: 'n1',
+      type: 'subscription_reminder',
+      subscriptionId: 'sub1',
+      name: 'Netflix',
+      dueDate: '2026-12-01',
+      amount: '15.99',
+      currencyCode: 'USD',
+      baseAmount: '650.5',
+      baseCurrencyCode: 'UAH',
+      frequency: 'monthly',
+      categoryName: 'Streaming',
+      logoDomain: 'netflix.com',
+    });
+  });
+
+  it('sends an invitation card without the owner details beyond the username', async () => {
+    findAll.mockResolvedValue([device('aa')]);
+
+    await sendNotificationPush({
+      notification: {
+        ...notification,
+        type: NOTIFICATION_TYPES.householdInvitationReceived,
+        payload: {
+          invitationId: 'inv1',
+          token: 'tok',
+          resourceType: 'household',
+          resourceId: '1',
+          resourceName: 'Home',
+          permission: 'read',
+          owner: { id: 7, username: 'alex', avatar: null },
+          expiresAt: '2026-12-10T00:00:00.000Z',
+        },
+      },
+    });
+
+    expect(requests[0]!.body).toMatchObject({
+      aps: { 'mutable-content': 1, category: 'INVITATION' },
+      invitationId: 'inv1',
+      token: 'tok',
+      resourceType: 'household',
+      resourceName: 'Home',
+      permission: 'read',
+      ownerUsername: 'alex',
+      expiresAt: '2026-12-10T00:00:00.000Z',
+    });
+    expect(requests[0]!.body).not.toHaveProperty('owner');
+    expect(requests[0]!.body).not.toHaveProperty('resourceId');
   });
 
   it('never throws when the lookup fails', async () => {

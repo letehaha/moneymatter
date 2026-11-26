@@ -15,6 +15,7 @@ import * as helpers from '@tests/helpers';
 import { addDays, format, subDays } from 'date-fns';
 
 import { checkSubscriptionReminders } from './check-subscription-reminders';
+import * as reminderEmailQueue from './reminder-email-queue';
 
 const todayStr = format(new Date(), 'yyyy-MM-dd');
 
@@ -237,6 +238,18 @@ describe('Subscriptions - Check Subscription Reminders (Cron Logic)', () => {
 
       const afterFirstRun = await countReminderNotifications({ userId: sub.userId });
       expect(afterFirstRun).toBe(before + 1);
+      const reminder = await Notifications.findOne({
+        where: { userId: sub.userId, type: NOTIFICATION_TYPES.subscriptionReminder },
+      });
+      // Same currency as base, so no base amount.
+      expect(reminder!.payload).toMatchObject({
+        subscriptionId: sub.id,
+        name: 'Due Soon Sub',
+        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+        expectedAmount: 15.99,
+        currencyCode: global.BASE_CURRENCY.code,
+      });
+      expect(reminder!.payload).not.toHaveProperty('baseAmount');
       expect(await countDedupRows({ subscriptionId: sub.id })).toBe(1);
 
       // The first run claims the dedup row, so the second run sends no notification and adds no row.
@@ -266,6 +279,28 @@ describe('Subscriptions - Check Subscription Reminders (Cron Logic)', () => {
       expect(await countReminderNotifications({ userId: tooEarly.userId })).toBe(before);
       expect(await countDedupRows({ subscriptionId: tooEarly.id })).toBe(0);
       expect(await countDedupRows({ subscriptionId: inactive.id })).toBe(0);
+    }, 60_000);
+
+    it('sends neither the in-app notification nor the email when the user turned them off', async () => {
+      await helpers.patchUserSettings({
+        raw: true,
+        patch: { notifications: { subscriptionReminders: { inApp: false, push: false, email: false } } },
+      });
+      const queueSpy = jest.spyOn(reminderEmailQueue, 'queueSubscriptionReminderEmail');
+      const sub = await createSubscriptionWithReminder({
+        name: 'Muted Sub',
+        dueDate: format(addDays(new Date(), 3), 'yyyy-MM-dd'),
+        remindBefore: [REMIND_BEFORE_PRESETS.threeDays],
+        notifyEmail: true,
+      });
+
+      await checkSubscriptionReminders();
+      await checkSubscriptionReminders();
+
+      expect(await countReminderNotifications({ userId: sub.userId })).toBe(0);
+      expect(await countDedupRows({ subscriptionId: sub.id })).toBe(1);
+      expect(queueSpy).not.toHaveBeenCalled();
+      queueSpy.mockRestore();
     }, 60_000);
 
     it('re-attempts the email when the dedup row has emailSent=false without re-firing the in-app notification', async () => {
