@@ -1,9 +1,9 @@
 import { type MinorUnits, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, asMinorUnits } from '@bt/shared/types';
+import { endOfUtcDay } from '@common/utils/date';
 import Transactions from '@models/transactions.model';
 import VentureDeals from '@models/venture/venture-deals.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
 import VentureEvents from '@models/venture/venture-events.model';
-import { endOfDay } from 'date-fns';
 import { Op } from 'sequelize';
 
 export interface VentureContributionMinor {
@@ -35,7 +35,7 @@ export const getVentureContributions = async ({
         where: {
           userId,
           transferNature: TRANSACTION_TRANSFER_NATURE.transfer_to_venture,
-          time: { [Op.between]: [new Date(from), endOfDay(new Date(to))] },
+          time: { [Op.between]: [new Date(from), endOfUtcDay({ date: to })] },
         },
       },
       {

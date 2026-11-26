@@ -113,7 +113,7 @@ export async function detectDuplicates<T extends TransactionToCheck>({
   // Add one day to maxDate to include all transactions on the last day
   // (because findWithFilters uses new Date(endDate) which is midnight, excluding later hours)
   const maxDatePlusOne = new Date(maxDate);
-  maxDatePlusOne.setDate(maxDatePlusOne.getDate() + 1);
+  maxDatePlusOne.setUTCDate(maxDatePlusOne.getUTCDate() + 1);
   const endDateStr = maxDatePlusOne.toISOString().split('T')[0]!;
 
   // Fetch existing transactions in the date range for this account

@@ -1,8 +1,8 @@
 import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { endOfUtcDay } from '@common/utils/date';
 import Accounts from '@models/accounts.model';
 import { AccessPolicy, PlannedPolicy, findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
-import { endOfDay } from 'date-fns';
 import { FindAttributeOptions, Includeable, Op, Order, WhereOptions, literal } from 'sequelize';
 
 import { CategoryRefundPair, resolveRefundPairs } from './category-allocation';
@@ -114,7 +114,7 @@ const windowWhere = ({ window }: { window: StatsWindow }): WhereOptions | null =
 
   if (window.to) {
     const closesRange = typeof window.to === 'string' && Boolean(window.from);
-    bounds[Op.lte] = closesRange ? endOfDay(new Date(window.to)) : new Date(window.to);
+    bounds[Op.lte] = closesRange ? endOfUtcDay({ date: window.to }) : new Date(window.to);
   }
 
   return { time: bounds };

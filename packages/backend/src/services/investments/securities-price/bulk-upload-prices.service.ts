@@ -108,7 +108,7 @@ export const bulkUploadSecurityPrices = async (params: bulkUploadSecurityPrices)
   // Prepare data for bulk insert
   const pricingData = filteredPrices.map((p) => ({
     securityId,
-    date: startOfDay(new Date(p.date)),
+    date: new Date(p.date),
     priceClose: p.price.toString(),
     source: 'manual-upload',
   }));
