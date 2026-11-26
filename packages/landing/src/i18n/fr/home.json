@@ -513,5 +513,11 @@
   "Essential": "Essential",
   "Plus": "Plus",
   "Premium": "Premium",
-  "Give a year as a gift": "Offrir une année"
+  "Give a year as a gift": "Offrir une année",
+  "Black Friday": "Black Friday",
+  "{percent}% off your first payment, applied at checkout": "{percent}% de réduction sur votre premier paiement, appliquée au moment du paiement",
+  "Ends {date}": "Se termine le {date}",
+  "first year": "première année",
+  "Renews at {renew}/year · or <s>{was}</s> <b>{price}</b> first month": "Puis {renew}/an · ou <s>{was}</s> <b>{price}</b> le premier mois",
+  "Renews at {renew}/year": "Puis {renew}/an"
 }
