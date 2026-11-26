@@ -23,6 +23,7 @@ import CategoriesModel from './categories.model';
 import CategoryTagsModel from './category-tags.model';
 import { connection } from './connection';
 import CurrenciesModel from './currencies.model';
+import DeviceTokensModel from './device-tokens.model';
 import ExchangeRatesModel from './exchange-rates.model';
 import FeatureUsagesModel from './feature-usages.model';
 import GoalAccountsModel from './goal-accounts.model';
@@ -184,6 +185,7 @@ const models = [
   BudgetPlanAccountsModel,
   GoalsModel,
   GoalAccountsModel,
+  DeviceTokensModel,
 ];
 
 const sequelize = new Sequelize({

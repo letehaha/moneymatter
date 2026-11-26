@@ -60,6 +60,7 @@ const applyFields = ({ alert, fields }: { alert: WatchlistAlerts; fields: Update
   if (fields.frequency !== undefined) alert.frequency = fields.frequency;
   if (fields.notifyInApp !== undefined) alert.notifyInApp = fields.notifyInApp;
   if (fields.notifyEmail !== undefined) alert.notifyEmail = fields.notifyEmail;
+  if (fields.notifyPush !== undefined) alert.notifyPush = fields.notifyPush;
   if (fields.isActive !== undefined) alert.isActive = fields.isActive;
   if (fields.notifyEmail === false || fields.isActive === false) alert.pendingEmailPayload = null;
 

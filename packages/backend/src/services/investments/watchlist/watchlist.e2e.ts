@@ -545,6 +545,7 @@ describe('Portfolio watchlist', () => {
         frequency: 'once',
         notifyInApp: true,
         notifyEmail: true,
+        notifyPush: true,
         isActive: true,
         lastTriggeredAt: null,
       });
@@ -630,7 +631,14 @@ describe('Portfolio watchlist', () => {
         portfolioId: portfolio.id,
         itemId: item.id,
         alertId: alert.id,
-        payload: { price: '12', frequency: 'every_time', notifyEmail: true, notifyInApp: false, isActive: false },
+        payload: {
+          price: '12',
+          frequency: 'every_time',
+          notifyEmail: true,
+          notifyInApp: false,
+          notifyPush: false,
+          isActive: false,
+        },
         raw: true,
       });
       expect(updated).toMatchObject({
@@ -638,6 +646,7 @@ describe('Portfolio watchlist', () => {
         frequency: 'every_time',
         notifyInApp: false,
         notifyEmail: true,
+        notifyPush: false,
         isActive: false,
       });
 

@@ -8,8 +8,10 @@ import {
   NotificationType,
 } from '@bt/shared/types';
 import Notifications from '@models/notifications.model';
+import { runAfterCommit } from '@services/common/run-after-commit';
 
 import { withTransaction } from '../common/with-transaction';
+import { isApnsConfigured, sendNotificationPush } from './apns';
 
 interface CreateNotificationParams {
   userId: number;
@@ -19,6 +21,8 @@ interface CreateNotificationParams {
   payload?: NotificationPayload;
   priority?: NotificationPriority;
   expiresAt?: Date | null;
+  /** Also sends an APNs push once committed; off by default so user-created notifications never push. */
+  push?: boolean;
 }
 
 export const createNotification = withTransaction(
@@ -30,6 +34,7 @@ export const createNotification = withTransaction(
     payload = {},
     priority = NOTIFICATION_PRIORITIES.normal,
     expiresAt = null,
+    push = false,
   }: CreateNotificationParams): Promise<NotificationModel> => {
     const notification = await Notifications.create({
       userId,
@@ -40,8 +45,13 @@ export const createNotification = withTransaction(
       priority,
       expiresAt,
     });
+    const created: NotificationModel = notification.toJSON();
 
-    return notification.toJSON();
+    if (push && isApnsConfigured()) {
+      // `void`: a slow APNs call must not hold up the commit hook.
+      await runAfterCommit({ fn: () => void sendNotificationPush({ notification: created }) });
+    }
+    return created;
   },
 );
 

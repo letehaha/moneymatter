@@ -14,6 +14,25 @@ const APPLE_ENV_VARS = [
 
 const base64url = (value: string | Buffer) => Buffer.from(value).toString('base64url');
 
+/** ES256 JWT signed with an Apple .p8 key; `\n` escapes in the key are accepted so it fits on one env line. */
+export const signAppleJwt = ({
+  keyId,
+  privateKey,
+  claims,
+}: {
+  keyId: string;
+  privateKey: string;
+  claims: Record<string, unknown>;
+}): string => {
+  const header = base64url(JSON.stringify({ alg: 'ES256', kid: keyId }));
+  const payload = base64url(JSON.stringify(claims));
+  const signature = sign('sha256', Buffer.from(`${header}.${payload}`), {
+    key: createPrivateKey(privateKey.replace(/\\n/g, '\n')),
+    dsaEncoding: 'ieee-p1363',
+  });
+  return `${header}.${payload}.${base64url(signature)}`;
+};
+
 /**
  * Signs the ES256 JWT that Apple accepts as the OAuth client secret.
  * https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret
@@ -33,22 +52,11 @@ export const createAppleClientSecret = ({
   now?: Date;
 }): string => {
   const iat = Math.floor(now.getTime() / 1000);
-  const header = base64url(JSON.stringify({ alg: 'ES256', kid: keyId }));
-  const payload = base64url(
-    JSON.stringify({
-      iss: teamId,
-      iat,
-      exp: iat + MAX_LIFETIME_SECONDS,
-      aud: 'https://appleid.apple.com',
-      sub: clientId,
-    }),
-  );
-  const signature = sign('sha256', Buffer.from(`${header}.${payload}`), {
-    key: createPrivateKey(privateKey.replace(/\\n/g, '\n')),
-    dsaEncoding: 'ieee-p1363',
+  return signAppleJwt({
+    keyId,
+    privateKey,
+    claims: { iss: teamId, iat, exp: iat + MAX_LIFETIME_SECONDS, aud: 'https://appleid.apple.com', sub: clientId },
   });
-
-  return `${header}.${payload}.${base64url(signature)}`;
 };
 
 /**

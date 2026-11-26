@@ -1,4 +1,5 @@
 import {
+  ASSET_CLASS,
   NOTIFICATION_TYPES,
   PLANS,
   SECURITY_PROVIDER,
@@ -91,6 +92,9 @@ describe('Watchlist alerts check', () => {
       price: '95.0000000000',
       percent: null,
       currencyCode: 'USD',
+      assetClass: ASSET_CLASS.stocks,
+      logoUrl: null,
+      securityName: 'ONCE Inc.',
       close: '100.0000000000',
       previousClose: null,
       changePercent: null,

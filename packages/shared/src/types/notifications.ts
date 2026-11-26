@@ -291,3 +291,17 @@ export interface NotificationModel {
   readAt: Date | null;
   expiresAt: Date | null;
 }
+
+export const DEVICE_TOKEN_ENVIRONMENTS = {
+  sandbox: 'sandbox',
+  production: 'production',
+} as const;
+
+export type DeviceTokenEnvironment = (typeof DEVICE_TOKEN_ENVIRONMENTS)[keyof typeof DEVICE_TOKEN_ENVIRONMENTS];
+
+/** `POST /notifications/device-tokens`: `token` is the APNs device token as hex. */
+export interface RegisterDeviceTokenBody {
+  token: string;
+  environment: DeviceTokenEnvironment;
+  bundleId: string;
+}

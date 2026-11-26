@@ -89,6 +89,9 @@ const buildPayload = ({
     securityId: item.security.id,
     symbol: item.security.symbol ?? item.security.name,
     currencyCode: item.security.currencyCode,
+    assetClass: item.security.assetClass,
+    logoUrl: item.security.logoUrl,
+    securityName: item.security.name,
     close: closes.last.price,
     previousClose: closes.previous?.price ?? null,
     closeDate: closes.last.day,
@@ -146,6 +149,7 @@ const evaluateAlert = withTransaction(
         type: NOTIFICATION_TYPES.watchlistAlert,
         ...describeAlert({ payload, locale }),
         payload,
+        push: alert.notifyPush,
       });
     }
     return payload;

@@ -192,6 +192,12 @@ with these, also backend only:
 | `APPLE_IAP_KEY_ID`      | Id of the In-App Purchase key                                                 |
 | `APPLE_IAP_PRIVATE_KEY` | The In-App Purchase `.p8` key; literal `\n` line breaks are accepted          |
 
+Push notifications to the iOS app (watchlist alerts) are signed with the Sign in
+with Apple key (`APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `APPLE_TEAM_ID`), which
+needs the Apple Push Notifications service enabled. Without that key the backend
+sends no pushes. The app registers its device token only when its bundle id
+equals `APPLE_APP_BUNDLE_IDENTIFIER`.
+
 ---
 
 Setup guide: [setup-guide.md](setup-guide.md) · Troubleshooting:
