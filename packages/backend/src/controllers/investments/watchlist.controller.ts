@@ -115,7 +115,11 @@ export const deleteItemController = createController(z.object({ params: itemPara
   await deleteItem({ userId: user.id, portfolioId: params.id, itemId: params.itemId });
 });
 
-const channels = { notifyInApp: z.boolean().optional(), notifyEmail: z.boolean().optional() };
+const channels = {
+  notifyInApp: z.boolean().optional(),
+  notifyEmail: z.boolean().optional(),
+  notifyPush: z.boolean().optional(),
+};
 
 export const createAlertController = createController(
   z.object({

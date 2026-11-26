@@ -42,6 +42,9 @@ export default class WatchlistAlerts extends Model {
   notifyEmail!: boolean;
 
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
+  notifyPush!: boolean;
+
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   isActive!: boolean;
 
   /** An `every_time` alert fires only while armed; a close where the condition fails re-arms it. */

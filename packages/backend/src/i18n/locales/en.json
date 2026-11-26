@@ -288,7 +288,9 @@
     },
     "unrealizedLossAlert": {
       "title_one": "{{count}} holding crossed your loss alert",
-      "title_other": "{{count}} holdings crossed your loss alert"
+      "title_other": "{{count}} holdings crossed your loss alert",
+      "emailCta": "Open investments",
+      "emailFooter": "You get this email because you turned on email for unrealized loss alerts in Settings."
     },
     "watchlist": {
       "itemNotFound": "Watchlist item not found",

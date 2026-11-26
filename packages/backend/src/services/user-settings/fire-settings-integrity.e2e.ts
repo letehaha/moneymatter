@@ -1,4 +1,4 @@
-import { type FireSettings, NOTIFICATION_TYPES } from '@bt/shared/types';
+import { type FireSettings } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
@@ -106,16 +106,7 @@ describe('FIRE settings integrity across settings writers', () => {
       const patches = [
         { locale: 'uk' },
         { dashboard: { widgets: [{ widgetId: 'balance-trend', colSpan: 2, rowSpan: 1 }] } },
-        {
-          notifications: {
-            enabled: false,
-            types: {
-              [NOTIFICATION_TYPES.trackerAlert]: false,
-              [NOTIFICATION_TYPES.system]: true,
-              [NOTIFICATION_TYPES.changelog]: true,
-            },
-          },
-        },
+        { notifications: { watchlistAlerts: { push: false } } },
       ];
       for (const patch of patches) {
         const response = await helpers.patchUserSettings({ patch });

@@ -655,6 +655,10 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
     model: models.BillingWebhookEvents,
     reason: 'Webhook dedupe markers for the Stripe and App Store accounts, meaningless outside them.',
   },
+  {
+    model: models.DeviceTokens,
+    reason: 'APNs push tokens of the devices signed in to this server; a device registers again after sign-in.',
+  },
   { model: models.SignupLedger, reason: 'Global signup/trial ledger keyed by email hash, not per-user data.' },
   {
     model: models.FeatureUsages,

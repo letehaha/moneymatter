@@ -5,6 +5,7 @@ import {
   WATCHLIST_ALERT_FREQUENCIES,
   WATCHLIST_ALERT_TYPES,
   type WatchlistAlertNotificationPayload,
+  getNotificationChannels,
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
@@ -89,6 +90,9 @@ const buildPayload = ({
     securityId: item.security.id,
     symbol: item.security.symbol ?? item.security.name,
     currencyCode: item.security.currencyCode,
+    assetClass: item.security.assetClass,
+    logoUrl: item.security.logoUrl,
+    securityName: item.security.name,
     close: closes.last.price,
     previousClose: closes.previous?.price ?? null,
     closeDate: closes.last.day,
@@ -110,10 +114,13 @@ const evaluateAlert = withTransaction(
     alert,
     closes,
     locale,
+    canEmail,
   }: {
     alert: LoadedAlert;
     closes: SecurityDailyCloses;
     locale: string;
+    /** The user's watchlist category allows email. */
+    canEmail: boolean;
   }): Promise<WatchlistAlertNotificationPayload | null> => {
     const conditionMet = isAlertConditionMet({ alert, closes });
     const isOnce = alert.frequency === WATCHLIST_ALERT_FREQUENCIES.once;
@@ -127,7 +134,7 @@ const evaluateAlert = withTransaction(
         ...(payload && {
           lastTriggeredAt: new Date(),
           isActive: !isOnce,
-          ...(alert.notifyEmail && { pendingEmailPayload: payload }),
+          ...(alert.notifyEmail && canEmail && { pendingEmailPayload: payload }),
         }),
       },
       {
@@ -146,6 +153,7 @@ const evaluateAlert = withTransaction(
         type: NOTIFICATION_TYPES.watchlistAlert,
         ...describeAlert({ payload, locale }),
         payload,
+        push: alert.notifyPush,
       });
     }
     return payload;
@@ -162,9 +170,12 @@ const checkUser = async ({
   result: { fired: number; failed: number };
 }) => {
   let locale: string;
+  let canEmail: boolean;
   try {
     if (!hasFeature({ entitlements: await getEntitlementsByUserId({ userId }), feature: FEATURES.watchlist })) return;
-    locale = (await getUserSettings({ userId })).locale;
+    const settings = await getUserSettings({ userId });
+    locale = settings.locale;
+    canEmail = getNotificationChannels({ category: 'watchlistAlerts', preferences: settings.notifications }).email;
   } catch (error) {
     result.failed += pending.length;
     logger.error(
@@ -176,7 +187,7 @@ const checkUser = async ({
 
   for (const { alert, closes } of pending) {
     try {
-      if (await evaluateAlert({ alert, closes, locale })) result.fired += 1;
+      if (await evaluateAlert({ alert, closes, locale, canEmail })) result.fired += 1;
     } catch (error) {
       result.failed += 1;
       logger.error(

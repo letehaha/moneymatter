@@ -137,3 +137,23 @@ export function adminBroadcastNotification<R extends boolean | undefined = false
     raw,
   });
 }
+
+export async function registerDeviceToken<R extends boolean | undefined = false>({
+  payload,
+  raw,
+}: {
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return helpers.makeRequest<void, R>({ method: 'post', url: '/notifications/device-tokens', payload, raw });
+}
+
+export async function unregisterDeviceToken<R extends boolean | undefined = false>({
+  token,
+  raw,
+}: {
+  token: string;
+  raw?: R;
+}) {
+  return helpers.makeRequest<void, R>({ method: 'delete', url: `/notifications/device-tokens/${token}`, raw });
+}

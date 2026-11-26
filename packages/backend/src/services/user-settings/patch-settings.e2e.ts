@@ -204,6 +204,33 @@ describe('Patch user settings', () => {
     expect((await helpers.getUserSettings({ raw: true })).ui?.transactionForm?.optionalFields).toStrictEqual([]);
   });
 
+  it('merges notification preferences per category and rejects unknown categories and channels', async () => {
+    expect((await helpers.getUserSettings({ raw: true })).notifications).toBeUndefined();
+
+    await helpers.patchUserSettings({ raw: true, patch: { notifications: { watchlistAlerts: { push: false } } } });
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { watchlistAlerts: { email: false }, invitations: { enabled: false } } },
+    });
+    expect(patched.notifications).toEqual({
+      watchlistAlerts: { push: false, email: false },
+      invitations: { enabled: false },
+    });
+
+    for (const notifications of [
+      { watchlistAlerts: { push: 'no' } },
+      { invitations: { email: true } },
+      { unrealizedLoss: { enabled: false } },
+      { watchlistAlert: { push: false } },
+    ]) {
+      const rejected = await helpers.patchUserSettings({ patch: { notifications } });
+      expect({ notifications, status: rejected.statusCode }).toEqual({
+        notifications,
+        status: ERROR_CODES.ValidationError,
+      });
+    }
+  });
+
   it('persists showPayeeLogos and rejects a non-boolean', async () => {
     expect((await helpers.getUserSettings({ raw: true })).showPayeeLogos).toBeUndefined();
 

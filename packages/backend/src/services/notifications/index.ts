@@ -1,15 +1,20 @@
 import {
   NOTIFICATION_PRIORITIES,
   NOTIFICATION_STATUSES,
+  NOTIFICATION_TYPE_CATEGORIES,
   NotificationModel,
   NotificationPayload,
   NotificationPriority,
   NotificationStatus,
   NotificationType,
+  getNotificationChannels,
 } from '@bt/shared/types';
 import Notifications from '@models/notifications.model';
+import { runAfterCommit } from '@services/common/run-after-commit';
+import { getUserSettings } from '@services/user-settings/get-user-settings';
 
 import { withTransaction } from '../common/with-transaction';
+import { isApnsConfigured, sendNotificationPush } from './apns';
 
 interface CreateNotificationParams {
   userId: number;
@@ -19,8 +24,16 @@ interface CreateNotificationParams {
   payload?: NotificationPayload;
   priority?: NotificationPriority;
   expiresAt?: Date | null;
+  /** Off for notifications the user creates themselves, which their own preferences shouldn't drop. */
+  applyPreferences?: boolean;
+  /** Also sends an APNs push once committed; off by default so user-created notifications never push. */
+  push?: boolean;
 }
 
+/**
+ * The user's preferences for the type's category can drop the notification or its push; null when dropped.
+ * A push always has its in-app row: opening one lands on the notifications list.
+ */
 export const createNotification = withTransaction(
   async ({
     userId,
@@ -30,18 +43,28 @@ export const createNotification = withTransaction(
     payload = {},
     priority = NOTIFICATION_PRIORITIES.normal,
     expiresAt = null,
-  }: CreateNotificationParams): Promise<NotificationModel> => {
-    const notification = await Notifications.create({
-      userId,
-      type,
-      title,
-      message,
-      payload,
-      priority,
-      expiresAt,
-    });
+    applyPreferences = true,
+    push = false,
+  }: CreateNotificationParams): Promise<NotificationModel | null> => {
+    const category = applyPreferences && NOTIFICATION_TYPE_CATEGORIES[type];
+    if (category) {
+      const channels = getNotificationChannels({
+        category,
+        preferences: (await getUserSettings({ userId })).notifications,
+      });
+      if (!channels.inApp) return null;
+      push &&= channels.push;
+    }
 
-    return notification.toJSON();
+    const created: NotificationModel = (
+      await Notifications.create({ userId, type, title, message, payload, priority, expiresAt })
+    ).toJSON();
+
+    if (push && isApnsConfigured()) {
+      // `void`: a slow APNs call must not hold up the commit hook.
+      await runAfterCommit({ fn: () => void sendNotificationPush({ notification: created }) });
+    }
+    return created;
   },
 );
 

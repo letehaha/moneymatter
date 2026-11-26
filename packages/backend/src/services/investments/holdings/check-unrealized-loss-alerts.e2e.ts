@@ -1,8 +1,9 @@
-import { ASSET_CLASS, NOTIFICATION_TYPES, SECURITY_PROVIDER } from '@bt/shared/types';
-import { describe, expect, it } from '@jest/globals';
+import { ASSET_CLASS, NOTIFICATION_TYPES, SECURITY_PROVIDER, UNREALIZED_LOSS_ALERT_DEFAULTS } from '@bt/shared/types';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import Holdings from '@models/investments/holdings.model';
 import Securities from '@models/investments/securities.model';
 import SecurityPricing from '@models/investments/security-pricing.model';
+import * as sendEmailModule from '@services/email/send-email';
 import * as helpers from '@tests/helpers';
 import { AED_PER_USD } from '@tests/mocks/exchange-rates/data';
 
@@ -68,6 +69,10 @@ const seedHolding = async ({ symbol, price }: { symbol: string; price: string })
 };
 
 describe('Unrealized loss alerts check', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('sends nothing while alerts are off', async () => {
     await seedHolding({ symbol: 'OFF', price: '50' });
 
@@ -85,12 +90,16 @@ describe('Unrealized loss alerts check', () => {
     expect(notifications).toHaveLength(1);
     expect(notifications[0]!.payload).toEqual({
       currencyCode: global.BASE_CURRENCY_CODE,
+      percentThreshold: UNREALIZED_LOSS_ALERT_DEFAULTS.percentThreshold,
+      amountThreshold: UNREALIZED_LOSS_ALERT_DEFAULTS.amountThreshold,
       holdings: [
         {
           portfolioId: portfolio.id,
           portfolioName: portfolio.name,
           securityId: security.id,
           symbol: 'DROP',
+          assetClass: ASSET_CLASS.stocks,
+          logoUrl: null,
           lossPercent: 20,
           lossAmount: expect.closeTo(200 * AED_PER_USD, 1),
         },
@@ -130,6 +139,32 @@ describe('Unrealized loss alerts check', () => {
 
     expect((await checkUnrealizedLossAlerts()).notified).toBe(0);
     expect(await lossNotifications()).toHaveLength(0);
+  });
+
+  it('emails only once the user turns email on for loss alerts', async () => {
+    const sendSpy = jest.spyOn(sendEmailModule, 'sendEmail').mockResolvedValue({
+      data: { id: 'email-id' },
+      error: null,
+      headers: null,
+    } as Awaited<ReturnType<typeof sendEmailModule.sendEmail>>);
+    await seedHolding({ symbol: 'QUIET', price: '80' });
+    await enableAlerts();
+
+    expect((await checkUnrealizedLossAlerts()).notified).toBe(1);
+    expect(sendSpy).not.toHaveBeenCalled();
+
+    await seedHolding({ symbol: 'LOUD', price: '80' });
+    await helpers.patchUserSettings({
+      patch: { notifications: { unrealizedLoss: { email: true, inApp: false, push: false } } },
+      raw: true,
+    });
+
+    expect((await checkUnrealizedLossAlerts()).notified).toBe(1);
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ subject: '1 holding crossed your loss alert', html: expect.stringContaining('LOUD') }),
+    );
+    expect(await lossNotifications()).toHaveLength(1);
   });
 
   it('sends one digest for crossings across portfolios', async () => {

@@ -3,15 +3,22 @@ import {
   REMIND_BEFORE_DAYS,
   RemindBeforePreset,
   SUBSCRIPTION_PERIOD_STATUSES,
+  type SubscriptionReminderNotificationPayload,
+  getNotificationChannels,
 } from '@bt/shared/types';
 import { moneyToApiDecimalOrNull } from '@common/types/money';
 import { logger } from '@js/utils/logger';
+import Accounts from '@models/accounts.model';
+import Categories from '@models/categories.model';
 import SubscriptionPeriodNotifications from '@models/subscription-period-notifications.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
+import * as UsersCurrencies from '@models/users-currencies.model';
 import * as notificationsService from '@services/notifications';
+import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { Op } from 'sequelize';
 
+import { convertSubscriptionAmountToAccountCurrency } from './convert-subscription-amount';
 import { queueSubscriptionReminderEmail } from './reminder-email-queue';
 
 interface CheckResult {
@@ -60,6 +67,47 @@ async function markOverduePeriods({ today }: { today: string }): Promise<number>
   return updatedCount;
 }
 
+/** Card fields for the reminder push. A missing rate leaves the base amount out rather than losing the reminder. */
+async function describeSubscription({
+  subscription,
+  baseCurrencyCode,
+}: {
+  subscription: Subscriptions;
+  baseCurrencyCode: string | null;
+}): Promise<Partial<SubscriptionReminderNotificationPayload>> {
+  let baseAmount: number | null = null;
+  if (baseCurrencyCode && subscription.expectedCurrencyCode && subscription.expectedCurrencyCode !== baseCurrencyCode) {
+    try {
+      baseAmount =
+        (
+          await convertSubscriptionAmountToAccountCurrency({
+            subscription,
+            accountCurrencyCode: baseCurrencyCode,
+            date: new Date(),
+          })
+        )?.toNumber() ?? null;
+    } catch (error) {
+      logger.warn('[Subscription Reminders] Base amount unavailable for the reminder card', {
+        code: 'SUBSCRIPTION_REMINDER_BASE_AMOUNT_FAILED',
+        subscriptionId: subscription.id,
+        error: (error as Error).message,
+      });
+    }
+  }
+  return {
+    name: subscription.name,
+    frequency: subscription.frequency,
+    intervalCount: subscription.intervalCount,
+    intervalUnit: subscription.intervalUnit,
+    categoryName: subscription.category?.name ?? null,
+    accountName: subscription.account?.name ?? null,
+    logoDomain: subscription.logoDomain,
+    logoInitials: subscription.logoInitials,
+    logoColor: subscription.logoColor,
+    ...(baseAmount !== null && { baseAmount, baseCurrencyCode }),
+  };
+}
+
 /**
  * Check open periods against their subscription's remindBefore presets and send
  * notifications that haven't been sent yet.
@@ -82,6 +130,22 @@ async function markOverduePeriods({ today }: { today: string }): Promise<number>
  */
 async function sendRemindBeforeNotifications({ today }: { today: string }): Promise<number> {
   let sent = 0;
+  const userContexts = new Map<number, { email: boolean; baseCurrencyCode: string | null }>();
+  const getUserContext = async ({ userId }: { userId: number }) => {
+    let context = userContexts.get(userId);
+    if (!context) {
+      const [{ notifications }, baseCurrency] = await Promise.all([
+        getUserSettings({ userId }),
+        UsersCurrencies.getBaseCurrency({ userId }),
+      ]);
+      context = {
+        email: getNotificationChannels({ category: 'subscriptionReminders', preferences: notifications }).email,
+        baseCurrencyCode: baseCurrency?.currency.code ?? null,
+      };
+      userContexts.set(userId, context);
+    }
+    return context;
+  };
 
   const subscriptions = await Subscriptions.findAll({
     where: {
@@ -97,6 +161,8 @@ async function sendRemindBeforeNotifications({ today }: { today: string }): Prom
         },
         required: false,
       },
+      { model: Categories, attributes: ['name'] },
+      { model: Accounts, attributes: ['name'] },
     ],
   });
 
@@ -131,7 +197,9 @@ async function sendRemindBeforeNotifications({ today }: { today: string }): Prom
           // delivered or this subscription has email off. While `emailSent` is
           // still false (delivery pending or a previous send failed), the run falls
           // through to re-queue the email.
-          if (existing && (existing.emailSent || !subscription.notifyEmail)) continue;
+          const userContext = await getUserContext({ userId: subscription.userId });
+          const notifyEmail = subscription.notifyEmail && userContext.email;
+          if (existing && (existing.emailSent || !notifyEmail)) continue;
 
           const expectedDecimal = moneyToApiDecimalOrNull(subscription.expectedAmount);
 
@@ -164,10 +232,12 @@ async function sendRemindBeforeNotifications({ today }: { today: string }): Prom
                 subscriptionId: subscription.id,
                 periodId: period.id,
                 dueDate: period.dueDate,
-                preset,
+                preset: preset as RemindBeforePreset,
                 expectedAmount: expectedDecimal,
                 currencyCode: subscription.expectedCurrencyCode,
-              },
+                ...(await describeSubscription({ subscription, baseCurrencyCode: userContext.baseCurrencyCode })),
+              } satisfies SubscriptionReminderNotificationPayload,
+              push: true,
             });
           }
 
@@ -178,7 +248,7 @@ async function sendRemindBeforeNotifications({ today }: { today: string }): Prom
           // worker that exhausts its retries leaves it re-queueable on a later run.
           // An enqueue failure here (e.g. Redis down) records the error and likewise
           // leaves the row re-queueable.
-          if (subscription.notifyEmail) {
+          if (notifyEmail) {
             try {
               await queueSubscriptionReminderEmail({
                 userId: subscription.userId,
