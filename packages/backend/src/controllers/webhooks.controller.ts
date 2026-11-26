@@ -2,6 +2,7 @@ import { BadRequestError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import { captureException } from '@js/utils/sentry';
 import { handleAppleNotification } from '@services/billing/apple/handle-notification.service';
+import { handleGiftPurchase, isGiftCheckoutSession } from '@services/billing/gifts/gift-purchase.service';
 import { handleBillingRefund, isRefundEvent } from '@services/billing/handle-refund.service';
 import { handleBillingWebhook as handleBillingWebhookService } from '@services/billing/handle-webhook.service';
 import { handleLifetimePurchase, isLifetimeCheckoutEvent } from '@services/billing/lifetime-purchase.service';
@@ -127,7 +128,9 @@ export async function handleBillingWebhook(req: Request, res: Response): Promise
       return;
     }
     if (isLifetimeCheckoutEvent(stripeEvent)) {
-      const outcome = await handleLifetimePurchase({ event: stripeEvent });
+      const outcome = isGiftCheckoutSession({ session: stripeEvent.data.object })
+        ? await handleGiftPurchase({ event: stripeEvent })
+        : await handleLifetimePurchase({ event: stripeEvent });
       logger.info(`Billing webhook ${stripeEvent.type} ${stripeEvent.id}: ${outcome}`);
       res.status(200).json({ outcome });
       return;

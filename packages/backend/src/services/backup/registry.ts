@@ -656,6 +656,10 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
     reason: 'Webhook dedupe markers for the Stripe and App Store accounts, meaningless outside them.',
   },
   {
+    model: models.Gifts,
+    reason: 'Paid gift codes tied to a Stripe payment and a recipient email, not data the redeemer owns.',
+  },
+  {
     model: models.DeviceTokens,
     reason: 'APNs push tokens of the devices signed in to this server; a device registers again after sign-in.',
   },

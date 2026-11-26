@@ -4014,5 +4014,19 @@
     "uk": "zip",
     "ukNote": "unzip = «розпакувати».",
     "variants": [".zip"]
+  },
+  {
+    "term": "gift code",
+    "partOfSpeech": "noun",
+    "definition": "The code the recipient of a gift subscription enters in Settings > Plan & billing to start the gifted plan.",
+    "translatable": true,
+    "uk": "подарунковий код"
+  },
+  {
+    "term": "redeem",
+    "partOfSpeech": "verb",
+    "definition": "To enter a gift code and start the gifted plan.",
+    "translatable": true,
+    "uk": "активувати"
   }
 ]

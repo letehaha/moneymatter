@@ -261,6 +261,15 @@
   font-weight: 600;
   color: var(--fg);
 }
+.tier-tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
 .tag {
   flex: none;
   padding: 2px 8px;

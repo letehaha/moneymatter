@@ -98,11 +98,17 @@ export async function resolveEntitlements({ user }: { user: EntitlementUser }): 
     status: s.status,
     billingCycle: s.billingCycle,
     currentPeriodEndsAt: s.currentPeriodEndsAt.toISOString(),
+    currentPeriodStartsAt: s.currentPeriodStartsAt?.toISOString() ?? null,
     scheduledChange: s.scheduledChange,
   }));
 
   const entitled = subscriptions.filter((s) =>
-    isEntitledSubscription({ status: s.status, currentPeriodEndsAt: s.currentPeriodEndsAt, now }),
+    isEntitledSubscription({
+      status: s.status,
+      currentPeriodEndsAt: s.currentPeriodEndsAt,
+      currentPeriodStartsAt: s.currentPeriodStartsAt,
+      now,
+    }),
   );
   const features = new Set<Feature>();
   let seats = 0;

@@ -276,6 +276,89 @@ describe('buildPlanBillingView', () => {
       expect(view.hasStripeSubscription).toBe(true);
     });
   });
+
+  describe('gift subscription', () => {
+    const giftEndsAt = addDays(new Date(), 365).toISOString();
+    const gift = (overrides: Partial<BillingSubscriptionSummary> = {}) =>
+      buildSubscription({
+        provider: 'gift',
+        externalSubscriptionId: 'gift_1',
+        billingCycle: 'year',
+        currentPeriodEndsAt: giftEndsAt,
+        scheduledChange: { action: 'cancel', effectiveAt: giftEndsAt },
+        ...overrides,
+      });
+
+    it('shows the gift and its end date without any billing management', () => {
+      const view = buildView({ entitlements: buildEntitlements({ subscriptions: [gift()] }) });
+
+      expect(view.status?.title).toBe('settings.planBilling.current.gift');
+      expect(view.status?.badge?.label).toBe('settings.planBilling.status.gift');
+      expect(view.status?.meta).toContain('settings.planBilling.current.accessUntil');
+      expect(view.managedByAppStore).toBe(false);
+      expect(view.hasStripeSubscription).toBe(false);
+      expect(view.hasAppStoreSubscription).toBe(false);
+    });
+
+    it.each(['month', 'year'] as const)('blocks every purchase on the %s tab until the gift ends', (selectedCycle) => {
+      const view = buildView({ entitlements: buildEntitlements({ subscriptions: [gift()] }), selectedCycle });
+
+      expect(view.tiers.essential.isCurrent).toBe(true);
+      expect(view.tiers.essential.cta).toMatchObject({ disabled: true, action: null });
+      expect(view.tiers.plus.cta).toMatchObject({
+        disabled: true,
+        action: null,
+        note: 'settings.planBilling.ctaNote.afterGift',
+      });
+    });
+
+    it.each([
+      ['gift first', true],
+      ['stripe first', false],
+    ])('speaks for a gift of the same or higher tier over a still-renewing Stripe row (%s)', (_, giftFirst) => {
+      const stripe = buildSubscription({ tier: 'essential', billingCycle: 'month' });
+      const plusGift = gift({ tier: 'plus' });
+      const view = buildView({
+        entitlements: buildEntitlements({ subscriptions: giftFirst ? [plusGift, stripe] : [stripe, plusGift] }),
+        selectedCycle: 'month',
+      });
+
+      expect(view.activeTier).toBe('plus');
+      expect(view.status?.title).toBe('settings.planBilling.current.gift');
+      expect(view.hasStripeSubscription).toBe(true);
+      expect(view.tiers.plus.isCurrent).toBe(true);
+      expect(view.tiers.essential.isCurrent).toBe(false);
+      expect(view.tiers.essential.cta).toMatchObject({ disabled: true, action: null });
+    });
+
+    it.each([
+      ['gift first', true],
+      ['stripe first', false],
+    ])('keeps a higher-tier Stripe row current over a lower-tier gift (%s)', (_, giftFirst) => {
+      const stripe = buildSubscription({ tier: 'plus', billingCycle: 'month' });
+      const view = buildView({
+        entitlements: buildEntitlements({ subscriptions: giftFirst ? [gift(), stripe] : [stripe, gift()] }),
+        selectedCycle: 'month',
+      });
+
+      expect(view.activeTier).toBe('plus');
+      expect(view.status?.title).not.toBe('settings.planBilling.current.gift');
+      expect(view.tiers.plus.isCurrent).toBe(true);
+      expect(view.tiers.essential.isCurrent).toBe(false);
+    });
+
+    it('offers checkout again once the gift has ended', () => {
+      const view = buildView({
+        entitlements: buildEntitlements({
+          readOnly: true,
+          subscriptions: [gift({ currentPeriodEndsAt: addDays(new Date(), -1).toISOString() })],
+        }),
+      });
+
+      expect(view.activeTier).toBe(null);
+      expect(view.tiers.plus.cta.action).toEqual({ kind: 'checkout', tier: 'plus', cycle: 'year' });
+    });
+  });
 });
 
 describe('formatUsd', () => {

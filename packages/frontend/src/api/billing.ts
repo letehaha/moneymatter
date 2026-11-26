@@ -1,5 +1,5 @@
 import { api } from '@/api/_api';
-import type { BillingCycle, BillingTier } from '@bt/shared/types';
+import type { BillingCycle, BillingTier, RedeemGiftResponse } from '@bt/shared/types';
 
 /** Stripe-hosted checkout; the backend owns the URL Stripe sends the buyer back to. */
 export const createBillingCheckout = async ({
@@ -22,4 +22,8 @@ export const createBillingPortalSession = async ({
   flow?: 'subscription_update';
 } = {}): Promise<{ url: string }> => {
   return api.post('/billing/portal', { flow }, { silent: true });
+};
+
+export const redeemGift = async ({ code }: { code: string }): Promise<RedeemGiftResponse> => {
+  return api.post('/billing/gifts/redeem', { code }, { silent: true });
 };
