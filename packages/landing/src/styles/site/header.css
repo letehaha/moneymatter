@@ -72,6 +72,13 @@
   text-decoration: none;
   transition: color 0.15s;
 }
+.nav-gift {
+  display: inline-flex;
+}
+.nav-gift svg {
+  width: 16px;
+  height: 16px;
+}
 .nav-feat {
   display: flex;
   align-items: center;
