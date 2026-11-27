@@ -1,6 +1,6 @@
 import { trackEvent } from '../index';
 
-export type BankProvider = 'monobank' | 'enable_banking' | 'lunchflow' | 'walutomat' | 'simplefin' | 'akahu';
+export type BankProvider = 'monobank' | 'enable_banking' | 'lunchflow' | 'walutomat' | 'simplefin' | 'akahu' | 'plaid';
 
 /**
  * Track bank connection completion.

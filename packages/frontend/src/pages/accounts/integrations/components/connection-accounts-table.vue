@@ -67,7 +67,7 @@
         <div
           class="col-start-2 row-span-2 row-start-1 self-center text-right text-sm font-semibold whitespace-nowrap tabular-nums @2xl/accounts:col-start-3 @2xl/accounts:row-span-1"
         >
-          {{ toLocalCurrencyNumber(account.currentBalance, { currency: account.currencyCode }) }}
+          {{ toLocalCurrencyNumber(displayBalance(account), { currency: account.currencyCode }) }}
           <span class="text-muted-foreground text-xs font-normal">{{ account.currencyCode }}</span>
         </div>
       </div>
@@ -139,12 +139,15 @@ const emit = defineEmits<{ connectRemaining: [] }>();
 
 const { accountsRecord } = storeToRefs(useAccountsStore());
 const storeAccount = (id: string) => accountsRecord.value[id];
+const displayBalance = (account: ConnectionAccount) => account.currentBalance;
 
 // Sort in the base currency so mixed-currency accounts compare fairly.
 const sortedAccounts = computed(() =>
   [...props.accounts].sort((a, b) => {
-    const balanceOf = (account: ConnectionAccount) =>
-      storeAccount(account.id)?.refCurrentBalance ?? account.currentBalance;
+    const balanceOf = (account: ConnectionAccount) => {
+      const stored = storeAccount(account.id);
+      return stored ? stored.refCurrentBalance : displayBalance(account);
+    };
     return balanceOf(b) - balanceOf(a);
   }),
 );

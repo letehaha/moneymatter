@@ -37,11 +37,9 @@ const creditAccounts = computed(() => {
   return accounts.value
     .filter((a) => a.status === ACCOUNT_STATUSES.active && !a.excludeFromStats && a.creditLimit > 0)
     .map((a) => {
-      // Provider-synced (non-system) cards report a balance that already nets off the
-      // credit limit, so their drawn amount is the limit minus the balance at any sign.
-      const balanceIncludesCreditLimit = a.type !== ACCOUNT_TYPES.system;
-      // With the setting off, manual cards track debt, so a positive balance is an overpayment.
-      const balanceIsAvailableCredit = !!userSettings.value?.includeCreditLimitInStats;
+      const balanceIncludesCreditLimit = a.type !== ACCOUNT_TYPES.system && a.type !== ACCOUNT_TYPES.plaid;
+      const balanceIsAvailableCredit =
+        a.type !== ACCOUNT_TYPES.plaid && !!userSettings.value?.includeCreditLimitInStats;
       const used = computeCreditUsed({
         balance: a.currentBalance,
         creditLimit: a.creditLimit,

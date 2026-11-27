@@ -1,5 +1,11 @@
 <template>
-  <ResponsiveDialog :open="open" dialog-content-class="sm:max-w-2xl" @update:open="emit('update:open', $event)">
+  <ResponsiveDialog
+    v-if="plaidPhase !== 'open'"
+    :open="open"
+    :dismissible="plaidPhase !== 'finishing'"
+    dialog-content-class="sm:max-w-2xl"
+    @update:open="handleOpenChange"
+  >
     <template #title>{{ dialogTitle }}</template>
 
     <PlanRestricted :feature="FEATURES.bank_providers" overlay>
@@ -60,9 +66,10 @@
               </span>
 
               <span class="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs font-normal">
-                <span :class="pricingClass(row.meta.pricing)">{{ t(row.meta.pricingLabelKey) }}</span>
-
-                <span class="text-muted-foreground">·</span>
+                <template v-if="row.meta.pricing && row.meta.pricingLabelKey">
+                  <span :class="pricingClass(row.meta.pricing)">{{ t(row.meta.pricingLabelKey) }}</span>
+                  <span class="text-muted-foreground">·</span>
+                </template>
 
                 <ResponsiveTooltip :content="t(row.meta.difficultyTooltipKey)" content-class-name="max-w-xs text-wrap">
                   <span class="text-muted-foreground inline-flex items-center gap-1">
@@ -128,6 +135,13 @@
           @connected="handleProviderConnected"
           @cancel="handleCancel"
         />
+        <PlaidConnector
+          v-else-if="selectedProviderType === BANK_PROVIDER_TYPE.PLAID"
+          :phase="plaidPhase"
+          :error="plaidError"
+          @connect="handlePlaidConnect"
+          @cancel="handleCancel"
+        />
       </template>
     </PlanRestricted>
   </ResponsiveDialog>
@@ -151,19 +165,26 @@ import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { cn } from '@/lib/utils';
+import { ROUTES_NAMES } from '@/routes/constants';
 import { BANK_PROVIDER_TYPE, FEATURES } from '@bt/shared/types';
 import { ChevronRightIcon, InfoIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
+import { usePlaidLink } from '../use-plaid-link';
 import AkahuConnector from './akahu-connector.vue';
 import EnableBankingConnector from './enable-banking-connector.vue';
 import LunchFlowConnector from './lunchflow-connector.vue';
 import MonobankConnector from './monobank-connector.vue';
+import PlaidConnector from './plaid-connector.vue';
 import SimplefinConnector from './simplefin-connector.vue';
 import WalutomatConnector from './walutomat-connector.vue';
 
 const { t } = useI18n();
+const router = useRouter();
+const { phase: plaidPhase, run: runPlaidLink, cancel: cancelPlaidLink } = usePlaidLink();
+const plaidError = ref(false);
 
 interface Props {
   open: boolean;
@@ -250,12 +271,39 @@ const handleProviderConnected = () => {
   resetDialog();
 };
 
+const handlePlaidConnect = async () => {
+  if (!props.open || plaidPhase.value || !props.providers.some((provider) => provider.type === BANK_PROVIDER_TYPE.PLAID)) {
+    return;
+  }
+  plaidError.value = false;
+  const result = await runPlaidLink();
+  if (!result) return;
+  if (result.status === 'connected') {
+    handleProviderConnected();
+    await router.push({
+      name: ROUTES_NAMES.accountIntegrationDetails,
+      params: { connectionId: result.connectionId },
+      query: { connect: 'accounts' },
+    });
+  } else if (result.status !== 'cancelled') {
+    plaidError.value = true;
+  }
+};
+
+const handleOpenChange = (open: boolean) => {
+  if (!open) cancelPlaidLink();
+  emit('update:open', open);
+};
+
 const handleCancel = () => {
+  cancelPlaidLink();
+  plaidError.value = false;
   currentStep.value = 'select-provider';
   selectedProviderType.value = null;
 };
 
 const resetDialog = () => {
+  plaidError.value = false;
   currentStep.value = 'select-provider';
   selectedProviderType.value = null;
   selectedRegionFilter.value = REGION_FILTER_ALL;
@@ -264,9 +312,11 @@ const resetDialog = () => {
 // Reset dialog state when it closes
 watch(
   () => props.open,
-  (isOpen) => {
+  (isOpen, _wasOpen, onCleanup) => {
     if (!isOpen) {
-      setTimeout(resetDialog, 200); // Small delay to avoid visual glitches
+      cancelPlaidLink();
+      const reset = window.setTimeout(resetDialog, 200);
+      onCleanup(() => window.clearTimeout(reset));
     }
   },
 );

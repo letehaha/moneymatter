@@ -74,6 +74,22 @@ Ignored unless you use the [Traefik overlay](traefik-overlay.md)
 | `ATTACHMENTS_PATH`                                                             | Where transaction attachments live on the host. Unset = the Docker-managed `attachments_data` volume. Set to a host directory (absolute, or starting with `./`) to use a NAS/shared mount. The backend runs inside the container as user id 1001 and must be able to write there, otherwise uploads fail with "permission denied": on a local disk run `sudo chown -R 1001:1001 <dir>`; on an SMB share mount it with `uid=1001,gid=1001`; on NFS set the owner on the NAS side |
 | `ATTACHMENTS_S3_BUCKET`                                                        | Store attachments in S3-compatible object storage (e.g. Cloudflare R2) instead of on disk. Needs `ATTACHMENTS_S3_ENDPOINT`, `ATTACHMENTS_S3_ACCESS_KEY_ID` and `ATTACHMENTS_S3_SECRET_ACCESS_KEY`                                                                                                                                                                                                                                                                               |
 
+### Plaid (self-hosted only)
+
+Plaid is available when `PLAID_ENV` is `sandbox` or `production` and both
+instance credentials are set for that environment. Only `PLAID_ENV` is passed
+to the frontend container, to select the Plaid Content Security Policy hosts.
+Keep credentials and tokens private.
+
+| Variable | Purpose |
+| --- | --- |
+| `PLAID_ENV` | `sandbox` or `production`; selects the Plaid environment |
+| `PLAID_CLIENT_ID` | Instance Plaid client ID |
+| `PLAID_SECRET` | Instance Plaid secret for the selected environment |
+| `PLAID_REDIRECT_URI` | Optional for OAuth institutions: exact HTTPS frontend URL ending in `/plaid-callback`, registered identically in the Plaid Dashboard, including any port |
+
+See [Plaid setup and Sandbox](https://docs.moneymatter.app/import/bank-connections/#plaid-for-self-hosted-moneymatter).
+
 ## Frontend runtime (optional)
 
 Interpolated into the frontend container's `environment:` block. Change and

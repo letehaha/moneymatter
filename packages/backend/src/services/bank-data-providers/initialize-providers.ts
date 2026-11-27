@@ -5,6 +5,7 @@ import { EnableBankingProvider } from './enablebanking';
 import { LunchFlowProvider } from './lunchflow/lunchflow.provider';
 import { MonobankProvider } from './monobank';
 import { ensureMonobankQueueRecovery } from './monobank/transaction-sync-queue';
+import { plaidProvider } from './plaid';
 import { bankProviderRegistry } from './registry';
 import { SimplefinProvider } from './simplefin/simplefin.provider';
 import { WalutomatProvider } from './walutomat';
@@ -32,6 +33,8 @@ export function initializeBankProviders(): void {
 
     // Register Akahu (NZ open banking, personal apps) provider
     bankProviderRegistry.register(new AkahuProvider());
+
+    bankProviderRegistry.register(plaidProvider);
 
     const registeredTypes = bankProviderRegistry.listTypes();
     logger.info(

@@ -79,7 +79,11 @@ export function initSentry(): void {
     // Integrations
     integrations: [
       // HTTP integration for tracing requests
-      Sentry.httpIntegration(),
+      Sentry.httpIntegration({
+        // This request carries a single-use Plaid public token.
+        ignoreIncomingRequestBody: (url) =>
+          url.split('?', 1)[0]?.replace(/\/$/, '').toLowerCase() === `${API_PREFIX}/bank-data-providers/plaid/connect`,
+      }),
       // Express integration
       Sentry.expressIntegration(),
       Sentry.postgresIntegration({ ignoreConnectSpans: true }),

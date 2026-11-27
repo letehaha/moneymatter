@@ -40,6 +40,7 @@ export interface ConnectionDetailsResponse {
     name: string;
     externalId: string;
     currentBalance: number;
+    creditLimit: number;
     currencyCode: string;
     type: string;
     // Present when the provider reported no currency (ISO "XXX") and the
@@ -70,7 +71,7 @@ export async function getConnectionDetails(params: GetConnectionDetailsParams): 
         {
           model: Accounts,
           as: 'accounts',
-          attributes: ['id', 'name', 'externalId', 'currentBalance', 'currencyCode', 'type', 'externalData'],
+          attributes: ['id', 'name', 'externalId', 'currentBalance', 'creditLimit', 'currencyCode', 'type', 'externalData'],
         },
       ],
     }),
@@ -108,6 +109,7 @@ export async function getConnectionDetails(params: GetConnectionDetailsParams): 
       name: account.name,
       externalId: account.externalId,
       currentBalance: account.currentBalance?.toNumber() ?? 0,
+      creditLimit: account.creditLimit?.toNumber() ?? 0,
       currencyCode: account.currencyCode,
       type: account.type,
       currencyFallback:

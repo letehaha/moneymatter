@@ -20,7 +20,7 @@ Bank connections are part of the Plus plan, and they're included in your free tr
 
 ## Supported banks and services
 
-MoneyMatter connects through six providers. Some talk to one bank directly, others connect you to thousands of banks.
+MoneyMatter connects through the providers below. Some talk to one bank directly, others connect you to thousands of banks. Plaid is available only on configured self-hosted instances.
 
 | Provider | Where | Cost | Setup | What you need |
 |---|---|---|---|---|
@@ -30,6 +30,7 @@ MoneyMatter connects through six providers. Some talk to one bank directly, othe
 | **Enable Banking** (**Beta**) | EU and UK. 6,000+ banks through open banking. | **Free** | **Very difficult to setup** | Your own Enable Banking developer application: its **Application ID** and **Private Key**. |
 | **Walutomat** | Poland. The currency exchange platform, with 23 currencies. | **Free** | **Medium setup** | An **API Key** and **Private Key (PEM)**. You create a key pair and upload the public key in Walutomat (Settings → API). |
 | **Akahu** | New Zealand. Most major banks (ASB, Westpac, BNZ, ANZ, Kiwibank and more) through open banking. | **Free** | **Easy to setup** | Your own Akahu personal app: its **App Token** and **User Token**. You create the app and grant it access in your Akahu dashboard (my.akahu.nz). |
+| **Plaid** | USA and Canada | Depends on Plaid | Administrator setup | A configured self-hosted instance and a Plaid Link session. See [Plaid for self-hosted MoneyMatter](#plaid-for-self-hosted-moneymatter). |
 
 "Paid" means the provider charges for its own service, separately from your MoneyMatter plan. Lunch Flow and SimpleFIN are independent services that connect to your bank for you.
 
@@ -43,7 +44,7 @@ Enable Banking doesn't offer an affordable ready-made connection, so you registe
 
 1. In the sidebar, open **Accounts** → **All Accounts**.
 2. In the **Bank connections** section, click **Connect bank**.
-3. In **Add Integration**, pick your region to narrow the list (**All**, **US & Canada**, **EU & UK**, **Ukraine**, **Poland** or **New Zealand**), then choose a provider. If you chose Enable Banking, follow [Connect with Enable Banking](#connect-with-enable-banking) instead.
+3. In **Add Integration**, pick your region to narrow the list (**All**, **US & Canada**, **EU & UK**, **Ukraine**, **Poland** or **New Zealand**), then choose a provider. If you chose Enable Banking, follow [Connect with Enable Banking](#connect-with-enable-banking) instead. For Plaid, follow the [Plaid Sandbox walkthrough](#user-connect-a-sandbox-institution).
 4. Paste your credentials and click **Connect**. Each form has a help link, such as **Where do I get an API token?**, with instructions for getting them.
 5. Choose the accounts to add, then click the button below the list (see [Choosing accounts](#choosing-accounts)).
 
@@ -86,6 +87,52 @@ Enable Banking sends you to your bank's website to approve access:
 
 Finish in the same browser you started in. MoneyMatter remembers the pending connection in that browser, and elsewhere you'll see "Connection ID not found. Please start the connection process again."
 
+### Plaid for self-hosted MoneyMatter
+
+Plaid is an optional provider for configured self-hosted instances. It reads balances and posted transactions, not pending transactions, and cannot initiate payments. MoneyMatter uses Plaid's cached `/accounts/get` balances, not real-time balance requests. Automatic and manual sync are supported; Plaid webhooks are not used.
+
+#### Administrator: configure Plaid
+
+1. Create a Plaid developer account and obtain your Sandbox client ID and secret from the Plaid Dashboard. See [Plaid's Sandbox guide](https://plaid.com/docs/sandbox/).
+2. Set the following in your self-hosting `.env`:
+
+   ```dotenv
+   PLAID_ENV=sandbox
+   PLAID_CLIENT_ID=your-sandbox-client-id
+   PLAID_SECRET=your-sandbox-secret
+   ```
+
+3. For OAuth institutions, register the exact HTTPS frontend callback URL in the Plaid Dashboard and set the same URL in `.env`:
+
+   ```dotenv
+   PLAID_REDIRECT_URI=https://budget.example.com/plaid-callback
+   ```
+
+   Use the exact origin users open, including any non-default port, and the `/plaid-callback` path. Leave the setting unset when no redirect is needed. Finish authorization and return to MoneyMatter in the same browser tab that started Link.
+4. Run `docker compose up -d` in `self-hosting` to apply the changes.
+
+Availability requires `PLAID_ENV` to be `sandbox` or `production` and both instance credentials to be set. Keep `.env`, secrets, Link tokens and Item access credentials private; never put credentials in frontend configuration. For production, use production credentials and an HTTPS callback registered for that environment. Plaid's production access and institution availability depend on Plaid's requirements. Changing environments does not convert existing Items.
+
+#### User: connect a Sandbox institution
+
+Use Plaid's test institutions and test credentials, never real bank login details, in Sandbox. Ask your administrator to configure Sandbox first.
+
+1. Open **Accounts** → **All Accounts**, then choose **Connect bank** under **Bank connections**.
+2. In **Add Integration**, choose Plaid and open Plaid Link.
+3. Select a Sandbox test institution and use the credentials from [Plaid's Sandbox documentation](https://plaid.com/docs/sandbox/). Complete the Link prompts and any simulated authorization, returning in the same tab.
+4. Back in MoneyMatter, select and map the returned accounts. Check the account and currency before confirming each mapping.
+5. Allow the initial sync to run, then check the connected accounts and transactions. Sandbox data is simulated, not evidence of a live-bank connection.
+
+The first transaction sync may be empty while Plaid prepares history; try syncing again later. If Plaid is unavailable, check the self-hosted configuration and credentials, then recreate the containers. For OAuth failures, check the registered URL and `PLAID_REDIRECT_URI` match exactly. Check logs without sharing secrets, tokens or bank data.
+
+Plaid Link update mode is not supported. If reauthorization is needed, or a restored connection has no usable Plaid credentials:
+
+1. Disconnect the Plaid connection without deleting its MoneyMatter accounts. Disconnecting removes the Item at Plaid.
+2. Create a new Plaid connection without importing the accounts again.
+3. Open each existing MoneyMatter account's **Data Connection** settings and link it to the corresponding account on the new connection. This keeps the local account and its history.
+
+When relinking a fresh Plaid Item on the same day as existing imported transactions, Plaid may assign new transaction IDs. Review same-day postings for duplicates.
+
 ## What happens to your connected accounts
 
 **Connecting always creates new accounts in MoneyMatter.** Each one:
@@ -94,7 +141,7 @@ Finish in the same browser you started in. MoneyMatter remembers the pending con
 - starts with the balance your bank reports,
 - goes into an [account group](/accounts/account-groups/) named after the connection.
 
-The only exception: if an account was connected to the same bank account before and you disconnected it, connecting again reuses that account instead of making a new one.
+If an account was connected to the same bank account before and you disconnected it, connecting again can reuse that account. A fresh Plaid Item can have different account IDs: follow the [Plaid recovery steps](#plaid-for-self-hosted-moneymatter) to link your existing account instead.
 
 You can't connect the same bank account twice through two connections to the same provider. You'll see "is already connected through" and the other connection's name. Disconnect it there first.
 
@@ -218,7 +265,7 @@ You can still make a synced transaction part of a transfer. See [transfers with 
 
 ## Why you won't see duplicates
 
-- **Each bank transaction is saved once.** MoneyMatter remembers the bank's own ID for every transaction and skips ones it already has, even after you disconnect and reconnect the account. The exception is Monobank: after reconnecting, the most recent transaction from before you disconnected can come in a second time.
+- **Bank transaction IDs are checked.** MoneyMatter remembers the bank's own ID for every transaction and skips ones it already has. A fresh Plaid Item can have different IDs, so use the [Plaid recovery steps](#plaid-for-self-hosted-moneymatter) to preserve existing history. With Monobank, the most recent transaction from before you disconnected can come in a second time.
 - **Manual and synced transactions don't overlap.** You can't add transactions to a connected account by hand, and a [linked account](#link-an-account-you-already-have) doesn't download the history you already entered.
 - **Pending payments merge with the booked ones** (Enable Banking only), so a card payment doesn't appear twice when the bank books it a few days later.
 
@@ -276,7 +323,9 @@ Your accounts are matched up again and keep syncing into the same MoneyMatter ac
 
 ### When your credentials stop working
 
-For the other providers, a connection is switched off when the bank or service keeps rejecting your credentials. The connection's page then says "This connection needs to be reconnected before it can sync again". Click **Update Credentials**. The field is labelled **API Key** for every provider: paste your new Monobank API token, a new SimpleFIN Setup token or your new Lunch Flow API key. For Walutomat, also paste the **Private Key (PEM)**. Then click **Update**.
+For providers other than Enable Banking and Plaid, a connection is switched off when the bank or service keeps rejecting your credentials. The connection's page then says "This connection needs to be reconnected before it can sync again". Click **Update Credentials**. The field is labelled **API Key** for every provider: paste your new Monobank API token, a new SimpleFIN Setup token or your new Lunch Flow API key. For Walutomat, also paste the **Private Key (PEM)**. Then click **Update**.
+
+For Plaid, follow the [fresh-connection guidance](#plaid-for-self-hosted-moneymatter).
 
 ## Disconnect a bank
 
@@ -294,7 +343,7 @@ What happens depends on the checkbox:
 - **Unticked (the default):** your accounts and all their transactions stay. They become regular accounts that you update yourself, and syncing stops. Their transactions become regular transactions too, so you can edit and delete them freely.
 - **Ticked:** the connected accounts and all their transactions are permanently deleted.
 
-Disconnecting can't be undone. If you kept the accounts and connect the same bank again later, MoneyMatter reuses them and recognises transactions it already has, so nothing is duplicated. With Monobank, the most recent transaction from before you disconnected can be synced a second time, so check the newest entries.
+Disconnecting can't be undone. If you kept the accounts and connect the same bank again later, MoneyMatter can reuse them and recognise transactions it already has. For Plaid, follow the [Plaid recovery steps](#plaid-for-self-hosted-moneymatter) to link each existing account to the new Item. With Monobank, the most recent transaction from before you disconnected can be synced a second time, so check the newest entries.
 
 ### Unlink just one account
 

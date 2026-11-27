@@ -66,6 +66,7 @@ interface BankConnectionDetails {
     name: string;
     externalId: string;
     currentBalance: number;
+    creditLimit: number;
     currencyCode: string;
     type: string;
     currencyFallback: { providerCurrency: string; assignedCurrency: string } | null;

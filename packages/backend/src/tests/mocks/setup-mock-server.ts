@@ -11,6 +11,7 @@ import { modelsDevHandlers } from './models-dev/mock-api';
 import { monobankHandlers } from './monobank/mock-api';
 import { openAiCompatibleHandlers } from './openai-compatible/mock-api';
 import { openAiHandlers } from './openai/mock-api';
+import { plaidHandlers } from './plaid/mock-api';
 import { simplefinHandlers } from './simplefin/mock-api';
 import { walutomatHandlers } from './walutomat/mock-api';
 
@@ -23,6 +24,7 @@ export const setupMswServer = () =>
     ...walutomatHandlers,
     ...simplefinHandlers,
     ...akahuHandlers,
+    ...plaidHandlers,
     ...anthropicHandlers,
     ...openAiHandlers,
     ...geminiHandlers,

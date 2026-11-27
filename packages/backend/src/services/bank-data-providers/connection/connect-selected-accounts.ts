@@ -39,6 +39,7 @@ const PROVIDER_TO_ANALYTICS_TYPE: Record<BANK_PROVIDER_TYPE, BankProvider> = {
   [BANK_PROVIDER_TYPE.WALUTOMAT]: 'walutomat',
   [BANK_PROVIDER_TYPE.SIMPLEFIN]: 'simplefin',
   [BANK_PROVIDER_TYPE.AKAHU]: 'akahu',
+  [BANK_PROVIDER_TYPE.PLAID]: 'plaid',
 };
 
 /**

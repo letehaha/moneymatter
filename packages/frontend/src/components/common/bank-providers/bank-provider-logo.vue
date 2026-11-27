@@ -1,5 +1,11 @@
 <template>
+  <LandmarkIcon
+    v-if="provider === BANK_PROVIDER_TYPE.PLAID"
+    :class="cn('text-muted-foreground size-10', $attrs.class as string)"
+    aria-hidden="true"
+  />
   <img
+    v-else
     :class="[cn('size-10', $attrs.class as string)]"
     :src="(currentTheme === Themes.dark && darkLogos[provider]) || logos[provider]"
   />
@@ -9,8 +15,9 @@
 import { Themes, currentTheme } from '@/common/utils/color-theme';
 import { cn } from '@/lib/utils';
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
+import { LandmarkIcon } from '@lucide/vue';
 
-const logos: Record<BANK_PROVIDER_TYPE, string> = {
+const logos: Record<Exclude<BANK_PROVIDER_TYPE, BANK_PROVIDER_TYPE.PLAID>, string> = {
   [BANK_PROVIDER_TYPE.ENABLE_BANKING]: '/img/logos/enable-banking.webp',
   [BANK_PROVIDER_TYPE.MONOBANK]: '/img/logos/monobank.webp',
   [BANK_PROVIDER_TYPE.LUNCHFLOW]: '/img/logos/lunch-flow.webp',

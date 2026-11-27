@@ -33,7 +33,7 @@ const routes: RouteRecordRaw[] = [
         path: '/accounts',
         name: ROUTES_NAMES.accounts,
         component: () => import('@/pages/accounts/accounts.vue'),
-        meta: { navSection: 'accounts', i18nChunks: ['pages/accounts'] },
+        meta: { navSection: 'accounts', i18nChunks: ['pages/accounts', 'pages/account-integrations'] },
       },
       {
         path: '/account/:id',
@@ -64,6 +64,12 @@ const routes: RouteRecordRaw[] = [
         path: '/bank-callback',
         name: ROUTES_NAMES.bankCallback,
         component: () => import('@/pages/bank-callback.vue'),
+        meta: { i18nChunks: ['pages/account-integrations'] },
+      },
+      {
+        path: '/plaid-callback',
+        name: ROUTES_NAMES.plaidCallback,
+        component: () => import('@/pages/accounts/integrations/plaid-callback.vue'),
         meta: { i18nChunks: ['pages/account-integrations'] },
       },
       {

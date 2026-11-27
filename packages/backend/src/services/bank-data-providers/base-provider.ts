@@ -5,7 +5,7 @@ import { ForbiddenError, NotFoundError, ServiceUnavailableError } from '@js/erro
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { runOutsideTransaction } from '@models/connection';
+import { connection as dbConnection, runOutsideTransaction } from '@models/connection';
 import { runPendingLinkAbsorb } from '@services/accounts/absorb-link-residual';
 import { lockLinkedBankAccount } from '@services/accounts/lock-account-row';
 import { isDeadlockError } from '@services/common/retry-on-deadlock';
@@ -176,26 +176,32 @@ export abstract class BaseBankDataProvider {
     if (!this.isAuthError(error)) return;
 
     try {
-      const connection = await this.getConnection(connectionId);
-      const failures = ((connection.metadata as AuthTrackingMetadata | null)?.consecutiveAuthFailures || 0) + 1;
-      const patch: AuthTrackingMetadata = { consecutiveAuthFailures: failures };
-
-      if (failures >= AUTH_FAILURE_DEACTIVATION_THRESHOLD) {
-        connection.isActive = false;
-        patch.deactivationReason = DEACTIVATION_REASON.AUTH_FAILURE;
-        // Designed response to a user's credentials going stale, surfaced by
-        // the connection-status badge — not a fault worth a Sentry event.
+      const [rows] = await dbConnection.sequelize.query(
+        `UPDATE "BankDataProviderConnections"
+            SET "metadata" = jsonb_set(
+                  jsonb_set(COALESCE("metadata", '{}'::jsonb), '{consecutiveAuthFailures}',
+                    to_jsonb(COALESCE(("metadata"->>'consecutiveAuthFailures')::integer, 0) + 1), true),
+                  '{deactivationReason}',
+                  CASE WHEN COALESCE(("metadata"->>'consecutiveAuthFailures')::integer, 0) + 1 >= :threshold
+                    THEN to_jsonb(CAST(:reason AS text))
+                    ELSE COALESCE("metadata"->'deactivationReason', 'null'::jsonb) END, true),
+                "isActive" = CASE
+                  WHEN COALESCE(("metadata"->>'consecutiveAuthFailures')::integer, 0) + 1 >= :threshold
+                    THEN false ELSE "isActive" END,
+                "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "id" = :connectionId
+          RETURNING ("metadata"->>'consecutiveAuthFailures')::integer AS failures`,
+        {
+          replacements: { connectionId, threshold: AUTH_FAILURE_DEACTIVATION_THRESHOLD, reason: DEACTIVATION_REASON.AUTH_FAILURE },
+          transaction: null,
+        },
+      );
+      const failures = (rows as Array<{ failures: number }>)[0]?.failures;
+      if (failures && failures >= AUTH_FAILURE_DEACTIVATION_THRESHOLD) {
         logger.info(
           `[${this.metadata.name}] Connection ${connectionId} deactivated after ${failures} consecutive auth failures`,
         );
       }
-
-      this.writeAuthMetadata({ connection, patch });
-      // `{ transaction: null }` bypasses the ambient CLS transaction: an auth
-      // failure surfaces while a sync is being rolled back, so this write must
-      // commit independently or the failure count (and deactivation) would be
-      // undone by that rollback.
-      await connection.save({ transaction: null });
     } catch (metaError) {
       logger.error({
         message: `[${this.metadata.name}] Failed to update auth failure metadata:`,
@@ -211,14 +217,14 @@ export abstract class BaseBankDataProvider {
    */
   private async resetAuthFailures(connectionId: string): Promise<void> {
     try {
-      const connection = await this.getConnection(connectionId);
-      const consecutiveAuthFailures = (connection.metadata as AuthTrackingMetadata | null)?.consecutiveAuthFailures;
-
-      if (consecutiveAuthFailures) {
-        this.writeAuthMetadata({ connection, patch: { consecutiveAuthFailures: 0 } });
-        // Commit outside any ambient sync transaction.
-        await connection.save({ transaction: null });
-      }
+      await dbConnection.sequelize.query(
+        `UPDATE "BankDataProviderConnections"
+            SET "metadata" = jsonb_set(COALESCE("metadata", '{}'::jsonb), '{consecutiveAuthFailures}', '0'::jsonb, true),
+                "updatedAt" = CURRENT_TIMESTAMP
+          WHERE "id" = :connectionId
+            AND COALESCE(("metadata"->>'consecutiveAuthFailures')::integer, 0) <> 0`,
+        { replacements: { connectionId }, transaction: null },
+      );
     } catch {
       // Non-critical, ignore
     }

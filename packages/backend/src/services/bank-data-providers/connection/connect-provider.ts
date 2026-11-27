@@ -5,10 +5,11 @@ import BankDataProviderConnections from '@models/bank-data-provider-connections.
 import { withTransaction } from '@root/services/common/with-transaction';
 
 import { EnableBankingProvider } from '../enablebanking';
+import { PlaidProvider } from '../plaid';
 import { isProviderAvailableForUser } from '../provider-availability';
 import { bankProviderRegistry } from '../registry';
 
-export const connectProvider = withTransaction(
+const connectProviderInTransaction = withTransaction(
   async ({
     providerType,
     userId,
@@ -55,3 +56,13 @@ export const connectProvider = withTransaction(
     };
   },
 );
+
+export const connectProvider = async (params: Parameters<typeof connectProviderInTransaction>[0]) => {
+  if (params.providerType !== BANK_PROVIDER_TYPE.PLAID) return connectProviderInTransaction(params);
+  if (!(await isProviderAvailableForUser({ userId: params.userId, providerType: params.providerType }))) {
+    throw new NotAllowedError({ message: t({ key: 'bankDataProviders.providerNotAvailable' }) });
+  }
+  const provider = bankProviderRegistry.get(params.providerType) as PlaidProvider;
+  const connectionId = await provider.connectWithDetails(params);
+  return { connectionId, authUrl: undefined, message: 'Provider connected successfully' };
+};
