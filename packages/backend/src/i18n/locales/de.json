@@ -288,7 +288,30 @@
     },
     "unrealizedLossAlert": {
       "title_one": "{{count}} Position hat deinen Verlust-Warnschwellenwert überschritten",
-      "title_other": "{{count}} Positionen haben deinen Verlust-Warnschwellenwert überschritten"
+      "title_other": "{{count}} Positionen haben deinen Verlust-Warnschwellenwert überschritten",
+      "emailCta": "Open investments",
+      "emailFooter": "You get this email because you turned on email for unrealized loss alerts in Settings."
+    },
+    "watchlist": {
+      "itemNotFound": "Watchlist item not found",
+      "sectionNotFound": "Watchlist section not found",
+      "alertNotFound": "Watchlist alert not found",
+      "securityAlreadyWatched": "This security is already on the watchlist",
+      "layoutInvalid": "The layout must list every section once and each item at most once",
+      "alertThresholdInvalid": "A price alert needs a price and a daily move alert needs a percentage",
+      "alertChannelRequired": "Choose at least one way to be notified",
+      "tooManyItems": "A watchlist can hold at most {{max}} securities",
+      "tooManySections": "A watchlist can have at most {{max}} sections",
+      "tooManyAlerts": "A watchlist security can have at most {{max}} alerts"
+    },
+    "watchlistAlert": {
+      "closeAbove": "{{symbol}} closed above {{price}} {{currency}}",
+      "closeBelow": "{{symbol}} closed below {{price}} {{currency}}",
+      "dailyMove": "{{symbol}} moved {{change}}% in a day",
+      "message": "Close on {{date}}: {{close}} {{currency}}",
+      "emailCta": "Open watchlist",
+      "emailFooter": "You get this email because you turned on email for these watchlist alerts.",
+      "digestSubject": "{{count}} watchlist alerts fired"
     }
   },
   "landingFaq": {
@@ -940,5 +963,13 @@
   },
   "backgroundJobs": {
     "notFound": "Diese Aufgabe läuft nicht mehr – der Server wurde möglicherweise neu gestartet. Bitte versuche es erneut."
+  },
+  "gifts": {
+    "invalidCode": "This gift code isn't valid. Check it for typos.",
+    "alreadyRedeemed": "This gift code has already been redeemed.",
+    "expired": "This gift code has expired.",
+    "coveredByLifetime": "Your lifetime plan already includes everything in this gift. You can pass the code on to someone else.",
+    "cancelAppStoreFirst": "Your subscription renews through the App Store. Turn off auto-renewal in your Apple ID settings, then redeem the gift. It will start when your paid period ends.",
+    "checkoutBlocked": "You have a gift subscription until {{date}}. You can subscribe once it ends."
   }
 }

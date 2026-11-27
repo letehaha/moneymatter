@@ -476,6 +476,12 @@
       "plus": "Incluído no plano Plus",
       "hint": "Seu plano atual não inclui este recurso. Faça upgrade para desbloquear."
     },
+    "featureTrialGate": {
+      "title": "Try it free for {days} days",
+      "startTrial": "Start {days}-day free trial",
+      "trialEnded": "Your free trial has ended. Upgrade to Plus to keep using it.",
+      "daysLeft": "Your free trial ends in {n} day | Your free trial ends in {n} days"
+    },
     "banner": {
       "trial": "Falta {count} dia no seu período de teste · {link} | Faltam {count} dias no seu período de teste · {link}",
       "readOnly": "Seu período de teste terminou. Você pode ver e exportar seus dados; assine para continuar editando. {link}",

@@ -476,6 +476,12 @@
       "plus": "Incluso nel piano Plus",
       "hint": "Il piano attuale non include questa funzionalità. Passare a un piano superiore per sbloccarla."
     },
+    "featureTrialGate": {
+      "title": "Prova gratis per {days} giorni",
+      "startTrial": "Inizia la prova gratuita di {days} giorni",
+      "trialEnded": "La prova gratuita è terminata. Passare a Plus per continuare a usarla.",
+      "daysLeft": "La prova gratuita termina tra {n} giorno | La prova gratuita termina tra {n} giorni"
+    },
     "banner": {
       "trial": "{count} giorno rimasto nella prova · {link} | {count} giorni rimasti nella prova · {link}",
       "readOnly": "Il periodo di prova è terminato. È possibile visualizzare ed esportare i dati; abbonarsi per continuare a modificarli. {link}",

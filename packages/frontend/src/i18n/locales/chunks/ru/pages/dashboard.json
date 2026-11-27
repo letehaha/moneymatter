@@ -4,7 +4,7 @@
       "customize": "Настроить",
       "addWidgets": "Добавить виджеты",
       "emptyState": "Нажмите «Настроить», чтобы добавить виджеты",
-      "removeWidget": "Remove widget"
+      "removeWidget": "Удалить виджет"
     },
     "widgets": {
       "common": {
@@ -80,18 +80,18 @@
         }
       },
       "expensesStructure": {
-        "title": "Структура расходов",
-        "incomeTitle": "Income structure",
+        "title": "Диаграмма расходов",
+        "incomeTitle": "Диаграмма доходов",
         "today": "Сегодня",
         "vsPreviousPeriod": "по сравнению с предыдущим периодом",
         "viewButton": "Просмотреть",
-        "back": "Back",
+        "back": "Назад",
         "openInAnalytics": "Open in Analytics",
         "metric": {
           "expenses": "Expenses",
           "income": "Income"
         },
-        "seeTransactions": "See transactions"
+        "seeTransactions": "Показать транзакции"
       },
       "latestTransactions": {
         "title": "Последние транзакции",
@@ -129,12 +129,12 @@
         "title": "Отслеживаемые категории",
         "addCategory": "Добавить категорию",
         "selectCategories": "Выберите категории",
-        "showTrend": "Show 6-month trend",
+        "showTrend": "Показать 6-месячный тренд",
         "sort": {
-          "title": "Sort by",
-          "custom": "Custom order",
-          "spendDesc": "Highest spend first",
-          "spendAsc": "Lowest spend first"
+          "title": "Сортировка",
+          "custom": "Пользовательский порядок",
+          "spendDesc": "Сначала наибольшие расходы",
+          "spendAsc": "Сначала наименьшие расходы"
         }
       },
       "cashFlow": {
@@ -190,7 +190,7 @@
         "vsLastMonth": "vs last month",
         "runwayUnit": "mo",
         "runwayLabel": "of expenses",
-        "loadFailed": "Couldn't load your accounts",
+        "loadFailed": "Не удалось загрузить счета",
         "runwayHint": {
           "description": "It's generally recommended to keep an emergency fund that covers 3–6 months of your expenses.",
           "critical": "Under 1 month: very little buffer",
@@ -209,21 +209,21 @@
           "cash": "Cash",
           "investments": "Investments",
           "ventures": "Ventures",
-          "vehicles": "Vehicles",
-          "loans": "Loans",
-          "creditAndOverdrafts": "Credit & overdrafts"
+          "vehicles": "Транспорт",
+          "loans": "Кредиты",
+          "creditAndOverdrafts": "Кредиты и овердрафты"
         }
       },
       "spendingPace": {
         "tabs": {
-          "lastMonth": "vs last month",
-          "average": "vs 3-mo avg"
+          "lastMonth": "в сравнении с прошлым месяцем",
+          "average": "в сравнении с посл. 3 месяцами"
         },
-        "spentIn": "Spent in {month}",
+        "spentIn": "Израсходовано за {month}",
         "onTrackFor": "On track for {amount}",
         "vsComparison": "{percent} vs {name}",
         "comparison": {
-          "average": "{n}-mo avg"
+          "average": "В среднем за {n} мес"
         },
         "stats": {
           "byToday": "{name} by today",
@@ -231,18 +231,18 @@
           "daysLeft": "Days left"
         },
         "chart": {
-          "today": "Today",
+          "today": "Сегодня",
           "ariaLabel": "Spending this month"
         },
         "tooltip": {
-          "spent": "Spent",
-          "forecast": "Forecast",
+          "spent": "Израсходовано",
+          "forecast": "Прогноз",
           "spikeFrom": "Spent on {date}"
         },
         "legend": {
-          "thisMonth": "This month",
-          "forecast": "Forecast",
-          "averageMonth": "Average month"
+          "thisMonth": "Этот месяц",
+          "forecast": "Прогноз",
+          "averageMonth": "В среднем"
         },
         "hints": {
           "noHistory": "The comparison appears after your first full month.",
@@ -254,8 +254,8 @@
           "spikes": {
             "title": "Spike marks",
             "summary": "Days with ≥{percent}% of the month's spending",
-            "inputLabel": "Mark a day when it reaches",
-            "hint": "Share of last month's total spending, 1–100%. Marks show in “vs last month” mode."
+            "inputLabel": "Отметить день, когда достигнет",
+            "hint": "Доля от общих расходов за прошлый месяц (1–100%). Отображается в режиме \"по сравнению с прошлым месяцем\"."
           },
           "saved": "Setting updated"
         }
@@ -272,7 +272,7 @@
         "ofIncome": "of income",
         "vsTrailingRate": "{delta} pp vs 12-month rate {rate}",
         "average": "avg {amount}",
-        "amount": "Taxes",
+        "amount": "Налоги",
         "shareOfIncome": "Share of income",
         "shareOfTaxes": "Share of taxes",
         "other": "Other",

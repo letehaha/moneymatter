@@ -16,27 +16,74 @@
       "exchangeCurrency": "Cambio valuta"
     },
     "balance": {
-      "totalValue": "Valore totale",
-      "baseCurrencyEquivalent": "≈ {value} in {code}",
-      "loadError": "Caricamento del riepilogo del portafoglio non riuscito.",
-      "metrics": {
-        "costBasis": "Costo di carico",
+      "baseCurrencyEquivalent": "≈ {value} in {code}"
+    },
+    "hero": {
+      "loadError": "Impossibile caricare il riepilogo del portafoglio",
+      "resizeHint": "Trascinare per ridimensionare · doppio clic per reimpostare",
+      "modes": {
+        "value": "Valore",
+        "return": "Rendimento %"
+      },
+      "periods": {
+        "1W": "1S",
+        "1M": "1M",
+        "3M": "3M",
+        "ytd": "YTD",
+        "1Y": "1A",
+        "all": "Tutto"
+      },
+      "series": {
+        "value": "Valore",
+        "netDeposits": "Versamenti netti",
+        "costBasis": "Costo di carico"
+      },
+      "depositsAxis": {
+        "label": "Asse dei versamenti",
+        "shared": "Condiviso",
+        "own": "Scala propria"
+      },
+      "settings": {
+        "lines": "Linee"
+      },
+      "chart": {
+        "empty": "Ancora nessuno storico. Aggiungere un versamento o una transazione per avviare il grafico.",
+        "loadError": "Impossibile caricare il grafico",
+        "return": "Rendimento",
+        "gain": "Guadagno",
+        "returnCaption": "Il rendimento esclude versamenti e prelievi, quindi un versamento non appare mai come un salto."
+      },
+      "stats": {
+        "totalValue": "Valore totale",
+        "marketGain": "guadagno di mercato · {period}",
+        "marketLoss": "perdita di mercato · {period}",
+        "netDeposits": "Versamenti netti",
+        "totalReturn": "Rendimento totale",
         "unrealized": "Non realizzato",
         "realized": "Realizzato",
-        "totalReturn": "Rendimento totale"
+        "costBasis": "Costo di carico",
+        "cash": "Liquidità"
       }
     },
+    "menu": {
+      "chartLayout": "Layout del grafico",
+      "layoutFloating": "Scheda flottante",
+      "layoutPanel": "Pannello laterale",
+      "resetChartHeight": "Reimposta altezza del grafico"
+    },
+    "tabs": {
+      "holdings": "Posizioni",
+      "analytics": "Analisi",
+      "activity": "Attività",
+      "watchlist": "Watchlist",
+      "plusBadge": "Plus",
+      "analyticsGateDescription": "Rendimenti che ignorano la tempistica dei versamenti, drawdown, performance di ogni posizione e allocazione per ogni portafoglio.",
+      "watchlistGateDescription": "Monitorare i titoli che non si possiedono ancora e ricevere un avviso quando il prezzo supera i propri obiettivi."
+    },
     "cashBalances": {
-      "title": "Saldi di liquidità",
       "emptyState": "Nessun saldo di liquidità",
-      "tabs": {
-        "balances": "Saldi",
-        "cashTransactions": "Transazioni",
-        "buysSells": "Acquisti e vendite"
-      },
       "cashTransactions": {
         "addButton": "Aggiungi transazione di liquidità",
-        "emptyState": "Ancora nessuna transazione di liquidità",
         "deposit": "Versamento",
         "withdrawal": "Prelievo",
         "transferIn": "Trasferimento in entrata",
@@ -52,7 +99,6 @@
         "markedAsContribution": "Segnata come versamento effettivo",
         "adjustmentError": "Aggiornamento del trasferimento non riuscito",
         "rowActions": "Azioni della transazione",
-        "emptyStateDescription": "Versamenti, prelievi e trasferimenti di questo portafoglio compariranno qui.",
         "edit": "Modifica",
         "editDialog": {
           "title": "Modifica transazione di liquidità",
@@ -61,16 +107,29 @@
         }
       },
       "buysSells": {
-        "emptyState": "Nessuna transazione di acquisto/vendita",
         "shares": "quote"
       }
     },
+    "activity": {
+      "filters": {
+        "all": "Tutto",
+        "trades": "Operazioni",
+        "cash": "Liquidità",
+        "income": "Entrate"
+      },
+      "empty": {
+        "title": "Ancora nessuna attività",
+        "description": "Operazioni, versamenti, prelievi e trasferimenti appariranno qui.",
+        "filteredTitle": "Nulla da mostrare per questo filtro"
+      },
+      "loadError": "Impossibile caricare l'attività"
+    },
+    "cash": {
+      "title": "Liquidità"
+    },
     "holdings": {
-      "title": "Posizioni",
-      "subtitle": "{count} simboli",
       "filterPlaceholder": "Filtra per simbolo o nome...",
       "addButton": "Aggiungi simbolo",
-      "importButton": "Importa transazioni",
       "importButtonShort": "Importa"
     },
     "holdingsTable": {
@@ -81,14 +140,17 @@
       "clearFilterButton": "Cancella ricerca",
       "headers": {
         "symbol": "Simbolo",
-        "name": "Nome",
         "shares": "Quote",
         "price": "Prezzo",
-        "avgCostPerShare": "PMC/quota",
-        "totalCost": "Costo totale",
         "marketValue": "Valore di mercato",
-        "unrealizedGain": "Plusvalenza non realizzata",
-        "realizedGain": "Plusvalenza realizzata"
+        "weight": "Peso",
+        "unrealizedGain": "Plusvalenza non realizzata"
+      },
+      "actions": {
+        "addTransaction": "Aggiungi transazione",
+        "addTransactionFor": "Aggiungi transazione per {symbol}",
+        "openHolding": "Apri posizione",
+        "openHoldingFor": "Apri {symbol}"
       },
       "transactions": {
         "loading": "Caricamento transazioni…",
@@ -106,8 +168,7 @@
         "error": "Eliminazione della posizione non riuscita."
       },
       "addTransactionDialog": {
-        "title": "Aggiungi transazione",
-        "description": "Aggiungere una nuova transazione al portafoglio."
+        "title": "Aggiungi transazione"
       },
       "tryAgainLater": "Riprovare più tardi",
       "emptyDescription": "Aggiungere la prima operazione per iniziare a monitorare gli investimenti",
@@ -152,6 +213,266 @@
       "deleteTransaction": {
         "tooltip": "Elimina transazione"
       }
+    },
+    "analytics": {
+      "loadError": "Impossibile caricare le analisi",
+      "refreshError": "Impossibile aggiornare le analisi. Vengono mostrati gli ultimi dati caricati.",
+      "empty": {
+        "title": "Ancora nessuna analisi",
+        "description": "Aggiungere una posizione o versare liquidità per vedere rendimenti, drawdown e allocazione."
+      },
+      "periods": {
+        "6M": "6M"
+      },
+      "periodShiftHint": "Maiusc+clic per applicare a tutti i grafici",
+      "kpis": {
+        "timeWeightedLabel": "Rendimento ponderato per il tempo",
+        "maxDrawdownLabel": "Drawdown massimo",
+        "moneyWeightedLabel": "Rendimento ponderato per il capitale",
+        "annualizedSinceFirstDeposit": "annualizzato dal primo versamento",
+        "moneyWeightedUnavailable": "Servono almeno 6 mesi di storico",
+        "drawdownRecovered": "{peak} → {trough}, recuperato il {date}",
+        "drawdownNotRecovered": "{peak} → {trough}, non ancora recuperato",
+        "noDrawdown": "Nessun drawdown in questo periodo",
+        "feesPaidLabel": "Commissioni pagate",
+        "feesShareOfBuys": "{share} degli acquisti"
+      },
+      "table": {
+        "title": "Performance",
+        "caption": "Rendimento di prezzo per periodo, nella valuta di ogni posizione",
+        "holding": "Posizione",
+        "weight": "Peso",
+        "value": "Valore",
+        "showAll": "Mostra tutte ({count})",
+        "showLess": "Mostra meno"
+      },
+      "relative": {
+        "title": "Posizioni vs portafoglio",
+        "caption": "Ogni linea parte da 0% il primo giorno del periodo. Le posizioni usano la propria valuta.",
+        "portfolio": "Portafoglio",
+        "addHolding": "Aggiungi altre",
+        "searchPlaceholder": "Cerca posizioni",
+        "noMatches": "Nessuna posizione corrispondente",
+        "maxReached": "È possibile confrontare fino a {count} posizioni",
+        "remove": "Rimuovi dal confronto",
+        "removeNamed": "Rimuovi {name} dal confronto",
+        "benchmarkLabel": "Benchmark",
+        "noBenchmark": "Nessun benchmark",
+        "benchmarkProxy": "tramite {symbol}",
+        "benchmarkUnavailable": "I prezzi del benchmark non sono ancora disponibili"
+      },
+      "allocation": {
+        "title": "Allocazione",
+        "byHolding": "Posizione",
+        "byType": "Tipo",
+        "byCurrency": "Valuta",
+        "empty": "Ancora nulla da allocare",
+        "other": "Altro ({count})"
+      },
+      "securityTypes": {
+        "stock": "Azioni",
+        "etf": "ETF",
+        "mutualFund": "Fondi",
+        "bond": "Obbligazioni",
+        "crypto": "Cripto",
+        "option": "Opzioni",
+        "cash": "Liquidità",
+        "other": "Altro"
+      },
+      "monthly": {
+        "title": "Guadagno di mercato per mese",
+        "caption": "Variazione di valore meno versamenti · {period} totale {total}",
+        "marketGain": "Guadagno di mercato",
+        "best": "Migliore: {month} {amount}",
+        "worst": "Peggiore: {month} {amount}",
+        "empty": "Nessun dato mensile per questo periodo"
+      }
+    },
+    "watchlist": {
+      "buy": "Acquista",
+      "buyError": "Impossibile aprire la finestra di acquisto",
+      "placeholderCleanupError": "Impossibile rimuovere la posizione {symbol} creata per questo acquisto. Se non ha transazioni, eliminarla da Posizioni.",
+      "heldBadge": "In portafoglio",
+      "inBuyZone": "In zona di acquisto",
+      "toGo": "Mancano {percent}",
+      "rangeUnavailable": "Storico insufficiente",
+      "notInSection": "Senza sezione",
+      "filterPlaceholder": "Filtrare per simbolo o nome",
+      "collapseAll": "Comprimi tutto",
+      "expandAll": "Espandi tutto",
+      "noMatches": "Nessun titolo corrisponde al filtro",
+      "loadError": "Impossibile caricare la watchlist",
+      "refreshError": "Impossibile aggiornare la watchlist. Vengono mostrati gli ultimi dati caricati.",
+      "limits": {
+        "items": "È possibile monitorare fino a {max} titoli",
+        "sections": "È possibile avere fino a {max} sezioni",
+        "alerts": "È possibile impostare fino a {max} avvisi per titolo"
+      },
+      "pricesFootnote": "I prezzi sono chiusure giornaliere, aggiornate una volta al giorno dopo la chiusura dei mercati. Gli avvisi vengono controllati subito dopo l'aggiornamento.",
+      "alertsActive": "{count} avviso attivo | {count} avvisi attivi",
+      "alertsNone": "Nessun avviso",
+      "alertsFor": "Avvisi per {symbol}",
+      "moreFor": "Altre azioni per {symbol}",
+      "empty": {
+        "title": "La watchlist è vuota",
+        "description": "Monitorare i titoli che si pensa di acquistare, impostare un prezzo di acquisto massimo e ricevere un avviso quando si muovono."
+      },
+      "columns": {
+        "security": "Titolo",
+        "lastClose": "Ultima chiusura",
+        "dailyChange": "1G",
+        "range52w": "Intervallo 52 settimane",
+        "buyBelow": "Acquista sotto",
+        "note": "Nota",
+        "actions": "Azioni"
+      },
+      "sectionSummary": {
+        "inBuyZone": "{count} in zona di acquisto",
+        "alerts": "{count} avviso | {count} avvisi"
+      },
+      "add": {
+        "open": "Aggiungi titolo",
+        "title": "Aggiungi alla watchlist",
+        "description": "Cercare un'azione, un ETF o una criptovaluta da monitorare.",
+        "securityLabel": "Titolo",
+        "securityPlaceholder": "Cercare un'azione, un ETF o una criptovaluta",
+        "sectionLabel": "Sezione",
+        "targetLabelOptional": "Acquista sotto, {currency} (facoltativo)",
+        "targetLabelOptionalNoCurrency": "Acquista sotto (facoltativo)",
+        "submit": "Aggiungi alla watchlist"
+      },
+      "items": {
+        "editTitle": "Modifica elemento della watchlist",
+        "editAction": "Modifica nota e obiettivo",
+        "moveTo": "Sposta nella sezione",
+        "remove": "Rimuovi",
+        "removeTitle": "Rimuovere {symbol} dalla watchlist?",
+        "removeDescription": "Verranno eliminati anche la nota, il prezzo di acquisto massimo e gli avvisi.",
+        "targetLabel": "Acquista sotto ({currency})",
+        "targetPlaceholder": "Inserire un prezzo",
+        "noteLabel": "Nota",
+        "notePlaceholder": "Perché lo si sta monitorando?",
+        "added": "Aggiunto alla watchlist",
+        "updated": "Elemento della watchlist aggiornato",
+        "removed": "Rimosso dalla watchlist",
+        "addError": "Impossibile aggiungere alla watchlist",
+        "saveError": "Impossibile salvare l'elemento della watchlist",
+        "removeError": "Impossibile rimuovere l'elemento della watchlist"
+      },
+      "sections": {
+        "new": "Nuova sezione",
+        "newTitle": "Nuova sezione",
+        "renameTitle": "Rinomina sezione",
+        "rename": "Rinomina",
+        "delete": "Elimina sezione",
+        "menuFor": "Azioni per {name}",
+        "nameLabel": "Nome",
+        "namePlaceholder": "es. Candidati all'acquisto",
+        "empty": "Nessun titolo in questa sezione",
+        "deleteTitle": "Eliminare \"{name}\"?",
+        "deleteDescription": "I titoli restano nella watchlist e vengono spostati in Senza sezione.",
+        "created": "Sezione creata",
+        "renamed": "Sezione rinominata",
+        "deleted": "Sezione eliminata",
+        "saveError": "Impossibile salvare la sezione",
+        "deleteError": "Impossibile eliminare la sezione"
+      },
+      "layout": {
+        "open": "Gestisci layout",
+        "title": "Gestisci layout",
+        "description": "Trascinare le sezioni per riordinarle. Trascinare i titoli tra le sezioni.",
+        "saved": "Layout salvato",
+        "saveError": "Impossibile salvare il layout"
+      },
+      "alerts": {
+        "title": "Avvisi · {symbol}",
+        "lastClose": "Ultima chiusura {price} · {date}",
+        "lastCloseUndated": "Ultima chiusura {price}",
+        "listTitle": "Avvisi",
+        "newTitle": "Nuovo avviso",
+        "editTitle": "Modifica avviso",
+        "kindPrice": "Prezzo obiettivo",
+        "kindMove": "Variazione giornaliera",
+        "directionLabel": "Quando la chiusura è",
+        "directionPlaceholder": "Selezionare una direzione",
+        "above": "Sopra",
+        "below": "Sotto",
+        "priceLabel": "Prezzo ({currency})",
+        "pricePlaceholder": "Inserire un prezzo",
+        "percentLabel": "Variazione di almeno (%)",
+        "percentPlaceholder": "es. 5",
+        "percentRange": "Inserire un valore da {min}% a {max}%",
+        "once": "Una volta",
+        "onceHint": "Si disattiva dopo l'attivazione",
+        "everyTime": "Ogni volta",
+        "everyTimeHint": "Si riattiva quando il prezzo torna indietro",
+        "channelsLabel": "Notifica tramite",
+        "channelInApp": "In-app",
+        "channelEmail": "Email",
+        "channelPushSoon": "Push iOS · in arrivo",
+        "channelRequired": "Scegliere almeno un canale",
+        "checkHint": "Controllato una volta al giorno sul prezzo di chiusura. Conta anche una chiusura che supera il prezzo con un salto.",
+        "describeAbove": "Chiude sopra {price}",
+        "describeBelow": "Chiude sotto {price}",
+        "describeMove": "Varia del {percent}% o più in un giorno",
+        "lastFired": "ultima attivazione {date}",
+        "toggleLabel": "Avviso attivo",
+        "addAlert": "Aggiungi avviso",
+        "saveAlert": "Salva avviso",
+        "deleteTitle": "Eliminare questo avviso?",
+        "created": "Avviso creato",
+        "updated": "Avviso aggiornato",
+        "deleted": "Avviso eliminato",
+        "saveError": "Impossibile salvare l'avviso",
+        "deleteError": "Impossibile eliminare l'avviso"
+      }
+    }
+  },
+  "portfolioHolding": {
+    "notFoundTitle": "Posizione non trovata",
+    "notFoundDescription": "Questa posizione non è nel portafoglio o è stata eliminata.",
+    "backToPortfolio": "Torna al portafoglio",
+    "loadError": "Impossibile caricare questa posizione.",
+    "sections": {
+      "transactions": "Transazioni",
+      "openLots": "Lotti aperti"
+    },
+    "chart": {
+      "buys": "Acquisti",
+      "sells": "Vendite",
+      "bought": "Acquistato",
+      "sold": "Venduto",
+      "buy": "Acquisto",
+      "sell": "Vendita",
+      "tradeAmount": "Importo",
+      "close": "Chiusura",
+      "averageCostLabel": "Costo medio {price}",
+      "unrealizedCaption": "non realizzato",
+      "loadError": "Impossibile caricare lo storico dei prezzi",
+      "tradesError": "Impossibile caricare le operazioni, quindi gli indicatori di acquisto e vendita sono nascosti.",
+      "empty": "Nessuno storico dei prezzi per questo periodo"
+    },
+    "stats": {
+      "averageCost": "Costo medio",
+      "dividends": "Dividendi",
+      "firstPurchase": "Primo acquisto",
+      "openLotsCount": "Nessun lotto aperto | {count} lotto aperto | {count} lotti aperti",
+      "weightOf": "di {portfolio}"
+    },
+    "timing": {
+      "title": "Tempismo degli acquisti",
+      "below": "Il prezzo medio di acquisto {averageBuyPrice} è inferiore di {difference} alla chiusura giornaliera media dal primo acquisto del {firstBuyDate} ({averageClose}).",
+      "above": "Il prezzo medio di acquisto {averageBuyPrice} è superiore di {difference} alla chiusura giornaliera media dal primo acquisto del {firstBuyDate} ({averageClose})."
+    },
+    "lots": {
+      "empty": "Nessun lotto aperto",
+      "emptyDescription": "I lotti appaiono qui dopo aver registrato un acquisto.",
+      "loadError": "Impossibile caricare i lotti aperti.",
+      "date": "Acquistato il",
+      "costPerShare": "Costo per quota",
+      "currentValue": "Valore attuale",
+      "gain": "Guadagno",
+      "fifoHint": "First in, first out (FIFO). Il costo di carico sopra usa il costo medio, quindi i totali possono differire dopo una vendita."
     }
   }
 }

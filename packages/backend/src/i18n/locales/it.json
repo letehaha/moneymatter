@@ -288,7 +288,30 @@
     },
     "unrealizedLossAlert": {
       "title_one": "{{count}} posizione ha superato la soglia di perdita impostata",
-      "title_other": "{{count}} posizioni hanno superato la soglia di perdita impostata"
+      "title_other": "{{count}} posizioni hanno superato la soglia di perdita impostata",
+      "emailCta": "Apri gli investimenti",
+      "emailFooter": "Questa email viene inviata perché è stata attivata l'email per gli avvisi di perdita non realizzata nelle Impostazioni."
+    },
+    "watchlist": {
+      "itemNotFound": "Elemento della watchlist non trovato",
+      "sectionNotFound": "Sezione della watchlist non trovata",
+      "alertNotFound": "Avviso della watchlist non trovato",
+      "securityAlreadyWatched": "Questo titolo è già nella watchlist",
+      "layoutInvalid": "Il layout deve elencare ogni sezione una volta e ogni elemento al massimo una volta",
+      "alertThresholdInvalid": "Un avviso di prezzo richiede un prezzo e un avviso di variazione giornaliera richiede una percentuale",
+      "alertChannelRequired": "Scegliere almeno un modo per ricevere le notifiche",
+      "tooManyItems": "Una watchlist può contenere al massimo {{max}} titoli",
+      "tooManySections": "Una watchlist può avere al massimo {{max}} sezioni",
+      "tooManyAlerts": "Un titolo della watchlist può avere al massimo {{max}} avvisi"
+    },
+    "watchlistAlert": {
+      "closeAbove": "{{symbol}} ha chiuso sopra {{price}} {{currency}}",
+      "closeBelow": "{{symbol}} ha chiuso sotto {{price}} {{currency}}",
+      "dailyMove": "{{symbol}} si è mosso del {{change}}% in un giorno",
+      "message": "Chiusura del {{date}}: {{close}} {{currency}}",
+      "emailCta": "Apri la watchlist",
+      "emailFooter": "Questa email viene inviata perché è stata attivata l'email per questi avvisi della watchlist.",
+      "digestSubject": "{{count}} avvisi della watchlist attivati"
     }
   },
   "landingFaq": {
@@ -940,5 +963,13 @@
   },
   "backgroundJobs": {
     "notFound": "Questa attività non è più in esecuzione: il server potrebbe essere stato riavviato. Riprovare."
+  },
+  "gifts": {
+    "invalidCode": "Questo codice regalo non è valido. Verificare che non contenga errori di battitura.",
+    "alreadyRedeemed": "Questo codice regalo è già stato riscattato.",
+    "expired": "Questo codice regalo è scaduto.",
+    "coveredByLifetime": "Il piano lifetime include già tutto ciò che offre questo regalo. È possibile passare il codice a qualcun altro.",
+    "cancelAppStoreFirst": "L'abbonamento si rinnova tramite l'App Store. Disattivare il rinnovo automatico nelle impostazioni dell'ID Apple, poi riscattare il regalo. Inizierà al termine del periodo già pagato.",
+    "checkoutBlocked": "È attivo un abbonamento in regalo fino al {{date}}. Sarà possibile abbonarsi al suo termine."
   }
 }

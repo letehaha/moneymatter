@@ -16,27 +16,74 @@
       "exchangeCurrency": "Zmena meny"
     },
     "balance": {
-      "totalValue": "Celková hodnota",
-      "baseCurrencyEquivalent": "≈ {value} v {code}",
-      "loadError": "Súhrn portfólia sa nepodarilo načítať.",
-      "metrics": {
-        "costBasis": "Obstarávacia cena",
+      "baseCurrencyEquivalent": "≈ {value} v {code}"
+    },
+    "hero": {
+      "loadError": "Súhrn portfólia sa nepodarilo načítať",
+      "resizeHint": "Ťahaním zmeníte veľkosť · dvojitým kliknutím obnovíte",
+      "modes": {
+        "value": "Hodnota",
+        "return": "Výnos %"
+      },
+      "periods": {
+        "1W": "1T",
+        "1M": "1M",
+        "3M": "3M",
+        "ytd": "YTD",
+        "1Y": "1R",
+        "all": "Všetko"
+      },
+      "series": {
+        "value": "Hodnota",
+        "netDeposits": "Čisté vklady",
+        "costBasis": "Obstarávacia cena"
+      },
+      "depositsAxis": {
+        "label": "Os vkladov",
+        "shared": "Spoločná",
+        "own": "Vlastná mierka"
+      },
+      "settings": {
+        "lines": "Čiary"
+      },
+      "chart": {
+        "empty": "Zatiaľ žiadna história. Pridajte vklad alebo transakciu a graf sa začne zobrazovať.",
+        "loadError": "Graf sa nepodarilo načítať",
+        "return": "Výnos",
+        "gain": "Zisk",
+        "returnCaption": "Výnos nezahŕňa vklady a výbery, takže vklad sa nikdy nezobrazí ako skok."
+      },
+      "stats": {
+        "totalValue": "Celková hodnota",
+        "marketGain": "trhový zisk · {period}",
+        "marketLoss": "trhová strata · {period}",
+        "netDeposits": "Čisté vklady",
+        "totalReturn": "Celkový výnos",
         "unrealized": "Nerealizované",
         "realized": "Realizované",
-        "totalReturn": "Celkový výnos"
+        "costBasis": "Obstarávacia cena",
+        "cash": "Hotovosť"
       }
     },
+    "menu": {
+      "chartLayout": "Rozloženie grafu",
+      "layoutFloating": "Plávajúca karta",
+      "layoutPanel": "Bočný panel",
+      "resetChartHeight": "Obnoviť výšku grafu"
+    },
+    "tabs": {
+      "holdings": "Pozície",
+      "analytics": "Analytika",
+      "activity": "Pohyb",
+      "watchlist": "Zoznam sledovaných",
+      "plusBadge": "Plus",
+      "analyticsGateDescription": "Výnosy nezávislé od času vkladov, poklesy, výkonnosť jednotlivých pozícií a alokácia pre každé portfólio.",
+      "watchlistGateDescription": "Sledujte cenné papiere, ktoré ešte nevlastníte, a dostávajte upozornenia, keď ich cena prekročí vaše cieľové hodnoty."
+    },
     "cashBalances": {
-      "title": "Hotovostné zostatky",
       "emptyState": "Žiadne hotovostné zostatky",
-      "tabs": {
-        "balances": "Zostatky",
-        "cashTransactions": "Transakcie",
-        "buysSells": "Nákupy a predaje"
-      },
       "cashTransactions": {
         "addButton": "Pridať hotovostnú transakciu",
-        "emptyState": "Zatiaľ žiadne hotovostné transakcie",
         "deposit": "Vklad",
         "withdrawal": "Výber",
         "transferIn": "Prevod dnu",
@@ -52,7 +99,6 @@
         "markedAsContribution": "Označené ako skutočný vklad",
         "adjustmentError": "Tento prevod sa nepodarilo aktualizovať",
         "rowActions": "Akcie transakcie",
-        "emptyStateDescription": "Vklady, výbery a prevody tohto portfólia sa zobrazia tu.",
         "edit": "Upraviť",
         "editDialog": {
           "title": "Upraviť hotovostnú transakciu",
@@ -61,16 +107,29 @@
         }
       },
       "buysSells": {
-        "emptyState": "Žiadne nákupné/predajné transakcie",
         "shares": "akcií"
       }
     },
+    "activity": {
+      "filters": {
+        "all": "Všetko",
+        "trades": "Obchody",
+        "cash": "Hotovosť",
+        "income": "Príjem"
+      },
+      "empty": {
+        "title": "Zatiaľ žiadna aktivita",
+        "description": "Obchody, vklady, výbery a prevody sa zobrazia tu.",
+        "filteredTitle": "Pre tento filter nie je čo zobraziť"
+      },
+      "loadError": "Aktivitu sa nepodarilo načítať"
+    },
+    "cash": {
+      "title": "Hotovosť"
+    },
     "holdings": {
-      "title": "Pozície",
-      "subtitle": "{count} symbolov",
       "filterPlaceholder": "Filtrovať podľa symbolu alebo názvu...",
       "addButton": "Pridať symbol",
-      "importButton": "Importovať transakcie",
       "importButtonShort": "Import"
     },
     "holdingsTable": {
@@ -81,14 +140,17 @@
       "clearFilterButton": "Vymazať vyhľadávanie",
       "headers": {
         "symbol": "Symbol",
-        "name": "Názov",
         "shares": "Akcie",
         "price": "Cena",
-        "avgCostPerShare": "Priem. cena/akcia",
-        "totalCost": "Celková cena",
         "marketValue": "Trhová hodnota",
-        "unrealizedGain": "Nerealizovaný zisk",
-        "realizedGain": "Realizovaný zisk"
+        "weight": "Váha",
+        "unrealizedGain": "Nerealizovaný zisk"
+      },
+      "actions": {
+        "addTransaction": "Pridať transakciu",
+        "addTransactionFor": "Pridať transakciu pre {symbol}",
+        "openHolding": "Otvoriť pozíciu",
+        "openHoldingFor": "Otvoriť {symbol}"
       },
       "transactions": {
         "loading": "Načítavanie transakcií…",
@@ -106,8 +168,7 @@
         "error": "Pozíciu sa nepodarilo zmazať."
       },
       "addTransactionDialog": {
-        "title": "Pridať transakciu",
-        "description": "Pridajte novú transakciu do svojho portfólia."
+        "title": "Pridať transakciu"
       },
       "tryAgainLater": "Skúste to znova, prosím",
       "emptyDescription": "Pridajte prvú transakciu a začnite sledovať svoje investície",
@@ -152,6 +213,266 @@
       "deleteTransaction": {
         "tooltip": "Zmazať transakciu"
       }
+    },
+    "analytics": {
+      "loadError": "Analytiku sa nepodarilo načítať",
+      "refreshError": "Analytiku sa nepodarilo obnoviť. Zobrazujú sa naposledy načítané údaje.",
+      "empty": {
+        "title": "Zatiaľ žiadna analytika",
+        "description": "Pridajte pozíciu alebo vložte hotovosť a uvidíte výnosy, poklesy a alokáciu."
+      },
+      "periods": {
+        "6M": "6M"
+      },
+      "periodShiftHint": "Kliknutím so Shiftom použijete na všetky grafy",
+      "kpis": {
+        "timeWeightedLabel": "Časovo vážený výnos",
+        "maxDrawdownLabel": "Maximálny pokles",
+        "moneyWeightedLabel": "Peňažne vážený výnos",
+        "annualizedSinceFirstDeposit": "ročne prepočítané od prvého vkladu",
+        "moneyWeightedUnavailable": "Vyžaduje aspoň 6 mesiacov histórie",
+        "drawdownRecovered": "{peak} → {trough}, zotavené {date}",
+        "drawdownNotRecovered": "{peak} → {trough}, zatiaľ nezotavené",
+        "noDrawdown": "V tomto období nebol žiadny pokles",
+        "feesPaidLabel": "Zaplatené poplatky",
+        "feesShareOfBuys": "{share} z nákupov"
+      },
+      "table": {
+        "title": "Výkonnosť",
+        "caption": "Cenový výnos za obdobie v mene každej pozície",
+        "holding": "Pozícia",
+        "weight": "Váha",
+        "value": "Hodnota",
+        "showAll": "Zobraziť všetky ({count})",
+        "showLess": "Zobraziť menej"
+      },
+      "relative": {
+        "title": "Pozície vs portfólio",
+        "caption": "Každá čiara začína na 0 % v prvý deň obdobia. Pozície používajú vlastnú menu.",
+        "portfolio": "Portfólio",
+        "addHolding": "Pridať ďalšie",
+        "searchPlaceholder": "Hľadať pozície",
+        "noMatches": "Žiadne zodpovedajúce pozície",
+        "maxReached": "Môžete porovnať najviac {count} pozícií",
+        "remove": "Odstrániť z porovnania",
+        "removeNamed": "Odstrániť {name} z porovnania",
+        "benchmarkLabel": "Referenčný index",
+        "noBenchmark": "Bez referenčného indexu",
+        "benchmarkProxy": "cez {symbol}",
+        "benchmarkUnavailable": "Ceny referenčného indexu zatiaľ nie sú k dispozícii"
+      },
+      "allocation": {
+        "title": "Alokácia",
+        "byHolding": "Pozícia",
+        "byType": "Typ",
+        "byCurrency": "Mena",
+        "empty": "Zatiaľ nie je čo alokovať",
+        "other": "Ostatné ({count})"
+      },
+      "securityTypes": {
+        "stock": "Akcie",
+        "etf": "ETF",
+        "mutualFund": "Fondy",
+        "bond": "Dlhopisy",
+        "crypto": "Kryptomeny",
+        "option": "Opcie",
+        "cash": "Hotovosť",
+        "other": "Ostatné"
+      },
+      "monthly": {
+        "title": "Trhový zisk podľa mesiacov",
+        "caption": "Zmena hodnoty bez vkladov · spolu {period}: {total}",
+        "marketGain": "Trhový zisk",
+        "best": "Najlepší: {month} {amount}",
+        "worst": "Najhorší: {month} {amount}",
+        "empty": "Pre toto obdobie nie sú mesačné údaje"
+      }
+    },
+    "watchlist": {
+      "buy": "Kúpiť",
+      "buyError": "Dialóg nákupu sa nepodarilo otvoriť",
+      "placeholderCleanupError": "Pozíciu {symbol} vytvorenú pre tento nákup sa nepodarilo upratať. Ak nemá žiadne transakcie, zmažte ju v Pozíciách.",
+      "heldBadge": "Vlastnené",
+      "inBuyZone": "V nákupnej zóne",
+      "toGo": "Zostáva {percent}",
+      "rangeUnavailable": "Nedostatočná história",
+      "notInSection": "Mimo sekcie",
+      "filterPlaceholder": "Filtrovať podľa symbolu alebo názvu",
+      "collapseAll": "Zbaliť všetko",
+      "expandAll": "Rozbaliť všetko",
+      "noMatches": "Filtru nezodpovedá žiadny cenný papier",
+      "loadError": "Zoznam sledovaných sa nepodarilo načítať",
+      "refreshError": "Zoznam sledovaných sa nepodarilo obnoviť. Zobrazujú sa naposledy načítané údaje.",
+      "limits": {
+        "items": "Môžete sledovať najviac {max} cenných papierov",
+        "sections": "Môžete mať najviac {max} sekcií",
+        "alerts": "Pre jeden cenný papier môžete nastaviť najviac {max} upozornení"
+      },
+      "pricesFootnote": "Ceny sú denné záverečné ceny, aktualizujú sa raz denne po zatvorení trhov. Upozornenia sa kontrolujú hneď po tejto aktualizácii.",
+      "alertsActive": "{count} aktívne upozornenie | {count} aktívne upozornenia | {count} aktívnych upozornení",
+      "alertsNone": "Žiadne upozornenia",
+      "alertsFor": "Upozornenia pre {symbol}",
+      "moreFor": "Ďalšie akcie pre {symbol}",
+      "empty": {
+        "title": "Váš zoznam sledovaných je prázdny",
+        "description": "Sledujte cenné papiere, o ktorých uvažujete, nastavte cenu „Kúpiť pod“ a dostávajte upozornenia, keď sa pohnú."
+      },
+      "columns": {
+        "security": "Cenný papier",
+        "lastClose": "Posledné zatvorenie",
+        "dailyChange": "1D",
+        "range52w": "52-týždňový rozsah",
+        "buyBelow": "Kúpiť pod",
+        "note": "Poznámka",
+        "actions": "Akcie"
+      },
+      "sectionSummary": {
+        "inBuyZone": "{count} v nákupnej zóne",
+        "alerts": "{count} upozornenie | {count} upozornenia | {count} upozornení"
+      },
+      "add": {
+        "open": "Pridať cenný papier",
+        "title": "Pridať do zoznamu sledovaných",
+        "description": "Vyhľadajte akciu, ETF alebo kryptomenu, ktorú chcete sledovať.",
+        "securityLabel": "Cenný papier",
+        "securityPlaceholder": "Hľadať akciu, ETF alebo kryptomenu",
+        "sectionLabel": "Sekcia",
+        "targetLabelOptional": "Kúpiť pod, {currency} (voliteľné)",
+        "targetLabelOptionalNoCurrency": "Kúpiť pod (voliteľné)",
+        "submit": "Pridať do zoznamu sledovaných"
+      },
+      "items": {
+        "editTitle": "Upraviť položku zoznamu",
+        "editAction": "Upraviť poznámku a cieľ",
+        "moveTo": "Presunúť do sekcie",
+        "remove": "Odstrániť",
+        "removeTitle": "Odstrániť {symbol} zo zoznamu sledovaných?",
+        "removeDescription": "Odstráni sa aj jeho poznámka, cena „Kúpiť pod“ a upozornenia.",
+        "targetLabel": "Kúpiť pod ({currency})",
+        "targetPlaceholder": "Zadajte cenu",
+        "noteLabel": "Poznámka",
+        "notePlaceholder": "Prečo ho sledujete?",
+        "added": "Pridané do zoznamu sledovaných",
+        "updated": "Položka zoznamu aktualizovaná",
+        "removed": "Odstránené zo zoznamu sledovaných",
+        "addError": "Do zoznamu sledovaných sa nepodarilo pridať",
+        "saveError": "Položku zoznamu sa nepodarilo uložiť",
+        "removeError": "Položku zoznamu sa nepodarilo odstrániť"
+      },
+      "sections": {
+        "new": "Nová sekcia",
+        "newTitle": "Nová sekcia",
+        "renameTitle": "Premenovať sekciu",
+        "rename": "Premenovať",
+        "delete": "Zmazať sekciu",
+        "menuFor": "Akcie pre {name}",
+        "nameLabel": "Názov",
+        "namePlaceholder": "napr. Kandidáti na nákup",
+        "empty": "V tejto sekcii nie sú žiadne cenné papiere",
+        "deleteTitle": "Zmazať „{name}“?",
+        "deleteDescription": "Jej cenné papiere zostanú v zozname sledovaných a presunú sa do „Mimo sekcie“.",
+        "created": "Sekcia vytvorená",
+        "renamed": "Sekcia premenovaná",
+        "deleted": "Sekcia zmazaná",
+        "saveError": "Sekciu sa nepodarilo uložiť",
+        "deleteError": "Sekciu sa nepodarilo zmazať"
+      },
+      "layout": {
+        "open": "Spravovať rozloženie",
+        "title": "Spravovať rozloženie",
+        "description": "Presúvaním zmeníte poradie sekcií. Cenné papiere môžete presúvať medzi sekciami.",
+        "saved": "Rozloženie uložené",
+        "saveError": "Rozloženie sa nepodarilo uložiť"
+      },
+      "alerts": {
+        "title": "Upozornenia · {symbol}",
+        "lastClose": "Posledné zatvorenie {price} · {date}",
+        "lastCloseUndated": "Posledné zatvorenie {price}",
+        "listTitle": "Upozornenia",
+        "newTitle": "Nové upozornenie",
+        "editTitle": "Upraviť upozornenie",
+        "kindPrice": "Cieľová cena",
+        "kindMove": "Denný pohyb",
+        "directionLabel": "Keď je zatvorenie",
+        "directionPlaceholder": "Vyberte smer",
+        "above": "Nad",
+        "below": "Pod",
+        "priceLabel": "Cena ({currency})",
+        "pricePlaceholder": "Zadajte cenu",
+        "percentLabel": "Pohyb aspoň (%)",
+        "percentPlaceholder": "napr. 5",
+        "percentRange": "Zadajte hodnotu od {min} % do {max} %",
+        "once": "Raz",
+        "onceHint": "Po spustení sa vypne",
+        "everyTime": "Zakaždým",
+        "everyTimeHint": "Znova sa aktivuje, keď cena prejde späť",
+        "channelsLabel": "Spôsob upozornenia",
+        "channelInApp": "V aplikácíí",
+        "channelEmail": "E-mail",
+        "channelPushSoon": "Push na iOS · čoskoro",
+        "channelRequired": "Vyberte aspoň jeden kanál",
+        "checkHint": "Kontroluje sa raz denne podľa záverečnej ceny. Zatvorenie, ktoré preskočí vašu cenu, sa stále počíta.",
+        "describeAbove": "Zatvorí nad {price}",
+        "describeBelow": "Zatvorí pod {price}",
+        "describeMove": "Pohyb o {percent} % alebo viac za deň",
+        "lastFired": "naposledy spustené {date}",
+        "toggleLabel": "Upozornenie zapnuté",
+        "addAlert": "Pridať upozornenie",
+        "saveAlert": "Uložiť upozornenie",
+        "deleteTitle": "Zmazať toto upozornenie?",
+        "created": "Upozornenie vytvorené",
+        "updated": "Upozornenie aktualizované",
+        "deleted": "Upozornenie zmazané",
+        "saveError": "Upozornenie sa nepodarilo uložiť",
+        "deleteError": "Upozornenie sa nepodarilo zmazať"
+      }
+    }
+  },
+  "portfolioHolding": {
+    "notFoundTitle": "Pozícia sa nenašla",
+    "notFoundDescription": "Táto pozícia nie je v portfóliu alebo bola zmazaná.",
+    "backToPortfolio": "Späť na portfólio",
+    "loadError": "Túto pozíciu sa nepodarilo načítať.",
+    "sections": {
+      "transactions": "Transakcie",
+      "openLots": "Otvorené loty"
+    },
+    "chart": {
+      "buys": "Nákupy",
+      "sells": "Predaje",
+      "bought": "Nakúpené",
+      "sold": "Predané",
+      "buy": "Nákup",
+      "sell": "Predaj",
+      "tradeAmount": "Suma",
+      "close": "Zatvorenie",
+      "averageCostLabel": "Priemerná cena {price}",
+      "unrealizedCaption": "nerealizované",
+      "loadError": "Históriu cien sa nepodarilo načítať",
+      "tradesError": "Obchody sa nepodarilo načítať, preto sú označenia nákupov a predajov skryté.",
+      "empty": "Pre toto obdobie nie je história cien"
+    },
+    "stats": {
+      "averageCost": "Priemerná cena",
+      "dividends": "Dividendy",
+      "firstPurchase": "Prvý nákup",
+      "openLotsCount": "Žiadne otvorené loty | {count} otvorený lot | {count} otvorené loty | {count} otvorených lotov",
+      "weightOf": "z {portfolio}"
+    },
+    "timing": {
+      "title": "Vaše načasovanie",
+      "below": "Vaša priemerná nákupná cena {averageBuyPrice} je o {difference} nižšia ako priemerná denná záverečná cena od vášho prvého nákupu dňa {firstBuyDate} ({averageClose}).",
+      "above": "Vaša priemerná nákupná cena {averageBuyPrice} je o {difference} vyššia ako priemerná denná záverečná cena od vášho prvého nákupu dňa {firstBuyDate} ({averageClose})."
+    },
+    "lots": {
+      "empty": "Žiadne otvorené loty",
+      "emptyDescription": "Loty sa tu zobrazia po zaznamenaní nákupu.",
+      "loadError": "Otvorené loty sa nepodarilo načítať.",
+      "date": "Zakúpené",
+      "costPerShare": "Cena za akciu",
+      "currentValue": "Aktuálna hodnota",
+      "gain": "Zisk",
+      "fifoHint": "Metóda FIFO (prvý dnu, prvý von). Obstarávacia cena vyššie používa vašu priemernú cenu, preto sa súčty po predaji môžu líšiť."
     }
   }
 }
