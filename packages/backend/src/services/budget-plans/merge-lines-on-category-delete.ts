@@ -272,6 +272,14 @@ const mergeLinesOnCategoryDeleteImpl = async ({
   const plans = await lockPlansByIds({ planIds: owned.map((plan) => plan.id), userId });
 
   for (const plan of plans) {
+    if (plan.ignoredCategoryIds.includes(categoryId)) {
+      const kept = plan.ignoredCategoryIds.filter((id) => id !== categoryId);
+      const withReplacement =
+        replacementCategoryId === null || kept.includes(replacementCategoryId)
+          ? kept
+          : [...kept, replacementCategoryId];
+      await plan.update({ ignoredCategoryIds: withReplacement });
+    }
     await mergePlanLines({ plan, categoryId, replacementId: replacementCategoryId });
   }
 };

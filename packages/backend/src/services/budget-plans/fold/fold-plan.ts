@@ -5,7 +5,11 @@ import {
   BudgetPlanPeriodViewLine,
 } from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
-import { createRootCategoryResolver, getAncestorIds } from '@services/categories/category-hierarchy';
+import {
+  createRootCategoryResolver,
+  expandCategoryIdsWithDescendants,
+  getAncestorIds,
+} from '@services/categories/category-hierarchy';
 
 import { covers, toRange } from '../date-ranges';
 import { AssignmentAmounts, resolveAssigned } from './resolve-assigned';
@@ -171,7 +175,7 @@ export const foldPlan = ({
   today,
   explicitFutureOnly = false,
 }: {
-  plan: { carryPolicy: BudgetPlanCarryPolicy };
+  plan: { carryPolicy: BudgetPlanCarryPolicy; ignoredCategoryIds: readonly string[] };
   periods: FoldPeriod[];
   lines: FoldLine[];
   lineCategories: FoldLineCategory[];
@@ -184,6 +188,9 @@ export const foldPlan = ({
 }): FoldedPeriodView[] => {
   const byId = new Map(categories.map((category) => [category.id, category]));
   const rootOf = createRootCategoryResolver({ byId });
+  const ignored = new Set(
+    expandCategoryIdsWithDescendants({ categoryIds: [...plan.ignoredCategoryIds], categories, byId }),
+  );
 
   const rowByKey = new Map(assignments.map((row) => [`${row.periodId}:${row.lineId}`, row]));
   const activityByPeriod = new Map<string, FoldActivityRow[]>();
@@ -215,8 +222,8 @@ export const foldPlan = ({
       else uncovered.spending += row.activity;
 
       // Negative leaves are filtered before the roll-up, so uncovered income
-      // cannot hide uncovered spending under the same root.
-      if (row.categoryId === null || row.activity >= 0) continue;
+      // cannot hide uncovered spending under the same root. Ignored categories still count in `uncovered`.
+      if (row.categoryId === null || row.activity >= 0 || ignored.has(row.categoryId)) continue;
 
       const rootId = rootOf(row.categoryId);
       unbudgetedByRoot.set(rootId, (unbudgetedByRoot.get(rootId) ?? 0) + row.activity);

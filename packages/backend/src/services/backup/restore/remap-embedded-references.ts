@@ -14,6 +14,7 @@ import AccountGroup from '@models/accounts-groups/account-groups.model';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import BudgetLines from '@models/budget-lines.model';
+import BudgetPlans from '@models/budget-plans.model';
 import Categories from '@models/categories.model';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Portfolios from '@models/investments/portfolios.model';
@@ -352,6 +353,17 @@ export async function remapEmbeddedReferences({
     model: BudgetLines,
     fileName: 'budget-lines',
     column: 'archivedCategoryIds',
+    archive,
+    insertedIds,
+    transaction,
+    mutate: ({ draft }) => remapIdArrayInPlace({ arr: draft, targetTable: tables.categories, insertedIds }),
+  });
+
+  // 10. BudgetPlans.ignoredCategoryIds[] → Categories.
+  await rewriteColumn({
+    model: BudgetPlans,
+    fileName: 'budget-plans',
+    column: 'ignoredCategoryIds',
     archive,
     insertedIds,
     transaction,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { loadBudgetPlan, loadBudgetPlanPeriodView, loadBudgetPlanPeriods } from '@/api/budget-plans';
+import { loadBudgetPlan, loadBudgetPlanPeriodView, loadBudgetPlanPeriods, updateBudgetPlan } from '@/api/budget-plans';
 import { config } from '@/common/config';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import {
@@ -23,6 +23,7 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/lib/ui/drawer';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable';
+import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { isResourceMissingError } from '@/js/errors';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
@@ -32,6 +33,7 @@ import {
   BookOpenIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  EyeOffIcon,
   InfoIcon,
   LayoutListIcon,
   ListChecksIcon,
@@ -266,6 +268,17 @@ const pastActiveFrom = computed(() => {
   const current = periods.value?.find((period) => period.isCurrent);
   const selected = selectedPeriod.value;
   return selected && current && selected.startDate < current.startDate ? selected.startDate : undefined;
+});
+
+const { isPending: isIgnoringCategory, mutate: ignoreCategory } = useInvalidatingMutation({
+  mutationFn: ({ categoryId }: { categoryId: string }) =>
+    updateBudgetPlan({
+      planId: planId.value,
+      payload: { ignoredCategoryIds: [...(plan.value?.plan.ignoredCategoryIds ?? []), categoryId] },
+    }),
+  invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
+  successKey: 'budgetPlans.unbudgeted.ignored',
+  errorKey: 'budgetPlans.settings.error',
 });
 
 const unbudgetedTotal = computed(() =>
@@ -772,13 +785,27 @@ const openLineDialog = ({
                     {{ formatBaseCurrency(Math.abs(entry.activity)) }}
                   </span>
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     class="ml-4"
                     @click="openLineDialog({ categoryIds: [entry.categoryId] })"
                   >
+                    <PlusIcon class="size-4" />
                     {{ $t('budgetPlans.grid.addLine') }}
                   </Button>
+                  <DesktopOnlyTooltip :content="$t('budgetPlans.unbudgeted.ignore')" :disabled="!isNarrow">
+                    <Button
+                      variant="soft-destructive"
+                      :size="isNarrow ? 'icon-sm' : 'sm'"
+                      :class="isNarrow && 'size-9'"
+                      :disabled="!plan || isIgnoringCategory"
+                      :aria-label="$t('budgetPlans.unbudgeted.ignore')"
+                      @click="ignoreCategory({ categoryId: entry.categoryId })"
+                    >
+                      <EyeOffIcon class="size-4" />
+                      <template v-if="!isNarrow">{{ $t('budgetPlans.unbudgeted.ignore') }}</template>
+                    </Button>
+                  </DesktopOnlyTooltip>
                 </div>
               </CollapsibleContent>
             </Collapsible>

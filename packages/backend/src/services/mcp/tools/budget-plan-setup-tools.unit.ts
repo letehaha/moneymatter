@@ -272,6 +272,7 @@ describe('update_budget_plan', () => {
       'autoAttachAccounts',
       'carryPolicy',
       'expectedIncome',
+      'ignoredCategoryIds',
       'name',
       'poolEnabled',
       'zeroSum',

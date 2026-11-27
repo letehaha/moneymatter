@@ -341,7 +341,11 @@ async function seedBudgetPlans() {
     },
     raw: true,
   });
-  await helpers.updateBudgetPlan({ planId: plan.id, payload: { zeroSum: true }, raw: true });
+  await helpers.updateBudgetPlan({
+    planId: plan.id,
+    payload: { zeroSum: true, ignoredCategoryIds: [oldCategory.id] },
+    raw: true,
+  });
   const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
   const bills = await helpers.createBudgetLineGroup({ planId: plan.id, name: 'Bills', raw: true });
 
@@ -1170,6 +1174,8 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
           const details = await helpers.getBudgetPlan({ planId: main.id, raw: true });
           expect(details.accountIds).toHaveLength(2);
           for (const id of details.accountIds) expect(targetAccountIds.has(id)).toBe(true);
+          expect(details.plan.ignoredCategoryIds).toEqual([categoryIdByName.get('Plan old')]);
+          expect(details.plan.ignoredCategoryIds).not.toEqual([seeded.oldCategory.id]);
 
           const periods = await helpers.listBudgetPlanPeriods({ planId: main.id, raw: true });
           const view = await helpers.getBudgetPlanPeriodView({ planId: main.id, periodId: periods[1]!.id, raw: true });

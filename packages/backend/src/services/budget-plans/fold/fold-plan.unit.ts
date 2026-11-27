@@ -65,7 +65,7 @@ const spent = ({
 /** Amounts are integer cents inside the fold; the scale is irrelevant to it. */
 const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): FoldedPeriodView[] =>
   foldPlan({
-    plan: { carryPolicy: 'none' },
+    plan: { carryPolicy: 'none', ignoredCategoryIds: [] },
     periods: PERIODS,
     lines: [line()],
     lineCategories: [covers()],
@@ -83,7 +83,7 @@ const RESET_AUGUST = PERIODS.map((period) => ({ ...period, carryReset: period.id
 const fromLinesInAugust = ({ julySpend, periods }: { julySpend: number; periods: FoldPeriod[] }) =>
   foldPool({
     periods: fold({
-      plan: { carryPolicy: 'signed' },
+      plan: { carryPolicy: 'signed', ignoredCategoryIds: [] },
       periods,
       assignments: [row({ baselineAmount: 100 })],
       activityRows: [spent({ periodId: 'jul', amount: julySpend })],
@@ -181,7 +181,7 @@ describe('foldPlan rollover', () => {
     const activityRows = [spent({ periodId: 'jul', amount: 140 })];
 
     const none = fold({ assignments, activityRows });
-    const signed = fold({ plan: { carryPolicy: 'signed' }, assignments, activityRows });
+    const signed = fold({ plan: { carryPolicy: 'signed', ignoredCategoryIds: [] }, assignments, activityRows });
 
     expect(none.map((view) => view.lines[0]!.carriedIn)).toEqual([0, 0, 0]);
     expect(signed.map((view) => view.lines[0]!.carriedIn)).toEqual([0, -40, 60]);
@@ -413,7 +413,7 @@ describe('foldPlan unbudgeted and header', () => {
 describe('foldPlan carry reset', () => {
   it('starts every line of a reset period with nothing carried in, then carries on from there', () => {
     const views = fold({
-      plan: { carryPolicy: 'floor' },
+      plan: { carryPolicy: 'floor', ignoredCategoryIds: [] },
       periods: RESET_AUGUST,
       assignments: [row({ baselineAmount: 100 })],
     });
@@ -425,7 +425,7 @@ describe('foldPlan carry reset', () => {
 
   it('wipes a signed deficit too', () => {
     const views = fold({
-      plan: { carryPolicy: 'signed' },
+      plan: { carryPolicy: 'signed', ignoredCategoryIds: [] },
       periods: RESET_AUGUST,
       assignments: [row({ baselineAmount: 100 })],
       activityRows: [spent({ periodId: 'jul', amount: 250 })],

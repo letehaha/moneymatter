@@ -27,6 +27,7 @@ export function presentBudgetPlan({ plan }: { plan: PlanSource }) {
     autoAttachAccounts: plan.autoAttachAccounts,
     poolFrom: plan.poolFrom,
     zeroSum: plan.zeroSum,
+    ignoredCategoryIds: plan.ignoredCategoryIds,
     expectedIncome:
       plan.expectedIncome instanceof Money ? moneyToApiDecimalOrNull(plan.expectedIncome) : plan.expectedIncome,
     deletedAt: plan.deletedAt instanceof Date ? plan.deletedAt.toISOString() : plan.deletedAt,

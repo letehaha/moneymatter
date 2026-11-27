@@ -5,6 +5,7 @@ import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
+import CategoryMultiSelectField from '@/components/fields/category-multi-select-field.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -252,6 +253,20 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
             "
           />
         </div>
+      </div>
+
+      <div class="grid gap-1">
+        <CategoryMultiSelectField
+          :model-value="plan.plan.ignoredCategoryIds"
+          :label="$t('budgetPlans.settings.ignoredCategoriesLabel')"
+          :placeholder="$t('budgetPlans.settings.ignoredCategoriesPlaceholder')"
+          :disabled="isPatching"
+          cover-subtree
+          @update:model-value="(ignoredCategoryIds) => patchPlan({ planId, payload: { ignoredCategoryIds } })"
+        />
+        <p class="text-muted-foreground text-xs">
+          {{ $t('budgetPlans.settings.ignoredCategoriesHint') }}
+        </p>
       </div>
 
       <div class="grid gap-3">
