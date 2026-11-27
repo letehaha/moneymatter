@@ -7,6 +7,10 @@ import {
   markAllAsRead,
   markAsRead,
 } from '@controllers/notifications.controller';
+import {
+  registerDeviceTokenController,
+  unregisterDeviceTokenController,
+} from '@controllers/notifications/device-tokens.controller';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { Router } from 'express';
@@ -20,6 +24,9 @@ router.get('/', getNotifications);
 
 // Get unread count
 router.get('/unread-count', getUnreadCount);
+
+router.post('/device-tokens', registerDeviceTokenController);
+router.delete('/device-tokens/:token', unregisterDeviceTokenController);
 
 // Get a specific notification
 router.get('/:id', getNotificationById);

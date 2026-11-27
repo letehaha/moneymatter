@@ -1,5 +1,6 @@
 import { config } from '@/common/config';
 import {
+  BILLING_PROVIDERS,
   BILLING_TIERS,
   isEntitledSubscription,
   isTerminalSubscription,
@@ -17,14 +18,26 @@ import { isFuture } from 'date-fns';
  */
 export const isBillingEnabled = (): boolean => !config.isSelfHost;
 
-/** The row the plan card speaks for. Terminal and lapsed rows are history, kept only for the portal link. */
+/**
+ * The row the plan card speaks for. Terminal and lapsed rows are history, kept only for the portal link.
+ * A live gift wins over a provider row (redeeming sets that row to end, and the gift outlasts it),
+ * unless that row has a higher tier: entitlements are the union, so the higher tier still applies.
+ */
 export const liveSubscription = ({
   entitlements,
 }: {
   entitlements: Entitlements | null;
-}): BillingSubscriptionSummary | null =>
-  entitlements?.subscriptions.find((s) => !isTerminalSubscription(s) && isFuture(new Date(s.currentPeriodEndsAt))) ??
-  null;
+}): BillingSubscriptionSummary | null => {
+  const live = (entitlements?.subscriptions ?? []).filter(
+    (s) =>
+      !isTerminalSubscription(s) &&
+      isFuture(new Date(s.currentPeriodEndsAt)) &&
+      !(s.currentPeriodStartsAt && isFuture(new Date(s.currentPeriodStartsAt))),
+  );
+  const gift = live.find((s) => s.provider === BILLING_PROVIDERS.gift);
+  const higherTier = gift && live.find((s) => BILLING_TIERS.indexOf(s.tier) > BILLING_TIERS.indexOf(gift.tier));
+  return higherTier ?? gift ?? live[0] ?? null;
+};
 
 type AnalyticsPlan = Plan | 'trial' | 'read_only' | 'legacy';
 

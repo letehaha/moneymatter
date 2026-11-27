@@ -49,9 +49,6 @@ function normalizeNotification({ row }: { row: Row }): void {
 }
 
 function normalizeSettings({ settings }: { settings: Row }): void {
-  const types = asObject(asObject(settings.notifications)?.types);
-  if (types) renameKey({ obj: types, from: 'budget_alert', to: 'tracker_alert' });
-
   if (Array.isArray(settings.savedTransactionViews)) {
     for (const view of settings.savedTransactionViews) {
       const filters = asObject(asObject(view)?.filters);

@@ -14,7 +14,7 @@ export const ALTERNATIVE_PAGES = [
       'you want an open-source tracker you can host yourself for free, with your YNAB accounts, categories, payees, flags and transfers kept.',
     stayOn: 'YNAB',
     stayIf:
-      'you budget the zero-based way: a MoneyMatter budget has a line per category with rollover and goals, but no Ready to Assign.',
+      'you want finished iOS and Android apps or offline access: the MoneyMatter iPhone app is in beta, and there is no Android app.',
     importer:
       'Dedicated importer for the YNAB register export: accounts, categories, payees, flags and transfers. It takes .csv files only.',
   },

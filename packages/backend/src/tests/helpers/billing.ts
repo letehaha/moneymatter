@@ -14,12 +14,14 @@ import {
   type Entitlements,
   FEATURE_TRIAL_DAYS,
   type Plan,
+  type RedeemGiftResponse,
   STRIPE_PRICE_IDS,
   SUBSCRIPTION_STATUSES,
 } from '@bt/shared/types';
 import { jest } from '@jest/globals';
 import { APP_USER_CACHE_KEY_PREFIX } from '@middlewares/better-auth';
 import FeatureUsages from '@models/feature-usages.model';
+import Gifts from '@models/gifts.model';
 import Users from '@models/users.model';
 import { app } from '@root/app';
 import { API_PREFIX } from '@root/config';
@@ -290,7 +292,11 @@ export function buildStripeCheckoutCompletedEvent({
   clientReferenceId = null,
   email = null,
   metadata = { lifetime_plan: 'essential' },
+  sessionId = 'cs_01test',
+  paymentIntentId = 'pi_01test',
 }: {
+  sessionId?: string;
+  paymentIntentId?: string | null;
   eventId?: string;
   eventType?: string;
   mode?: string;
@@ -306,18 +312,88 @@ export function buildStripeCheckoutCompletedEvent({
     created: Math.floor(Date.now() / SECOND_MS),
     data: {
       object: {
-        id: 'cs_01test',
+        id: sessionId,
         object: 'checkout.session',
         mode,
         payment_status: paymentStatus,
         client_reference_id: clientReferenceId,
         customer_details: email ? { email } : null,
         customer_email: null,
-        payment_intent: 'pi_01test',
+        payment_intent: paymentIntentId,
         metadata,
       },
     },
   };
+}
+
+export function buildStripeGiftCheckoutEvent({
+  tier = 'plus',
+  deliverAt = '',
+  message = '',
+  sessionId = 'cs_gift_01',
+  paymentIntentId = 'pi_gift_01',
+  paymentStatus,
+  eventId,
+  eventType,
+}: {
+  tier?: string;
+  deliverAt?: string;
+  message?: string;
+  sessionId?: string;
+  paymentIntentId?: string | null;
+  paymentStatus?: string;
+  eventId?: string;
+  eventType?: string;
+} = {}) {
+  return buildStripeCheckoutCompletedEvent({
+    eventId,
+    eventType,
+    paymentStatus,
+    sessionId,
+    paymentIntentId,
+    email: 'buyer@example.com',
+    metadata: {
+      gift_tier: tier,
+      gift_buyer_name: 'Alex',
+      gift_recipient_name: 'Sam',
+      gift_recipient_email: 'sam@example.com',
+      gift_message: message,
+      gift_deliver_at: deliverAt,
+    },
+  });
+}
+
+export function createGiftCheckout<R extends boolean | undefined = false>({
+  payload,
+  raw,
+}: {
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<{ url: string }, R>({ method: 'post', url: '/billing/gifts/checkout', payload, raw });
+}
+
+export function redeemGift<R extends boolean | undefined = false>({ code, raw }: { code: string; raw?: R }) {
+  return makeRequest<RedeemGiftResponse, R>({ method: 'post', url: '/billing/gifts/redeem', payload: { code }, raw });
+}
+
+/**
+ * No endpoint moves time, so a due delivery or an expired code is arranged by backdating.
+ * Without a code it backdates every gift not yet emailed.
+ */
+export async function backdateGift({
+  code,
+  deliverAt,
+  sentAt,
+}: {
+  code?: string;
+  deliverAt?: Date;
+  sentAt?: Date;
+}): Promise<void> {
+  await Gifts.update(
+    { ...(deliverAt && { deliverAt }), ...(sentAt && { sentAt }) },
+    { where: code ? { code: code.replace(/-/g, '') } : { sentAt: null } },
+  );
 }
 
 export const APPLE_TEST_ORIGINAL_TRANSACTION_ID = '2000000000000001';

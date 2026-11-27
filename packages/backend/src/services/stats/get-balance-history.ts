@@ -1,10 +1,10 @@
 import { ACCOUNT_CATEGORIES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { toUtcDateString } from '@common/utils/date';
 import * as Accounts from '@models/accounts.model';
 import * as Balances from '@models/balances.model';
 import { connection } from '@models/connection';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
-import { format } from 'date-fns';
 import { Op, QueryTypes, WhereOptions } from 'sequelize';
 
 import { getWhereConditionForTime } from './utils';
@@ -88,12 +88,9 @@ async function buildAccountWhere({
 }
 
 /**
- * Day key of every balance series here. A 'yyyy-MM-dd' string parses as UTC midnight, so under a
- * negative-offset server timezone the key is the previous calendar day; look days up through it.
+ * Day key of every balance series here: the UTC calendar day of the value.
  */
-export function toBalanceDateKey(date: string | Date): string {
-  return format(new Date(date), 'yyyy-MM-dd');
-}
+export const toBalanceDateKey = toUtcDateString;
 
 /**
  * Fetches the balance rows for the accounts named by `accountScope` within a specified date
@@ -187,7 +184,7 @@ export const getBalanceHistoryRows = async ({
         ? (Balances.default.findAll({
             where: {
               accountId: { [Op.in]: accountIdsWithNoRecords },
-              date: { [Op.gt]: new Date(to) },
+              date: { [Op.gt]: to },
             },
             attributes: dataAttributes,
             raw: true,
@@ -331,8 +328,8 @@ function buildBalanceFillIndex({
 
   // Generate a list of all dates from the earliest to the latest.
   const allDates: string[] = [];
-  // oxlint-disable-next-line no-unmodified-loop-condition -- dt is mutated via setDate()
-  for (let dt = new Date(firstDate); dt <= lastDate; dt.setDate(dt.getDate() + 1)) {
+  // oxlint-disable-next-line no-unmodified-loop-condition -- dt is mutated via setUTCDate()
+  for (let dt = new Date(firstDate); dt <= lastDate; dt.setUTCDate(dt.getUTCDate() + 1)) {
     allDates.push(toBalanceDateKey(dt));
   }
 
@@ -396,7 +393,7 @@ function carryForwardMinor({
  * Keyed `accountId → yyyy-MM-dd → minor units`. Every account present carries a value
  * for every date in the range.
  */
-function fillPerAccountBalanceSeries({
+export function fillPerAccountBalanceSeries({
   data,
   from,
   to,

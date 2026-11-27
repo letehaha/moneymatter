@@ -36,8 +36,10 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   // better-auth extensions — account credential management, no monetary data.
   'POST /api/v1/auth/set-password',
 
-  // Notifications: read-marking and admin broadcasts, non-monetary state.
+  // Notifications: read-marking, device tokens and admin broadcasts, non-monetary state.
   'POST /api/v1/notifications/read-all',
+  'POST /api/v1/notifications/device-tokens',
+  'DELETE /api/v1/notifications/device-tokens/:token',
   'POST /api/v1/notifications/:id/read',
   'POST /api/v1/admin/notifications/broadcast',
 
@@ -46,6 +48,7 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'POST /api/v1/billing/checkout',
   'POST /api/v1/billing/portal',
   'POST /api/v1/billing/apple/transactions',
+  'POST /api/v1/billing/gifts/redeem',
 
   // Lease extension writes no financial data, and refusing it mid-wizard would
   // drop the user's upload for nothing.

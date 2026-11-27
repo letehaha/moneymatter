@@ -11,6 +11,7 @@ import type {
   SavedPivotView,
   SavedTransactionView,
   CurrencyDisplayPreference,
+  NotificationPreferences,
   UnrealizedLossAlertsSettings,
 } from '@bt/shared/types';
 
@@ -127,6 +128,7 @@ export interface UserSettingsSchema {
   /** Day of month (1-28) a pay period starts on. Calendar month when unset. */
   payday?: number;
   unrealizedLossAlerts?: UnrealizedLossAlertsSettings;
+  notifications?: NotificationPreferences;
   ui?: UiSettings;
   savedPivotViews?: SavedPivotView[];
   savedTransactionViews?: SavedTransactionView[];

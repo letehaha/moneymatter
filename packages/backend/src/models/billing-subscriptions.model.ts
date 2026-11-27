@@ -48,6 +48,10 @@ export default class BillingSubscriptions extends Model {
   @Column({ type: DataType.DATE, allowNull: false })
   currentPeriodEndsAt!: Date;
 
+  /** Gifts only: access waits for this. Stripe and Apple rows run from creation. */
+  @Column({ type: DataType.DATE, allowNull: true })
+  currentPeriodStartsAt!: Date | null;
+
   @Column({ type: DataType.JSONB, allowNull: true })
   scheduledChange!: ScheduledChange | null;
 

@@ -22,3 +22,9 @@ export const toUtcDateString = (date: Date | string): string => {
 /** The calendar day `date` falls on in the IANA `timezone`, as `YYYY-MM-DD`. */
 export const toZonedDateString = ({ date, timezone }: { date: Date; timezone: string }): string =>
   new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(date);
+
+export const endOfUtcDay = ({ date }: { date: Date | string }): Date => {
+  const end = new Date(date);
+  end.setUTCHours(23, 59, 59, 999);
+  return end;
+};

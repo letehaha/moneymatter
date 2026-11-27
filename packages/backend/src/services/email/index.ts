@@ -48,3 +48,30 @@ export const buildEmailShell = ({ innerHtml }: { innerHtml: string }): string =>
 </body>
 </html>`.trim();
 };
+
+/** An alert digest in the shared shell: a heading, one row per item, a button and a footer line. Escapes every value. */
+export const buildAlertEmail = ({
+  title,
+  items,
+  link,
+  cta,
+  footer,
+}: {
+  title: string;
+  items: { heading: string; text: string; caption: string }[];
+  link: string;
+  cta: string;
+  footer: string;
+}): string =>
+  buildEmailShell({
+    innerHtml: `
+        <tr><td style="padding: 28px 40px 0 40px;"><h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">${escapeHtml(title)}</h1></td></tr>
+        ${items
+          .map(
+            ({ heading, text, caption }) =>
+              `<tr><td style="padding: 16px 40px 0 40px; font-size: 15px; color: #1a1a1a; line-height: 1.5;"><strong>${escapeHtml(heading)}</strong><br>${escapeHtml(text)}<br><span style="font-size: 13px; color: #6b7280;">${escapeHtml(caption)}</span></td></tr>`,
+          )
+          .join('')}
+        <tr><td style="padding: 32px 40px 0 40px;"><a href="${escapeHtml(link)}" style="display: inline-block; background-color: #8b5cf6; color: #ffffff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">${escapeHtml(cta)}</a></td></tr>
+        <tr><td style="padding: 32px 40px 36px 40px;"><p style="margin: 0; font-size: 13px; color: #9ca3af; line-height: 1.5;">${escapeHtml(footer)}</p></td></tr>`,
+  });

@@ -36,6 +36,7 @@ export const serializeAlert = ({ alert }: { alert: WatchlistAlerts }): Watchlist
   frequency: alert.frequency,
   notifyInApp: alert.notifyInApp,
   notifyEmail: alert.notifyEmail,
+  notifyPush: alert.notifyPush,
   isActive: alert.isActive,
   lastTriggeredAt: alert.lastTriggeredAt?.toISOString() ?? null,
 });

@@ -176,7 +176,7 @@
   "Import:": "Import:",
   "Dedicated importer for Wallet CSV exports in English or Spanish.": "Eigener Import für CSV-Exporte aus Wallet auf Englisch oder Spanisch.",
   "Read the comparison": "Vergleich lesen",
-  "Switch if you want an open-source tracker you can host yourself for free, with your YNAB accounts, categories, payees, flags and transfers kept. Stay on YNAB if you budget the zero-based way: a MoneyMatter budget has a line per category with rollover and goals, but no Ready to Assign.": "Wechsle, wenn du einen Open-Source-Tracker willst, den du kostenlos selbst hosten kannst, und deine YNAB-Konten, Kategorien, Zahlungsempfänger, Flags und Umbuchungen erhalten bleiben sollen. Bleib bei YNAB, wenn du nach dem Zero-Based-Prinzip budgetierst: Ein MoneyMatter-Budget hat eine Zeile pro Kategorie mit Übertrag und Zielen, aber kein „Ready to Assign“.",
+  "Switch if you want an open-source tracker you can host yourself for free, with your YNAB accounts, categories, payees, flags and transfers kept. Stay on YNAB if you want finished iOS and Android apps or offline access: the MoneyMatter iPhone app is in beta, and there is no Android app.": "Wechsle, wenn du einen Open-Source-Tracker willst, den du kostenlos selbst hosten kannst, und deine YNAB-Konten, Kategorien, Zahlungsempfänger, Flags und Umbuchungen erhalten bleiben sollen. Bleib bei YNAB, wenn du fertige iOS- und Android-Apps oder Offline-Zugriff willst: Die iPhone-App von MoneyMatter ist in der Beta, und es gibt keine Android-App.",
   "Dedicated importer for the YNAB register export: accounts, categories, payees, flags and transfers. It takes .csv files only.": "Eigener Import für den Register-Export von YNAB: Konten, Kategorien, Zahlungsempfänger, Flags und Umbuchungen. Er nimmt nur .csv-Dateien an.",
   "Switch if you hold accounts in more than one currency, live outside the US and Canada, or want to host the app yourself. Stay on Monarch if you bank in the US or Canada and want bank sync and native phone apps in one subscription.": "Wechsle, wenn du Konten in mehr als einer Währung führst, außerhalb der USA und Kanadas lebst oder die App selbst hosten willst. Bleib bei Monarch, wenn deine Bank in den USA oder Kanada sitzt und du Banksynchronisierung und native Handy-Apps in einem Abo willst.",
   "No dedicated importer. Monarch exports CSV, and MoneyMatter imports CSV with column mapping; this route has not been tested with a real Monarch file. An AI assistant connected over MCP is a second route for a short history.": "Kein eigener Import. Monarch exportiert CSV, und MoneyMatter importiert CSV mit Spaltenzuordnung; dieser Weg wurde noch nicht mit einer echten Monarch-Datei getestet. Ein über MCP verbundener KI-Assistent ist ein zweiter Weg für eine kurze Historie.",
@@ -207,5 +207,6 @@
   "Docs [header]": "Doku",
   "Sign in [header]": "Anmelden",
   "Try for free [header]": "Gratis testen",
-  "Dismiss": "Ausblenden"
+  "Dismiss": "Ausblenden",
+  "Gift a subscription": "Abo verschenken"
 }

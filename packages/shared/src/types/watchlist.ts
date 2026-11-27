@@ -40,6 +40,8 @@ export type WatchlistAlertModel = WatchlistAlertThreshold & {
   frequency: WatchlistAlertFrequency;
   notifyInApp: boolean;
   notifyEmail: boolean;
+  /** Push to the iOS app; rides on the in-app notification, so it needs `notifyInApp`. */
+  notifyPush: boolean;
   isActive: boolean;
   /** ISO timestamp. */
   lastTriggeredAt: string | null;
@@ -106,6 +108,7 @@ export interface WatchlistAlertChannels {
   frequency?: WatchlistAlertFrequency;
   notifyInApp?: boolean;
   notifyEmail?: boolean;
+  notifyPush?: boolean;
 }
 
 /** `price` is a decimal string; `percent` is in percent points (5 = 5%). */
@@ -132,6 +135,10 @@ export type WatchlistAlertNotificationPayload = {
   /** The symbol, else the name. */
   symbol: string | null;
   currencyCode: string;
+  /** Absent on notifications created before these were stored. */
+  assetClass?: ASSET_CLASS;
+  logoUrl?: string | null;
+  securityName?: string | null;
   close: string;
   previousClose: string | null;
   /** YYYY-MM-DD */

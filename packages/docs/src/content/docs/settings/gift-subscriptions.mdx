@@ -1,0 +1,79 @@
+---
+title: Gift subscriptions
+description: Give someone a year of MoneyMatter, how they redeem the code, what happens if they already subscribe, and refunds.
+sidebar:
+  order: 91
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+You can pay for someone else's MoneyMatter for a year. You choose the plan and optionally the day it arrives. They get a private code by email and redeem it in the app.
+
+## Buy a gift
+
+<Steps>
+
+1. Go to [moneymatter.app/gift](https://moneymatter.app/gift). You don't need a MoneyMatter account.
+2. Pick **Essential** or **Plus**. A gift is 12 months of the plan, paid once, at the plan's yearly price. If you have a promotion code, you can enter it at checkout.
+3. Enter your name and email, then the recipient's name and email. You can add a personal message of up to 500 characters.
+4. To have the gift arrive on a particular day, tick **Send on a specific date** and pick a day up to a year ahead. The email goes out in the morning of that day, in your timezone. Otherwise it goes out right after you pay.
+5. Pay on the secure checkout page.
+
+</Steps>
+
+You get a receipt and a short confirmation email. The code itself goes only to the recipient.
+
+<Aside>
+Checkout is run by Stripe as the merchant of record. Prices are shown before tax: Stripe adds VAT, GST or sales tax where it applies and may show the price in your local currency.
+</Aside>
+
+## Redeem a gift
+
+<Steps>
+
+1. Open the gift email and click **Redeem your gift**. If you're new to MoneyMatter, [create a free account](/getting-started/what-is-moneymatter/) first, then open the link again.
+2. The link opens **Settings → Plan & billing** with the code filled in. You can also go there yourself and type the code into **Redeem a gift code**.
+3. Click **Redeem**. Your plan changes straight away.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/settings/gift-redeem.png"
+  alt="The Redeem a gift code box on the Plan & billing page, with a code filled in."
+  hint="Open /settings/plan-billing?gift=ABCD-EFGH-JKMN on an account in its trial. Show the Redeem a gift code box with the prefilled code and the Redeem button. Crop to the box and the Current plan box above it."
+/>
+
+A code works once, for one account. It stays valid for 12 months from the day it was emailed. Anyone who has the code can use it, so keep the email private.
+
+### If you already subscribe
+
+| Your current access                     | When the gifted year starts                                                                                                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| No plan, trial, or read-only            | Right away                                                                                                                                                                           |
+| A subscription you pay on the website   | When your paid period ends. Redeeming stops its renewal automatically, so you're not charged again.                                                                                  |
+| A subscription through the App Store    | When your paid period ends. Turn off auto-renewal in your Apple ID settings first; the code can't be redeemed while the App Store subscription still renews.                        |
+| Another gift                            | When that gift ends. Gifts line up one after another.                                                                                                                                |
+| A lifetime plan                         | A lifetime Plus plan already includes everything, so a gift can't be redeemed on it, and neither can an Essential gift on lifetime Essential. Pass the code on to someone else instead. |
+
+The gifted year starts when your current access runs out, so you don't lose any time you've paid for. Until then you keep the plan you have, even if the gift is a higher one. If that earlier access is refunded, the gift starts right away.
+
+## What a gift includes
+
+- Every feature of the gifted plan for 12 months. See [Compare plans](/settings/plans-and-billing/#compare-plans).
+- **No renewal and no charge** when it ends. **Plan & billing** shows the gift and the date it ends. After that, the account becomes [read-only](/settings/plans-and-billing/#read-only-mode) unless you subscribe.
+- While a gift is running or waiting to start, you can't start a website subscription. You can subscribe once the gift ends.
+
+## Refunds
+
+Write to [support@moneymatter.app](mailto:support@moneymatter.app) with your receipt. After a full refund the code stops working. If it was already redeemed, the gifted access ends.
+
+## If something goes wrong
+
+- **The email hasn't arrived.** Check spam, and the delivery date the buyer chose. The buyer can ask support to resend it.
+- **The recipient's email was wrong.** Support can send an unredeemed gift to the right address.
+- **The code isn't accepted.** It may have expired, already been used, or been refunded. The message in the app tells you which.
+
+## Related
+
+- [Plans and billing](/settings/plans-and-billing/)

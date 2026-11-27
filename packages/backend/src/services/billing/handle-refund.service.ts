@@ -2,8 +2,9 @@ import { isTerminalStripeStatus } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import type Stripe from 'stripe';
 
+import { revokeGift } from './gifts/gift-purchase.service';
 import { revokeLifetimePurchase } from './lifetime-purchase.service';
-import { getStripeClient } from './stripe/client';
+import { getStripeClient, idOf } from './stripe/client';
 
 type RefundEvent = Stripe.ChargeRefundedEvent | Stripe.ChargeDisputeClosedEvent;
 
@@ -15,9 +16,6 @@ export const isRefundEvent = (event: Stripe.Event): event is RefundEvent =>
 /** Invoices that buy a billing period. Prorations and one-offs are not the subscription itself. */
 const PERIOD_INVOICE_REASONS: readonly Stripe.Invoice.BillingReason[] = ['subscription_create', 'subscription_cycle'];
 
-const idOf = (ref: string | { id: string } | null | undefined): string | null =>
-  typeof ref === 'string' ? ref : (ref?.id ?? null);
-
 /** The payment whose money is gone for good; null for a partial refund or a dispute not lost in full. */
 const fullyLostPaymentIntentId = async ({
   event,
@@ -28,14 +26,14 @@ const fullyLostPaymentIntentId = async ({
 }): Promise<string | null> => {
   if (event.type === 'charge.refunded') {
     const charge = event.data.object;
-    return charge.refunded ? idOf(charge.payment_intent) : null;
+    return charge.refunded ? idOf({ ref: charge.payment_intent }) : null;
   }
   const dispute = event.data.object;
   if (dispute.status !== 'lost') return null;
   const charge = await stripe.charges.retrieve(typeof dispute.charge === 'string' ? dispute.charge : dispute.charge.id);
   // A dispute settled in another currency cannot be sized against the charge, so it counts as lost in full.
   const lostInFull = dispute.currency !== charge.currency || dispute.amount >= charge.amount - charge.amount_refunded;
-  return lostInFull ? idOf(dispute.payment_intent) : null;
+  return lostInFull ? idOf({ ref: dispute.payment_intent }) : null;
 };
 
 /** The subscription whose still-running period this payment bought, if any. */
@@ -59,7 +57,7 @@ const paidPeriodSubscriptionId = async ({
       ? (await stripe.invoices.listLineItems(invoice.id, { limit: 100 })).data
       : invoice.lines.data;
     if (!lines.some((line) => line.period.end > now)) continue;
-    const subscriptionId = idOf(invoice.parent?.subscription_details?.subscription);
+    const subscriptionId = idOf({ ref: invoice.parent?.subscription_details?.subscription });
     if (subscriptionId) return subscriptionId;
   }
   return null;
@@ -69,7 +67,7 @@ const paidPeriodSubscriptionId = async ({
  * Stripe, as merchant of record, can refund a buyer without us. Money gone for the
  * current period ends the subscription now; the cancel echoes back as
  * `customer.subscription.deleted`, so the mirror follows through the usual path.
- * A lost one-time lifetime payment revokes the plan it bought instead.
+ * A lost one-time gift or lifetime payment revokes what it bought instead.
  */
 export async function handleBillingRefund({
   event,
@@ -79,6 +77,7 @@ export async function handleBillingRefund({
   const stripe = getStripeClient();
   const paymentIntentId = await fullyLostPaymentIntentId({ event, stripe });
   if (!paymentIntentId) return 'ignored';
+  if (await revokeGift({ paymentIntentId })) return 'revoked';
 
   const subscriptionId = await paidPeriodSubscriptionId({ paymentIntentId, stripe });
   if (!subscriptionId) {

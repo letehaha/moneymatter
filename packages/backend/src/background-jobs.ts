@@ -12,6 +12,7 @@ import { cryptoPricesSyncCron } from './crons/crypto-prices-sync';
 import { demoCleanupCron } from './crons/demo-cleanup';
 import { demoTemplateRefreshCron } from './crons/demo-template-refresh';
 import { loadCurrencyRatesJob } from './crons/exchange-rates';
+import { giftDeliveryCron } from './crons/gift-delivery';
 import { goalsReachedCheckCron } from './crons/goals-reached-check';
 import { httpRatesSyncCron } from './crons/http-rates-sync';
 import { purgeDeletedPortfoliosCron } from './crons/purge-deleted-portfolios';
@@ -54,6 +55,7 @@ const prodOnlyCrons = [
   trackerRulesSyncCron,
   aiUsageMonthEndCron,
   watchlistAlertEmailsCron,
+  giftDeliveryCron,
 ];
 
 export function initializeBackgroundJobs() {

@@ -38,19 +38,19 @@ interface DateQuery {
 }
 
 export const getWhereConditionForTime = ({ from, to, columnName }: DateQuery) => {
-  const where: Partial<Record<ColumnName, Record<symbol, Date[] | Date>>> = {};
+  const where: Partial<Record<ColumnName, Record<symbol, string[] | string>>> = {};
 
   if (from && to) {
     where[columnName] = {
-      [Op.between]: [new Date(from), endOfDay(new Date(to))],
+      [Op.between]: [from, to],
     };
   } else if (from) {
     where[columnName] = {
-      [Op.gte]: new Date(from),
+      [Op.gte]: from,
     };
   } else if (to) {
     where[columnName] = {
-      [Op.lte]: new Date(to),
+      [Op.lte]: to,
     };
   }
 

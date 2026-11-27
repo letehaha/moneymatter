@@ -160,6 +160,13 @@ export const landingFaqGlobalRateLimit = createRateLimit({
   failClosed: true,
 });
 
+/** Public gift checkout, per IP: 10 Stripe sessions per 10 minutes. */
+export const giftCheckoutIpRateLimit = createRateLimit({
+  windowSeconds: 10 * 60,
+  maxAttempts: 10,
+  keyGenerator: (req: Request) => `gift-checkout:ip:${req.ip}`,
+});
+
 /**
  * Stripe and App Store webhook rate limit (per IP, 120 deliveries per minute). Retries and
  * backfills arrive in bursts, so the budget only has to stop a flood of forged bodies

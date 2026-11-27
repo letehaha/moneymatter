@@ -1,11 +1,12 @@
 ---
 import '@/styles/home/pricing.css';
 import { GITHUB_URL } from '@/lib/github-api';
+import { PLANS } from '@/lib/plans';
 import { useI18n } from '@/i18n';
-import type { BillingCycle, BillingTier } from '@bt/shared/types/billing';
+import { parseBillingTier, type BillingCycle, type BillingTier } from '@bt/shared/types/billing';
 import { PROMOTIONS, applyPercentOff, getActivePromotion, isPromotionInScope } from '@bt/shared/types/promotions';
 
-const { t, locale } = useI18n(Astro);
+const { t, url, locale } = useI18n(Astro);
 
 // ponytail: one promotion per build (live now, else the next to start); a later one needs a landing deploy.
 const buildNow = Date.now();
@@ -18,7 +19,7 @@ const promotionEnds =
   new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', timeZone: 'UTC' }).format(new Date(promotion.endsAt));
 
 const usd = (amount: number) => `$${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
-const discounted = ({ tier, cycle, price }: { tier?: BillingTier; cycle: BillingCycle; price: number }) =>
+const discounted = ({ tier, cycle, price }: { tier: BillingTier | null; cycle: BillingCycle; price: number }) =>
   promotion && tier && isPromotionInScope({ promotion, tier, cycle })
     ? usd(applyPercentOff({ price, percentOff: promotion.percentOff }))
     : null;
@@ -33,70 +34,14 @@ const SALE_TEXT = {
 // `i18n:sync` drops strings a build did not render, so these stay translated between sales.
 Object.values(SALE_TEXT).forEach((text) => t(text));
 
-const plans: {
-  tier?: BillingTier;
-  name: string;
-  tagline: string;
-  yearly: number;
-  monthly: number;
-  tag?: string;
-  highlight?: boolean;
-  planned?: boolean;
-  lead?: number;
-  features: string[];
-}[] = [
-  {
-    tier: 'essential',
-    name: 'Essential',
-    tagline: 'Manual entry and everything that is local math.',
-    yearly: 30,
-    monthly: 5,
-    features: [
-      'Imports: CSV, OFX, YNAB, Wallet, MS Money',
-      'Investments, loans, vehicles, venture',
-      'AI features with your own API key',
-      'Backup export and restore',
-      'MCP server for AI agents',
-      '2 household seats',
-    ],
-  },
-  {
-    tier: 'plus',
-    name: 'Plus',
-    tagline: 'Everything around bring-your-own bank connections.',
-    yearly: 55,
-    monthly: 8,
-    tag: 'Includes bank sync',
-    highlight: true,
-    lead: 1,
-    features: [
-      'Everything in Essential',
-      'Bank sync: LunchFlow, SimpleFIN, Monobank, Akahu',
-      'AI features on our key, no setup',
-      'FIRE planner',
-      '5 household seats',
-    ],
-  },
-  {
-    name: 'Premium',
-    tagline: 'Bank connections we run for you.',
-    planned: true,
-    yearly: 80,
-    monthly: 12,
-    features: [
-      'Everything in Plus',
-      'Bank sync we run: no API keys, no provider subscription',
-      '2 banks included (unlimited accounts), extra banks $2/mo',
-      'Real-time security prices',
-      'Higher AI usage cap',
-      '10 household seats',
-    ],
-  },
-].map((plan) => ({
-  ...plan,
-  saleYearly: discounted({ tier: plan.tier, cycle: 'year', price: plan.yearly }),
-  saleMonthly: discounted({ tier: plan.tier, cycle: 'month', price: plan.monthly }),
-}));
+const plans = PLANS.map((plan) => {
+  const tier = parseBillingTier({ value: plan.id });
+  return {
+    ...plan,
+    saleYearly: discounted({ tier, cycle: 'year', price: plan.yearly }),
+    saleMonthly: discounted({ tier, cycle: 'month', price: plan.monthly }),
+  };
+});
 ---
 
 <section
@@ -202,7 +147,10 @@ const plans: {
         >{t('Self-host guide')}<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
       >
     </div>
-    <p class="plans-note">{t('Prices in USD. Taxes are calculated at checkout. Cancel anytime.')}</p>
+    <p class="plans-note">
+      {t('Prices in USD. Taxes are calculated at checkout. Cancel anytime.')}
+      <a class="gift-link" href={url({ href: '/gift' })}>{t('Give a year as a gift')}</a>
+    </p>
   </div>
 
   <dialog id="premium-early-access-dialog" class="ea-dialog" aria-labelledby="premium-early-access-title" closedby="any">

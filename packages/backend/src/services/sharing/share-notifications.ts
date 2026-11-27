@@ -71,6 +71,7 @@ export const notifyInvitationReceived = async ({
     message: `Open to accept or decline the invitation. Expires ${invitation.expiresAt.toISOString().slice(0, 10)}.`,
     payload,
     expiresAt: invitation.expiresAt,
+    push: true,
   });
 };
 
@@ -400,6 +401,7 @@ const notifyHouseholdInvitationReceived = async ({
     message: `Joining gives you ${invitation.permission} access to every account they own. Expires ${invitation.expiresAt.toISOString().slice(0, 10)}.`,
     payload,
     expiresAt: invitation.expiresAt,
+    push: true,
   });
 };
 

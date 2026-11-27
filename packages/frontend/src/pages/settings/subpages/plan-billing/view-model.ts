@@ -117,14 +117,16 @@ export const buildPlanBillingView = ({
       : null;
   const isActivating = checkoutSucceeded && !activeTier;
   const managedByAppStore = subscription?.provider === BILLING_PROVIDERS.apple;
+  const activeGift = activeTier && subscription?.provider === BILLING_PROVIDERS.gift ? subscription : null;
   const hasProvider = (provider: BillingSubscriptionSummary['provider']) =>
     Boolean(entitlements?.subscriptions.some((sub) => sub.provider === provider));
   const plan = entitlements?.plan ?? null;
   const isEarlyAdopter = plan === PLANS.early_adopter;
 
   // Monthly and yearly are separate plans in the picker; only the exact one the user pays for is current.
+  // A gift is not bought per cycle, so its tier is current on both tabs.
   const isCurrent = (tier: BillingTier) =>
-    plan === tier || (activeTier === tier && subscription?.billingCycle === selectedCycle);
+    plan === tier || (activeTier === tier && (activeGift !== null || subscription?.billingCycle === selectedCycle));
   const isRecommended = (tier: BillingTier) => !activeTier && !plan && tier === (lastTier ?? RECOMMENDED_TIER);
 
   // App Store prices are set per storefront in App Store Connect, so the web price would be wrong.
@@ -164,6 +166,16 @@ export const buildPlanBillingView = ({
       const amount = subscriptionAmount(subscription);
       const endsAt = subscription.scheduledChange?.effectiveAt ?? subscription.currentPeriodEndsAt;
       const date = endsAt ? formatDate(endsAt) : '';
+
+      if (subscription.provider === BILLING_PROVIDERS.gift) {
+        return {
+          tone: null,
+          title: tr('current.gift', { tier: tr(`plans.${subscription.tier}`) }),
+          badge: { variant: 'success', label: tr('status.gift') },
+          meta: [tr('current.accessUntil', { date }), tr('current.noFurtherCharges')],
+          note: '',
+        };
+      }
 
       if (subscription.status === SUBSCRIPTION_STATUSES.past_due) {
         return {
@@ -273,6 +285,15 @@ export const buildPlanBillingView = ({
         variant: 'outline',
         disabled: true,
         note: subscription?.status === SUBSCRIPTION_STATUSES.past_due ? tr('ctaNote.keepIt') : '',
+        action: null,
+      };
+    }
+    if (activeGift) {
+      return {
+        label: tr('cta.getTier', { tier: tierName }),
+        variant: 'outline',
+        disabled: true,
+        note: tr('ctaNote.afterGift', { date: formatDate(activeGift.currentPeriodEndsAt) }),
         action: null,
       };
     }

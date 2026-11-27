@@ -288,7 +288,9 @@
     },
     "unrealizedLossAlert": {
       "title_one": "{{count}} holding crossed your loss alert",
-      "title_other": "{{count}} holdings crossed your loss alert"
+      "title_other": "{{count}} holdings crossed your loss alert",
+      "emailCta": "Open investments",
+      "emailFooter": "You get this email because you turned on email for unrealized loss alerts in Settings."
     },
     "watchlist": {
       "itemNotFound": "Watchlist item not found",
@@ -961,5 +963,13 @@
   },
   "backgroundJobs": {
     "notFound": "This task is no longer running – the server may have restarted. Please try again."
+  },
+  "gifts": {
+    "invalidCode": "This gift code isn't valid. Check it for typos.",
+    "alreadyRedeemed": "This gift code has already been redeemed.",
+    "expired": "This gift code has expired.",
+    "coveredByLifetime": "Your lifetime plan already includes everything in this gift. You can pass the code on to someone else.",
+    "cancelAppStoreFirst": "Your subscription renews through the App Store. Turn off auto-renewal in your Apple ID settings, then redeem the gift. It will start when your paid period ends.",
+    "checkoutBlocked": "You have a gift subscription until {{date}}. You can subscribe once it ends."
   }
 }

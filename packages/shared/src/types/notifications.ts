@@ -1,5 +1,7 @@
+import type { ASSET_CLASS } from './investments/enums';
 import type { RecordId } from './record-id';
 import type { ResourceType, SharePermission, SharePolicy } from './sharing';
+import type { RemindBeforePreset, SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from './subscriptions';
 import type { TagReminderFrequency, TagReminderType } from './tags';
 import type { WatchlistAlertNotificationPayload } from './watchlist';
 
@@ -148,6 +150,29 @@ export interface TagReminderNotificationPayload {
   transactionIds?: string[];
 }
 
+export interface SubscriptionReminderNotificationPayload {
+  subscriptionId: RecordId;
+  periodId: RecordId;
+  dueDate: string;
+  preset: RemindBeforePreset;
+  /** Decimal; null for a subscription without an expected amount. */
+  expectedAmount: number | null;
+  currencyCode: string | null;
+  /** Snapshot at fire time for the iOS notification card; absent on reminders created before it. */
+  name?: string;
+  frequency?: SUBSCRIPTION_FREQUENCIES;
+  intervalCount?: number | null;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
+  categoryName?: string | null;
+  accountName?: string | null;
+  logoDomain?: string | null;
+  logoInitials?: string | null;
+  logoColor?: string | null;
+  /** `expectedAmount` in the base currency; set only when `currencyCode` differs from it and a rate exists. */
+  baseAmount?: number | null;
+  baseCurrencyCode?: string | null;
+}
+
 export interface TrackerAiMatchesNotificationPayload {
   trackerId: RecordId;
   trackerName: string;
@@ -184,11 +209,16 @@ export interface UnrealizedLossAlertsSettings {
 export interface UnrealizedLossAlertNotificationPayload {
   /** Base currency of `lossAmount`. */
   currencyCode: string;
+  /** The thresholds the alert fired against; absent on alerts created before they were recorded. */
+  percentThreshold?: number;
+  amountThreshold?: number;
   holdings: Array<{
     portfolioId: RecordId;
     portfolioName: string;
     securityId: RecordId;
     symbol: string;
+    assetClass?: ASSET_CLASS;
+    logoUrl?: string | null;
     /** Positive percent below cost basis. */
     lossPercent: number;
     /** Positive decimal, base currency; null when the holding's rate to base is unavailable. */
@@ -268,6 +298,7 @@ export type NotificationPayload =
   | SystemNotificationPayload
   | ChangelogNotificationPayload
   | TagReminderNotificationPayload
+  | SubscriptionReminderNotificationPayload
   | StuckPendingNotificationPayload
   | TrackerAiMatchesNotificationPayload
   | GoalReachedNotificationPayload
@@ -291,3 +322,77 @@ export interface NotificationModel {
   readAt: Date | null;
   expiresAt: Date | null;
 }
+
+export const DEVICE_TOKEN_ENVIRONMENTS = {
+  sandbox: 'sandbox',
+  production: 'production',
+} as const;
+
+export type DeviceTokenEnvironment = (typeof DEVICE_TOKEN_ENVIRONMENTS)[keyof typeof DEVICE_TOKEN_ENVIRONMENTS];
+
+/** `POST /notifications/device-tokens`: `token` is the APNs device token as hex. */
+export interface RegisterDeviceTokenBody {
+  token: string;
+  environment: DeviceTokenEnvironment;
+  bundleId: string;
+}
+
+export interface NotificationChannelPreferences {
+  /** Off sends nothing on any channel. */
+  enabled?: boolean;
+  inApp?: boolean;
+  push?: boolean;
+  email?: boolean;
+}
+
+/**
+ * Per-category channels, stored sparse: an unset key reads from `NOTIFICATION_PREFERENCE_DEFAULTS`.
+ * Each channel only narrows what the sender opts into: a watchlist alert with `notifyEmail` off sends
+ * no email whatever its category says.
+ */
+export interface NotificationPreferences {
+  watchlistAlerts?: NotificationChannelPreferences;
+  /** On/off is `unrealizedLossAlerts.enabled`, which also holds the thresholds. */
+  unrealizedLoss?: Omit<NotificationChannelPreferences, 'enabled'>;
+  subscriptionReminders?: NotificationChannelPreferences;
+  /** No email: the invitation email is the invitation itself. */
+  invitations?: Omit<NotificationChannelPreferences, 'email'>;
+}
+
+export type NotificationCategory = keyof NotificationPreferences;
+
+/** Email defaults on where the alert or subscription has its own email switch, so this only narrows it. */
+export const NOTIFICATION_PREFERENCE_DEFAULTS = {
+  watchlistAlerts: { enabled: true, inApp: true, push: true, email: true },
+  unrealizedLoss: { inApp: true, push: true, email: false },
+  subscriptionReminders: { enabled: true, inApp: true, push: true, email: true },
+  invitations: { enabled: true, inApp: true, push: true },
+} as const satisfies { [K in NotificationCategory]-?: Required<NonNullable<NotificationPreferences[K]>> };
+
+export const NOTIFICATION_TYPE_CATEGORIES: Partial<Record<NotificationType, NotificationCategory>> = {
+  [NOTIFICATION_TYPES.watchlistAlert]: 'watchlistAlerts',
+  [NOTIFICATION_TYPES.unrealizedLossAlert]: 'unrealizedLoss',
+  [NOTIFICATION_TYPES.subscriptionReminder]: 'subscriptionReminders',
+  [NOTIFICATION_TYPES.shareInvitationReceived]: 'invitations',
+  [NOTIFICATION_TYPES.householdInvitationReceived]: 'invitations',
+};
+
+/** Push implies in-app: opening a push lands on its in-app notification, so turning push on keeps the row. */
+export const getNotificationChannels = ({
+  category,
+  preferences,
+}: {
+  category: NotificationCategory;
+  preferences: NotificationPreferences | undefined;
+}): Required<Omit<NotificationChannelPreferences, 'enabled'>> => {
+  const {
+    enabled = true,
+    inApp = true,
+    push = true,
+    email = false,
+  }: NotificationChannelPreferences = {
+    ...NOTIFICATION_PREFERENCE_DEFAULTS[category],
+    ...preferences?.[category],
+  };
+  return { inApp: enabled && (inApp || push), push: enabled && push, email: enabled && email };
+};

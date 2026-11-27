@@ -85,6 +85,9 @@ const LANGUAGES = toCodes(i18n!.locales).map((code) => {
         </div>
       </div>
       {NAV_LINKS.map((link) => <a href={url({ href: link.href })}>{t(link.label, { ctx: 'header' })}</a>)}
+      <a class="nav-gift" href={url({ href: '/gift' })} aria-label={t('Gift a subscription')} title={t('Gift a subscription')}
+        ><LucideIcon name="gift" /></a
+      >
     </nav>
     <div class="head-actions">
       <a
@@ -169,6 +172,7 @@ const LANGUAGES = toCodes(i18n!.locales).map((code) => {
           <nav aria-label={t('Main menu')}>
             <a href={url({ href: '/features' })}>{t('Features', { ctx: 'header' })}</a>
             {NAV_LINKS.map((link) => <a href={url({ href: link.href })}>{t(link.label, { ctx: 'header' })}</a>)}
+            <a href={url({ href: '/gift' })}>{t('Gift a subscription')}</a>
             <a
               href={GITHUB_URL}
               target="_blank"

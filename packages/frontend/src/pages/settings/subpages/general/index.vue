@@ -22,8 +22,26 @@
         <QuickStartRow />
         <Separator />
         <TransactionRows />
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader class="border-b">
+        <h2 class="mb-2 text-2xl font-semibold">{{ $t('settings.notifications.title') }}</h2>
+        <p class="text-sm opacity-80">{{ $t('settings.notifications.description') }}</p>
+      </CardHeader>
+
+      <CardContent class="mt-6 flex flex-col gap-6">
+        <NotificationChannelRows category="watchlistAlerts" />
         <Separator />
-        <UnrealizedLossAlertRows />
+        <div class="flex flex-col gap-4">
+          <UnrealizedLossAlertRows />
+          <NotificationChannelRows category="unrealizedLoss" />
+        </div>
+        <Separator />
+        <NotificationChannelRows category="subscriptionReminders" />
+        <Separator />
+        <NotificationChannelRows category="invitations" />
       </CardContent>
     </Card>
   </div>
@@ -38,6 +56,7 @@ import BankSyncRows from './rows/bank-sync-rows.vue';
 import CategoryRows from './rows/category-rows.vue';
 import CreditLimitRow from './rows/credit-limit-row.vue';
 import IosAddExpenseRows from './rows/ios-add-expense-rows.vue';
+import NotificationChannelRows from './rows/notification-channel-rows.vue';
 import PaydayRow from './rows/payday-row.vue';
 import QuickStartRow from './rows/quick-start-row.vue';
 import TransactionRows from './rows/transaction-rows.vue';

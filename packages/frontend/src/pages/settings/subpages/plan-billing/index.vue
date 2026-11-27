@@ -274,12 +274,34 @@
       <p class="text-muted-foreground text-xs">
         {{ $t('settings.planBilling.priceNote') }}
       </p>
+
+      <section class="grid gap-3 border-t pt-6">
+        <div>
+          <h3 class="font-semibold">{{ $t('settings.planBilling.gift.title') }}</h3>
+          <p class="text-muted-foreground text-sm">{{ $t('settings.planBilling.gift.description') }}</p>
+        </div>
+        <form class="flex flex-wrap gap-2" @submit.prevent="handleRedeem">
+          <div class="min-w-0 flex-1 basis-56">
+            <InputField
+              v-model="giftCode"
+              size="sm"
+              :placeholder="$t('settings.planBilling.gift.placeholder')"
+              :aria-label="$t('settings.planBilling.gift.title')"
+              :autofocus="Boolean(giftCode)"
+            />
+          </div>
+          <Button type="submit" size="sm" :disabled="redeeming || !giftCode.trim()">
+            <LoaderCircleIcon v-if="redeeming" class="size-4 animate-spin" />
+            {{ $t('settings.planBilling.gift.redeem') }}
+          </Button>
+        </form>
+      </section>
     </CardContent>
   </Card>
 </template>
 
 <script setup lang="ts">
-import { createBillingCheckout, createBillingPortalSession } from '@/api/billing';
+import { createBillingCheckout, createBillingPortalSession, redeemGift } from '@/api/billing';
 import {
   DISPLAY_PRICES,
   FEATURE_KEYS,
@@ -288,6 +310,7 @@ import {
   yearlySavings,
 } from '@/common/const/billing';
 import DocsLink from '@/components/common/docs-link.vue';
+import InputField from '@/components/fields/input-field.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { Card, CardContent, CardHeader } from '@/components/lib/ui/card';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
@@ -304,6 +327,7 @@ import { EXTERNAL_URLS } from '@bt/shared/const/external-urls';
 import { API_ERROR_CODES, BILLING_CYCLES, type BillingCycle, type BillingTier } from '@bt/shared/types';
 import { CheckIcon, ClockIcon, LoaderCircleIcon, TagIcon } from '@lucide/vue';
 import { useNow } from '@vueuse/core';
+import { isFuture } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -326,6 +350,8 @@ const opening = ref<BillingTier | 'portal' | null>(null);
 const checkoutSucceeded = ref(route.query.checkout === 'success');
 const activationOutcome = ref<'timedOut' | 'unreachable' | null>(null);
 const selectedCycle = ref<BillingCycle>('year');
+const giftCode = ref(typeof route.query.gift === 'string' ? route.query.gift : '');
+const redeeming = ref(false);
 const now = useNow({ interval: 60_000 });
 const showReadOnlyHelp = computed(
   () => Boolean(entitlements.value?.readOnly) && !checkoutSucceeded.value && !activationOutcome.value,
@@ -388,11 +414,12 @@ const cards = computed(() => [
 ]);
 
 // Backend messages are internal wording except under these codes, where the billing
-// services write copy meant for the buyer ("already subscribed", "no Stripe customer yet").
+// services write copy meant for the buyer ("already subscribed", "gift already redeemed").
 const BUYER_FACING_ERROR_CODES = [
   API_ERROR_CODES.planRequired,
   API_ERROR_CODES.validationError,
   API_ERROR_CODES.notFound,
+  API_ERROR_CODES.conflict,
 ];
 
 const billingErrorMessage = ({ error, fallbackKey }: { error: unknown; fallbackKey: string }) =>
@@ -446,6 +473,33 @@ const handleCta = (card: (typeof cards.value)[number]) => {
   void openPortal(action);
 };
 
+const handleRedeem = async () => {
+  const code = giftCode.value.trim();
+  if (!code) return;
+  redeeming.value = true;
+
+  try {
+    const redeemed = await redeemGift({ code });
+    giftCode.value = '';
+    const queued = isFuture(new Date(redeemed.currentPeriodStartsAt));
+    addSuccessNotification(
+      t(`settings.planBilling.gift.${queued ? 'redeemedQueued' : 'redeemed'}`, {
+        tier: t(`settings.planBilling.plans.${redeemed.tier}`),
+        start: formatDate(redeemed.currentPeriodStartsAt),
+        date: formatDate(redeemed.currentPeriodEndsAt),
+      }),
+    );
+    await userStore.loadUser().catch((error: unknown) => {
+      captureException({ error, context: { scope: 'billing:redeem-gift-refresh' } });
+    });
+  } catch (error) {
+    addErrorNotification(billingErrorMessage({ error, fallbackKey: 'settings.planBilling.gift.redeemFailed' }));
+    captureException({ error, context: { scope: 'billing:redeem-gift' } });
+  } finally {
+    redeeming.value = false;
+  }
+};
+
 let pollTimer: ReturnType<typeof setTimeout> | undefined;
 let successfulRefreshes = 0;
 let lastError: unknown;
@@ -486,10 +540,9 @@ const pollEntitlements = (attempt = 1) => {
 };
 
 onMounted(() => {
-  if (!checkoutSucceeded.value) return;
-
-  router.replace({ name: ROUTES_NAMES.settingsPlanBilling });
-  pollEntitlements();
+  // Drops `?gift=` too, so the code stays out of history and the Referer header.
+  if (checkoutSucceeded.value || 'gift' in route.query) router.replace({ name: ROUTES_NAMES.settingsPlanBilling });
+  if (checkoutSucceeded.value) pollEntitlements();
 });
 
 onUnmounted(() => {
