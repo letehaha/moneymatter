@@ -174,12 +174,12 @@
           </div>
         </div>
         <DepreciationChart
-          :timeline="showRefValue ? refDepreciationTimeline : depreciationTimeline"
+          :timeline="depreciationTimeline"
           :purchase-date="purchaseDateAsDate"
-          :override="showRefValue ? refOverrideAnchor : overrideAnchor"
+          :override="overrideAnchor"
           :today-date="todayDate"
-          :salvage-floor="showRefValue ? refSalvageFloorValue : salvageFloorValue"
-          :currency-code="showRefValue ? baseCurrencyCode : currencyCode"
+          :salvage-floor="salvageFloorValue"
+          :currency-code="currencyCode"
         />
       </section>
 
@@ -415,15 +415,6 @@ const projectedFiveYearLossPct = computed(() => {
 
 const refSalvageFloorValue = computed(() => salvageFloorValue.value * (fxRatio.value ?? 1));
 const refProjectedFiveYearValue = computed(() => projectedFiveYearValue.value * (fxRatio.value ?? 1));
-
-const refDepreciationTimeline = computed(() =>
-  depreciationTimeline.value.map((p) => ({ ...p, value: p.value * (fxRatio.value ?? 1) })),
-);
-const refOverrideAnchor = computed<{ value: number; date: Date } | null>(() =>
-  overrideAnchor.value
-    ? { value: overrideAnchor.value.value * (fxRatio.value ?? 1), date: overrideAnchor.value.date }
-    : null,
-);
 
 const formatDisplayDate = (iso: string) => format(parseISO(iso), 'MMM d, yyyy');
 

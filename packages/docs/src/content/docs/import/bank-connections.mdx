@@ -193,7 +193,7 @@ For an account you [linked](#link-an-account-you-already-have), you can't load t
 
 <Screenshot
   src="/screenshots/import/bank-data-connection-tab.png"
-  alt="The Data Connection tab of a bank-connected account, showing Sync latest transactions with its Sync button, Load transactions for selected period with its Current month button, and the Danger zone."
+  alt="The Data Connection tab of a bank-connected account, showing Sync latest transactions with the note about the bank sync schedule and its Sync button, Load transactions for selected period with its Current month button, and the Danger zone."
   hint="Open /account/:id for a Monobank or SimpleFIN account. Select the Data Connection tab. Crop from the 'Connected via' row down to the Danger zone box."
 />
 
@@ -275,12 +275,12 @@ Open the connection's page from the gear button (**Manage connection**) on the *
 
 The **Manage** menu at the top has **Edit connection** and **Disconnect integration**.
 
-**Auto-Sync** shows a fixed interval for each provider, such as "Every 12h". It isn't what decides when your accounts sync: your **Bank sync schedule** does. See [automatic sync](#automatic-sync).
+**Auto-Sync** shows the times of your **Bank sync schedule** in your local time, such as "08:00 · 20:00", or **Off** if the provider can't sync on its own. See [automatic sync](#automatic-sync).
 
 <Screenshot
   src="/screenshots/import/bank-connection-details.png"
-  alt="A bank connection's page showing the summary figures, the Connected Accounts list, and the Manage menu open with Edit connection and Disconnect integration."
-  hint="Open /accounts/integrations/:connectionId for an active connection with 2–3 accounts. Open the Manage menu so Edit connection and Disconnect integration show. Crop to the header, summary figures and the start of the Connected Accounts list."
+  alt="A bank connection's page showing the summary figures with the Auto-Sync times of the bank sync schedule, the Connected Accounts list, and the Manage menu open with Edit connection and Disconnect integration."
+  hint="Open /accounts/integrations/:connectionId for an active connection with 2–3 accounts. Open the Manage menu so Edit connection and Disconnect integration show. Auto-Sync shows the bank sync schedule times in the browser's local time. Crop to the header, summary figures and the start of the Connected Accounts list."
 />
 
 ### Add more accounts from the same bank
@@ -312,8 +312,8 @@ Your accounts are matched up again and keep syncing into the same MoneyMatter ac
 
 <Screenshot
   src="/screenshots/import/bank-consent-expiring.png"
-  alt="An Enable Banking connection's page with a warning strip saying consent expires in a few days, and the Reconnect Now button."
-  hint="Open /accounts/integrations/:connectionId for an Enable Banking connection with 7 days or fewer of consent left, so the yellow 'Consent expires in N days' strip with Reconnect Now shows. Crop to the header and the strip."
+  alt="An Enable Banking connection's page with the summary figures, including the Auto-Sync times and the days of Consent left, a warning strip saying consent expires in a few days, and the Reconnect Now button."
+  hint="Open /accounts/integrations/:connectionId for an Enable Banking connection with 7 days or fewer of consent left, so the yellow 'Consent expires in N days' strip with Reconnect Now shows. With the docs test user, present the seeded SimpleFIN connection as Enable Banking with mockEnableBankingConsent from mocks.mjs. Crop to the header, the summary figures and the strip."
 />
 
 ### When your credentials stop working

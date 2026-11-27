@@ -24,22 +24,22 @@ You can't share a [budget](/budgeting/start-budgeting/) at all, and a budget can
 
 ## Roles
 
-Each person you invite gets one role. The role names differ a little from screen to screen.
+Each person you invite gets one role. Accounts and households use the same role names; trackers name the middle one differently.
 
-| Role | What the person can do | Share account dialog | Account **Sharing** tab and **Household** | Tracker |
-|---|---|---|---|---|
-| Read | See the account or tracker and its transactions | **Read-only** | **Read** | **View only** |
-| Write | Read, plus add transactions. On a tracker, add their own transactions to it. | **Read & add transactions** | **Write** | **Attach own transactions** |
-| Manage | Write, plus change other people's roles and remove them | **Full access** | **Manage** | **Manage** |
+| What the person can do | Accounts and household | Tracker |
+|---|---|---|
+| See the account or tracker and its transactions | **View only** | **View only** |
+| View, plus add transactions. On a tracker, add their own transactions to it. | **Can edit** | **Attach own transactions** |
+| Edit, plus change other people's roles and remove them | **Can manage** | **Manage** |
 
-Household members can only have **Read** or **Write**.
+Household members can only be **View only** or **Can edit**.
 
-On an account or a household, a Write or Manage role also has a scope:
+On an account or a household, **Can edit** and **Can manage** also have a scope:
 
 - **All transactions on the account** (on the account's **Sharing** tab, **All transactions**; on the household page, **Can edit any transaction**): they can edit and delete every transaction on the account.
 - **Only transactions they created** (on the account's **Sharing** tab, **Own transactions only**; on the household page, **Can edit only their own transactions**): they can edit and delete only the transactions they added themselves.
 
-A tracker has no scope. A Write member can add and remove only their own transactions.
+A tracker has no scope. A member with **Attach own transactions** can add and remove only their own transactions.
 
 Only you, the owner, can:
 
@@ -47,9 +47,9 @@ Only you, the owner, can:
 - rename, edit, archive or delete the account
 - delete the tracker
 
-A Manage member of a tracker can also edit the tracker's settings and archive it.
+A **Manage** member of a tracker can also edit the tracker's settings and archive it.
 
-If you share one of your accounts with a household member, that account share wins over their household role for that account. It works the other way round too: when someone joins your household, the accounts and trackers you had shared with them one by one are replaced by the household access, and your pending invitations to them for single accounts or trackers are cancelled. Trackers aren't part of a household, so share them again afterwards.
+If you share one of your accounts with a household member, that account share wins over their household role for that account. It works the other way round too: when someone joins your household, the accounts you had shared with them one by one are replaced by the household access, and your pending invitations to them for single accounts are cancelled. Trackers aren't part of a household, so tracker shares and tracker invitations stay as they are.
 
 ## Share one account
 
@@ -58,23 +58,23 @@ If you share one of your accounts with a household member, that account share wi
 1. Open the account.
 2. Click the **Account actions** button (three dots) next to the account name and choose **Share account**. You can also open the account's **Sharing** tab and click **Invite another**.
 3. Enter the person's email under **Recipient email**.
-4. Choose a **Permission**. For write access, also choose a **Transaction edit scope**.
+4. Choose a **Permission**. For **Can edit** or **Can manage**, also choose a **Transaction edit scope**.
 5. Click **Send invitation**.
 
 </Steps>
 
 <Screenshot
   src="/screenshots/settings/share-account-dialog.png"
-  alt="The Share account dialog with a recipient email, Read & add transactions selected as the permission and the Transaction edit scope field."
-  hint="Sign in as the seeded docs test user and open the Everyday Checking account page. Click the three-dots Account actions button next to the account name and choose Share account. Type someone@example.com in Recipient email and choose Read & add transactions so the Transaction edit scope select appears. Do not send. Crop to the dialog."
+  alt="The Share account dialog with a recipient email, Can edit selected as the permission and the Transaction edit scope field."
+  hint="Sign in as the seeded docs test user and open the Everyday Checking account page. Click the three-dots Account actions button next to the account name and choose Share account. Type someone@example.com in Recipient email and choose Can edit so the Transaction edit scope select appears. Do not send. Crop to the dialog."
 />
 
 The account's **Sharing** tab then lists the **Members** with their role, and your **Pending invitations**. From here you can change a member's role and scope or remove them with the trash button.
 
 <Screenshot
   src="/screenshots/settings/account-sharing-tab.png"
-  alt="An account's Sharing tab with the owner, one recipient with role and scope selectors and a trash button, and one pending invitation with its Copy invite link, resend and Cancel invitation buttons."
-  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. As the owner, share Everyday Checking with the member on Read & add transactions, then sign in as the member and accept it. Then, as the owner, send another account invitation to an unregistered address such as pending@example.com. Open the account page, click the Sharing tab. Crop to the tab content. Without an email provider the pending row shows an “Email sending not configured” warning and no Resend button; mock `emailConfigured: true` with mockInvitationEmailConfigured from mocks.mjs."
+  alt="An account's Sharing tab with the owner, one recipient set to Can edit and All transactions with a trash button, and one View only pending invitation with its Copy invite link, resend and Cancel invitation buttons."
+  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. As the owner, share Everyday Checking with the member on Can edit, then sign in as the member and accept it. Then, as the owner, send a View only account invitation to an unregistered address such as pending@example.com. Open the account page, click the Sharing tab. Crop to the tab content. Without an email provider the pending row shows an “Email sending not configured” warning and no Resend button; mock `emailConfigured: true` with mockInvitationEmailConfigured from mocks.mjs."
 />
 
 ## Invite people to your household
@@ -83,17 +83,17 @@ The account's **Sharing** tab then lists the **Members** with their role, and yo
 
 1. Click the gear button (**Settings**) at the top right of the app.
 2. Under **Workspace**, choose **Household**.
-3. Under **My household**, enter the person's **Email**, choose a **Permission** and, for **Write**, a **Write scope**. Write is selected by default.
+3. Under **My household**, enter the person's **Email**, choose a **Permission** and, for **Can edit**, a **Write scope**. **Can edit** is selected by default.
 4. Click **Send household invite**.
 
 </Steps>
 
-Your members are listed under **My household**. Use **Make read-only** or **Allow writes** to change a member's access, and **Remove** to take it away. Pending invitations sit under the members with a **Pending** badge.
+Your members are listed under **My household**. Use **Make view only** or **Allow editing** to change a member's access, and **Remove** to take it away. Pending invitations sit under the members with a **Pending** badge.
 
 <Screenshot
   src="/screenshots/settings/household.png"
-  alt="The Household settings page with the invite form, one member with Make read-only and Remove buttons, a pending invitation, and the Households I'm in section."
-  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. As the owner, invite the member to the household on Write and accept it as the member. Send one more household invite to pending@example.com and leave it pending. Sign in as the owner and open /settings/household. Show the My household card with the invite form, the member row, the pending row, and the Households I'm in card. Crop to the settings content area. Without an email provider the pending row shows an “Email sending not configured” warning and no Resend button; mock `emailConfigured: true` with mockInvitationEmailConfigured from mocks.mjs."
+  alt="The Household settings page with the invite form set to Can edit, one Can edit member with Make view only and Remove buttons, a View only pending invitation, and the Households I'm in section."
+  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. As the owner, invite the member to the household on Can edit and accept it as the member. Send one more household invite to pending@example.com on View only and leave it pending. Sign in as the owner and open /settings/household. Show the My household card with the invite form, the member row, the pending row, and the Households I'm in card. Crop to the settings content area. Without an email provider the pending row shows an “Email sending not configured” warning and no Resend button; mock `emailConfigured: true` with mockInvitationEmailConfigured from mocks.mjs."
 />
 
 ## Share a tracker
@@ -132,8 +132,8 @@ A dialog shows who is sharing what, the **Access level** and when the invitation
 
 <Screenshot
   src="/screenshots/settings/share-invitation-dialog.png"
-  alt="The invitation dialog titled with the owner's name, showing the shared account, the access level, the expiry date, and the Accept and Decline buttons."
-  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. As the owner, share Everyday Checking with the member on Read & add transactions. Sign in as the member and open /settings/shared-with-me, then click Review on the pending invitation. Do not accept. Crop to the dialog."
+  alt="The invitation dialog titled with the owner's name, showing the shared account, Can edit as the access level, the expiry date, and the Accept and Decline buttons."
+  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. As the owner, share an account the member has no access to yet (for example Main Checking) on Can edit. Sign in as the member and open /settings/shared-with-me, then click Review on that pending invitation. Do not accept. Crop to the dialog, then cancel the invitation as the owner so the shared-with-me shot keeps only the tracker invitation."
 />
 
 ### Your base currency must match
@@ -157,20 +157,20 @@ When you join someone's household, the dialog asks if you want to share your own
 
 <Screenshot
   src="/screenshots/settings/shared-with-me.png"
-  alt="The Shared with me page with a pending invitation and a Review button, an account shared by another user and a household, each with a Leave button."
-  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. In this order (joining a household removes earlier single-account shares from the same owner): as the owner, invite the member to the household and accept it as the member; then share Everyday Checking with the member and accept it; then create a tracker as the owner, share it with the member and leave that invitation pending. Sign in as the member and open /settings/shared-with-me. Crop to the settings content area."
+  alt="The Shared with me page with a View only tracker invitation and a Review button, a Can edit account shared by another user and a Can edit household, each with a Leave button."
+  hint="Use two dedicated throwaway users seeded with DOCS_USER_EMAIL=docs-share-owner@example.com and DOCS_USER_EMAIL=docs-share-member@example.com (npm run screenshots:seed), not the main docs test user: accepted shares lock the base currency and would add a Shared with me section to other pages' captures. In this order (joining a household removes earlier single-account shares from the same owner): as the owner, invite the member to the household and accept it as the member; then share Everyday Checking with the member and accept it; then create a tracker as the owner, share it with the member on View only and leave that invitation pending. Sign in as the member and open /settings/shared-with-me. Crop to the settings content area."
 />
 
 ### What you can and can't do on a shared account
 
 - You can put a shared account into one of your own [account groups](/accounts/account-groups/). This doesn't change the owner's groups.
-- With write access, you add transactions with the owner's categories and payees, not your own.
+- If you can edit, you add transactions with the owner's categories and payees, not your own.
 - You can send money from your own account into a shared account you can add transactions to. Both sides then show the transfer. See [transfers to a shared account](/transfers-and-refunds/how-transfers-work/#transfers-to-a-shared-account).
 - You can't start a transfer from a shared account. You also can't delete the shared account's side of a transfer, only the owner can. Deleting your own side removes both sides.
 - You can't add planned transactions or link refunds on a shared account, and you can't move a transaction from it to another account.
-- The account's settings, bank connection and balance adjustments are the owner's. You can't change them. Inviting people is owner-only too, but a Manage member can change other members' roles or remove them on the **Sharing** tab.
+- The account's settings, bank connection and balance adjustments are the owner's. You can't change them. Inviting people is owner-only too, but a **Can manage** member can change other members' roles or remove them on the **Sharing** tab.
 
-On a shared tracker with write access, you can add and remove your own transactions. The tracker's totals include them.
+On a shared tracker with **Attach own transactions**, you can add and remove your own transactions. The tracker's totals include them.
 
 ### How shared data counts in your stats
 
@@ -179,6 +179,7 @@ A shared account counts in full for you, including the owner's transactions:
 - the dashboard's expenses, cash flow and balance history
 - the [pivot report](/stats/analytics-reports/)
 - your total balance on the dashboard
+- the **Bank accounts** total in the sidebar, unless you turn off **Include shared accounts in total** in the sidebar's gear menu
 
 There are two exceptions:
 
@@ -216,7 +217,7 @@ If the owner deletes a shared account or tracker, everyone with access gets a no
 | The invitation email couldn't be sent | The owner |
 | A member is removed | The removed person, in the app and by email |
 | A member leaves | The owner, in the app and by email |
-| A household member's access changes between Read and Write | That member |
+| A household member's access changes between **View only** and **Can edit** | That member |
 | The owner deletes a shared account or tracker | Everyone who had access |
 | A household member deletes their MoneyMatter account | The household owner |
 
@@ -239,7 +240,7 @@ The trial gives you Plus seats. Only people who have accepted count. If the limi
 
 - **Everyone needs their own plan to make changes.** Whether someone can add transactions to your account depends on their own trial or plan, not yours. In [read-only mode](/settings/plans-and-billing/#read-only-mode) you can't invite, accept, decline, leave or remove anyone.
 - **Demo accounts can't share.**
-- **Wiping your data or deleting your account ends all sharing**, both what you shared and what was shared with you. People you shared accounts or your household with are notified. See [Security and account](/settings/security-and-account/).
+- **Wiping your data or deleting your account ends all sharing**, both what you shared and what was shared with you. People you shared accounts, trackers or your household with are notified. See [Security and account](/settings/security-and-account/).
 
 ## Related
 

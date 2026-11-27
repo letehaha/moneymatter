@@ -140,7 +140,9 @@ function formatDueDate({ dueDate }: { dueDate: string }): string {
 
 const isFetching = computed(() => isTxFetching.value || (includeScheduled.value && isScheduledFetching.value));
 const isInitialLoading = computed(() => isTxFetching.value && (transactions.value?.length ?? 0) === 0);
-const isDataEmpty = computed(() => !isTxFetching.value && pastTransactions.value.length === 0);
+const isDataEmpty = computed(
+  () => !isFetching.value && pastTransactions.value.length === 0 && scheduledRows.value.length === 0,
+);
 </script>
 
 <template>

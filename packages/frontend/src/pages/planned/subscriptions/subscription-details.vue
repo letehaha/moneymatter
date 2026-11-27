@@ -691,7 +691,13 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
           <p class="text-sm font-medium">{{ $t(AUTOMATION_MODE_LABEL_KEYS[automationMode]) }}</p>
           <p class="text-muted-foreground mt-0.5 text-sm">
             <template v-if="automationMode === AUTOMATION_MODES.match">
-              {{ $t('planned.subscriptions.form.rulesCount', { count: subscription.matchingRules.rules.length }) }}
+              {{
+                $t(
+                  'planned.subscriptions.form.rulesCount',
+                  { count: subscription.matchingRules.rules.length },
+                  subscription.matchingRules.rules.length,
+                )
+              }}
             </template>
             <template v-else-if="automationMode === AUTOMATION_MODES.record">
               {{

@@ -1,13 +1,12 @@
 import { VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { ValidationError } from '@js/errors';
-import * as Transactions from '@models/transactions.model';
 import VentureEvents from '@models/venture/venture-events.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
 import { syncDealFromEvents } from '../deals/sync-deal-from-events.service';
 import { findVentureDealOrThrow, findVentureEventOrThrow } from '../helpers';
-import { unlinkTxFromEvent } from '../linking/unlink-tx-from-event.service';
+import { unlinkEventLinks } from '../linking/unlink-tx-from-event.service';
 
 interface DeleteVentureEventParams {
   userId: number;
@@ -40,17 +39,9 @@ const deleteVentureEventImpl = async ({
   }
 
   const eventDateForCascade = event.eventDate;
-  const links = event.links ?? [];
 
-  // Unlink each tx (restores original state). Done before destroying the event
-  // because deleting the event would CASCADE the link rows and lose the snapshot.
-  for (const link of links) {
-    await unlinkTxFromEvent({ userId, linkId: link.id });
-
-    if (deleteLinkedTransactions) {
-      await Transactions.deleteTransactionById({ id: link.transactionId, userId });
-    }
-  }
+  // Unlink before destroying the event: the event delete CASCADEs the link rows and loses the snapshot.
+  await unlinkEventLinks({ userId, links: event.links ?? [], deleteLinkedTransactions });
 
   await event.destroy();
 

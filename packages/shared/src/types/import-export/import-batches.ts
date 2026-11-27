@@ -15,6 +15,8 @@ export interface ImportBatchSummary {
   accountIds: string[];
   /** Accounts the import created; undo deletes each one that has no transactions left. */
   createdAccountCount: number;
+  /** Transfer rows of the batch whose other leg lies outside it; undo unlinks or deletes that leg. */
+  linkedTransferCount: number;
 }
 
 /**

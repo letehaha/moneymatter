@@ -272,8 +272,9 @@ const handleClose = () => setOpen(false);
     <!-- Acknowledge shared resources -->
     <div v-else-if="step === 'acknowledge'" class="flex flex-col gap-4 text-left">
       <p class="text-sm">{{ $t('settings.security.backup.restore.acknowledge.description') }}</p>
-      <ul v-if="sharedResources?.accounts?.length" class="list-disc pl-5 text-sm">
-        <li v-for="account in sharedResources.accounts" :key="account.id">{{ account.name }}</li>
+      <ul v-if="sharedResources?.accounts?.length || sharedResources?.trackers?.length" class="list-disc pl-5 text-sm">
+        <li v-for="account in sharedResources.accounts" :key="`account-${account.id}`">{{ account.name }}</li>
+        <li v-for="tracker in sharedResources.trackers" :key="`tracker-${tracker.id}`">{{ tracker.name }}</li>
       </ul>
       <p v-if="sharedResources?.households?.length" class="text-sm">
         {{

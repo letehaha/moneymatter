@@ -1,4 +1,10 @@
-import { RESOURCE_TYPES, SHARE_PERMISSIONS, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  NOTIFICATION_TYPES,
+  RESOURCE_TYPES,
+  SHARE_PERMISSIONS,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { API_ERROR_CODES, API_RESPONSE_STATUS } from '@bt/shared/types/api';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { describe, expect, it } from '@jest/globals';
@@ -21,6 +27,13 @@ import Users from '@models/users.model';
 import { BACKUP_TABLES, type BackupFileName } from '@services/backup/registry';
 import * as helpers from '@tests/helpers';
 import { randomUUID } from 'crypto';
+
+const shareTracker = async () => {
+  const tracker = await helpers.createTracker({ name: 'Groceries', raw: true });
+  const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+  await helpers.shareTrackerWith({ trackerId: tracker.id, recipient, permission: SHARE_PERMISSIONS.write });
+  return { tracker, recipient };
+};
 
 describe('User data wipe (POST /user/wipe-data)', () => {
   it('wipes user-owned data, hard-deletes paranoid models, reseeds defaults, and keeps better-auth records', async () => {
@@ -372,5 +385,44 @@ describe('User data wipe (POST /user/wipe-data)', () => {
       where: { resourceType: RESOURCE_TYPES.account, resourceId: String(account.id) },
     });
     expect(shares).toHaveLength(0);
+  });
+
+  describe('shared trackers', () => {
+    it('returns 409 listing the tracker when the user only shares a tracker', async () => {
+      const { tracker } = await shareTracker();
+
+      const wipeRes = await helpers.wipeUserData();
+
+      expect(wipeRes.statusCode).toBe(409);
+      expect(wipeRes.body.response.code).toBe(API_ERROR_CODES.wipeDataSharingAcknowledgementRequired);
+      expect(wipeRes.body.response.details).toMatchObject({
+        sharedResources: {
+          accounts: [],
+          households: [],
+          trackers: [
+            expect.objectContaining({ id: tracker.id, name: 'Groceries', recipientUserId: expect.any(Number) }),
+          ],
+        },
+      });
+      expect(await helpers.getTrackerById({ id: tracker.id, raw: true })).toMatchObject({ id: tracker.id });
+    });
+
+    it('notifies tracker recipients when the owner wipes their data', async () => {
+      const { tracker, recipient } = await shareTracker();
+
+      const wipeRes = await helpers.wipeUserData({ acknowledgeSharing: true });
+      expect(wipeRes.statusCode).toBe(200);
+
+      const notifications = await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: () => helpers.getNotifications({ type: NOTIFICATION_TYPES.shareOwnerTrackerDeleted, raw: true }),
+      });
+      expect(notifications).toHaveLength(1);
+      expect(notifications[0]!.payload).toMatchObject({
+        resourceType: RESOURCE_TYPES.tracker,
+        resourceId: tracker.id,
+        resourceName: 'Groceries',
+      });
+    });
   });
 });

@@ -43,7 +43,7 @@ A deal is one investment: a single SPV, or your stake in one fund.
 3. Pick the deal's **Currency** and **SPV type**: **Single-company** if the SPV invests in one startup, **Multi-company** if it holds several.
 4. Optionally enter the **Target company**, such as "OpenAI Series E". It's only a label.
 5. Enter the **Principal**: the amount you committed, before any platform fees.
-6. Leave **Entry fee** empty to have it calculated as principal × **Entry fee %**, or type the actual fee.
+6. Leave **Entry fee** empty to have it calculated as principal × **Entry fee %**, rounded to the currency's decimals, or type the actual fee.
 7. Set the **Investment date**, and optionally the **Expected exit**.
 8. Check the fee percentages: **Entry fee %**, **Mgmt fee %**, **Carry %** and **Hurdle %**.
 9. Click **Create**.
@@ -80,7 +80,7 @@ Click the logo next to the deal's name to change it. **Edit** and **Delete** are
 
 Once a deal has events, its terms are locked: principal, entry fee (amount or percentage), carry and hurdle percentages, investment date and currency. To change them, delete the deal's events first.
 
-**Delete** removes the deal and all its events. It can't be restored. Transactions you linked to the deal's events stay **To venture** transfers and can't be edited or deleted afterwards. To free them, delete the events first (see [Delete an event](#delete-an-event)), then the deal.
+**Delete** removes the deal and all its events. It can't be restored. Transactions you linked to the deal's events are unlinked and go back to being an ordinary expense or income. If the deal has linked transactions, tick **Also delete the linked transaction(s)** to delete them permanently as well.
 
 ## Record events
 
@@ -127,7 +127,7 @@ A linked transaction becomes a **To venture** transfer:
 
 - It no longer counts as income or an expense in your stats.
 - Clicking it opens a read-only **Venture-linked transaction** view with an **Open venture** button that takes you to the deal.
-- You can't edit it or move it to Trash while it's linked.
+- You can't edit it or move it to Trash while it's linked. Deleting its event or the whole deal unlinks it.
 
 Transfer filters on the **Transactions** page have a **To venture** kind to find these. See [transfers to a venture](/transfers-and-refunds/how-transfers-work/#transfers-to-a-portfolio-loan-or-venture).
 
@@ -156,8 +156,8 @@ The status updates itself from the events:
 
 | Status | When |
 |---|---|
-| **Outstanding** | No distribution, exit or writedown yet. |
-| **Partial exit** | At least one distribution, exit or writedown. |
+| **Outstanding** | No distribution, exit or write-off yet. |
+| **Partial exit** | At least one distribution or exit. A writedown that leaves some value doesn't change the status. |
 | **Fully exited** | An exit with **NAV after** 0. |
 | **Written off** | A writedown with **NAV after** 0. |
 

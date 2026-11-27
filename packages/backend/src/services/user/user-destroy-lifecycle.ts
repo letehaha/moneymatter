@@ -11,6 +11,7 @@ import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { namespace } from '@models/connection';
 import ResourceShares from '@models/resource-shares.model';
+import Trackers from '@models/trackers.model';
 import { updateTransactions } from '@models/transactions-query';
 import * as Users from '@models/users.model';
 import { Op, type Transaction } from 'sequelize';
@@ -26,6 +27,7 @@ import {
   notifyHouseholdMemberAccountDeleted,
   notifyHouseholdRevoked,
   notifyShareOwnerAccountDeleted,
+  notifyShareOwnerTrackerDeleted,
 } from '../sharing/share-notifications';
 import { formatHouseholdLabel, toPositiveInt } from '../sharing/sharing-utils';
 
@@ -34,7 +36,7 @@ import { formatHouseholdLabel, toPositiveInt } from '../sharing/sharing-utils';
  * need after the destroy wipes the underlying `ResourceShares` and `Accounts` rows.
  * Captured inside the transaction; consumed outside so a notify failure can't abort it.
  */
-interface AccountDeleteNotificationTarget {
+interface ResourceDeleteNotificationTarget {
   recipientUserId: number;
   shareId: RecordId;
   resourceId: string;
@@ -155,7 +157,13 @@ export const runUserDestroyLifecycle = async ({
     if (!txResult) return false;
     invalidateCurrencyDecimalsCache({ userId });
 
-    const { notificationTargets, householdRevokedTargets, householdOwnerNotifyTargets, ownerSnapshot } = txResult;
+    const {
+      notificationTargets,
+      trackerNotificationTargets,
+      householdRevokedTargets,
+      householdOwnerNotifyTargets,
+      ownerSnapshot,
+    } = txResult;
 
     // 4. Caller-specific post-commit hook (e.g. better-auth row cleanup). Runs before the
     //    fan-out so a hook failure doesn't leave half-sent notifications.
@@ -167,7 +175,18 @@ export const runUserDestroyLifecycle = async ({
     //    `fanOutNotifications`; the destroy has already committed, so notify failures are
     //    best-effort.
     if (notificationTargets.length > 0) {
-      await fanOutAccountDeleteNotifications({ targets: notificationTargets, ownerSnapshot });
+      await fanOutResourceDeleteNotifications({
+        targets: notificationTargets,
+        ownerSnapshot,
+        resourceType: RESOURCE_TYPES.account,
+      });
+    }
+    if (trackerNotificationTargets.length > 0) {
+      await fanOutResourceDeleteNotifications({
+        targets: trackerNotificationTargets,
+        ownerSnapshot,
+        resourceType: RESOURCE_TYPES.tracker,
+      });
     }
     if (householdRevokedTargets.length > 0) {
       await fanOutHouseholdRevokedNotifications({ targets: householdRevokedTargets, ownerSnapshot });
@@ -187,7 +206,8 @@ export const runUserDestroyLifecycle = async ({
 };
 
 interface DestroyInTxResult {
-  notificationTargets: AccountDeleteNotificationTarget[];
+  notificationTargets: ResourceDeleteNotificationTarget[];
+  trackerNotificationTargets: ResourceDeleteNotificationTarget[];
   householdRevokedTargets: HouseholdRevokedTarget[];
   householdOwnerNotifyTargets: HouseholdOwnerNotifyTarget[];
   ownerSnapshot: OwnerSnapshot;
@@ -209,11 +229,13 @@ const runDestroyInTx = withTransaction(
     // Snapshot share recipients BEFORE the destroy. The post-commit fan-out emits
     // notifications about resources that may not exist anymore by then; collecting after
     // would find nothing.
-    const [notificationTargets, householdRevokedTargets, householdOwnerNotifyTargets] = await Promise.all([
-      collectAccountDeleteNotificationTargets({ deletingUser: user }),
-      collectHouseholdRevokedTargets({ deletingUser: user }),
-      collectHouseholdOwnerNotifyTargets({ deletingUser: user }),
-    ]);
+    const [notificationTargets, trackerNotificationTargets, householdRevokedTargets, householdOwnerNotifyTargets] =
+      await Promise.all([
+        collectResourceDeleteNotificationTargets({ deletingUser: user, resourceType: RESOURCE_TYPES.account }),
+        collectResourceDeleteNotificationTargets({ deletingUser: user, resourceType: RESOURCE_TYPES.tracker }),
+        collectHouseholdRevokedTargets({ deletingUser: user }),
+        collectHouseholdOwnerNotifyTargets({ deletingUser: user }),
+      ]);
 
     if (stampCreatorSnapshot) {
       await stampCreatorSnapshotForOutboundTransactions({ deletingUser: user });
@@ -253,6 +275,7 @@ const runDestroyInTx = withTransaction(
 
     return {
       notificationTargets,
+      trackerNotificationTargets,
       householdRevokedTargets,
       householdOwnerNotifyTargets,
       ownerSnapshot,
@@ -260,18 +283,47 @@ const runDestroyInTx = withTransaction(
   },
 );
 
+const nameQuery = ({ ids }: { ids: string[] }) => ({
+  where: { id: { [Op.in]: ids } },
+  attributes: ['id', 'name'],
+  raw: true,
+});
+
+const RESOURCE_NAME_SOURCES = {
+  [RESOURCE_TYPES.account]: {
+    findNames: ({ ids }: { ids: string[] }) => Accounts.default.findAll(nameQuery({ ids })),
+    fallbackName: 'Shared account',
+  },
+  [RESOURCE_TYPES.tracker]: {
+    findNames: ({ ids }: { ids: string[] }) => Trackers.findAll(nameQuery({ ids })),
+    fallbackName: 'Shared tracker',
+  },
+} as const;
+
+type NamedResourceType = keyof typeof RESOURCE_NAME_SOURCES;
+
+/** Returns a lookup from resource id to its name, falling back to a generic label for a missing row. */
+export const loadResourceNames = async ({ resourceType, ids }: { resourceType: NamedResourceType; ids: string[] }) => {
+  const { findNames, fallbackName } = RESOURCE_NAME_SOURCES[resourceType];
+  const rows = ids.length ? ((await findNames({ ids })) as unknown as Array<{ id: string; name: string }>) : [];
+  const namesById = new Map(rows.map((row) => [row.id, row.name]));
+  return ({ id }: { id: string }) => namesById.get(id) ?? fallbackName;
+};
+
 /**
- * Reads live `ResourceShares` + `Accounts` names while the rows still exist. The returned
+ * Reads live `ResourceShares` + resource names while the rows still exist. The returned
  * snapshots are consumed post-commit, by which time those rows may be gone — the snapshot
  * is the only durable record of who needs notifying.
  */
-async function collectAccountDeleteNotificationTargets({
+async function collectResourceDeleteNotificationTargets({
   deletingUser,
+  resourceType,
 }: {
   deletingUser: Users.default;
-}): Promise<AccountDeleteNotificationTarget[]> {
+  resourceType: NamedResourceType;
+}): Promise<ResourceDeleteNotificationTarget[]> {
   const shares = (await ResourceShares.findAll({
-    where: { ownerUserId: deletingUser.id, resourceType: RESOURCE_TYPES.account },
+    where: { ownerUserId: deletingUser.id, resourceType },
     attributes: ['id', 'sharedWithUserId', 'resourceId', 'permission'],
     raw: true,
   })) as unknown as Array<{
@@ -283,19 +335,13 @@ async function collectAccountDeleteNotificationTargets({
 
   if (shares.length === 0) return [];
 
-  const accountIds = [...new Set(shares.map((s) => s.resourceId))];
-  const accountRows = (await Accounts.default.findAll({
-    where: { id: { [Op.in]: accountIds } },
-    attributes: ['id', 'name'],
-    raw: true,
-  })) as Array<{ id: string; name: string }>;
-  const namesById = new Map(accountRows.map((a) => [a.id, a.name]));
+  const nameOf = await loadResourceNames({ resourceType, ids: [...new Set(shares.map((s) => s.resourceId))] });
 
   return shares.map((share) => ({
     recipientUserId: share.sharedWithUserId,
     shareId: share.id,
     resourceId: share.resourceId,
-    resourceName: namesById.get(share.resourceId) ?? 'Shared account',
+    resourceName: nameOf({ id: share.resourceId }),
     permission: share.permission,
   }));
 }
@@ -351,28 +397,44 @@ async function collectHouseholdOwnerNotifyTargets({
   }));
 }
 
-async function fanOutAccountDeleteNotifications({
+const RESOURCE_DELETE_NOTIFIERS = {
+  [RESOURCE_TYPES.account]: {
+    notify: notifyShareOwnerAccountDeleted,
+    errorCode: 'SHARE_OWNER_ACCOUNT_DELETED_NOTIFY_FAILED_USER_CASCADE',
+    errorMessage: 'Failed to emit share_owner_account_deleted notification during user-delete cascade',
+  },
+  [RESOURCE_TYPES.tracker]: {
+    notify: notifyShareOwnerTrackerDeleted,
+    errorCode: 'SHARE_OWNER_TRACKER_DELETED_NOTIFY_FAILED_USER_CASCADE',
+    errorMessage: 'Failed to emit share_owner_tracker_deleted notification during user-destroy cascade',
+  },
+} as const;
+
+async function fanOutResourceDeleteNotifications({
   targets,
   ownerSnapshot,
+  resourceType,
 }: {
-  targets: AccountDeleteNotificationTarget[];
+  targets: ResourceDeleteNotificationTarget[];
   ownerSnapshot: OwnerSnapshot;
+  resourceType: NamedResourceType;
 }) {
+  const { notify, errorCode, errorMessage } = RESOURCE_DELETE_NOTIFIERS[resourceType];
   // notify* helpers expect a `Users` instance; the row may already be gone by now, so wrap
   // the snapshot in the minimal shape they actually read (id / username / avatar only).
   const ownerLike = ownerSnapshot as unknown as Users.default;
   await fanOutNotifications({
     targets,
     notify: (target) =>
-      notifyShareOwnerAccountDeleted({
+      notify({
         recipientUserId: target.recipientUserId,
         owner: ownerLike,
         shareId: target.shareId,
-        resource: { type: RESOURCE_TYPES.account, id: target.resourceId, name: target.resourceName },
+        resource: { type: resourceType, id: target.resourceId, name: target.resourceName },
         permission: target.permission,
       }),
-    errorCode: 'SHARE_OWNER_ACCOUNT_DELETED_NOTIFY_FAILED_USER_CASCADE',
-    errorMessage: 'Failed to emit share_owner_account_deleted notification during user-delete cascade',
+    errorCode,
+    errorMessage,
     buildLogContext: (target) => ({
       shareId: target.shareId,
       recipientUserId: target.recipientUserId,

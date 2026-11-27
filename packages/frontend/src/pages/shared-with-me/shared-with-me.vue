@@ -6,7 +6,7 @@ import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { ApiErrorResponseError } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes';
-import { RESOURCE_TYPES, type ResourceType, SHARE_INVITATION_STATUSES } from '@bt/shared/types';
+import { RESOURCE_TYPES, type ResourceType, SHARE_INVITATION_STATUSES, type SharePermission } from '@bt/shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { HomeIcon, LandmarkIcon, LogOutIcon, MailIcon, UsersIcon, WalletIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
@@ -30,6 +30,11 @@ const SECTION_LABEL_KEY_BY_RESOURCE_TYPE: Record<ResourceType, string> = {
   [RESOURCE_TYPES.household]: 'pages.sharedWithMe.sections.household',
   [RESOURCE_TYPES.tracker]: 'pages.sharedWithMe.sections.budget',
 };
+
+const permissionLabel = ({ resourceType, permission }: { resourceType: ResourceType; permission: SharePermission }) =>
+  resourceType === RESOURCE_TYPES.tracker
+    ? t(`dialogs.shareBudgetDialog.permissions.${permission}`)
+    : t(`pages.sharedWithMe.permissions.${permission}`);
 
 const sharesQuery = useQuery({
   queryKey: VUE_QUERY_CACHE_KEYS.sharedWithMe,
@@ -181,7 +186,7 @@ const isEverythingEmpty = computed(() => !pendingReceivedInvitations.value.lengt
                       {{ $t('pages.sharedWithMe.sharedBy', { handle: `@${invitation.owner.username}` }) }}
                       ·
                     </template>
-                    {{ $t(`pages.sharedWithMe.permissions.${invitation.permission}`) }}
+                    {{ permissionLabel(invitation) }}
                   </p>
                 </div>
               </div>
@@ -228,7 +233,7 @@ const isEverythingEmpty = computed(() => !pendingReceivedInvitations.value.lengt
                         {{ $t('pages.sharedWithMe.sharedBy', { handle: `@${row.owner.username}` }) }}
                       </template>
                       ·
-                      {{ $t(`pages.sharedWithMe.permissions.${row.permission}`) }}
+                      {{ permissionLabel(row) }}
                     </p>
                   </div>
                 </component>

@@ -6,7 +6,8 @@ import { ERROR_CODES } from '@js/errors';
 import BrandLogos from '@models/brand-logos.model';
 import { PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
-import { getLogoDevSearchMock } from '@tests/mocks/logo-dev/mock-api';
+import { getLogoDevSearchMock, LOGO_DEV_SEARCH_URL_REGEX } from '@tests/mocks/logo-dev/mock-api';
+import { HttpResponse, http } from 'msw';
 
 // A bill needs only a name/frequency/startDate (no amount), keeping these logo
 // tests focused on the logo fields.
@@ -26,6 +27,17 @@ const buildBillPayload = (
   startDate: '2024-01-01',
   ...overrides,
 });
+
+const waitForAutoLogo = async ({ id }: { id: string }) => {
+  await until(
+    async () => {
+      const fetched = await helpers.getSubscriptionById({ id, raw: true });
+      return fetched.logoSource === 'auto';
+    },
+    { timeout: 10_000, interval: 200 },
+  );
+  return helpers.getSubscriptionById({ id, raw: true });
+};
 
 // ---------------------------------------------------------------------------
 // POST /api/subscriptions  – logoDomain field (manual logo at creation time)
@@ -179,6 +191,99 @@ describe('Subscription logo auto-resolution', () => {
 
     const cached = await BrandLogos.findOne({ where: { normalizedName: 'figma' } });
     expect(cached?.domain).toBe('figma.com');
+  });
+
+  it('records no logo when no provider result matches the name exactly', async () => {
+    global.mswMockServer.use(
+      getLogoDevSearchMock({
+        results: [
+          { name: 'Phone.com Inc', domain: 'phone.com', logoUrl: null },
+          { name: 'Phonebooth', domain: 'phonebooth.com', logoUrl: null },
+        ],
+      }),
+    );
+
+    const sub = await helpers.createSubscription({ ...buildBillPayload({ name: 'Phone' }), raw: true });
+    const resolved = await waitForAutoLogo({ id: sub.id });
+
+    expect(resolved.logoDomain).toBeNull();
+    expect(await BrandLogos.findOne({ where: { normalizedName: 'phone' } })).toBeNull();
+  });
+
+  it('accepts an exact name match even when it is not the top result', async () => {
+    global.mswMockServer.use(
+      getLogoDevSearchMock({
+        results: [
+          { name: 'Miro Board Tools', domain: 'miroboard.example', logoUrl: null },
+          { name: 'Miro', domain: 'miro.com', logoUrl: null },
+        ],
+      }),
+    );
+
+    const sub = await helpers.createSubscription({ ...buildBillPayload({ name: 'Miro' }), raw: true });
+    const resolved = await waitForAutoLogo({ id: sub.id });
+
+    expect(resolved.logoDomain).toBe('miro.com');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A linked payee's logo takes precedence over a lookup by the subscription name.
+// ---------------------------------------------------------------------------
+
+const createPayeeWithLogo = () =>
+  helpers.createPayee({
+    payload: helpers.buildPayeePayload({ name: 'Kyivstar', logoDomain: 'kyivstar.ua' }),
+    raw: true,
+  });
+
+describe('Subscription logo from linked payee', () => {
+  it("uses the payee's logo without searching by the subscription name", async () => {
+    const searchedQueries: string[] = [];
+    global.mswMockServer.use(
+      http.get(LOGO_DEV_SEARCH_URL_REGEX, ({ request }) => {
+        searchedQueries.push(new URL(request.url).searchParams.get('q') ?? '');
+        return HttpResponse.json([{ name: 'Phone', domain: 'phone.com', logo_url: null }]);
+      }),
+    );
+    const payee = await createPayeeWithLogo();
+
+    const sub = await helpers.createSubscription({
+      ...buildBillPayload({ name: 'Phone' }),
+      payeeId: payee.id,
+      raw: true,
+    });
+    const resolved = await waitForAutoLogo({ id: sub.id });
+
+    expect(resolved.logoDomain).toBe('kyivstar.ua');
+    expect(searchedQueries).not.toContain('Phone');
+    expect(await BrandLogos.findOne({ where: { normalizedName: 'phone' } })).toBeNull();
+  });
+
+  it('prefers the payee logo over a cached logo for the subscription name', async () => {
+    await BrandLogos.create({ normalizedName: 'mobile plan', domain: 'mobileplan.com', source: 'seed' });
+    const payee = await createPayeeWithLogo();
+
+    const sub = await helpers.createSubscription({
+      ...buildBillPayload({ name: 'Mobile Plan' }),
+      payeeId: payee.id,
+      raw: true,
+    });
+    const resolved = await waitForAutoLogo({ id: sub.id });
+
+    expect(resolved.logoDomain).toBe('kyivstar.ua');
+  });
+
+  it('re-resolves an automatic logo when a payee is linked later', async () => {
+    await BrandLogos.create({ normalizedName: 'gym pass', domain: 'gympass.com', source: 'seed' });
+    const sub = await helpers.createSubscription({ ...buildBillPayload({ name: 'Gym Pass' }), raw: true });
+    expect((await helpers.getSubscriptionById({ id: sub.id, raw: true })).logoDomain).toBe('gympass.com');
+
+    const payee = await createPayeeWithLogo();
+    await helpers.updateSubscription({ id: sub.id, payeeId: payee.id, raw: true });
+    const resolved = await waitForAutoLogo({ id: sub.id });
+
+    expect(resolved.logoDomain).toBe('kyivstar.ua');
   });
 });
 

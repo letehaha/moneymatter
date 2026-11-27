@@ -402,7 +402,6 @@
           "accountsCount": "{count} рахунок | {count} рахунки | {count} рахунків",
           "lastSync": "Остання синхронізація",
           "consent": "Згода",
-          "every": "Кожні {hours} год",
           "autoSyncOff": "Вимкнено",
           "connectedOf": "{connected} з {total}",
           "connectedSub": "підключено",

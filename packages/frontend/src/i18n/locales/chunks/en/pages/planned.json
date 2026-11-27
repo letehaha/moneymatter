@@ -122,7 +122,7 @@
         "notesPlaceholder": "Optional notes about this subscription",
         "update": "Update",
         "create": "Create",
-        "rulesCount": "{count} matching rules configured",
+        "rulesCount": "{count} matching rule configured | {count} matching rules configured",
         "validationAmountCurrency": "Both amount and currency must be provided together.",
         "validationSubscriptionRequiresAmount": "Subscriptions require an amount and currency.",
         "typeInstallmentDesc": "Financed purchase paid over a fixed number of payments",

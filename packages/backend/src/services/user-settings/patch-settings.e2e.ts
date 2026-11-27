@@ -242,6 +242,20 @@ describe('Patch user settings', () => {
     expect((await helpers.getUserSettings({ raw: true })).showPayeeLogos).toBe(false);
   });
 
+  it('persists includeSharedAccountsInSidebarTotal and rejects a non-boolean', async () => {
+    expect((await helpers.getUserSettings({ raw: true })).includeSharedAccountsInSidebarTotal).toBeUndefined();
+
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { includeSharedAccountsInSidebarTotal: false },
+    });
+    expect(patched.includeSharedAccountsInSidebarTotal).toBe(false);
+
+    const rejected = await helpers.patchUserSettings({ patch: { includeSharedAccountsInSidebarTotal: 'no' } });
+    expect(rejected.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await helpers.getUserSettings({ raw: true })).includeSharedAccountsInSidebarTotal).toBe(false);
+  });
+
   it('persists ui.transactionForm.mapPicker and rejects a non-boolean', async () => {
     const patched = await helpers.patchUserSettings({
       raw: true,

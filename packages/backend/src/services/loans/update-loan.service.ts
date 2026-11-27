@@ -1,5 +1,5 @@
 import type { LoanEvent } from '@bt/shared/types';
-import { roundMoneyValues } from '@common/lib/currency-precision';
+import { getCurrencyDecimals, roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -179,12 +179,15 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
       projectedBalance: anchorInitialBalance.add(postAnchorPaymentsTotal),
     });
     if (overpaysBy.isPositive()) {
+      const { currencyCode } = loan.account;
+      const decimals = await getCurrencyDecimals({ userId, code: currencyCode });
+      const formatAmount = (amount: Money) => `${amount.toDecimalString(decimals)} ${currencyCode}`;
       throw new ValidationError({
         message: t({
           key: 'loans.correctionOverpay',
           variables: {
-            overpayAmount: projectedBalance.toNumber(),
-            paymentsTotal: postAnchorPaymentsTotal.toNumber(),
+            overpayAmount: formatAmount(projectedBalance),
+            paymentsTotal: formatAmount(postAnchorPaymentsTotal),
             asOfDate,
           },
         }),

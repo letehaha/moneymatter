@@ -46,7 +46,11 @@
       "Read(**/config/credentials.json)",
       "Read(**/.npmrc)",
       "Read(**/.pypirc)",
-      "Edit(**/.env*)",
+      "Edit(**/.env)",
+      "Edit(**/.env.development)",
+      "Edit(**/.env.test)",
+      "Edit(**/.env.production*)",
+      "Edit(**/.env.staging*)",
       "Edit(**/secrets/**)",
       "Edit(**/.ssh/**)"
     ]

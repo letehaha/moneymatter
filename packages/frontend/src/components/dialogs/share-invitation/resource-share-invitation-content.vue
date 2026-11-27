@@ -15,7 +15,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import { type InvitationLike, extractApiError, formatExpiry, permissionLabel as resolvePermissionLabel } from './utils';
+import { type InvitationLike, extractApiError, formatExpiry, permissionLabel } from './utils';
 
 /**
  * Per-resource invitation body + footer (currently `account`). The wrapper resolves
@@ -58,8 +58,6 @@ const acceptedResource = ref<{ type: ResourceType; id: string } | null>(null);
 const acceptedAccountId = computed(() =>
   acceptedResource.value?.type === RESOURCE_TYPES.account ? acceptedResource.value.id : null,
 );
-
-const permissionLabel = (permission: InvitationLike['permission']) => resolvePermissionLabel(permission, t);
 
 const acceptMutation = useMutation({
   mutationFn: () => acceptShareInvitation(props.invitation.token),
@@ -177,7 +175,7 @@ const closeDialog = () => emit('close');
         <ul class="flex flex-col gap-2">
           <li class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
             <span class="text-muted-foreground">{{ $t('dialogs.shareInvitationDialog.permissionLabel') }}</span>
-            <strong>{{ permissionLabel(invitation.permission) }}</strong>
+            <strong>{{ permissionLabel({ invitation, t }) }}</strong>
           </li>
           <li class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
             <span class="text-muted-foreground">{{ $t('dialogs.shareInvitationDialog.expiresLabel') }}</span>

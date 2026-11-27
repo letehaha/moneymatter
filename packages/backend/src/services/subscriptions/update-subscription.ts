@@ -12,7 +12,7 @@ import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
-import { resolveManualLogoFields } from '@services/brand-logos';
+import { enqueueLogoResolutionAfterCommit, resolveManualLogoFields } from '@services/brand-logos';
 import { withTransaction } from '@services/common/with-transaction';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
@@ -220,10 +220,18 @@ export const updateSubscription = withTransaction(
         mode: 'half-up',
       });
     }
+    // An automatic logo follows the payee, so a payee change re-resolves it.
+    const resetAutoLogo =
+      fields.payeeId !== undefined &&
+      fields.payeeId !== subscription.payeeId &&
+      subscription.logoSource === 'auto' &&
+      !('logoSource' in restFields);
     await subscription.update({
       ...restFields,
       ...(nextAmount !== undefined && { expectedAmount: nextAmount }),
+      ...(resetAutoLogo && { logoDomain: null, logoSource: null }),
     });
+    if (resetAutoLogo) enqueueLogoResolutionAfterCommit({ entity: 'subscription', id });
 
     // Keep the live schedule in step with an edited due date. Realigning only fires
     // when the due date ACTUALLY changed (`fields.dueDate !== previousDueDate`). The

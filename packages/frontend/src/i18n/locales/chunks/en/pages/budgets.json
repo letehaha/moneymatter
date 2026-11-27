@@ -26,7 +26,7 @@
       "kinds": {
         "spending": {
           "label": "Spending",
-          "hint": "Spend at most this much. Warns when spending runs ahead of time passing.",
+          "hint": "Spend at most this much. Turns amber above 70% of the limit, or above the share of time passed if that's higher, and red above 90%, or 10 points ahead of time passed, and always above 100%.",
           "guide": "For a thing or an event: a trip, a renovation, a year of groceries. Warns when you spend faster than time passes.",
           "amountLabel": "Limit"
         },
@@ -46,8 +46,6 @@
     },
     "list": {
       "loadError": "Couldn't load trackers.",
-      "tabCategory": "Category trackers",
-      "tabManual": "Manual trackers",
       "edit": "Edit",
       "delete": "Delete",
       "deleteSuccess": "Tracker deleted successfully!",
@@ -57,7 +55,7 @@
       "unlinkTransactionsSuccess": "Transactions unlinked successfully!",
       "deleteDialog": {
         "title": "Do you want to delete this tracker?",
-        "description": "By clicking \"Accept\", all associated transactions will be unlinked from the tracker but will remain in the system."
+        "description": "By clicking \"Delete\", all associated transactions will be unlinked from the tracker but will remain in the system."
       },
       "limitLabel": "Limit: {amount}",
       "transactionsCount": "{count} transactions",
@@ -199,7 +197,7 @@
       },
       "edit": {
         "limitHint": "Clear it to track without a limit.",
-        "datesHint": "Changing the dates does not add or remove transactions already linked."
+        "datesHint": "Transactions you added by hand stay when you change the dates. With Add matching transactions automatically on, matches in the new dates are added, and with Remove transactions that stop matching on, auto-added ones outside them are removed."
       }
     },
     "lines": {

@@ -141,6 +141,8 @@ export interface UserSettingsSchema {
    * Accounts panel. Defaults to visible/off when unset.
    */
   hideZeroBalances?: boolean;
+  /** The sidebar Bank Accounts total counts accounts shared with the user. On when unset. */
+  includeSharedAccountsInSidebarTotal?: boolean;
   /** Hides the "turn on smart tracking" tip on every tracker. */
   hideSmartTrackingTip?: boolean;
   accounts?: {

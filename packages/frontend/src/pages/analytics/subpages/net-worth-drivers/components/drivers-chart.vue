@@ -305,6 +305,12 @@ const renderChart = () => {
       axis.select('.domain').attr('stroke', colors.grid);
       axis.selectAll('.tick text').attr('fill', colors.text).attr('font-size', fontSize);
       axis.selectAll('.tick line').attr('stroke', colors.grid);
+      // A centred label on the last tick spills past the right margin and gets clipped.
+      axis.selectAll<SVGTextElement, number>('.tick text').each(function (value) {
+        if (xScale(value) + this.getComputedTextLength() / 2 > innerWidth + margin.right) {
+          d3.select(this).attr('text-anchor', 'end');
+        }
+      });
     });
 
   g.append('g')

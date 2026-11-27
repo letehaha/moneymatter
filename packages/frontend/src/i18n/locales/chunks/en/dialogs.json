@@ -441,7 +441,7 @@
       "ventureLinked": {
         "title": "Venture-linked transaction",
         "description": "This transaction is linked to a venture event.",
-        "editHint": "Edit or unlink it from the related venture deal's events timeline.",
+        "editHint": "To unlink it, delete its event from the venture deal's events timeline. The transaction goes back to an ordinary expense or income.",
         "openVenture": "Open venture"
       },
       "vehicleLinked": {
@@ -709,9 +709,9 @@
       "emailPlaceholder": "name{'@'}example.com",
       "permissionLabel": "Permission",
       "permissions": {
-        "read": "Read-only",
-        "write": "Read & add transactions",
-        "manage": "Full access"
+        "read": "View only",
+        "write": "Can edit",
+        "manage": "Can manage"
       },
       "writeScopeLabel": "Transaction edit scope",
       "writeScope": {
@@ -722,13 +722,13 @@
       "householdLookupFailed": "Couldn't check household membership – proceeding without the override hint.",
       "cancel": "Cancel",
       "send": "Send invitation",
-      "success": "Invitation request submitted. If a user with that address is registered, they'll receive an invitation.",
+      "success": "Invitation sent. They'll get an email with a link to accept. If they don't have an account yet, they can sign up with that address.",
       "error": "Could not send invitation. Please try again.",
       "emailSendFailedWarning": "Invitation saved, but the email could not be sent. The recipient may not have received a notification – try again later."
     },
     "shareBudgetDialog": {
       "title": "Share tracker",
-      "description": "Invite someone to view this tracker and contribute their own transactions to it. {name}.",
+      "description": "Invite someone to the \"{name}\" tracker. With View only they can see it; with Attach own transactions they can also add their own transactions to it.",
       "emailLabel": "Email",
       "emailPlaceholder": "Recipient email",
       "permissionLabel": "Permission",
@@ -766,9 +766,9 @@
       "permissionLabel": "Access level",
       "expiresLabel": "Expires",
       "permissions": {
-        "read": "Read-only",
-        "write": "Read + write",
-        "manage": "Manage"
+        "read": "View only",
+        "write": "Can edit",
+        "manage": "Can manage"
       },
       "unknownOwner": "A MoneyMatter user",
       "unknownResource": "a shared resource",
@@ -787,8 +787,8 @@
         "permissionLabel": "Their permission",
         "writeScopeLabel": "Write scope",
         "permissions": {
-          "read": "Read only",
-          "write": "Write"
+          "read": "View only",
+          "write": "Can edit"
         },
         "writeScope": {
           "all": "Any account",
@@ -871,13 +871,13 @@
       "unlinkConfirmDescription": "The transaction will be kept as a regular expense but removed from this loan. The loan balance will be recalculated.",
       "unlinkSuccess": "Payment unlinked",
       "unlinkError": "Couldn't unlink the payment. Please try again.",
-      "syncedAccountHint": "Paying from a synced account? Use Link payments to attach the imported expense instead.",
+      "syncedAccountHint": "Paying from a synced account? Once the bank transaction is imported, open this loan, choose More → Link previous payments and select it instead.",
       "sourceInfo": {
         "trigger": "More details",
         "title": "Why only these accounts?",
         "manualOnly": "This picker lists only your manually-managed accounts.",
         "whySynced": "Transactions on bank-synced accounts are imported directly from your bank. Recording a loan payment from one here would create a duplicate of the transaction your bank will send.",
-        "howToLink": "Instead, once the bank transaction appears, open it and choose Link payments to attach it to this loan. That keeps a single source of truth and updates the loan balance correctly."
+        "howToLink": "Instead, once the bank transaction appears, open this loan, choose More → Link previous payments and select it. That keeps a single source of truth and updates the loan balance correctly."
       }
     }
   }

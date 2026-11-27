@@ -169,7 +169,7 @@ watch(
     <div
       ref="contentWrapperRef"
       class="grid min-h-0 flex-1 grid-cols-1 gap-4"
-      :class="{ 'grid-cols-[max-content_minmax(0,1fr)]': !isMobileView }"
+      :class="isMobileView ? 'grid-rows-[auto_minmax(0,1fr)]' : 'grid-cols-[max-content_minmax(0,1fr)]'"
     >
       <ScrollArea class="relative min-h-0 px-1">
         <template v-if="isMobileView">

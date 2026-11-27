@@ -196,7 +196,7 @@ const onSubmit = async () => {
       </FieldLabel>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 items-end gap-4">
       <div>
         <FieldLabel :label="$t('venture.deals.form.currencyLabel')">
           <Select.Select v-model="form.currencyCode" :disabled="isPending">
@@ -273,7 +273,7 @@ const onSubmit = async () => {
       </InputField>
     </div>
 
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 items-end gap-4">
       <DateField
         v-model="form.investmentDate"
         :label="$t('venture.deals.form.investmentDateLabel')"

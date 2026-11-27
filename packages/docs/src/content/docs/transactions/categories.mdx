@@ -125,18 +125,16 @@ The new category also takes the old one's place in:
 
 - [automations](/transactions/automations/) that used it in **Set category**,
 - the **Auto-add** categories and lines of your [trackers](/planned/trackers/),
-- your [budget](/budgeting/lines-and-groups/) lines. If another line already covers the new category, the two lines' amounts are merged into it.
+- your [budget](/budgeting/lines-and-groups/) lines. If another line already covers the new category, the two lines' amounts are merged into it,
+- your [recurring payments](/planned/recurring-payments/).
 
-A few things don't move to the new category:
-
-- Payees that used the deleted category as their **Default category** lose it. Set it again on the payee's page (see [payees](/transactions/payees/#default-category)).
-- [Recurring payments](/planned/recurring-payments/) that used it lose their category. Set it again on the recurring payment's page.
+Payees that used the deleted category as their **Default category** lose it. Set it again on the payee's page (see [payees](/transactions/payees/#default-category)).
 
 ### Deleting a category without transactions
 
 A category with no transactions is deleted without a replacement, so anything that used it loses it:
 
-- Automations that use it are paused, with a note saying the category was deleted. See [when a rule is paused](/transactions/automations/#when-a-rule-is-paused-for-you).
+- Automations that use it are paused, with a note saying the category was removed. See [when a rule is paused](/transactions/automations/#when-a-rule-is-paused-for-you).
 - Trackers drop it from **Auto-add**. A tracker left with no category or tag there stops adding transactions automatically, and a tracker line left with no category is removed.
 - Budget lines drop it. A line left with no category is archived.
 - Payees and recurring payments that used it lose it.

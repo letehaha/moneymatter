@@ -41,6 +41,6 @@ router.post('/:id/read', markAsRead);
 router.post('/read-all', markAllAsRead);
 
 // Dismiss a notification
-router.post('/:id/dismiss', checkBaseCurrencyLock, dismissNotification);
+router.post('/:id/dismiss', dismissNotification);
 
 export default router;

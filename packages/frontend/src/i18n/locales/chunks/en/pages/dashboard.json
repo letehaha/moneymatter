@@ -98,7 +98,6 @@
         "showAll": "View all"
       },
       "subscriptions": {
-        "title": "Subscriptions & bills",
         "titleSubscriptions": "Subscriptions",
         "titleBills": "Bills",
         "titleAll": "Recurring payments",

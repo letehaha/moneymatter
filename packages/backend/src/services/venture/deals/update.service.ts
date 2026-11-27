@@ -1,5 +1,6 @@
 import { type NonImageLogoPayload, RecordId } from '@bt/shared/types';
 import { VENTURE_DEAL_STATUS, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ValidationError } from '@js/errors';
@@ -33,6 +34,9 @@ interface UpdateVentureDealParams extends NonImageLogoPayload {
   notes?: string | null;
 }
 
+const isDecimalChanged = ({ next, stored, scale }: { next?: string; stored: string; scale: number }) =>
+  next !== undefined && !new Big(next).round(scale).eq(stored);
+
 const updateVentureDealImpl = async (params: UpdateVentureDealParams) => {
   const { userId, dealId } = params;
 
@@ -56,21 +60,37 @@ const updateVentureDealImpl = async (params: UpdateVentureDealParams) => {
     throw new ValidationError({ message: 'Principal must be non-negative' });
   }
 
-  // Fields below feed into per-event cost-basis / carry math. Allowing them to
-  // change after events exist would silently stale every previously-computed
-  // event without invoking the recompute cascade. Reject the update and ask
-  // the caller to delete events first (or edit them individually with
-  // resetOverrides=true). Currency changes additionally would orphan link rows.
-  const termsLockingFields = [
-    'principal',
-    'entryFee',
-    'entryFeePct',
-    'carryPct',
-    'hurdlePct',
-    'investmentDate',
-    'currencyCode',
-  ] as const;
-  const attemptedTermsChange = termsLockingFields.some((f) => params[f] !== undefined);
+  const rounded = await roundMoneyValues({
+    values: {
+      principal: params.principal !== undefined ? Money.fromDecimal(params.principal) : undefined,
+      entryFee: params.entryFee !== undefined ? Money.fromDecimal(params.entryFee) : undefined,
+      storedPrincipal: params.principal !== undefined ? deal.principal : undefined,
+      storedEntryFee: params.entryFee !== undefined ? deal.entryFee : undefined,
+    },
+    userId,
+    currencyCode: params.currencyCode ?? deal.currencyCode,
+    mode: 'half-up',
+  });
+
+  // Terms feed per-event cost-basis / carry math and currency changes would orphan
+  // link rows, so they lock once events exist. Clients resend the whole form, so
+  // only a value that differs from the stored one (both rounded to the currency) counts.
+  const attemptedTermsChange =
+    isDecimalChanged({
+      next: rounded.principal?.toDecimalString(10),
+      stored: (rounded.storedPrincipal ?? deal.principal).toDecimalString(10),
+      scale: 10,
+    }) ||
+    isDecimalChanged({
+      next: rounded.entryFee?.toDecimalString(10),
+      stored: (rounded.storedEntryFee ?? deal.entryFee).toDecimalString(10),
+      scale: 10,
+    }) ||
+    isDecimalChanged({ next: params.entryFeePct, stored: deal.entryFeePct, scale: 6 }) ||
+    isDecimalChanged({ next: params.carryPct, stored: deal.carryPct, scale: 6 }) ||
+    isDecimalChanged({ next: params.hurdlePct, stored: deal.hurdlePct, scale: 6 }) ||
+    (params.investmentDate !== undefined && params.investmentDate !== deal.investmentDate) ||
+    (params.currencyCode !== undefined && params.currencyCode !== deal.currencyCode);
   if (attemptedTermsChange) {
     const eventCount = await VentureEvents.count({ where: { dealId } });
     if (eventCount > 0) {
@@ -88,8 +108,8 @@ const updateVentureDealImpl = async (params: UpdateVentureDealParams) => {
   if (params.targetCompany !== undefined) updates.targetCompany = params.targetCompany;
   if (params.currencyCode !== undefined) updates.currencyCode = params.currencyCode;
   if (params.status !== undefined) updates.status = params.status;
-  if (params.principal !== undefined) updates.principal = Money.fromDecimal(params.principal);
-  if (params.entryFee !== undefined) updates.entryFee = Money.fromDecimal(params.entryFee);
+  if (rounded.principal !== undefined) updates.principal = rounded.principal;
+  if (rounded.entryFee !== undefined) updates.entryFee = rounded.entryFee;
   if (params.entryFeePct !== undefined) updates.entryFeePct = params.entryFeePct;
   if (params.mgmtFeePct !== undefined) updates.mgmtFeePct = params.mgmtFeePct;
   if (params.carryPct !== undefined) updates.carryPct = params.carryPct;

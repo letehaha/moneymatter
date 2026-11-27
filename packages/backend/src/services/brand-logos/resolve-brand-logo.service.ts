@@ -24,6 +24,7 @@ export interface LogoResolvable {
   id: string;
   name: string;
   normalizedName?: string | null;
+  payeeId?: string | null;
   logoDomain: string | null;
   logoSource: LogoResolutionState;
   update(
@@ -59,10 +60,13 @@ async function loadResolvable({
  * worker, one call per entity, keyed on the entity's normalized name.
  *
  * Lookup order:
+ *   0. Subscriptions with a payee take the payee's logo (resolving the payee
+ *      first if it never was); only a payee without a domain falls through.
  *   1. Shared `BrandLogos` cache (seeded common brands + prior logo.dev hits) –
  *      a hit costs zero API calls.
- *   2. logo.dev Brand Search on a miss; the winning result is written back to
- *      the shared cache so the next entity with the same normalizedName hits it.
+ *   2. logo.dev Brand Search on a miss, accepting only a result whose name
+ *      normalizes to the same key – generic names ("Phone") must not adopt
+ *      the top fuzzy hit. The match is written back to the shared cache.
  *
  * Never overrides a `logoSource: 'manual'` entity – manual logos are user
  * overrides the resolver treats as authoritative. A miss with no provider
@@ -95,6 +99,18 @@ export async function resolveBrandLogo({
   // User override is authoritative; the resolver must never touch it.
   if (target.logoSource === 'manual') return;
 
+  if (entity === 'subscription' && target.payeeId) {
+    let payee = await Payees.findByPk(target.payeeId, { transaction });
+    if (payee && payee.logoSource == null) {
+      await resolveBrandLogo({ entity: 'payee', id: payee.id, transaction });
+      payee = await payee.reload({ transaction });
+    }
+    if (payee?.logoDomain) {
+      await target.update({ logoDomain: payee.logoDomain, logoSource: 'auto' }, { transaction });
+      return;
+    }
+  }
+
   // Clamped to the BrandLogos.normalizedName width: NFKD expansion in
   // normalizePayeeName can make the normalized form longer than the raw name.
   const norm = (target.normalizedName?.trim() || normalizePayeeName({ raw: target.name })).slice(0, 200);
@@ -116,8 +132,7 @@ export async function resolveBrandLogo({
   // throws after exhausting retries on network/5xx errors, failing the job so BullMQ retries it.
   const results = await searchBrands({ query: target.name });
 
-  // Prefer the result whose normalizedName matches; fall back to the top result.
-  const best = results.find((result) => normalizePayeeName({ raw: result.name }) === norm) ?? results[0] ?? null;
+  const best = results.find((result) => normalizePayeeName({ raw: result.name }) === norm) ?? null;
 
   if (!best) {
     // Negative result – mark auto so this entity isn't re-queued on every read.

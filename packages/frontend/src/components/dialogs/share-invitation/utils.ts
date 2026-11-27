@@ -1,5 +1,5 @@
 import { ApiErrorResponseError } from '@/js/errors';
-import { API_ERROR_CODES, SHARE_PERMISSIONS, type SharePermission } from '@bt/shared/types';
+import { API_ERROR_CODES, RESOURCE_TYPES, type ResourceType, type SharePermission } from '@bt/shared/types';
 import { format } from 'date-fns';
 import type { ComposerTranslation } from 'vue-i18n';
 
@@ -11,6 +11,7 @@ export interface InvitationLike {
   token: string;
   resourceId?: string | number;
   resourceName?: string | null;
+  resourceType?: ResourceType;
   permission: SharePermission;
   expiresAt: string | Date;
   owner: { username: string | null } | null;
@@ -18,11 +19,16 @@ export interface InvitationLike {
 
 export const formatExpiry = (value: string | Date) => format(new Date(value), 'yyyy-MM-dd');
 
-export const permissionLabel = (permission: SharePermission, t: ComposerTranslation): string => {
-  if (permission === SHARE_PERMISSIONS.read) return t('dialogs.shareInvitationDialog.permissions.read');
-  if (permission === SHARE_PERMISSIONS.write) return t('dialogs.shareInvitationDialog.permissions.write');
-  return t('dialogs.shareInvitationDialog.permissions.manage');
-};
+export const permissionLabel = ({
+  invitation,
+  t,
+}: {
+  invitation: Pick<InvitationLike, 'permission' | 'resourceType'>;
+  t: ComposerTranslation;
+}): string =>
+  invitation.resourceType === RESOURCE_TYPES.tracker
+    ? t(`dialogs.shareBudgetDialog.permissions.${invitation.permission}`)
+    : t(`dialogs.shareInvitationDialog.permissions.${invitation.permission}`);
 
 interface ApiErrorPayload {
   code: API_ERROR_CODES | undefined;

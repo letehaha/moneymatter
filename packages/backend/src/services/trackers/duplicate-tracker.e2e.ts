@@ -6,7 +6,7 @@ import { PNG_1X1_BYTES, PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 
 describe('POST /trackers/:id/duplicate', () => {
-  it('copies rules, limit, categories, tags and lines but resets dates and flags', async () => {
+  it('copies rules, limit, dates, categories, tags and lines but resets flags', async () => {
     const [food, fun, tag] = await Promise.all([
       helpers.addCustomCategory({ name: 'Food', color: '#FF0000', raw: true }),
       helpers.addCustomCategory({ name: 'Fun', color: '#00FF00', raw: true }),
@@ -50,8 +50,8 @@ describe('POST /trackers/:id/duplicate', () => {
       status: TRACKER_STATUSES.active,
       limitAmount: 1000,
       limitKind: TRACKER_LIMIT_KINDS.incomeCap,
-      startDate: null,
-      endDate: null,
+      startDate: source.startDate,
+      endDate: source.endDate,
       archivePromptDismissed: false,
     });
     expect(copy.categories!.map((c) => c.id).toSorted()).toEqual([food.id, fun.id].toSorted());
@@ -68,6 +68,48 @@ describe('POST /trackers/:id/duplicate', () => {
 
     const sourceAfter = await helpers.getTrackerById({ id: source.id, raw: true });
     expect(sourceAfter!.lines!.map((line) => line.id)).toEqual([foodLine.id, funLine.id]);
+  });
+
+  it('auto-adds only transactions within the copied dates', async () => {
+    const [account, food] = await Promise.all([
+      helpers.createAccount({ raw: true }),
+      helpers.addCustomCategory({ name: 'Food', color: '#FF0000', raw: true }),
+    ]);
+    const createFoodExpense = async ({ time }: { time: string }) => {
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          categoryId: food.id,
+          transactionType: TRANSACTION_TYPES.expense,
+          time,
+        }),
+        raw: true,
+      });
+      return tx!;
+    };
+    await Promise.all([
+      createFoodExpense({ time: '2025-03-15T10:00:00Z' }),
+      createFoodExpense({ time: '2025-01-15T10:00:00Z' }),
+      createFoodExpense({ time: '2025-05-15T10:00:00Z' }),
+    ]);
+    const source = await helpers.createTracker({
+      name: 'March',
+      rulesEnabled: true,
+      categoryIds: [food.id],
+      startDate: '2025-03-01T00:00:00Z',
+      endDate: '2025-03-31T23:59:59Z',
+      raw: true,
+    });
+
+    const copy = await helpers.duplicateTracker({ id: source.id, raw: true });
+
+    const [sourceStats, copyStats] = await Promise.all([
+      helpers.getTrackerStats({ id: source.id, raw: true }),
+      helpers.getTrackerStats({ id: copy.id, raw: true }),
+    ]);
+    expect(sourceStats!.summary.transactionsCount).toBe(1);
+    expect(copyStats!.summary.transactionsCount).toBe(1);
   });
 
   it('copies the logo fields', async () => {

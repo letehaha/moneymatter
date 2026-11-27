@@ -50,8 +50,9 @@ async function forceUserBaseCurrency({ userId, currencyCode }: { userId: number;
  *     manage); cannot invite to someone else's household; cannot self-invite.
  *   - Idempotency: the same recipient can't be invited to the same household twice in
  *     pending state (caught by service-level pending-cap or unique handling).
- *   - Auto-merge: prior per-resource shares + pending invitations from the same owner
- *     are revoked/deleted on household accept (broader grant supersedes them).
+ *   - Auto-merge: prior account shares + pending account invitations from the same owner
+ *     are revoked/deleted on household accept (broader grant supersedes them); tracker
+ *     shares and invitations are kept.
  *   - Currency mismatch surfaces a structured error with the expected currency.
  */
 
@@ -307,6 +308,56 @@ describe('Household invitation flow', () => {
       const after = await ShareInvitations.findByPk(pendingInvite.id);
       expect(after).not.toBeNull();
       expect(after!.status).toBe(SHARE_INVITATION_STATUSES.revoked);
+    });
+
+    it('keeps tracker shares and pending tracker invitations from the same owner when the recipient accepts a household invite', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const sharedTracker = await helpers.createTracker({ name: 'Shared tracker', raw: true });
+      const pendingTracker = await helpers.createTracker({ name: 'Pending tracker', raw: true });
+      const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+      const recipientApp = await helpers.findAppUserByEmail({ email: recipient.email });
+
+      const trackerInvite = await helpers.createShareInvitation({
+        inviteeEmail: recipient.email,
+        resourceType: RESOURCE_TYPES.tracker,
+        resourceId: sharedTracker.id,
+        permission: SHARE_PERMISSIONS.read,
+        raw: true,
+      });
+      await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: () => helpers.acceptShareInvitation({ token: trackerInvite.token, raw: true }),
+      });
+
+      const pendingTrackerInvite = await helpers.createShareInvitation({
+        inviteeEmail: recipient.email,
+        resourceType: RESOURCE_TYPES.tracker,
+        resourceId: pendingTracker.id,
+        permission: SHARE_PERMISSIONS.read,
+        raw: true,
+      });
+
+      const householdInvite = await inviteToHousehold({
+        ownerUserId: account.userId,
+        inviteeEmail: recipient.email,
+      });
+      await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: () => helpers.acceptShareInvitation({ token: householdInvite.token, raw: true }),
+      });
+
+      const trackerShare = await ResourceShares.findOne({
+        where: {
+          ownerUserId: account.userId,
+          sharedWithUserId: recipientApp.id,
+          resourceType: RESOURCE_TYPES.tracker,
+          resourceId: String(sharedTracker.id),
+        },
+      });
+      expect(trackerShare).not.toBeNull();
+
+      const pendingAfter = await ShareInvitations.findByPk(pendingTrackerInvite.id);
+      expect(pendingAfter!.status).toBe(SHARE_INVITATION_STATUSES.pending);
     });
   });
 });

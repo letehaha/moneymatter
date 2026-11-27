@@ -9,6 +9,7 @@ export default createController(
     body: z
       .object({
         force: z.boolean().optional(),
+        deleteLinkedTransactions: z.boolean().optional(),
       })
       .optional(),
   }),
@@ -17,6 +18,7 @@ export default createController(
       userId: user.id,
       dealId: params.id,
       force: body?.force,
+      deleteLinkedTransactions: body?.deleteLinkedTransactions,
     });
     return { data: result };
   },
