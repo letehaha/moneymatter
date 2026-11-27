@@ -14,7 +14,7 @@ A vehicle is a special kind of account for a car, motorbike or other vehicle you
 
 <Steps>
 
-1. In the sidebar, open **Accounts** → **All Accounts**.
+1. In the sidebar, open **Accounts** → **All accounts**.
 2. Click **Add vehicle**. On a narrow screen, click the ⋮ button (**Account actions**) first, then **Add vehicle**.
 3. Fill in the **Vehicle name**, **Currency**, **Make**, **Model**, **Year** and **Vehicle class** (**Sedan**, **SUV**, **Truck**, **Luxury**, **Electric vehicle**, **Motorcycle** or **Other**). The class sets how fast the value drops. **Trim (optional)** and **Current mileage (optional)** are up to you.
 4. Enter the **Purchase price** and **Purchase date**.
@@ -44,17 +44,31 @@ MoneyMatter starts from the purchase price and lowers it every year. The biggest
 - Each year's drop is taken from the value left after the previous year.
 - Part of a year counts in proportion, so the value moves smoothly between anniversaries of the purchase date.
 - The value never falls below the salvage floor: a percentage of the purchase price, or of your latest [override](#override-the-value).
-- Mileage is kept for your records. It doesn't change the estimate.
+- The model **Year** and the mileage are kept for your records. They don't change the estimate. The drops count from the **Purchase date**, so a 2018 car you bought in 2024 starts at first-year rates in 2024.
 
 Opening the vehicle's page always shows today's value. In your account list, the sidebar and your totals, the value is updated when it's more than a week old, so it can briefly differ from the vehicle page.
 
-Open a vehicle from the **Vehicles** section of the **Accounts** page, or from **Cars** in the sidebar. The vehicle page shows the **Current value**, the **Total depreciation** so far and a **Value over time** chart.
+Open a vehicle from the **Vehicles** section of the **Accounts** page, or from **Vehicles** in the sidebar. The vehicle page shows:
+
+- the **Current value**, and how much it has dropped since you bought it
+- the **Purchase price** and date
+- the **Total depreciation** so far
+- **Projected in 5 years**: the estimated value five years from today, and how much more it's expected to drop. It follows the same curve and salvage floor, starting from your latest [override](#override-the-value) if you have one.
+- a **Value over time** chart, projected through year 12
+- the **Vehicle** and **Depreciation model** details, including your **Last override**
+- the **Override history**
+
+If the vehicle isn't in your base currency, the amounts also show converted at today's exchange rate.
 
 <Screenshot
   src="/screenshots/accounts/vehicle-details-page.png"
-  alt="A vehicle page showing the current value, total depreciation, the Override value and Edit buttons, and the Value over time chart."
-  hint="Open /accounts/vehicles/:id for a vehicle bought 2–3 years ago (for example a 2022 Toyota Camry, Sedan). Show the Current value, Purchase price, Total depreciation, the Override value and Edit buttons, and the Value over time chart. Crop to the top of the page, including the chart."
+  alt="A vehicle page showing the current value, the Purchase price, Total depreciation and Projected in 5 years cards, the Override value and Edit buttons, and the Value over time chart."
+  hint="Open /accounts/vehicles/:id for a vehicle bought 2–3 years ago (for example a 2022 Toyota Camry, Sedan). Show the Current value, the Purchase price, Total depreciation and Projected in 5 years cards, the Override value and Edit buttons, and the Value over time chart. Crop to the top of the page, including the chart."
 />
+
+## Change the logo
+
+Click the logo next to the vehicle's name (**Change logo**). You can search for a brand logo, pick letters and a colour, or choose **Remove logo** to go back to the vehicle icon.
 
 ## Edit a vehicle
 
@@ -90,6 +104,8 @@ If you set **When did this happen?** to a past date, the new value counts as wha
 
 Like a [balance adjustment](/accounts/manage-accounts/#adjust-a-balance), an override is recorded as a transaction, and it isn't counted as income or spending in your reports.
 
+You can't edit that transaction from your transaction lists. Clicking it opens **Vehicle adjustment** with a button to open the vehicle. Change or delete the override on the vehicle page instead.
+
 ### Undo an override
 
 <Steps>
@@ -105,9 +121,13 @@ The value goes back to following the previous override, or the purchase price if
 ## Where vehicles show up
 
 - **On the Accounts page**, in their own **Vehicles** section with a total, and as a separate **Vehicles** figure in the overview. They're not part of **Total balance**.
-- **In your net worth.** By default, the dashboard's **Net Worth** and **Balance trend** widgets include your vehicles' current value, and so does the [Net Worth History](/stats/analytics-reports/#net-worth-history) report. You can leave vehicles out in each widget's settings. See [dashboard](/stats/dashboard/).
-- **In the sidebar**, under **Cars**.
+- **In your net worth.** By default, the dashboard's **Net worth** and **Balance trend** widgets include your vehicles' current value, and so does the [Net worth history](/stats/analytics-reports/#net-worth-history) report. You can leave vehicles out in each widget's settings. See [dashboard](/stats/dashboard/).
+- **In the sidebar**, under **Vehicles**.
 - **Not in transaction forms.** A vehicle's value only changes through depreciation and overrides, so you can't pick it when adding a transaction.
+
+## Vehicles shared with you
+
+If someone shares a vehicle with you, for example through a [household](/settings/household-and-sharing/), it's listed under **Shared with me** on the **Accounts** page. You can see its value, chart, details and override history, but you can't override the value, edit, delete or change the logo. Only the owner can. It's not counted in your **Vehicles** total.
 
 ## When you sell a vehicle
 
@@ -129,7 +149,7 @@ For the cleanest history, record the sale on the day you sell. If you record it 
 
 ## Delete a vehicle
 
-Delete a vehicle only if you added it by mistake. Deleting also removes it from your past net worth, including the dates when you owned it, so the **Net Worth** and **Balance trend** widgets and the [Net Worth History](/stats/analytics-reports/#net-worth-history) report drop its value for the whole period.
+Delete a vehicle only if you added it by mistake. Deleting also removes it from your past net worth, including the dates when you owned it, so the **Net worth** and **Balance trend** widgets and the [Net worth history](/stats/analytics-reports/#net-worth-history) report drop its value for the whole period.
 
 <Steps>
 

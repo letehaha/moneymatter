@@ -1,0 +1,104 @@
+---
+title: Trash
+description: Where deleted transactions go, how long they stay, how to restore them or delete them for good, and which transactions can't be moved to Trash.
+sidebar:
+  order: 10
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+When you delete a transaction, it isn't gone straight away. It moves to **Trash**, where it stays for 30 days. Until then you can bring it back with everything that was attached to it.
+
+## What goes to Trash
+
+Every transaction you delete goes to Trash, whether you delete it from its own window (see [delete a transaction](/transactions/add-and-edit/#delete-a-transaction)) or [several at once](/transactions/search-and-filter/#delete-several-transactions).
+
+- **A transfer goes as a pair.** Deleting either side moves both sides to Trash, and they come back together. See [delete a transfer](/transfers-and-refunds/how-transfers-work/#delete-a-transfer).
+- **A loan payment goes as a pair too**: the expense on your account and the income on the loan.
+- **A trashed transaction stops counting.** Account balances are recalculated without it, and it leaves your stats and transaction lists.
+
+Transactions removed in [reconciliation](/transactions/reconciliation/) don't go to Trash. You restore those from the reconciliation **History** tab. See [restore from History](/transactions/reconciliation/#restore-from-history).
+
+## Undo a delete
+
+Right after you delete, a **Moved to Trash** message appears with an **Undo** button. Click it within about 8 seconds to put the transaction back where it was. A bulk delete shows how many moved, for example **3 transactions moved to Trash**, and **Undo** brings all of them back.
+
+If you miss it, restore the transaction from Trash instead.
+
+## Open Trash
+
+Open **All transactions** in the sidebar and click **Trash** at the top of the page. On a phone, **Trash** is in the **More** menu (⋯) instead.
+
+Trash lists your deleted transactions, newest deletions first, grouped by how many days each has left, such as **12 days left**. When some will be deleted within the next 7 days, a banner at the top tells you how many.
+
+Click a transaction to see its details. Next to the list, or in a window on a narrow screen, **Comes back with** lists what returns with it: its category, note and payee, its splits, tags and attachments, the [tracker](/planned/trackers/), [group](/transactions/groups/), [recurring payment](/planned/recurring-payments/) or refund it was linked to, and, for a transfer, the other side.
+
+<Screenshot
+  src="/screenshots/transactions/trash.png"
+  alt="The Trash page with deleted transactions grouped under a days-left heading, and the selected transaction's details on the right: its amount, the Comes back with list including its attachments, and the Restore and Delete buttons."
+  hint="As the seeded docs test user, create a second manual account 'Cash wallet' (USD) and add a 50 USD transfer from Everyday Checking to Cash wallet. Then delete, one by one from their Edit transaction windows, the seeded 'Office chair' expense (it has the receipt and invoice attachments), one other seeded Everyday Checking expense, and the transfer. Open /transactions/trash at 1440 px wide so the list and the detail panel sit side by side, and click 'Office chair'. Crop to the page title, the list and the detail panel."
+/>
+
+## Restore a transaction
+
+<Steps>
+
+1. Open **Trash**.
+2. Click the transaction.
+3. Click **Restore**.
+
+</Steps>
+
+The transaction goes back to its account, and the balance is recalculated. Its splits, tags, attachments and links come back with it. A link to a transaction that's also in Trash stays hidden until you restore that one too.
+
+A refund link that no longer fits, for example because the other transaction changed in the meantime, is dropped, and the message tells you how many.
+
+Some transactions can't come back:
+
+- **The account was connected to a bank since.** A manual transaction dated on or after the day you linked the account to the bank can't be restored, because from that day the bank provides the transactions. See [accounts you linked yourself](/import/bank-connections/#accounts-you-linked-yourself).
+- **The other side of a loan payment is gone.** A loan payment can only come back with both sides.
+
+## Delete a transaction for good
+
+Trash empties itself: 30 days after you deleted a transaction, it's removed for good.
+
+To remove one right away:
+
+<Steps>
+
+1. Open **Trash** and click the transaction.
+2. Click **Delete permanently** (just **Delete** when the panel is narrow).
+3. Confirm in the **Delete permanently?** window.
+
+</Steps>
+
+<Aside type="caution">
+A transaction deleted permanently can't be restored.
+</Aside>
+
+[Undoing an import](/import/import-from-csv/#undo-an-import) also deletes for good any of that import's transactions that are in Trash.
+
+## What can't be moved to Trash
+
+Some transactions have to be unlinked first. The delete is refused with a message that tells you what to do:
+
+- **Transactions linked to a portfolio.** [Unlink it from the portfolio](/transfers-and-refunds/how-transfers-work/#to-a-portfolio) first, or delete it from the portfolio's **Activity** tab.
+- **Transactions linked to a venture deal.** Delete the event on the deal instead. See [what linking does to a transaction](/investments/venture/#what-linking-does-to-a-transaction).
+- **Part of a payment from several accounts.** Remove it from the payment first.
+
+Some can't be deleted at all, so they never reach Trash:
+
+- **Transactions from a bank connection**, and manual ones dated on or after the day you linked the account to a bank. See [bank-synced transactions](/transactions/add-and-edit/#bank-synced-transactions).
+- **The other person's side** of a transfer into an account someone shares with you. See [household and sharing](/settings/household-and-sharing/).
+
+## Good to know
+
+- **Portfolios have their own Trash**, at the bottom of the **Investments** page. See [delete and restore a portfolio](/investments/portfolios/#delete-and-restore-a-portfolio).
+
+## Related
+
+- [Add and edit transactions](/transactions/add-and-edit/)
+- [Search and filter](/transactions/search-and-filter/)
+- [How transfers work](/transfers-and-refunds/how-transfers-work/)
+- [Reconciliation](/transactions/reconciliation/)

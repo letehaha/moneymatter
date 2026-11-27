@@ -1,0 +1,217 @@
+---
+title: Automations
+description: Create rules that categorize, tag, set payees and notes on new bank and imported transactions as they arrive, preview what a rule matches, and apply it to transactions you already have.
+sidebar:
+  order: 9
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+An automation is a rule of the form "when a transaction looks like this, do that". For example: when the merchant contains "biedronka", set the category to Groceries and add the tag "Weekly shop". Once it's saved, every new matching transaction from your bank or a file import is sorted for you the moment it arrives.
+
+To open your automations, go to the sidebar and choose **Transactions** → **Automations**.
+
+## When automations run
+
+Rules run once, when a transaction is created, on transactions that come from:
+
+- a [bank connection](/import/bank-connections/) sync,
+- a file import ([CSV](/import/import-from-csv/), bank statements and the [other import sources](/import/other-import-sources/)),
+- an app connected through the API or the [MCP connector](/ai/connect-claude-chatgpt-mcp/), when it asks for automations to be applied.
+
+Rules never run on:
+
+- **Transactions you add by hand** in the app. Whatever you enter is kept as you entered it.
+- **Transfers** of any kind, including **Out of wallet** ones.
+- **[Planned transactions](/planned/planned-transactions/)**, including a bank or imported transaction that's merged into one of your planned transactions. The planned transaction keeps what you set on it.
+- **Edits.** Changing an existing transaction doesn't run your rules again. To run a rule on transactions you already have, use [Apply to past transactions](#apply-a-rule-to-past-transactions).
+
+### How rules fit with recurring payments and payees
+
+When a new transaction arrives, MoneyMatter works through it in this order:
+
+1. **[Automatic payee detection](/transactions/payees/#automatic-payee-detection)** links it to a payee, so a **Payee** condition can see the detected payee.
+2. **[Recurring payment](/planned/recurring-payments/) matching** links it to a recurring payment, which may set its category.
+3. **Your automations** run.
+4. **The payee's defaults**: its **Default category** and **Auto-apply tags**.
+
+That order decides who wins:
+
+- **A recurring payment's category beats a rule.** A rule's **Set category** never overwrites a category set by a recurring payment.
+- **A rule's category beats the payee's default category.** If a rule sets the category, the payee's **Default category** isn't applied on top of it.
+- **A category from an import file beats a rule.** When the file you import sets a category for a row, **Set category** is skipped for that row. The rule's other actions still run.
+
+## The automations list
+
+The list shows your rules in the order they're checked. Each row shows its number, name, how often it has matched (**N matches · last** date, or **Never matched**), a summary of its conditions and actions, a switch to turn it on or off, and a **⋮** menu with **Edit**, **Apply to past transactions** and **Delete**.
+
+- **Compact** and **Detailed** change how much of each rule's summary you see.
+- The status filter shows **Show all**, **Only active** or **Only disabled** rules.
+- **Tips** explains how to manage your rules with an AI assistant through an MCP connection, for example to find duplicate or conflicting rules.
+
+The match count only counts rules that ran on new transactions. Applying a rule to past transactions doesn't add to it.
+
+<Screenshot
+  src="/screenshots/transactions/automations-list.png"
+  alt="The Automations page in Detailed view with three numbered rules, each showing its match count, its conditions and actions, and an on/off switch; one rule is disabled."
+  hint="Open /transactions/automations. Create three rules first: 'Groceries from Biedronka' (Merchant contains any of 'biedronka' → Set category Groceries, Add tags 'Weekly shop'), 'Streaming' (Merchant contains any of 'netflix', 'spotify' → Set category 'Life & Entertainment', Set payee 'Netflix' (create the payee on /settings/payees first)), and 'Small card fees' (Amount is at most 2, Transaction type expense → Set category 'Financial expenses') switched off. Pick Detailed in the density toggle and leave the filter on Show all. Crop to the page header, the toggle row and the list."
+/>
+
+### First matching rule wins
+
+Rules are checked from top to bottom, and only one rule changes a transaction: the first one that matches. Put specific rules above general ones. For example, "Merchant contains Amazon Prime → Subscriptions" goes above "Merchant contains Amazon → Shopping".
+
+If a matching rule can't do anything, for example its only action is **Set category** and a recurring payment already set the category, MoneyMatter moves on to the next rule.
+
+To change the order, drag a rule by the handle under its number. Reordering only works with the filter on **Show all**.
+
+## Create an automation
+
+<Steps>
+
+1. On the **Automations** page, click **New automation**.
+2. Enter a **Name**, up to 120 characters.
+3. In the conditions section, choose whether to match **all** or **any** of them, then click **Add condition** and set up each condition (see [conditions](#conditions)).
+4. Under **Then do this**, click **Add action** and pick what the rule does (see [actions](#actions)).
+5. Optionally click **Preview matches** to check what the rule catches.
+6. Leave **Enabled** on and click **Save**.
+
+</Steps>
+
+While you edit, a summary line above the form reads the rule back to you as **When** … **Then** ….
+
+To change a rule, click it in the list. If you leave the editor with unsaved changes, MoneyMatter asks you to confirm with **Discard changes**.
+
+<Screenshot
+  src="/screenshots/transactions/automation-editor.png"
+  alt="The New automation editor with a name, two conditions joined by AND, two actions, and the Preview section listing matching transactions."
+  hint="Open /transactions/automations/new on the seeded user (SimpleFIN demo transactions present). Name 'Groceries from Biedronka'. Conditions on 'all': Merchant contains any of 'biedronka', 'lidl'; Transaction type expense. Actions: Set category Groceries; Add tags 'Weekly shop' (create the tag on /settings/tags first). Click Preview matches so a summary and a few matches show (adjust the keywords to merchants present in the demo data if needed). Crop to the summary line, the conditions, actions and preview sections. Don't save."
+/>
+
+## Conditions
+
+A rule has 1 to 10 conditions. **all** means every condition must hold; **any** means one is enough.
+
+| Condition | Operators | What it checks |
+| --- | --- | --- |
+| **Note** | **contains any of**, **does not contain**, **starts with**, **ends with**, **equals any of**, **is empty** | The transaction's note. |
+| **Merchant** | Same as **Note** | The merchant name your bank or file sent. If there isn't one, the note is used. |
+| **Payee** | **is one of**, **is not one of** | The transaction's payee, including one found by automatic payee detection. |
+| **Amount** | **is at least**, **is at most**, **is between**, **equals** | The amount without its sign, so 50 matches both a 50 expense and a 50 income. |
+| **Transaction type** | **income** or **expense** | Whether money came in or went out. |
+| **Account** | **is one of**, **is not one of** | The account the transaction is on. |
+| **Account group** | **is one of**, **is not one of** | The [account group](/accounts/account-groups/) the account is in. Picking a group also covers accounts in groups nested inside it. |
+| **Bank connection** | **is one of**, **is not one of** | The bank connection the account is linked to. |
+| **Day of month** | From day, to day | The transaction's day of the month, 1 to 31. |
+
+How text conditions work:
+
+- Type a keyword and press Enter to add it. You can add up to 20 keywords, each up to 64 characters.
+- Upper and lower case don't matter, and a keyword can match any part of the text. "amzn" matches "AMZN Mktp US".
+- **does not contain** matches when the text contains none of the keywords.
+- **is empty** needs no keywords.
+
+How the amount condition works:
+
+- **is at least** and **is at most** include the amount itself; **is between** includes both ends.
+- Next to the amount, choose which currency to compare in:
+  - **Transaction currency**: the amount as it is, in whatever currency the transaction is in.
+  - **Base currency**: the amount converted to your [base currency](/settings/base-currency-and-currencies/).
+  - **in** a specific currency: only transactions in that currency can match. Picking a [custom currency](/settings/custom-currencies/) here needs the Plus plan.
+
+A rule can have only one **Transaction type** condition. Lists of payees, accounts, groups or connections hold up to 20 items each.
+
+## Actions
+
+A rule has 1 to 5 actions, and each kind can be used once.
+
+| Action | What it does |
+| --- | --- |
+| **Set category** | Sets the category. Shown as **User rule** in the **Categorized by** column of the [transactions table](/transactions/search-and-filter/#working-with-the-table). |
+| **Add tags** | Adds the tags. Tags the transaction already has are kept. |
+| **Set payee** | Sets the payee and locks it, so automatic payee detection won't change it later. On new transactions, that payee's **Default category** and **Auto-apply tags** are then applied, unless the rule set the category itself. |
+| **Set note** | **Replace** swaps the note for your text, **Append** adds it at the end, **Prepend** at the start. Up to 200 characters. |
+| **Exclude from stats** | Turns on [Exclude from stats](/transactions/add-and-edit/#more-options), so the transaction stays out of reports and trackers. |
+
+**Set category** never overwrites a category you changed by hand (shown as **Manual** in **Categorized by**) or one set by a recurring payment.
+
+## Preview what a rule matches
+
+In the editor, once every condition is filled in, click **Preview matches**. MoneyMatter checks your last 1,000 transactions that rules can apply to and shows how many match, with the first few listed. If you change the conditions afterwards, the preview says so; run it again to refresh it.
+
+The preview only looks at transactions rules can run on: ones on bank-connected accounts and imported ones. Transfers, planned transactions, balance adjustments and [split](/transactions/split-a-transaction/) transactions are left out.
+
+## Apply a rule to past transactions
+
+A new rule only acts on transactions that arrive after you save it. To run it on ones you already have:
+
+<Steps>
+
+1. Open **Apply to past transactions** in one of these places:
+   - the rule's **⋮** menu in the list,
+   - the button at the top of the rule's editor (save your changes first),
+   - **Transactions** → **Optimizations** → **Apply a rule to past transactions**, where you pick the rule.
+2. Review the list of matching transactions and tick the ones to change, or use **Select all**.
+3. Click **Apply to N transactions**.
+4. Confirm with **Apply**.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/transactions/automation-apply-to-past.png"
+  alt="The Apply to past transactions window for a rule, with the number of matches, a list of past transactions with checkboxes, the can't-be-undone warning and the Apply button."
+  hint="Create a rule 'Groceries from Biedronka' (Merchant contains any of a merchant that appears several times in the seeded SimpleFIN demo transactions → Set category Groceries). On /transactions/automations open its ⋮ menu → Apply to past transactions. Click Select all so every row is ticked. Crop to the window. Don't apply."
+/>
+
+What to know before you apply:
+
+- **It can't be undone.** Check the list carefully.
+- **Only transactions with something to change are listed.** A transaction the rule wouldn't change, for example one that already has the rule's category and tags, is left out. If nothing is left, you see **All caught up**.
+- **It checks your 5,000 most recent transactions and lists up to 500 matches.** If there are more, apply these and run it again.
+- **Only the rule's own actions run.** The payee's defaults aren't applied, and the rule's match count doesn't change.
+- **Set category still skips** categories you changed by hand and ones set by a recurring payment. Unlike on new transactions, it does replace categories that came from an import file, a payee or AI categorization.
+- **A payee set this way is locked**, the same as one you set by hand.
+
+## Turn a rule off or delete it
+
+Use the switch on a rule's row, or **Enabled** in the editor, to pause a rule without deleting it. A disabled rule shows **Disabled** and is skipped.
+
+To delete a rule, open its **⋮** menu, choose **Delete** and confirm. It stops running on new transactions. Transactions it already changed keep their category, tags and note.
+
+## When a rule is paused for you
+
+A rule stops working if something it uses is gone. MoneyMatter turns it off and shows why, for example **Paused — category "Groceries" was deleted**. This happens when you:
+
+- delete a category, tag, payee, account or account group the rule uses,
+- disconnect a bank connection the rule uses.
+
+Some deletions update your rules instead of pausing them:
+
+- **Deleting a category with transactions** asks for a replacement category, and rules that used the old category switch to the new one.
+- **[Merging payees](/transactions/payees/#merge-payees)** switches rules to the payee you keep.
+
+To fix a paused rule, open it. The missing item shows as **(deleted)** in the rule's summary. Pick a replacement or remove that condition or action, switch **Enabled** on and click **Save**. If you switch a paused rule on from the list without fixing it, MoneyMatter tells you it points at something that was deleted, with a link to **Open rule**.
+
+## Limits
+
+| What | Limit |
+| --- | --- |
+| Automations | 100 |
+| Name | 120 characters |
+| Conditions per rule | 10, at most one **Transaction type** |
+| Keywords per condition | 20, each up to 64 characters |
+| Payees, accounts, groups, connections or tags per list | 20 |
+| Actions per rule | 5, one of each kind |
+| **Set note** text | 200 characters |
+
+## Related
+
+- [Payees](/transactions/payees/)
+- [Categories](/transactions/categories/)
+- [Tags](/transactions/tags/)
+- [Recurring payments](/planned/recurring-payments/)
+- [Bank connections](/import/bank-connections/)
+- [Import from CSV](/import/import-from-csv/)
+- [Search and filter](/transactions/search-and-filter/)
+- [Connect Claude or ChatGPT (MCP)](/ai/connect-claude-chatgpt-mcp/)

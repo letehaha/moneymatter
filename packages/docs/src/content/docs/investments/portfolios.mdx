@@ -121,7 +121,7 @@ The **Holdings** tab lists what the portfolio owns: **Symbol**, **Shares**, **Pr
 If a price is old, a clock icon and the price's date show under it. Hover it to read "Last available price. Market value and gains may be outdated."
 
 - **Add symbol** adds a security to the portfolio.
-- **Import** brings in trades from a file. See [AI features](/ai/ai-features/#investment-transactions-import) for the AI import.
+- **Import** brings in trades from a broker or exchange export. See [Import investment transactions](/investments/import-transactions/).
 - The **+** button on a row (**Add transaction**) opens a transaction form for that holding, so you can record a buy, sell or dividend without leaving the list.
 - The **›** button on a row (**Open holding**), or a click on the symbol, opens the [holding page](/investments/holding-page/).
 
@@ -139,6 +139,35 @@ Under the holdings, the **Cash** card shows the portfolio's cash in each currenc
 - **Transfer**: move money from the portfolio **To another portfolio** or **To account**. The same button is in the page header.
 - **Exchange currency**: convert cash from one currency to another inside the portfolio. This doesn't change net deposits.
 
+## Move money between an account and a portfolio
+
+Money you move between one of your accounts and a portfolio is always a single transaction in the account, linked to the portfolio. It's never counted as income or an expense. You can start it from four places:
+
+- **Add transaction** → **Transfer** tab: in **Where the money goes**, choose **Portfolio** and pick the portfolio in **To portfolio**.
+- **An existing expense or income**: open it, switch it to **Transfer** and choose **Portfolio**. Use this for a deposit you already recorded as an expense. See [Turn an expense or income into a transfer](/transfers-and-refunds/how-transfers-work/#turn-an-expense-or-income-into-a-transfer).
+- **An account's page**: the ⇄ button (**Transfer to portfolio**) in the header opens **Transfer from account**.
+- **The portfolio**: **Transfer** in the header or the **Cash** card sends money **To account** or **To another portfolio**. **Add cash transaction** with **Transfer** selected records a deposit from, or a withdrawal to, an account.
+
+In the portfolio's **Transfer** dialog and in **Add cash transaction**, you can also click **Link existing transaction** to use a transaction that's already in the account, instead of creating a new one.
+
+### Link old transfers without changing the cash balance
+
+Say you set up the portfolio with its current cash balance, and later want to link the deposits you made over the years, so they count as contributions. Linking them normally would add their money to the cash a second time.
+
+Tick **Portfolio balance already includes this money** when you link them. The transfer then counts toward net deposits and contributions, but the portfolio's cash doesn't change. The checkbox shows when you link an existing transaction in **Add cash transaction**, and when you turn an existing expense or income into a transfer to a portfolio.
+
+<Screenshot
+  src="/screenshots/investments/portfolio-cash-already-included.png"
+  alt="The Edit Transaction dialog on the Transfer tab, with Portfolio chosen in Where the money goes, a portfolio picked in To portfolio, and the Portfolio balance already includes this money checkbox ticked."
+  hint="Seeded Everyday Checking: add an expense of 1000 USD dated a few months ago, and create a portfolio 'Brokerage'. Open the expense, switch to the Transfer tab, choose Portfolio in Where the money goes, pick Brokerage and tick Portfolio balance already includes this money. Do not save. Crop to the left column of the dialog."
+/>
+
+### Portfolio-linked transactions
+
+In the account, a transaction linked to a portfolio opens as a read-only **Portfolio-linked transaction** view instead of the edit form. It says whether it's a deposit or a withdrawal and which portfolio it belongs to. A **No cash impact** badge marks one linked with **Portfolio balance already includes this money**.
+
+To edit or delete it, first click **Unlink from portfolio**. Unlinking restores the transaction as it was before you linked it, and undoes its effect on the portfolio's cash. A transfer marked **No cash impact** leaves the cash as it is.
+
 ## Activity tab
 
 **Activity** lists everything that happened in the portfolio, newest first. Filter it with **All**, **Trades**, **Cash** (deposits, withdrawals, transfers and currency exchanges) and **Income** (dividends).
@@ -147,10 +176,29 @@ Under the holdings, the **Cash** card shows the portfolio's cash in each currenc
 - Cash rows are labelled **Deposit**, **Withdrawal**, **Transfer in**, **Transfer out** or **Currency exchange**. A correction shows an **Adjustment** badge.
 - Use a cash row's actions to **Edit** whether it counts as a correction, or to **Delete** it. If a transfer is linked to a transaction in one of your accounts, you choose whether to keep that transaction or delete it too.
 
+## Delete and restore a portfolio
+
+<Steps>
+
+1. On the portfolio page, open the ⋯ menu and choose **Delete**. On the **Investments** page, the same **Delete** is in each portfolio card's menu.
+2. Click **Move to trash**.
+
+</Steps>
+
+The portfolio moves to the **Trash** section at the bottom of the **Investments** page. It stays there for 30 days with its holdings and transactions, and then it's deleted for good. While it's in Trash, it's left out of your net worth and stats.
+
+In **Trash**, click **Restore** to bring the portfolio back as it was, or **Delete now** to delete it permanently right away. That can't be undone.
+
+### Hidden portfolios
+
+A hidden portfolio is dimmed and listed last. On the **Investments** page it has a **Hidden** label, and in the sidebar a crossed-out eye icon. It's left out of your net worth and stats. The app itself has no switch for this: a portfolio becomes hidden only when an AI assistant connected over [MCP](/ai/connect-claude-chatgpt-mcp/), or the API, turns it off. Ask the assistant to turn it back on to show it again.
+
 ## Related
 
+- [Import investment transactions](/investments/import-transactions/)
+- [Venture](/investments/venture/), for private investments such as SPVs and fund deals
 - [Holding page](/investments/holding-page/)
 - [Portfolio analytics](/investments/portfolio-analytics/)
 - [Watchlist](/investments/watchlist/)
-- [How transfers work](/transfers-and-refunds/how-transfers-work/)
+- [How transfers work](/transfers-and-refunds/how-transfers-work/#transfers-to-a-portfolio-loan-or-venture)
 - [FIRE planner](/stats/fire-planner/), which can use a portfolio's return

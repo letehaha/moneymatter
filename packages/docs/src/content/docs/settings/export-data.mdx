@@ -1,0 +1,92 @@
+---
+title: Export your data
+description: Download your transactions, accounts, budgets, subscriptions and investments as a JSON, CSV or Excel file, choose the dates and accounts, and learn how an export differs from a backup.
+sidebar:
+  order: 35
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+An export gives you a copy of your data to open in a spreadsheet, hand to an accountant, or take to another app. You pick the format, the parts of your data, and optionally a date range and some accounts. MoneyMatter packs it all into one zip file.
+
+An export is a copy to read, not a backup. MoneyMatter can't restore your data from it. To keep a copy you can restore later, [download a backup](/settings/security-and-account/#backup-and-restore). See [Backup or export?](/settings/security-and-account/#backup-or-export) for the difference.
+
+## Export your data
+
+<Screenshot
+  src="/screenshots/settings/export-tab.png"
+  alt="The Import/Export settings page on the Export tab, showing the Export your data row and the 'Not sure whether you need Export or Backup?' link below it."
+  hint="Open /settings/data-management/export with the seeded docs test user. Crop to the settings card from its title down to the 'Not sure whether you need Export or Backup?' link."
+/>
+
+<Steps>
+
+1. Click the gear button (**Settings**) at the top right of the app.
+2. Under **Workspace**, choose **Import/Export**, then select the **Export** tab.
+3. Click **Export your data**.
+4. Choose a **Format**: **JSON**, **CSV** or **Excel**.
+5. Optionally set a **Date range (optional)** and pick **Accounts**. See [narrow the export](#narrow-the-export).
+6. Under **What to include**, tick the parts you want. All four are ticked to start with. **Deselect all** clears them, **Select all** ticks them again.
+7. Click **Download**.
+
+</Steps>
+
+The button shows **Preparing…** while MoneyMatter builds the file, then your browser downloads it. You'll see "Export ready – 1,234 rows exported." with the number of rows in the file. If the browser blocks the download, you'll see a message asking you to check the address bar for a download prompt.
+
+<Screenshot
+  src="/screenshots/settings/export-configure.png"
+  alt="The Export your data page with the Format choice, the optional Date range and Accounts fields, and the four What to include cards ticked: Transactions & accounts, Trackers, Subscriptions & reminders and Investments."
+  hint="Open /settings/data-management/export/configure with the seeded docs test user. Keep the defaults (JSON, no date range, all accounts, all four groups ticked). Crop to the card from the 'Back to export' link down to the Cancel and Download buttons."
+/>
+
+## Pick a format
+
+Whatever you pick, you download one zip file named after the day you exported, for example `moneymatter-export-2026-11-27.zip`. Inside:
+
+| Format | What's in the zip |
+|---|---|
+| **JSON** | One file, `data-export.json`, with a section per table. It starts with your username, email and base currency. |
+| **CSV** | One `.csv` file per table, such as `transactions.csv` and `accounts.csv`. They open in Excel, Numbers or Google Sheets, and accented letters and other alphabets display correctly. |
+| **Excel** | One file, `data-export.xlsx`, with a sheet per table. |
+
+Every zip also has a `manifest.json` that lists the files, the row count of each, the format, the parts and filters you picked, and a checksum for each file, so tools can check that nothing got cut off.
+
+Amounts are plain decimal numbers, such as `12.5`, with their currency in the next column. Transactions also carry the amount in your base currency. Accounts, categories, payees and tags appear by name, so the files read on their own.
+
+## What each part includes
+
+| Part | Tables |
+|---|---|
+| **Transactions & accounts** | Transactions, accounts, balance history, categories, tags, payees, vehicles and transaction templates |
+| **Trackers** | Your trackers, plus your budgets' lines, periods and goals |
+| **Subscriptions & reminders** | Your recurring payments and bill reminders |
+| **Investments** | Portfolios, holdings, investment transactions and transfers to and from portfolios |
+
+## Narrow the export
+
+Both filters are optional. Leave them empty to export everything.
+
+- **Date range (optional)**: shows **All time** until you pick dates. You can pick a single day, a range, or everything before or after a day. Click the × next to it to clear it. Only tables of things that happened on a date are filtered: transactions, balance history, investment transactions, transfers to and from portfolios, and budget periods (a period is kept if it overlaps your range). Reference tables like accounts, categories, tags, payees, portfolios and holdings stay complete, so the filtered rows still show readable names.
+- **Accounts**: shows **All accounts** until you pick some. Archived accounts are offered too. Only the accounts file, transactions and balance history are narrowed to the accounts you pick. Investments, trackers and subscriptions are exported in full.
+
+## Limits
+
+- **250,000 rows per export.** If your data is bigger, you'll see "Your data is too large for a single export". Export in parts instead: one part at a time, or a shorter date range.
+- **5 exports every 15 minutes.** Wait a few minutes if you hit the limit.
+- **Not available in the demo.** Sign up to export your own data.
+
+## Plans
+
+Export is included in every plan and during your free trial. It also keeps working when your account is [read-only](/settings/plans-and-billing/#read-only-mode), for example after your trial ends, so you can always take your data with you. Backups don't work in read-only mode.
+
+<Aside type="note" title="Export isn't a way back in">
+MoneyMatter has no way to restore your data from an export. To move your data to another MoneyMatter account, or back after wiping it, use a [backup](/settings/security-and-account/#backup-and-restore).
+</Aside>
+
+## Related
+
+- [Security and account: backup and restore](/settings/security-and-account/#backup-and-restore)
+- [Plans and billing](/settings/plans-and-billing/)
+- [Import from CSV](/import/import-from-csv/)
+- [Notifications](/settings/notifications/)

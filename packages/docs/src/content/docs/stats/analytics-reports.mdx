@@ -14,15 +14,15 @@ Analytics has the reports for questions the dashboard can't answer at a glance: 
 
 The reports are listed on the left:
 
-- **Trends Comparison**, **Cash Flow**, **Net Worth History** and **Pivot**
-- The **Investments** reports (**Net Worth Drivers**, **Contributions** and **Investment Projection**) are for investment portfolios.
+- **Trends comparison**, **Cash flow**, **Net worth history** and **Pivot**
+- Under **Investments**: **Net worth drivers** and **Contributions**, which need at least one [portfolio](/investments/portfolios/), and **Investment projection**, a calculator that works without one.
 - **FIRE**, also under **Investments**, estimates when your savings could cover your spending for good. It's a Plus feature with its own page: see [FIRE planner](/stats/fire-planner/).
 
-On a wide screen, Analytics opens on **Trends Comparison**. Click **Collapse** to shrink the list and give the report more room. On a narrow screen you see the list first; open a report, then click the back arrow (‹) next to the report's title to return. Some controls fold away behind an **Options** or **Filters** button.
+On a wide screen, Analytics opens on **Trends comparison**. Click **Collapse** to shrink the list and give the report more room. On a narrow screen you see the list first; open a report, then click the back arrow (‹) next to the report's title to return. Some controls fold away behind an **Options** or **Filters** button.
 
 Every report follows the rules in [How stats are calculated](/stats/how-stats-are-calculated/). Transfers between your own accounts (except loan payments), **Out of wallet** transfers and balance adjustments are never income or expenses. Accounts with **Exclude from statistics** on are left out.
 
-## Trends Comparison
+## Trends comparison
 
 **Answers:** Am I spending more or earning more than in the previous period?
 
@@ -56,7 +56,7 @@ The total and **Category breakdown** always agree. The **Over time** chart can d
 - **Over time** always shows whole months, and can cover more than your period. The total and **Category breakdown** use your exact dates.
 </Aside>
 
-## Cash Flow
+## Cash flow
 
 **Answers:** How much came in, how much went out, and how much did I keep?
 
@@ -68,25 +68,28 @@ The total and **Category breakdown** always agree. The **Over time** chart can d
 
 ### Controls
 
-- Period: **Last 3 months**, **Last 6 months**, **Last 12 months** (the default), **This year**, **Previous year** or **All time**.
+- Period: the last 12 months by default. Use the arrows to step back or forward, or click the dates to pick a range or a preset: **Last 3 months**, **Last 6 months**, **Last 12 months**, **This year**, **Previous year** or **All time**. If you set a [payday](/settings/general-settings/#pay-cycle-starts-on), the months follow your pay periods and there's also **Current pay period**.
 - Granularity: **Monthly**, **Bi-weekly** or **Weekly**. Weeks start on Monday.
 - Chart type: **Stacked**, **Mirrored** (the default) or **Grouped**.
 - **Settings** (the sliders icon): **Show trend line** adds a smoothed average of your net cash flow.
 
 ### What you see
 
-- **Income**, **Expenses**, **Net Savings** and **Savings Rate** for the whole period. Each card shows the change against the same length of time just before.
-- **Savings Rate** is net savings divided by income. It's 0% when there's no income in the period.
+- **Income**, **Expenses**, **Net savings** and **Savings rate** for the whole period. Each card shows the change against the same length of time just before.
+- **Savings rate** is net savings divided by income. It's 0% when there's no income in the period.
 - A chart of income against expenses for each month, fortnight or week.
 
 ### Where the money went
 
-Below the chart, a flow diagram shows where income came from and where it went, for one period at a time. It starts on the current month. Click a bar in the chart above to switch to that period.
+Below the chart, a flow diagram shows where income came from and where it went. It has its own period, separate from the one at the top of the report, and starts on the current month (or your current pay period, if you set a payday). Change it in either of two ways:
+
+- Use the period control at the top of the diagram: the arrows step one period back or forward, and clicking the dates lets you pick any range or a preset.
+- Click a bar in the chart above to show that bar's period.
 
 - **Detail** (the button shows, for example, "Sources L2 · Expenses L1") sets how deep each side goes. Pick a level for **Sources** (income) and for **Expenses**: **Level 1** shows top-level categories, and higher levels break them into subcategories.
 - The **Top** control (for example **Top 8**) sets how many categories each side shows. Smaller ones are grouped into **Other**.
 - When the section is narrow, for example on a phone, **Detail** and **Top** move into the sliders icon button (**Chart settings**) next to the period.
-- Money moved into categories you count as savings (see [General settings](/settings/general-settings/)), or into investment portfolios, shows as its own savings destination, not as an expense. Whatever is left of what you saved shows as **Kept as cash**.
+- Money moved into categories you count as savings (see [General settings](/settings/general-settings/)), into investment portfolios, or into [venture deals](/investments/venture/#ventures-in-your-stats), shows as a savings destination named after the category, portfolio or deal, not as an expense. Whatever is left of what you saved shows as **Kept as cash**.
 - Spending in your [tax categories](/settings/general-settings/#tax-categories) shows as **Taxes**, a branch of its own next to expenses. Nothing is bought with taxes, so the branch ends there. Hover it to see its share of income and, with more than one tax category, how much went to each. A **Taxes** total with its share of income also appears above the diagram.
 - A **Deficit** appears when your expenses and taxes plus the money moved into those savings destinations are more than your income. Its note says where the gap was covered from, for example "Expenses exceeded income by 200 EUR. The gap was covered from existing account balances."
 
@@ -99,12 +102,12 @@ The diagram counts a refund against the original purchase's category, and leaves
 />
 
 <Aside type="note" title="Good to know">
-- Categories you set in **Count categories as savings** under [General settings](/settings/general-settings/) are left out of income and expenses here, so they count toward **Net Savings** and the **Savings Rate**.
+- Categories you set in **Count categories as savings** under [General settings](/settings/general-settings/) are left out of income and expenses here, so they count toward **Net savings** and the **Savings rate**.
 - This report always counts planned transactions.
 - In the cards and the chart, a linked refund lowers expenses in the purchase's own period, and is taken off income in the period the money came back, as long as each side is within the selected dates. See [Refunds](/stats/how-stats-are-calculated/#refunds).
 </Aside>
 
-## Net Worth History
+## Net worth history
 
 **Answers:** How have my assets, debts and net worth changed over time?
 
@@ -154,9 +157,20 @@ Each point is your balance at the end of its week, month, quarter or year. The l
 - **Filters**: the **Period** (**Last 6 months**, **Last 12 months**, **This year**, **Previous year**, **Last 3 years**, **Last 5 years** or **All time**), plus **Categories**, **Payees** and **Accounts**. **Reset** goes back to the defaults.
 - **Settings** (the sliders icon at the top right of the report): under **Views**, **Save current view** stores your layout and filters under a **View name**, and you can pick a saved view from the list. Under **Display options**, turn **Heatmap** and **% change** on or off. **% change** is on by default.
 
+### Saved views
+
+Views are saved to your account, so they're there on every device you sign in on. The view you're looking at has a check mark in the list.
+
 A view remembers the exact dates of its period. Opening it later shows those same dates, not the latest months.
 
-In the table, use **Expand all** and **Collapse all** to open or close subcategories.
+To delete a view, open **Settings**, and under **Views** click the trash button (**Delete**) next to it. It's deleted straight away, without asking, and you'll see "View deleted".
+
+### Sort and expand the table
+
+- Click a column header, or **Total**, to sort the rows by that column, largest first. Click it again to sort smallest first, and a third time to go back to the usual order. An arrow next to the header shows the sort. Subcategories stay under their category and are sorted among themselves.
+- Use **Expand all** and **Collapse all** to open or close subcategories.
+
+The sort isn't saved with a view, and resets when you leave the report.
 
 <Aside type="note" title="Good to know">
 - Pivot opens with the same layout every time: categories by month, expenses, over the last 12 months. To keep a layout, save it as a view.
@@ -166,6 +180,113 @@ In the table, use **Expand all** and **Collapse all** to open or close subcatego
 - Planned transactions are never included.
 - A linked refund is netted on the side **Measure** shows, in the column of that transaction's own date. It uses the payee and tags of that same transaction.
 </Aside>
+
+## Net worth drivers
+
+**Answers:** How much of my growth came from saving, and how much from the market?
+
+Your net worth grows in two ways: you spend less than you earn, and your investments go up. This report splits the growth into those two parts, **Saved** and **Grown**. Click **How this is calculated** at the top of the report for a short explanation with an example.
+
+- **Saved** is your income minus your spending. Moving money between your own accounts, or into a portfolio, doesn't count as saving.
+- **Grown** is what the market did to your holdings: price changes, plus dividends, minus fees. Money you put in never counts as growth, so the same money is never counted twice. Growth counts as prices move, not only when you sell.
+
+The report needs at least one portfolio. Without one you'll see **No investments yet** and an **Add a portfolio** button.
+
+<Screenshot
+  src="/screenshots/stats/analytics-net-worth-drivers.png"
+  alt="The Net worth drivers report with the Saved vs. grown chart of cumulative Saved and Grown lines, the line saying what share of net worth sits in investments, and the Per-period breakdown bars below."
+  hint="The docs test user needs a portfolio with a priced holding bought at least 6 months ago (create it via the UI: Investments → Create portfolio, add a holding such as AAPL with a buy dated 6+ months back) plus the seeded income and expenses. Open /analytics/net-worth-drivers with the default Last 12 months period, All portfolios and Monthly. Capture the controls, the Saved vs. grown card and the Per-period breakdown card."
+/>
+
+### Controls
+
+- Period: the last 12 months by default, with the same arrows, ranges and presets as **Cash flow**.
+- **All portfolios**: pick which portfolios count. This only filters holdings and their growth. **Saved** and the cash in your accounts stay the same.
+- Granularity: **Monthly**, **Quarterly** or **Yearly**.
+
+Your portfolio and granularity choices are remembered in this browser.
+
+### What you see
+
+- **Saved vs. grown**: two lines that add up **Saved** and **Grown** over your period. Hover a point to see the **Total gained** so far and, under **This period**, that period's **Savings** and **Growth**.
+- Below the chart, a line such as "62% of your net worth sits in investments (was 48% in Jan 2026)". It's hidden while you filter portfolios.
+- **Per-period breakdown**: a bar for each period with what you saved and what each portfolio grew. Smaller portfolios are grouped into **Others**. A month where the market fell shows growth below zero.
+
+### Growth crossover
+
+At the bottom, **Growth crossover** estimates the portfolio size at which the market, not your saving, does most of the work. It shows once you have portfolio activity in the period.
+
+Set three assumptions:
+
+- **Growth's share of your monthly gain**: how much of each month's gain you want to come from growth, from 50% to 95%. Starts at 80%.
+- **Annual return (%)**: pick a preset such as S&P 500 (about 10% a year, the starting choice), one of your portfolios' own past return, or **Custom** to type a rate.
+- **Expected monthly saving**: starts at your average over the period. Type another amount to try a different future, and click **Use my average** to go back.
+
+You'll see the **Portfolio value needed**, how far along you are, the **Gap** still to go, and the **Time to target** if you keep saving and the return holds. It's a straight projection from today's values, not financial advice. Your assumptions are remembered in this browser. **Plan for FIRE** opens the [FIRE planner](/stats/fire-planner/).
+
+<Aside type="note" title="Good to know">
+- Transfers between your own accounts, and into or out of portfolios, never count as saved or grown.
+- If you see **Some values are estimated**, a holding had no recent price, so its growth is estimated from what you paid, or an exchange rate was missing and the earliest rate (or 1:1) was used.
+</Aside>
+
+## Contributions
+
+**Answers:** How much money have I put into my portfolios, and where did it go?
+
+A contribution is money that moved into a portfolio from outside it: a deposit, or a transfer from one of your accounts. Money taken out counts against it. Buying, selling, dividends and price changes happen inside the portfolio, so they're not contributions. Moving money from one portfolio to another, or a balance correction, doesn't count either.
+
+The report needs at least one portfolio. Without one you'll see **No portfolios yet** and an **Add a portfolio** button.
+
+<Screenshot
+  src="/screenshots/stats/analytics-contributions.png"
+  alt="The Contributions report with the Total contributed, Share of savings and Average per period cards above stacked monthly bars, one color per portfolio, with a dashed average line."
+  hint="The docs test user needs two portfolios that received transfers from the seeded checking account in at least three different months of the last year (use Transfer → To portfolio on the account or portfolio page). Open /analytics/investment-contributions with Last 12 months, All portfolios and Monthly. Capture the controls, the three cards and the chart with its legend."
+/>
+
+### Controls
+
+- Period: the last 12 months by default, with the same arrows, ranges and presets as **Cash flow**.
+- **All portfolios**: pick which portfolios count toward contributions.
+- Granularity: **Monthly**, **Quarterly** or **Yearly**.
+
+### What you see
+
+- **Total contributed**: everything you put in over the period, minus what you took out, with the change against the same length of time just before.
+- **Share of savings**: how much of what you saved (income minus expenses, over the period) went into your portfolios. It shows **—** when you saved nothing or spent more than you earned. It always compares against all your savings, whichever portfolios you pick.
+- **Average per period**: the total spread evenly over the months, quarters or years in view.
+- A bar for each period, split by portfolio. A period where you took out more than you put in goes below zero. With at least three bars, a line shows the **Average**. When both a bar and the one before it are positive, the bar shows its change from the one before.
+
+## Investment projection
+
+**Answers:** How could my money grow if I invest a fixed amount every month?
+
+A calculator that projects a balance year by year from what you have today, what you add each month, and the return you expect. It doesn't need a portfolio, and it doesn't change any of your data. Your inputs reset when you leave the report.
+
+<Screenshot
+  src="/screenshots/stats/analytics-investment-projection.png"
+  alt="The Investment projection calculator with the inputs on the left and, on the right, the Total invested, Nominal final value, Real final value and Real multiplier cards above a chart of the projected and inflation-adjusted value against total invested."
+  hint="Open /analytics/investment-calculator on a wide screen (inputs on the left) with the seeded docs test user. Keep the defaults: Initial balance from the current balance, 6M average net income, 10 years, S&P 500, 3% inflation. Capture the whole calculator card."
+/>
+
+### Inputs
+
+- **Initial balance**: starts at your current total balance. Drag the slider, type an amount, or click **Use current balance** to go back to it.
+- **Monthly contribution**: starts at your average monthly net income (income minus expenses), never below zero. **3M**, **6M** (the starting choice), **12M** and **All** pick which months the average covers. Typing your own amount unselects them.
+- **Time horizon (years)**: 10 years to start with.
+- **Annual return (%)**: a market preset such as S&P 500 (about 10% a year, the starting choice), NASDAQ Composite or US Treasury bonds, one of your portfolios' own past return, or **Custom** to type a rate.
+- **Annual inflation (%)**: 3% to start with. Hover the label for what typical rates look like.
+
+On a narrow screen the inputs fold into a summary such as "$12.4K · $800/mo · 10yr". Click **Configure** to change them.
+
+### What you see
+
+- **Total invested**: your initial balance plus all your contributions.
+- **Nominal final value**: what the balance would grow to, and how much of that is growth.
+- **Real final value**: the same in today's money, after inflation.
+- **Real multiplier**: how many times your money grows in today's money. 1.5x means every 1 you invest becomes 1.50 in today's purchasing power.
+- A chart of the projected value, the inflation-adjusted value and the total invested over the years. Hover it to see each year.
+
+The projection uses a constant return every year, adds your contribution at the end of each month, and doesn't account for taxes or fees. **Plan for FIRE** at the top opens the [FIRE planner](/stats/fire-planner/).
 
 ## Related
 

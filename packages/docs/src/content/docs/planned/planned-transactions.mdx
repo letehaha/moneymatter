@@ -1,0 +1,161 @@
+---
+title: Planned transactions
+description: Add an expense or income before it happens, see it under Upcoming, confirm it by hand or let a bank sync or file import confirm it, and check your projected balance.
+sidebar:
+  order: 1
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+A planned transaction is an expense or income you expect but that hasn't happened yet: next week's rent, a salary due on Friday, a bill you know is coming. You add it ahead of time so you can see what's coming and where your balance is heading.
+
+A planned transaction never changes an account's balance. It becomes a real transaction only when it's confirmed: by you, or by a matching transaction from your bank or a file import.
+
+<Aside type="note" title="Where planned transactions live">
+There's no separate page for planned transactions. They're in your normal transaction lists and in the **Upcoming** section of the **Transactions** page. The **Planning** section in the sidebar is for [recurring payments](/planned/recurring-payments/) and [trackers](/planned/trackers/).
+</Aside>
+
+## Add a planned transaction
+
+<Steps>
+
+1. Click **Add transaction** in the header.
+2. Keep **Expense**, or switch to **Income**.
+3. Click **Planned** next to the **Account** field to turn it on. The form gets a striped background so you can tell it's in planned mode.
+4. Pick the **Account**. With **Planned** on, bank-connected accounts appear in the list too.
+5. Enter the **Amount**, **Category** and the **Datetime** you expect it on. With **Planned** on, you can pick a date in the future.
+6. Click **Create**.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/planned/planned-toggle-form.png"
+  alt="The Add Transaction dialog in planned mode: the Planned toggle is on next to the Account field, the colored strip along the top of the dialog turns striped, and hints below the fields read 'Bank-connected accounts are now selectable' and 'Future dates unlocked'."
+  hint="Desktop width. The test user needs the seeded SimpleFIN demo (so a bank-connected account exists) and Everyday Checking. Click Add transaction, keep Expense, click the Planned pill next to Account, pick Everyday Checking, Amount 1200, Category Rent (or any category), and a Datetime about 5 days in the future. Both unlock hints must be visible. Crop to the dialog."
+/>
+
+### What changes when Planned is on
+
+- **Future dates.** The calendar lets you pick any date, past or future. With **Planned** off, it stops at today.
+- **Bank-connected accounts.** You can't add a real transaction to an account connected to a bank, because real ones arrive from the bank. You can add a planned one, and the bank sync confirms it later.
+- **Only plain income and expenses.** The **Transfer** tab is disabled, and you can't link a refund or pay from several accounts at once.
+- **The amount must be above 0.**
+
+### When Planned turns on by itself, or isn't offered
+
+- If you pick a bank-connected account, **Planned** turns on automatically and stays on. Turning it off clears the account, and a future date goes back to now, since neither would be allowed for a regular transaction.
+- If you turn **Planned** off after picking a future date, the date goes back to now.
+- **Planned** isn't offered on loan and vehicle accounts. Their balances are worked out from their transactions, so a plan would count as money that already moved. Whenever **Planned** stops being available in the form, it turns off and you see a message saying so.
+- **Planned** isn't offered on an account someone shared with you. Only the account's owner can add planned transactions, and only the owner sees them.
+
+You can't turn a transaction you've already saved into a planned one.
+
+## Upcoming
+
+The **Upcoming** section is pinned at the top of the **Transactions** page. It lists your pending planned transactions, oldest first, so the ones that are overdue come first. Up to 5 are shown, followed by a **+N more planned** line if you have more. The same section also lists [recurring payments](/planned/recurring-payments/) that are overdue or due within the next 3 days, each with a **Mark paid** button.
+
+Each planned transaction shows its note (or its category if it has no note), the expected date and the amount, plus a badge:
+
+- **Expected**: the date hasn't passed by more than 7 days.
+- **Unconfirmed**: it's more than 7 days past its date and nothing has confirmed it. Hover the badge to see how many days ago it was expected.
+
+<Screenshot
+  src="/screenshots/planned/upcoming-section.png"
+  alt="The Upcoming section at the top of the Transactions page, listing three planned transactions: two with an Expected badge and one with an Unconfirmed badge, each with Confirm, Edit and Delete buttons."
+  hint="Open /transactions with no filters applied. First create three planned expenses on Everyday Checking: one dated 3 days ahead, one dated today, one dated 10 days ago (create it with Planned on and pick the past date). Make sure Show upcoming transactions is on in Settings → General. Crop to the Upcoming card."
+/>
+
+The buttons on each row:
+
+- **Confirm** (the tick): the money has moved. The plan becomes a real transaction and the account balance updates. If its date is still in the future, it's set to now. Only offered for plans on manual accounts; on a bank-connected account, the bank confirms it.
+- **Edit**: opens the transaction form.
+- **Delete**: moves the plan to Trash, where it stays for 30 days in case you want it back.
+
+The section isn't shown while any filter is applied on the **Transactions** page. To hide it, click the eye button in its corner, or turn off **Show upcoming transactions** in **Settings** → **General**. See [general settings](/settings/general-settings/#show-upcoming-transactions).
+
+## Planned transactions in your lists
+
+Planned transactions also appear in your transaction lists, on the **Transactions** page and on an account's page. They're collapsed behind a **N planned transactions** row. Click it to expand them.
+
+In the table view, planned rows are shaded and have a coloured left edge, which turns to a warning colour once a plan is more than 7 days past its date. To see whether each plan is **Expected** or **Unconfirmed**, check **Upcoming**.
+
+To see only planned transactions, or hide them, use the **Planned** filter on the **Transactions** page: **All**, **Only** or **Exclude**. See [search and filter](/transactions/search-and-filter/).
+
+## Confirm a planned transaction
+
+Nothing happens on its own when the date arrives. A planned transaction stays planned until one of these confirms it.
+
+### By hand
+
+For a plan on a manual account, do one of the following:
+
+- Click **Confirm** next to it under **Upcoming**.
+- Open it, turn off **Planned**, and click **Edit** to save. The tooltip on the toggle reads "Turn off once the money has moved — saving records it in your balance."
+
+A plan on a bank-connected account can't be confirmed by hand. Wait for the bank sync, or delete it if the payment isn't coming.
+
+### Automatically, from your bank or a file import
+
+When a transaction arrives from a [bank connection](/import/bank-connections/#planned-transactions-on-bank-accounts) or a [file import](/import/import-from-csv/#planned-transactions-are-confirmed-not-duplicated), MoneyMatter looks for a planned transaction it confirms. It's a match when all of these are true:
+
+- It's on the same account.
+- It's the same type (expense or income) and the same currency.
+- The amount is exactly the same.
+- The dates are no more than 7 days apart.
+
+If several plans match, the one with the closest date wins. Instead of adding a second transaction, MoneyMatter merges the incoming one into your plan:
+
+- Your plan becomes a real transaction, and the account balance updates.
+- The date becomes the bank's date.
+- Your category, tags and payee stay. If your plan had no payee, one is picked from the bank's merchant name.
+- Both notes are kept, joined with **|**.
+
+In the list view, a transaction confirmed this way shows a tick icon. Hover it to see when it was confirmed from a planned entry.
+
+All bank connections confirm plans this way. File imports do it too, from **CSV**, **Text source**, **OFX/QFX**, **Wallet by BudgetBakers** and **Microsoft Money**, but not from **YNAB**. A file import only confirms plans on accounts that aren't connected to a bank. The summary at the end of an OFX, Wallet or Microsoft Money import shows how many rows were **Merged into planned**.
+
+<Aside type="tip" title="Make plans easy to match">
+The amount has to match to the cent. For a bill whose amount changes a little each month, update the plan once you know the exact amount, or confirm it by hand.
+</Aside>
+
+### The notification
+
+When a bank sync confirms planned transactions, you get a notification in the bell menu, such as **2 planned entries confirmed**. Click it to open the account. File imports don't send this notification. See [notifications](/settings/notifications/).
+
+### When nothing matches
+
+If a plan is more than 7 days past its date and nothing has confirmed it, it's marked **Unconfirmed**. A transaction from your bank dated more than 7 days after the plan can't match it any more. Check what happened, then confirm it by hand, change its date, or delete it.
+
+## Projected balance
+
+When an account has pending planned transactions, its page shows a **Projected balance** line under the balance, for example "Projected balance 1,250.00 · 3 planned entries through Dec 15". It's the current balance plus every pending planned income and minus every pending planned expense on that account, whatever their date, including ones that are overdue.
+
+<Screenshot
+  src="/screenshots/planned/projected-balance.png"
+  alt="An account page header with the balance and, under it, a line reading Projected balance with the amount, the number of planned entries and the date of the latest one."
+  hint="Open /account/<Everyday Checking id> after creating two or three planned transactions on it (some in the future). Crop to the account header with the balance and the Projected balance line."
+/>
+
+The **Accounts** page shows a similar **Projected** line next to **Total balance**, covering all your accounts except archived ones, loans and vehicles. The **Planned overview** dashboard widget also shows your pending plans and where they take your balance. See [dashboard](/stats/dashboard/).
+
+## Planned transactions in stats
+
+Planned transactions don't change balances, but some reports count them and others don't. For example, dashboard widgets include them by default and have an **Include planned transactions** switch. See [how stats are calculated](/stats/how-stats-are-calculated/#planned-transactions) for the full list.
+
+## Good to know
+
+- **Planned transactions on a bank-connected account can be edited and deleted freely.** The limits on [bank-synced transactions](/transactions/add-and-edit/#bank-synced-transactions) apply only after the plan is confirmed.
+- **Automations don't run on planned transactions.** When the bank confirms a plan, it keeps the category you chose.
+- **Deleted plans go to Trash** for 30 days, like any transaction.
+- **Duplicating a transaction on a bank-connected account** gives you a planned copy, since only the bank can add real ones there. See [duplicate a transaction](/transactions/add-and-edit/#duplicate-a-transaction).
+- **Shared accounts:** if you share an account, the people you share it with don't see your planned transactions on it.
+
+## Related
+
+- [Add and edit transactions](/transactions/add-and-edit/)
+- [Recurring payments](/planned/recurring-payments/)
+- [Bank connections](/import/bank-connections/)
+- [Import from CSV](/import/import-from-csv/)
+- [How stats are calculated](/stats/how-stats-are-calculated/)
+- [General settings](/settings/general-settings/)

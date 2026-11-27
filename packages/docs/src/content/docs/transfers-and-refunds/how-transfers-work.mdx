@@ -8,24 +8,33 @@ sidebar:
 import { Aside, Badge, Steps } from '@astrojs/starlight/components';
 import Screenshot from '~/components/screenshot.astro';
 
-A transfer is money moving between your own accounts, for example from your checking account to your savings. You didn't spend or earn anything, so MoneyMatter keeps transfers out of your income and expense totals. This page covers how to record a transfer and what happens to it afterwards.
+A transfer is money moving between your own accounts, for example from your checking account to your savings. You didn't spend or earn anything, so MoneyMatter keeps transfers out of your income and expense totals. This page covers the kinds of transfer, how to record one, and what happens to it afterwards.
 
-## Two kinds of transfer
+## Kinds of transfer
 
-A transfer is one of two kinds. Which one you get depends on whether you pick **Out of wallet** as one of the accounts:
+MoneyMatter has a few kinds of transfer. They differ in where the money goes, how many transactions get recorded, and what opens when you click one in the transaction list.
 
-- **Between accounts.** Money moves from one of your MoneyMatter accounts to another. The app records it as **two transactions**: an expense on the account the money left and an income on the account it arrived in. The two are paired and act as one transfer.
-- **Out of wallet.** Money moves to or from somewhere you don't track in MoneyMatter, for example a savings account at another bank that you haven't added. There's no second account to put the other side on, so this is **one transaction**: an expense when money leaves, an income when money arrives.
+| Kind | What's recorded | How you create it | What opens when you click it |
+| --- | --- | --- | --- |
+| **Between accounts** | Two transactions: an expense on one account, an income on the other | **Transfer** tab, with **Account** picked in **Where the money goes** | **Edit transaction** |
+| **Out of wallet** | One transaction on your account | **Transfer** tab, with **Out of wallet** as **From account** or **To account** | **Edit transaction** |
+| **To portfolio** | One transaction on your account. The portfolio side is a cash entry in the portfolio. | **Portfolio** in **Where the money goes**, **Transfer to portfolio** on an account's page, or **Transfer** on a portfolio's page | **Portfolio-linked transaction**, a read-only view |
+| **To loan** (a loan payment) | Two transactions: an expense on your account, an income on the loan | **Loan** in **Where the money goes**, or **Record payment** and **Link previous payments** on the loan's page | The **Edit loan payment** dialog |
+| **To venture** | Your existing transaction, linked to a venture deal | Linking the transaction to an event on a venture deal | **Venture-linked transaction**, a read-only view |
+| **To a shared account** | Two transactions, one on each owner's account | **Transfer** tab, with the shared account as **To account** | **Edit transaction** |
 
-Both kinds show up in the transaction list filters, as **Between accounts** and **Out of wallet**.
+- **Between accounts.** Money moves from one of your MoneyMatter accounts to another. The two transactions are paired and act as one transfer. See [Create a transfer between your accounts](#create-a-transfer-between-your-accounts).
+- **Out of wallet.** Money moves to or from somewhere you don't track in MoneyMatter, for example a savings account at another bank that you haven't added. There's no second account to put the other side on, so it's one transaction: an expense when money leaves, an income when money arrives. See [Out of wallet transfers](#out-of-wallet-transfers).
+- **Portfolio, loan and venture transfers** are managed from their own pages. See [Transfers to a portfolio, loan or venture](#transfers-to-a-portfolio-loan-or-venture).
+- **To a shared account.** If another person shares an account with you with write access, for example through a [household](/settings/household-and-sharing/), you can transfer from one of your accounts to theirs. See [Transfers to a shared account](#transfers-to-a-shared-account).
 
-MoneyMatter also uses transfers for moving money into an investment portfolio and for loan payments. Those aren't covered here. For portfolios, see [Portfolios](/investments/portfolios/#cash).
+To find each kind in the transaction list, use the **Transfer kinds** filter. See [Transfers in the transaction list](#transfers-in-the-transaction-list).
 
 ## Create a transfer between your accounts
 
 <Steps>
 
-1. Click **Add transaction** at the top of the app (on a phone, tap **Add**). The **Add Transaction** dialog opens.
+1. Click **Add transaction** at the top of the app (on a phone, tap **Add**). The **Add transaction** dialog opens.
 2. Select the **Transfer** tab at the top of the dialog.
 3. In **Amount**, enter how much left the source account.
 4. In **From account**, pick the account the money left.
@@ -40,7 +49,7 @@ If you click **Add transaction** while an account's page is open, **From account
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/transfer-form-same-currency.png"
-  alt="The Add Transaction dialog on the Transfer tab, with Amount 500, From account Main Checking, and the Where the money goes panel set to Account, To account Savings and Target amount 500."
+  alt="The Add transaction dialog on the Transfer tab, with Amount 500, From account Main Checking, and the Where the money goes panel set to Account, To account Savings and Target amount 500."
   hint="Click Add transaction, select the Transfer tab. Enter Amount 500, From account 'Main Checking' (USD), keep the Account pill in Where the money goes, pick 'Savings' (USD) in To account so Target amount fills in with 500. Crop to the left column of the dialog, from the Expense/Income/Transfer tabs down to Datetime."
 />
 
@@ -92,23 +101,85 @@ To turn an Out of wallet transfer into a transfer between two of your accounts, 
 Some imports, such as the [Microsoft Money import](/import/other-import-sources/#microsoft-money), bring in a transfer as Out of wallet when its other account isn't part of the import. You can link these to the other side afterwards.
 </Aside>
 
+### Other transactions recorded as Out of wallet
+
+MoneyMatter also uses Out of wallet for a few records it creates itself. They show up under the **Out of wallet** filter too.
+
+- **Balance adjustments.** When you use **Adjust balance** on an account, the difference is saved as an Out of wallet transaction, so it changes the balance without counting as income or spending. See [Adjust a balance](/accounts/manage-accounts/#adjust-a-balance).
+- **Vehicle value overrides.** When you [override a vehicle's value](/accounts/vehicles/#override-the-value), the change is saved as an Out of wallet transaction on the vehicle. Clicking it opens a read-only **Vehicle adjustment** view with a button to the vehicle's page, where you change or delete the override.
+- **Household transfers that lost their other side.** See [Transfers to a shared account](#transfers-to-a-shared-account).
+
+## Transfers to a portfolio, loan or venture
+
+These transfers have their own dialogs and pages. The **Edit**, **Unlink** and **Delete** steps further down this page don't apply to them.
+
+### To a portfolio
+
+A transfer to or from an [investment portfolio](/investments/portfolios/) is one transaction on your account. The money on the portfolio's side is a cash entry in the portfolio, not a transaction.
+
+- **Create it** with **Portfolio** in **Where the money goes** on the **Transfer** tab, with the **Transfer to portfolio** button on an account's page, or with **Transfer** on a portfolio's page. You can also turn an existing expense or income into one: open it, select the **Transfer** tab and pick **Portfolio**.
+- **Click it** in the list to open the read-only **Portfolio-linked transaction** view. It shows the portfolio and the amount, with an **Unlink from portfolio** button.
+- **Unlinking** gives the transaction back its original details and reverses its effect on the portfolio's cash.
+- **Deleting** works only after you unlink it, or from the portfolio's **Activity** tab.
+
+<Screenshot
+  src="/screenshots/transfers-and-refunds/portfolio-linked-transaction.png"
+  alt="The Portfolio-linked transaction view, saying the transaction is linked as a deposit to a portfolio, with the amount and the Unlink from portfolio button."
+  hint="Create a portfolio named 'Brokerage' (USD). On the seeded Everyday Checking account page, click the Transfer to portfolio button (⇄ icon in the header) and transfer 300 USD to 'Brokerage'. Open /transactions and click that transaction. Crop to the dialog."
+/>
+
+When you turn an older expense into a portfolio transfer, you can tick **Portfolio balance already includes this money**. The transfer then counts toward the portfolio's contributions without adding cash to it, which is what you want when you set up the portfolio with its current balance. See [Portfolios](/investments/portfolios/#cash).
+
+### To a loan
+
+A loan payment is a pair of transactions, like a transfer between accounts: an expense on the account you paid from, and an income on the loan that lowers what you owe.
+
+- **Create it** with **Loan** in **Where the money goes** on the **Transfer** tab, or by picking a loan as **To account**. An existing expense can become a loan payment the same way; an income can't. On the loan's page you can also use [**Record payment**](/accounts/loans/#record-a-payment), or **Link previous payments** to turn expenses you already have into loan payments.
+- **Click it** in the list to open the **Edit loan payment** dialog. There you change the account, amount and date, and click **Save**.
+- **Unlink** keeps the expense as an ordinary expense and takes it off the loan. The loan balance is recalculated.
+- **Delete** moves both transactions to Trash and gives the loan its balance back.
+
+Unlike other transfers, the money leaving your account counts as spending. See [Loans](/accounts/loans/#edit-unlink-or-delete-a-payment).
+
+### To a venture
+
+A [venture](/investments/venture/) transfer is a transaction you linked to an event on a venture deal, such as the money you sent for an investment or received from an exit. It stays one transaction.
+
+- **Create it** on the deal's page, by linking existing transactions when you add an event.
+- **Click it** in the list to open the read-only **Venture-linked transaction** view, with an **Open venture** button that takes you to the deal.
+- **To undo the link**, delete the event on the deal. Leave **Also delete the linked transaction(s)** unticked to keep the transaction: it goes back to how it was before you linked it.
+- **Editing or deleting** the transaction isn't possible while it's linked. See [Venture](/investments/venture/#what-linking-does-to-a-transaction).
+
+## Transfers to a shared account
+
+If someone shares an account with you with write access, for example through a [household](/settings/household-and-sharing/), you can transfer money from one of your own accounts to it. Use the **Transfer** tab as usual and pick their account in **To account**.
+
+- It's recorded as a pair, like a transfer between your own accounts. Each side counts in its owner's base currency.
+- The money has to leave one of your own accounts. You can't start a transfer from an account someone shares with you.
+
+If the household ends, because someone [leaves or is removed](/settings/household-and-sharing/#leave-or-remove-someone), or if one of the two accounts is deleted, the transfer is split. Each side becomes an Out of wallet transaction on its own account, and its note gains a line saying where the money went or came from, such as "Transfer to @name • Savings". Balances don't change.
+
 ## How transfers affect balances
 
 Each side of a transfer changes its own account, just like any expense or income. A 500 USD transfer from Checking to Savings takes 500 USD off Checking and adds 500 USD to Savings. With different currencies, each account moves by its own amount in its own currency.
 
 An Out of wallet transfer only changes the one account it's on.
 
+- **Portfolio transfers** change the account's balance and the portfolio's cash, unless you ticked **Portfolio balance already includes this money**.
+- **Loan payments** lower what you owe on the loan. A payment dated before the loan's **Balance as of** date is kept as history and doesn't change it. See [Loans](/accounts/loans/).
+- **Venture transfers** don't change any balance when you link them. The transaction already moved the money on its account, and the deal's value comes from its events.
+
 ## How transfers affect stats
 
 Transfers are left out of income and expense totals: cash flow, spending by category, and the other reports and widgets that add up what you earned and spent. The exception is a payment to a loan you track: the money leaving your account counts as spending. Moving 1,000 from Checking to Savings doesn't mean you spent 1,000 and earned 1,000, so counting it would make both your spending and your income look bigger than they were.
 
-Out of wallet transfers are also left out of income and expense totals. Because they do change an account's balance, they still show up in that account's balance and balance history.
+Out of wallet transfers, portfolio transfers and venture transfers are also left out of income and expense totals. Because they do change an account's balance, they still show up in that account's balance and balance history. On the **Cash flow** report, money moved into a portfolio or a venture shows as a savings destination under **Where the money went**. See [Analytics reports](/stats/analytics-reports/#where-the-money-went).
 
 For the full picture of what's counted where, see [How stats are calculated](/stats/how-stats-are-calculated/).
 
 ## Transfers in the transaction list
 
-A transfer shows both account names with an arrow between them. On **All Transactions** it appears once, not twice. On an account's own page, you see the side that belongs to that account.
+A transfer shows both account names with an arrow between them. On **All transactions** it appears once, not twice. On an account's own page, you see the side that belongs to that account.
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/transfer-row-in-list.png"
@@ -121,11 +192,15 @@ To find transfers, open the **Filters** menu above the list and add:
 - **Transfers**, to show **All** transactions, **Exclude** transfers, or show **Only** transfers.
 - **Transfer kinds**, to narrow down to **Between accounts**, **Out of wallet**, **To portfolio** or **To venture**.
 
+There's no **Transfer kinds** option for loan payments. **Transfers** set to **Only** includes them, and **Exclude** hides them.
+
 See [Search and filter](/transactions/search-and-filter/#available-filters) for the other filters.
 
 ## Edit a transfer
 
-Click either side of a transfer in the list to open **Edit Transaction**. The form always shows the source as **From account** and **Amount**, and the destination as **To account** and **Target amount**, whichever row you clicked.
+This section, [Unlink a transfer](#unlink-a-transfer) and [Delete a transfer](#delete-a-transfer) are about transfers between accounts and Out of wallet transfers. Loan payments, portfolio transfers and venture transfers open their own views instead. See [Transfers to a portfolio, loan or venture](#transfers-to-a-portfolio-loan-or-venture).
+
+Click either side of a transfer in the list to open **Edit transaction**. The form always shows the source as **From account** and **Amount**, and the destination as **To account** and **Target amount**, whichever row you clicked.
 
 Change what you need and click **Edit**. Changes to the amounts, the accounts, the date, the note and the payment type are applied to both sides.
 
@@ -165,7 +240,7 @@ Unlinking turns a transfer back into two separate transactions, without deleting
 
 <Steps>
 
-1. Click the transfer in the list to open **Edit Transaction**.
+1. Click the transfer in the list to open **Edit transaction**.
 2. In the **Where the money goes** panel, click **Unlink transactions**.
 
 </Steps>
@@ -174,15 +249,17 @@ The dialog closes straight away. Both transactions keep their amounts, dates and
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/edit-transfer-unlink.png"
-  alt="The Edit Transaction dialog for a transfer from Main Checking to Savings, with the Unlink transactions button inside the Where the money goes panel."
-  hint="Click an existing Main Checking to Savings transfer in /transactions. Crop the Edit Transaction dialog to the From account field and the Where the money goes panel, including the Unlink transactions button."
+  alt="The Edit transaction dialog for a transfer from Main Checking to Savings, with the Unlink transactions button inside the Where the money goes panel."
+  hint="Click an existing Main Checking to Savings transfer in /transactions. Crop the Edit transaction dialog to the From account field and the Where the money goes panel, including the Unlink transactions button."
 />
 
 A transfer you added with the **Transfer** tab has no category, so after unlinking both of its transactions are uncategorized. Give them categories if you're keeping them as spending and income.
 
 ## Delete a transfer
 
-Deleting either side of a transfer deletes **both** transactions, because together they're one transfer. The confirmation dialog, **Delete this transaction?**, doesn't mention the other side, so keep this in mind before you click **Delete**.
+Deleting either side of a transfer moves **both** transactions to Trash, because together they're one transfer. The confirmation dialog, **Move to Trash?**, doesn't mention the other side, so keep this in mind before you click **Delete**.
+
+Both stay in Trash for 30 days. To bring them back, click **Trash** on the **Transactions** page, pick the transfer and click **Restore**. After 30 days they're deleted for good. See [Trash](/transactions/trash/).
 
 If you only want to get rid of one side, [unlink the transfer](#unlink-a-transfer) first, then delete the one you don't need.
 
@@ -208,7 +285,7 @@ When the bank's transaction is the income side of a transfer, don't edit and sav
 
 If the other side was also imported, for example you moved money between two banks that are both connected, [link the two transactions](/transfers-and-refunds/link-existing-transactions/) instead.
 
-A transfer that involves a bank-connected account can't be deleted from MoneyMatter, and the **Delete** button doesn't appear for it. You can still [unlink it](#unlink-a-transfer).
+A transfer that involves a bank-connected account can't be deleted from MoneyMatter, and the **Delete** button doesn't appear for it. You can still [unlink it](#unlink-a-transfer). The exception is a transaction you added by hand before you linked that account to your bank: it stays editable and can be deleted.
 
 ## Good to know
 
@@ -222,3 +299,7 @@ A transfer that involves a bank-connected account can't be deleted from MoneyMat
 - [Refunds](/transfers-and-refunds/refunds/)
 - [How stats are calculated](/stats/how-stats-are-calculated/)
 - [Add and edit transactions](/transactions/add-and-edit/)
+- [Portfolios](/investments/portfolios/)
+- [Loans](/accounts/loans/)
+- [Venture](/investments/venture/)
+- [Household and sharing](/settings/household-and-sharing/)

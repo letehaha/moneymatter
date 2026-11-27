@@ -31,15 +31,15 @@ Read more: [Add and edit transactions](/transactions/add-and-edit/).
 
 ### Transfer
 
-A transfer moves money from one of your accounts to another, such as paying off a credit card from your current account. It's recorded as a pair of linked transactions, one leaving the first account and one arriving in the second. Transfers don't count as spending or income, because the money is still yours. The exception is a payment to a loan you track: the money leaving your account counts as spending.
+A transfer moves money from one of your accounts to another, such as paying off a credit card from your current account. Between two accounts, it's recorded as a pair of linked transactions, one leaving the first account and one arriving in the second. Transfers don't count as spending or income, because the money is still yours. The exception is a payment to a loan you track: the money leaving your account counts as spending.
 
-A transfer can also go to or come from **Out of wallet**, meaning somewhere you don't track in MoneyMatter, such as an account at another bank. These are left out of income and spending too.
+A transfer can also go to or come from **Out of wallet**, meaning somewhere you don't track in MoneyMatter, such as an account at another bank. Money moved into an investment portfolio or a venture deal is a transfer too. These are each a single transaction on your account, and they're left out of income and spending as well.
 
 Read more: [How transfers work](/transfers-and-refunds/how-transfers-work/).
 
 ### Refund
 
-A refund is an income linked to the expense it pays back, using **Link refund** in the transaction dialog. In your spending reports, a linked refund lowers the spending in the original purchase's category instead of counting as income. For example, you pay 100 EUR for groceries and get 30 EUR back the same month: your groceries spending shows 70 EUR, not 100 EUR of spending plus 30 EUR of income. If the money comes back in a later month, the purchase is still reduced in its own month, so January shows 70 EUR of groceries and the refund month shows no income from it. See [How stats are calculated](/stats/how-stats-are-calculated/#when-the-refund-arrives-in-a-later-period).
+A refund is a transaction linked to the one it pays back, using **Link refund** in the transaction dialog. Usually that's an income paying back an expense, but it also works the other way round: an expense that returns money you received. In your spending reports, a linked refund lowers the spending in the original purchase's category instead of counting as income. For example, you pay 100 EUR for groceries and get 30 EUR back the same month: your groceries spending shows 70 EUR, not 100 EUR of spending plus 30 EUR of income. If the money comes back in a later month, the purchase is still reduced in its own month, so January shows 70 EUR of groceries and the refund month shows no income from it. See [How stats are calculated](/stats/how-stats-are-calculated/#when-the-refund-arrives-in-a-later-period).
 
 Several refunds can be linked to one purchase. When they're in the same currency as the purchase, together they can't add up to more than the original amount. One refund can also be shared across several purchases; each purchase is reduced only by its share.
 
@@ -89,7 +89,7 @@ Read more: [Base currency and currencies](/settings/base-currency-and-currencies
 
 ### Net worth
 
-Net worth is the value of everything you track, in your base currency. Accounts with money in them count as assets. Accounts with a negative balance, such as a credit card you owe on, count as debts. Investments, loans and [vehicles](/accounts/vehicles/) you track are included too.
+Net worth is the value of everything you track, in your base currency. Accounts with money in them count as assets. Accounts with a negative balance, such as a credit card you owe on, count as debts. Your [investment portfolios](/investments/portfolios/), [venture deals](/investments/venture/) and [vehicles](/accounts/vehicles/) count as assets, and [loans](/accounts/loans/) count as debts.
 
 Read more: [Dashboard](/stats/dashboard/), [Analytics reports](/stats/analytics-reports/).
 
@@ -97,10 +97,16 @@ Read more: [Dashboard](/stats/dashboard/), [Analytics reports](/stats/analytics-
 
 Income and spending reports show real money coming in and going out. So they leave out:
 
-- transfers between your own accounts, and **Out of wallet** transfers. The exception is a payment to a loan you track: the money leaving your account counts as spending.
+- transfers between your own accounts, **Out of wallet** transfers, and transfers to and from investment portfolios and venture deals. The exception is a payment to a loan you track: the money leaving your account counts as spending.
 - balance adjustments
 - accounts with **Exclude from statistics** turned on (a switch on the account's **Settings** tab). They're also left out of the balance and net worth figures on the dashboard and in reports. The **Total balance** on the Accounts page still includes them.
 
 Refunds reduce the spending they belong to, and splits are counted in each of their categories.
 
 Read more: [How stats are calculated](/stats/how-stats-are-calculated/).
+
+### Budget and trackers
+
+The [budget](/budgeting/start-budgeting/) plans your everyday spending period after period: you give each line an amount, and it resets every period. A [tracker](/planned/trackers/) follows one thing over a date range, such as a trip or a renovation, and counts only the transactions you link to it.
+
+Read more: [Trackers or the budget?](/planned/trackers/#trackers-or-the-budget)

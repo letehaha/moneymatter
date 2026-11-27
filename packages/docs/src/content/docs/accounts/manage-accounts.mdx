@@ -12,13 +12,16 @@ Once an account exists, you can rename it, fix its balance, keep it out of your 
 
 ## The Accounts page
 
-In the sidebar, open **Accounts** → **All Accounts**. The page lists everything you own, from top to bottom:
+In the sidebar, open **Accounts** → **All accounts**. The page lists your accounts, from top to bottom:
 
 1. **Overview**: your **Total balance**, split into **Assets** (accounts with a positive balance) and **Liabilities** (accounts with a negative balance, shown in red). A **Vehicles** figure appears too if you have [vehicles](/accounts/vehicles/). All figures are in your base currency. **Total balance** starts with "≈" when some accounts are in another currency, because those are converted at the current exchange rate.
 2. **Bank connections**: accounts synced from your bank, plus a **Connect bank** button. See [bank connections](/import/bank-connections/). Bank connections are part of the Plus plan (see [plans and billing](/settings/plans-and-billing/)).
 3. **Manual accounts**: your [account groups](/accounts/account-groups/) that contain at least one manual account, shown as folders you can expand, followed by accounts that aren't in a group.
-4. **Vehicles**, if you have any.
-5. **Archived**, if you have any: a collapsed list of [archived accounts](#archive-an-account). Click it to expand.
+4. **Shared with me**, if other people [share accounts](/settings/household-and-sharing/) with you.
+5. **Vehicles**, if you have any.
+6. **Archived**, if you have any: a collapsed list of [archived accounts](#archive-an-account). Click it to expand.
+
+[Loans](/accounts/loans/) aren't listed here. They have their own page under **Accounts** → **Loans**.
 
 Each row shows the account's logo, name, category and currency, and its balance in the account's own currency. If that isn't your base currency, the amount converted to your base currency is shown too. Click a row to open the account.
 
@@ -33,6 +36,8 @@ Each row shows the account's logo, name, category and currency, and its balance 
 **Total balance** adds up your active money accounts. It leaves out:
 
 - vehicles, which get their own **Vehicles** figure
+- [loans](/accounts/loans/), which are on the **Loans** page
+- accounts other people share with you
 - archived accounts
 
 <Aside type="note" title="Good to know">
@@ -51,25 +56,30 @@ Your choice is remembered on this browser.
 
 ## Accounts in the sidebar
 
-The **Accounts** panel in the sidebar gives you quick access to your active accounts. Your manual and bank-synced accounts are listed under **Bank Accounts**. Accounts in a group sit inside a folder. A collapsed folder shows the group's total in your base currency. Click any account to open it.
+The **Accounts** panel in the sidebar gives you quick access to your active accounts. Your manual and bank-synced accounts are listed under **Bank accounts**. Accounts in a group sit inside a folder. A collapsed folder shows the group's total in your base currency. Click any account to open it.
 
 Archived accounts never appear in the sidebar.
 
 Click the gear button (**Settings**) next to the **Accounts** heading to change what the sidebar shows:
 
 - **Hide zero balances** hides accounts whose balance is exactly 0, and groups where every account is at 0. It only affects the sidebar.
-- **Sidebar sections** lets you turn other sections on or off. **Bank Accounts** is always visible.
+- **Sidebar sections** lets you turn other sections on or off. **Bank accounts** is always visible.
 
 ## The account page
 
 Click an account on the **Accounts** page or in the sidebar to open it.
 
-The left card shows the account's logo, name and balance. If the account isn't in your base currency, the converted amount appears next to the balance. The **Account actions** menu (the ⋮ button) holds **Rename account**, **Adjust balance** and **Share account**.
+The left card shows the account's logo, name and balance. If the account isn't in your base currency, the converted amount appears next to the balance. Next to the name are two buttons:
+
+- **Transfer to portfolio** (the ⇄ button) moves money from this account into one of your [investment portfolios](/investments/portfolios/).
+- **Account actions** (the ⋮ button) holds **Rename account**, **Adjust balance** and **Share account**.
+
+Both buttons are only shown on accounts you own.
 
 Below that are tabs:
 
-- **Details**: the **Credit Limit:**, **Initial Balance:**, **Account Category:** and **Currency:**. Click **Currency:** to see the **Exchange Rate:** and whether **Exchange Rate Live Update:** is **Enabled**. Those come from your [currency settings](/settings/base-currency-and-currencies/). **(main)** next to the currency means it's your base currency.
-- **Data Connection**: for a manual account, this is where you link it to a bank connection with **Link to bank** (Plus plan). See [bank connections](/import/bank-connections/).
+- **Details**: the **Credit limit:**, **Initial balance:**, **Account category:** and **Currency:**. Click **Currency:** to see the **Exchange rate:** and whether **Exchange rate live update:** is **Enabled**. Those come from your [currency settings](/settings/base-currency-and-currencies/). **(main)** next to the currency means it's your base currency.
+- **Data connection**: for a manual account, this is where you link it to a bank connection with **Link to bank** (Plus plan). See [bank connections](/import/bank-connections/).
 - **Sharing**: who else can see this account.
 - **Settings**: **Exclude from statistics**, **Account group**, archiving and deleting.
 
@@ -98,12 +108,14 @@ To change the logo, click the logo next to the name (**Change logo**). You can s
 <Steps>
 
 1. Open the account and select the **Details** tab.
-2. Click the pencil next to **Account Category:** (**Edit category**).
+2. Click the pencil next to **Account category:** (**Edit category**).
 3. Choose a new category and click **Save**.
 
 </Steps>
 
-The category mostly changes the icon and label. It doesn't change the balance or which transactions count. One exception: the [Net Worth History](/stats/analytics-reports/#net-worth-history) report sorts debts by type, so a negative balance on a **Credit card** account counts as a **Credit card** liability, while on most other accounts it counts as **Overdraft**.
+**Loan** and **Vehicle** aren't in the list. [Loans](/accounts/loans/) are added from the **Loans** page and [vehicles](/accounts/vehicles/) with **Add vehicle**, and you can't turn an existing account into either. A loan's or vehicle's own category can't be changed.
+
+The category mostly changes the icon and label. It doesn't change the balance or which transactions count. One exception: the [Net worth history](/stats/analytics-reports/#net-worth-history) report sorts debts by type, so a negative balance on a **Credit card** account counts as a **Credit card** liability, while on most other accounts it counts as **Overdraft**.
 
 ## How the balance is calculated
 
@@ -122,7 +134,7 @@ If the starting point was wrong from day one, you can edit the account's initial
 <Steps>
 
 1. Open the account and select the **Details** tab.
-2. Click the pencil next to **Initial Balance:** (**Edit initial balance**).
+2. Click the pencil next to **Initial balance:** (**Edit initial balance**).
 3. Enter the new initial balance. It can be negative.
 4. Click **Save**.
 
@@ -177,7 +189,7 @@ Sometimes the balance in MoneyMatter doesn't match your bank. Maybe you missed a
    - **Set to balance**: type the **New balance** you want the account to have, for example the figure your bank shows.
    - **Adjust by amount**: type an **Amount** and choose **Income** to add it or **Expense** to subtract it.
 4. Check the preview. It shows the old and new balance, and whether an income or an expense will be created.
-5. Optionally change the **Effective date** and add a **Transaction Note**.
+5. Optionally change the **Effective date** and add a **Transaction note**.
 6. Click **Confirm**.
 
 </Steps>
@@ -197,7 +209,7 @@ An adjustment is a real transaction for the difference:
 - An **income** if the balance goes up, an **expense** if it goes down.
 - It's dated on the **Effective date** and put in the **Other** category (see [categories](/transactions/categories/#the-other-category)).
 - Its note is "Balance adjustment" unless you write your own.
-- In transaction lists, the other side shows as **Out of wallet**, meaning money from or to somewhere MoneyMatter doesn't track. See [Out of wallet transfers](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers).
+- In transaction lists, the other side shows as **Out of wallet**, meaning money from or to somewhere MoneyMatter doesn't track. See [other transactions recorded as Out of wallet](/transfers-and-refunds/how-transfers-work/#other-transactions-recorded-as-out-of-wallet).
 
 <Aside type="note" title="Adjustments don't count as income or spending">
 A correction isn't real money coming in or going out, so adjustments are left out of cash flow, spending and category reports. They do change the account's balance and its balance history.
@@ -217,14 +229,14 @@ The adjustment is a normal transaction, so deleting it removes the correction an
 
 ## Credit limits
 
-Set a credit limit on credit cards and overdrafts. It's what the **Credit Utilization** widget on the [dashboard](/stats/dashboard/) measures your usage against, and it can change how the balance is shown when your bank's balance **includes** the credit line. For example, a card with a 1,000 EUR limit where you've spent 200 EUR shows 800 EUR.
+Set a credit limit on credit cards and overdrafts. It's what the **Credit utilization** widget on the [dashboard](/stats/dashboard/) measures your usage against, and it can change how the balance is shown when your bank's balance **includes** the credit line. For example, a card with a 1,000 EUR limit where you've spent 200 EUR shows 800 EUR.
 
 To set or change the limit:
 
 <Steps>
 
 1. Open the account and select the **Details** tab.
-2. Click the pencil next to **Credit Limit:** (**Edit credit limit**).
+2. Click the pencil next to **Credit limit:** (**Edit credit limit**).
 3. Enter the limit and click **Save**. It can't be negative.
 
 </Steps>
@@ -237,7 +249,7 @@ The limit never changes the balance itself. What it does depends on a setting in
 With the setting on, **Set to balance** in [Adjust balance](#adjust-a-balance) also works with the balance you see, minus the limit. You don't need to add the limit back yourself.
 
 <Aside type="tip" title="Tracking a card as what you owe?">
-If you record a credit card as a negative balance (what you owe), you can still enter its credit limit so the card shows in the **Credit Utilization** widget. Keep **Include credit limits in balance** off, though. That setting subtracts the limit from every account that has one, so a card you track as −200 EUR with a 1,000 EUR limit would show −1,200 EUR.
+If you record a credit card as a negative balance (what you owe), you can still enter its credit limit so the card shows in the **Credit utilization** widget. Keep **Include credit limits in balance** off, though. That setting subtracts the limit from every account that has one, so a card you track as −200 EUR with a 1,000 EUR limit would show −1,200 EUR.
 </Aside>
 
 ## Exclude an account from statistics
@@ -255,8 +267,8 @@ The change saves on its own about a second later.
 
 <Screenshot
   src="/screenshots/accounts/account-settings-tab.png"
-  alt="The Settings tab of an account, showing the Exclude from statistics switch, the Account group row, the Archive Account box and the Danger zone box."
-  hint="Open /account/:id for a manual account you own and select the Settings tab. Show the Exclude from statistics switch, the Account group row, the Archive Account box and the red Danger zone box. Crop to the left card."
+  alt="The Settings tab of an account, showing the Exclude from statistics switch, the Account group row, the Archive account box and the Danger zone box."
+  hint="Open /account/:id for a manual account you own and select the Settings tab. Show the Exclude from statistics switch, the Account group row, the Archive account box and the red Danger zone box. Crop to the left card."
 />
 
 **What an excluded account is left out of:**
@@ -264,13 +276,13 @@ The change saves on its own about a second later.
 - cash flow, spending and category reports
 - the balance trend and net worth history
 - payee statistics
-- the **Credit Utilization** widget
+- the **Credit utilization** widget
 
 **What stays the same:**
 
 - The account's transactions still appear in your transaction lists.
 - The account stays in the sidebar and on the **Accounts** page.
-- **Total balance** on the **Accounts** page and the **Bank Accounts** total in the sidebar still include it.
+- **Total balance** on the **Accounts** page and the **Bank accounts** total in the sidebar still include it.
 
 The switch's info text mentions balance totals. That means the balance figures on your dashboard and in reports, not **Total balance** on the **Accounts** page or the sidebar totals.
 
@@ -287,16 +299,16 @@ Archive an account you no longer use but want to keep the history of, like a clo
 <Steps>
 
 1. Open the account and select the **Settings** tab.
-2. In the **Archive Account** box, click **Archive Account**.
+2. In the **Archive account** box, click **Archive account**.
 3. In the confirmation, leave **Also exclude from statistics** ticked unless you want the account's history to keep counting in your reports.
-4. Click **Archive Account**.
+4. Click **Archive account**.
 
 </Steps>
 
 <Screenshot
   src="/screenshots/accounts/archive-account-dialog.png"
-  alt="The Archive Account confirmation listing what archiving does, with the Also exclude from statistics checkbox ticked."
-  hint="Open /account/:id, select the Settings tab and click Archive Account. Capture the confirmation with its bullet list and the ticked 'Also exclude from statistics' checkbox. A bank-linked account also shows 'Disconnect bank sync' in the list, which is optional. Crop to the dialog."
+  alt="The Archive account confirmation listing what archiving does, with the Also exclude from statistics checkbox ticked."
+  hint="Open /account/:id, select the Settings tab and click Archive account. Capture the confirmation with its bullet list and the ticked 'Also exclude from statistics' checkbox. A bank-linked account also shows 'Disconnect bank sync' in the list, which is optional. Crop to the dialog."
 />
 
 **When you archive an account:**
@@ -307,6 +319,7 @@ Archive an account you no longer use but want to keep the history of, like a clo
 - It's hidden from the account lists you pick from, for example when adding a transaction. To keep archived accounts in those lists, turn on **Show archived accounts** in **Settings** → **General**. They're then marked "(archived)".
 - It's removed from its [account group](/accounts/account-groups/).
 - [Transaction templates](/transactions/add-and-edit/#templates) that used it lose the account, along with their saved amount.
+- [Recurring payments](/planned/recurring-payments/) that used it lose the account, and **Auto-record payments** is turned off for them.
 - If it was synced with a bank, it's disconnected from the bank and becomes a manual account.
 
 You can still filter your transactions by an archived account.
@@ -321,15 +334,16 @@ Your reports cover the past, and an archived account was part of your finances b
 
 1. On the **Accounts** page, expand **Archived** and click the account.
 2. Select the **Settings** tab.
-3. In the **Archived Account** box, click **Unarchive Account**.
+3. In the **Archived account** box, click **Unarchive account**.
 
 </Steps>
 
 The account becomes active again, but a few things don't come back on their own:
 
 - It isn't put back into its group. [Add it to a group](/accounts/account-groups/#add-an-account-to-a-group) again if you want.
-- It isn't reconnected to your bank. Link it again from the **Data Connection** tab.
+- It isn't reconnected to your bank. Link it again from the **Data connection** tab.
 - Transaction templates don't get the account or their saved amount back. Edit each template to set them again.
+- Recurring payments don't get the account back. Edit each one to pick the account and turn auto-record on again.
 - **Exclude from statistics** stays on if it was on. Turn it off on the **Settings** tab if you want the account counted again.
 
 ## Delete an account
@@ -345,7 +359,7 @@ Deleting an account removes it **and all of its transactions** for good. If you 
 
 </Steps>
 
-You're taken back to the **Accounts** page. The account is also removed from its group, and [transaction templates](/transactions/add-and-edit/#templates) that used it lose the account, along with their saved amount.
+You're taken back to the **Accounts** page. The account is also removed from its group, [transaction templates](/transactions/add-and-edit/#templates) that used it lose the account, along with their saved amount, and [recurring payments](/planned/recurring-payments/) that used it lose the account and stop auto-recording.
 
 If you moved money between this account and your other accounts, the other side of those transfers stays in the other account and still counts in its balance. Delete or edit those transactions yourself if you don't want them.
 
@@ -362,7 +376,7 @@ If the account was used to pay off a loan, you need to delete or reassign those 
 | Counted in **Total balance** on the **Accounts** page | Yes | No | No |
 | Counted in reports and balance history | No | No by default (**Also exclude from statistics** is ticked). Yes if you untick it | No |
 | Offered when adding transactions | Yes | Only with **Show archived accounts** on | No |
-| Can be undone | Yes, turn it off | Yes, but the group, the bank link and your templates' account and amount aren't restored, and **Exclude from statistics** stays on | No |
+| Can be undone | Yes, turn it off | Yes, but the group, the bank link, your templates' account and amount and your recurring payments' account aren't restored, and **Exclude from statistics** stays on | No |
 
 ## Good to know
 
@@ -374,5 +388,6 @@ If the account was used to pay off a loan, you need to delete or reassign those 
 
 - [Create an account](/accounts/create-an-account/)
 - [Account groups](/accounts/account-groups/)
+- [Loans](/accounts/loans/)
 - [How stats are calculated](/stats/how-stats-are-calculated/)
 - [General settings](/settings/general-settings/)

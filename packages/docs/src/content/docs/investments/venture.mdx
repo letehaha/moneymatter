@@ -1,0 +1,197 @@
+---
+title: Venture
+description: Track private investments such as SPVs, syndicates and fund deals. Set up platforms and deals, record capital calls, distributions, NAV updates and exits, and read cost basis, TVPI, DPI and IRR.
+sidebar:
+  order: 6
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+**Venture** tracks private investments that have no market price: an SPV, a syndicate deal or a stake in a fund. You record what happens to each deal, such as the money you put in, NAV updates from the fund manager, distributions and the final exit. MoneyMatter works out what the deal is worth and how it performed.
+
+For stocks, ETFs and crypto that you buy on an exchange, use a [portfolio](/investments/portfolios/) instead.
+
+Open **Accounts** → **Venture** in the sidebar. Once you have a deal, the sidebar's Accounts panel also gets a **Ventures** section that lists your deals.
+
+## Platforms
+
+A platform is the syndicate, fund manager or GP you invest through, for example AngelList. Its default fees are copied into every new deal you create on it. Platforms are optional: a deal can have no platform.
+
+<Steps>
+
+1. On the **Venture** page, click **Manage platforms**.
+2. Click **Add platform**.
+3. Enter a **Name**, and optionally a **Website** and **Description**.
+4. Set the defaults: **Default entry fee %**, **Default mgmt fee %**, **Default carry %** and **Default hurdle %**. Each is between 0 and 100.
+5. Click **Create**.
+
+</Steps>
+
+Each platform card shows its **Entry fee**, **Mgmt fee**, **Carry** and **Hurdle**. Use the pencil button to edit a platform. Changes only apply to deals you create afterwards. Existing deals keep the fees they were created with.
+
+The bin button deletes a platform. Its deals stay, but they lose the link to the platform. A deleted platform can't be restored.
+
+## Create a deal
+
+A deal is one investment: a single SPV, or your stake in one fund.
+
+<Steps>
+
+1. On the **Venture** page, click **Add deal**.
+2. Enter a **Name**, and pick a **Platform** or leave it at **No platform**. Picking a platform fills in its default fees.
+3. Pick the deal's **Currency** and **SPV type**: **Single-company** if the SPV invests in one startup, **Multi-company** if it holds several.
+4. Optionally enter the **Target company**, such as "OpenAI Series E". It's only a label.
+5. Enter the **Principal**: the amount you committed, before any platform fees.
+6. Leave **Entry fee** empty to have it calculated as principal × **Entry fee %**, or type the actual fee.
+7. Set the **Investment date**, and optionally the **Expected exit**.
+8. Check the fee percentages: **Entry fee %**, **Mgmt fee %**, **Carry %** and **Hurdle %**.
+9. Click **Create**.
+
+</Steps>
+
+**Mgmt fee %** and **Expected exit** are stored for your records. They don't change any numbers.
+
+<Screenshot
+  src="/screenshots/investments/venture-deal-form.png"
+  alt="The Add venture deal dialog with Name, Platform, Currency, SPV type, Target company, Principal, Entry fee, Investment date, Expected exit, the four fee percentages and Notes."
+  hint="As the docs test user, create a platform 'Acme Ventures' (entry fee 5%, carry 20%, hurdle 0%) on /venture/platforms. Then open /venture, click Add deal, enter name 'Founder Fund SPV', pick Acme Ventures, USD, Single-company, Target company 'Acme Robotics Series A', Principal 10000, Investment date a year ago. Crop to the dialog."
+/>
+
+The deal list shows each deal's status, **Principal**, **Entry fee** and **Investment date**. Click a deal to open it.
+
+## The deal page
+
+The deal page has three parts:
+
+- **Deal terms**: **Principal**, **Entry fee**, **Carry**, **Hurdle**, **Investment date** and **Expected exit**.
+- **Performance**: the metrics described in [Metrics](#metrics).
+- **Events timeline**: everything that happened to the deal, newest first.
+
+Click the logo next to the deal's name to change it. **Edit** and **Delete** are at the top right.
+
+<Screenshot
+  src="/screenshots/investments/venture-deal-page.png"
+  alt="A venture deal page with the Partial exit status, the Deal terms card, the Capital and Returns cards with Cost basis, Current value, Distributions, P&L, TVPI, DPI and IRR, and the Events timeline with an initial investment, a NAV update and a distribution."
+  hint="On the 'Founder Fund SPV' deal, add events: Initial investment (Out of wallet) on the investment date, NAV update to 14000 six months later, Distribution with Gross amount 5000 last month (the one from the event-form shot, linked to the 4500 income). Open /venture/deals/<dealId>. Capture the full content area from the header down to the last of the three timeline events."
+/>
+
+### Edit or delete a deal
+
+Once a deal has events, its terms are locked: principal, entry fee (amount or percentage), carry and hurdle percentages, investment date and currency. To change them, delete the deal's events first.
+
+**Delete** removes the deal and all its events. It can't be restored. Transactions you linked to the deal's events stay **To venture** transfers and can't be edited or deleted afterwards. To free them, delete the events first (see [Delete an event](#delete-an-event)), then the deal.
+
+## Record events
+
+Click **Add event** on the deal page.
+
+The first event has to be the **Initial investment**. Until it exists, it's the only type you can pick, and no other event can be dated before it. A deal has one initial investment. Its amount is always the principal plus the entry fee, so you don't type one.
+
+After that, you can add these events:
+
+| Event | What it records | You enter |
+|---|---|---|
+| **Capital call** | More money you paid in. Adds to cost basis. | **Gross amount** |
+| **Capital refund** | Money returned because it wasn't needed. Lowers cost basis, and can't be more than it. | **Gross amount** |
+| **Fee payment** | A fee you paid separately. Adds to cost basis. | **Gross amount** |
+| **Distribution** | Cash paid out to you while the deal goes on. GP carry is taken from it. | **Gross amount** |
+| **Exit** | The final payout. GP carry is taken from it. | **Gross amount** and **NAV after** |
+| **NAV update** | A new valuation from the fund manager. No money moves. | **NAV after** |
+| **Writedown** | A drop in value. No money moves. | **NAV after** |
+
+Every event also has an **Event date** and optional **Notes**.
+
+Events can't be edited. To fix one, delete it and add it again.
+
+### Cash flow
+
+Events that move money ask how that money is recorded, in **Cash flow**:
+
+- **Out of wallet (no tx)**: the money doesn't come from or go to any of your accounts in MoneyMatter. The event shows an **out of wallet** badge. Use this when you don't track the bank account, or for old deals.
+- **Link to existing transaction(s)**: pick the expense or income in your account that paid for, or received, this event. Click **Pick a transaction** to choose it, and **Add another transaction** if it was paid in parts. Distributions, exits and capital refunds pick from incomes. Everything else picks from expenses.
+
+**NAV update** and **Writedown** never move money, so they have no **Cash flow** choice.
+
+A linked transaction must be in the deal's currency, and it can't already be a transfer or be linked to a portfolio. The total of the linked transactions shows under the list, but it doesn't have to match the event's amount.
+
+<Screenshot
+  src="/screenshots/investments/venture-event-form.png"
+  alt="The Add venture event dialog for a Distribution, with Event date, Gross amount, Cash flow set to Link to existing transaction(s), one linked income, the linked total, the Override auto-computed carry checkbox and Notes."
+  hint="On the 'Founder Fund SPV' deal (initial investment already added), first add an income of 4500 USD to Everyday Checking dated last month. Click Add event, pick Distribution, Gross amount 5000, Cash flow 'Link to existing transaction(s)', pick that income. Leave Override auto-computed carry unticked. Crop to the dialog."
+/>
+
+### What linking does to a transaction
+
+A linked transaction becomes a **To venture** transfer:
+
+- It no longer counts as income or an expense in your stats.
+- Clicking it opens a read-only **Venture-linked transaction** view with an **Open venture** button that takes you to the deal.
+- You can't edit it or move it to Trash while it's linked.
+
+Transfer filters on the **Transactions** page have a **To venture** kind to find these. See [transfers to a venture](/transfers-and-refunds/how-transfers-work/#transfers-to-a-portfolio-loan-or-venture).
+
+### GP carry
+
+**Distribution** and **Exit** events work out the GP's carry for you, using the deal's **Carry %** and **Hurdle %**:
+
+- You get your money back first. Carry is only taken from profit, after the whole cost basis has been returned across all distributions.
+- The carry is the **Carry %** of that profit, reduced by the hurdle. The hurdle is a simple yearly return (**Hurdle %**) on the money not yet returned to you, counted from the investment date. With a 0% hurdle, the GP takes the full **Carry %** of the profit.
+
+The event shows **Gross**, **GP carry** and **LP net**, which is what you actually received. **LP net** is what counts as your distribution.
+
+If your statement shows different numbers, tick **Override auto-computed carry** and enter the **GP carry** and **LP net amount** yourself. The event then shows a **manually set** badge.
+
+When you add or delete an earlier event, the carry on later distributions and exits is worked out again. Events you set by hand keep their numbers.
+
+### Delete an event
+
+Hover an event and click the bin button (**Delete event**). If the event has linked transactions, tick **Also delete the linked transaction(s)** to delete them permanently as well. Otherwise they're unlinked and go back to being an ordinary expense or income.
+
+You can only delete the **Initial investment** when it's the deal's only event.
+
+## Deal status
+
+The status updates itself from the events:
+
+| Status | When |
+|---|---|
+| **Outstanding** | No distribution, exit or writedown yet. |
+| **Partial exit** | At least one distribution, exit or writedown. |
+| **Fully exited** | An exit with **NAV after** 0. |
+| **Written off** | A writedown with **NAV after** 0. |
+
+Delete the event that set a status and the deal goes back to the status the remaining events give it.
+
+## Metrics
+
+The **Performance** section on the deal page shows these numbers, in the deal's currency:
+
+| Metric | How it's calculated |
+|---|---|
+| **Cost basis** | Principal + entry fee + capital calls + fee payments − capital refunds. |
+| **Current value** | The latest **NAV after** from a NAV update, writedown or exit. Without one, cost basis minus distributions. Always 0 once the deal is **Fully exited** or **Written off**. |
+| **Distributions** | The **LP net** of all distributions and exits. |
+| **P&L** | Current value + distributions − cost basis, with the percentage of cost basis. |
+| **TVPI** | (Current value + distributions) ÷ cost basis. Above 1.00x means the deal is worth more than you put in. |
+| **DPI** | Distributions ÷ cost basis: how much of your money you've actually got back. |
+| **IRR** | The yearly return, taking the timing of every payment into account. While the deal is open, today's current value counts as if you received it today. |
+
+TVPI and DPI show "—" when the cost basis is 0. IRR shows "—" until there's money both going in and coming out (current value included) on at least two different days.
+
+## Ventures in your stats
+
+- **Net worth.** Your deals count toward net worth at their current value, converted to your base currency. The **Net worth** dashboard widget and the **Net worth history** report show them as **Ventures**, and you can leave them out. See [Dashboard](/stats/dashboard/#net-worth) and [Analytics reports](/stats/analytics-reports/#net-worth-history).
+- **Cash flow.** Money you send to a deal through linked transactions counts as saved, not spent, and shows as a savings destination in the Cash flow report.
+- **FIRE planner.** Ventures are off by default. You can switch them on. See [FIRE planner](/stats/fire-planner/).
+
+<Aside type="tip" title="Linked or out of wallet?">
+Linking keeps your net worth steady: the money leaves your account and shows up in the deal. With **Out of wallet**, no account goes down, so your net worth rises by the deal's value. Use **Out of wallet** when the money never passed through an account you track.
+</Aside>
+
+## Related
+
+- [Portfolios](/investments/portfolios/)
+- [How transfers work](/transfers-and-refunds/how-transfers-work/)
+- [How stats are calculated](/stats/how-stats-are-calculated/)
+- [Dashboard](/stats/dashboard/)

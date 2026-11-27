@@ -72,16 +72,17 @@ Conventions:
 
 ### Reaching specific states
 
-| State                                                           | How                                                                                                                                                                                                                |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| First run (`/welcome`, empty dashboard with Quick Start)        | Use a fresh `DOCS_USER_EMAIL`; sign up with `open({ fresh: true })` and capture before running the seed (the seed confirms the currency and dismisses Quick Start).                                                |
-| Bank connection, synced transactions, bank-synced edit dialog   | Seeded SimpleFIN demo.                                                                                                                                                                                             |
-| Link a manual account to a bank                                 | Seeded **Everyday Checking** + the demo's unconnected account. Open the dialog, never submit it.                                                                                                                   |
-| Another active session                                          | Second `chromium.launch()` context with an iPhone Safari `userAgent` that signs in, then capture the sessions tab from the main context.                                                                           |
-| Active subscription, trial ended / read-only                    | `mockEntitlements({ page, entitlements: ENTITLEMENTS.activePlusYearly() })` or `ENTITLEMENTS.trialEnded()`; for the "See plans" toast add `mockPlanRequiredOnSave({ page })` and save an edit.                     |
-| Plus-only feature offering its day trial (Analytics, Watchlist) | `mockEntitlements({ page, entitlements: ENTITLEMENTS.essentialNoTrials() })`                                                                                                                                       |
-| Enable Banking consent expiring/expired                         | `mockEnableBankingConsent({ page, connectionId, daysLeft })` on the seeded SimpleFIN connection.                                                                                                                   |
-| Anything else unreachable                                       | Find the response the component reads (its store or `useQuery`), rewrite just that response with `page.route` → `route.fetch()` → `route.fulfill({ response, json })`. Add it to `mocks.mjs` if it will be reused. |
+| State                                                                | How                                                                                                                                                                                                                |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| First run (`/welcome`, empty dashboard with Quick Start)             | Use a fresh `DOCS_USER_EMAIL`; sign up with `open({ fresh: true })` and capture before running the seed (the seed confirms the currency and dismisses Quick Start).                                                |
+| Bank connection, synced transactions, bank-synced edit dialog        | Seeded SimpleFIN demo.                                                                                                                                                                                             |
+| Link a manual account to a bank                                      | Seeded **Everyday Checking** + the demo's unconnected account. Open the dialog, never submit it.                                                                                                                   |
+| Another active session                                               | Second `chromium.launch()` context with an iPhone Safari `userAgent` that signs in, then capture the sessions tab from the main context.                                                                           |
+| Active subscription, trial ended / read-only                         | `mockEntitlements({ page, entitlements: ENTITLEMENTS.activePlusYearly() })` or `ENTITLEMENTS.trialEnded()`; for the "See plans" toast add `mockPlanRequiredOnSave({ page })` and save an edit.                     |
+| Plus-only feature offering its day trial (Analytics, Watchlist)      | `mockEntitlements({ page, entitlements: ENTITLEMENTS.essentialNoTrials() })`                                                                                                                                       |
+| Pending share invitation, no dev "Email sending not configured" line | `mockInvitationEmailConfigured({ page })` (also shows the Resend button, as in production).                                                                                                                        |
+| Enable Banking consent expiring/expired                              | `mockEnableBankingConsent({ page, connectionId, daysLeft })` on the seeded SimpleFIN connection.                                                                                                                   |
+| Anything else unreachable                                            | Find the response the component reads (its store or `useQuery`), rewrite just that response with `page.route` → `route.fetch()` → `route.fulfill({ response, json })`. Add it to `mocks.mjs` if it will be reused. |
 
 ### Gotchas
 
@@ -92,6 +93,18 @@ Conventions:
 - Select triggers can lose their `combobox` role once open; take bounding boxes before clicking.
 - Headless Chrome's default user agent gets bank/brand logos blocked; `open()` already sets a normal one.
 - Background toasts (e.g. "AI provider rate limit reached") can land in a frame — close them or retake.
+
+## 3b. iPhone screenshots (`<Screenshot phone …>`)
+
+Taken in the iOS Simulator, not a real phone, by an agent working in the iOS repo (`$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/../budget-tracker-ios`; follow its `CLAUDE.md`, change no iOS code, no commits).
+
+- **Device:** iPhone 17 on the newest iOS runtime. Its 1206×2622 output matches the existing `public/screenshots/iphone/*` shots; open a sibling shot first to match framing.
+- **App:** `xcodegen generate`, then `xcodebuild … -destination 'platform=iOS Simulator,id=<udid>' build` and `xcrun simctl install`. Installing the app is what makes its App Intents (e.g. **Log Payment Message**) show in Shortcuts. Stop if the build or install fails: the simulator keeps the old build and you would screenshot it.
+- **Status bar:** `xcrun simctl status_bar <udid> override --time 09:41 --cellularBars 4 --wifiBars 3 --batteryState charging --batteryLevel 100`.
+- **Drive the UI** with the `axe` CLI (`/opt/homebrew/bin/axe`: `describe-ui`, `tap`, `type`); don't install other tools.
+- **Themes:** `xcrun simctl ui <udid> appearance light|dark`, capture with `xcrun simctl io <udid> screenshot <file>`, write `<name>.png` and `<name>.dark.png`.
+- **Simulator limits:** only Apple apps and MoneyMatter are installed, so there are no bank apps. When a shot needs a third-party app (a notification trigger, say), use the closest Apple app and blur its name and icon afterwards with `sharp` (`extract` the pill → `blur(14)` → `composite` back), in both themes. Done this way: `iphone/notification-automation-done.png`.
+- Then `npm run screenshots:optimize` in `packages/docs` as usual.
 
 ## 4. Finish
 
