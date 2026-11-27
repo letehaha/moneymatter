@@ -3,7 +3,12 @@ import { describe, expect, it, jest } from '@jest/globals';
 jest.mock('@sentry/node', () => ({}));
 
 // eslint-disable-next-line import/first
-import { IGNORED_SPAN_PATTERNS, isUntracedPollingTransaction, resolveTracesSampleRate } from './sentry';
+import {
+  IGNORED_SPAN_PATTERNS,
+  isBankProviderRequest,
+  isUntracedPollingTransaction,
+  resolveTracesSampleRate,
+} from './sentry';
 
 // Mirrors the SDK's `ignoreSpans` matching for RegExp patterns: `pattern.test(description)`.
 const isIgnored = (description: string) => IGNORED_SPAN_PATTERNS.some((pattern) => pattern.test(description));
@@ -108,4 +113,24 @@ describe('IGNORED_SPAN_PATTERNS', () => {
   ])('keeps %p', (description) => {
     expect(isIgnored(description)).toBe(false);
   });
+});
+
+describe('isBankProviderRequest', () => {
+  it.each([
+    '/api/v1/bank-data-providers/plaid/connect',
+    '/api/v1/bank-data-providers/akahu/connect?x=1',
+    '/API/V1/Bank-Data-Providers/lunchflow/connect/',
+    '/api/v1/bank-data-providers/connections/abc/reauthorize',
+    '/api/v1/bank-data-providers/enablebanking/banks',
+    'https://api.example.com/api/v1/bank-data-providers/connections/abc',
+  ])('drops the body of %p', (url) => {
+    expect(isBankProviderRequest(url)).toBe(true);
+  });
+
+  it.each(['/api/v1/transactions', '/api/v1/bank-data-providers-other', '/bank-data-providers/plaid/connect'])(
+    'keeps the body of %p',
+    (url) => {
+      expect(isBankProviderRequest(url)).toBe(false);
+    },
+  );
 });

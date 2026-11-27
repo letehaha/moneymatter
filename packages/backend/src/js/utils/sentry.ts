@@ -57,6 +57,12 @@ export function isSentryEnabled(): boolean {
   return isProduction && hasDsn;
 }
 
+// Bank-provider request bodies carry provider credentials (API keys, private keys, tokens, OAuth codes).
+export const isBankProviderRequest = (url: string) =>
+  (URL.parse(url, 'http://localhost')?.pathname ?? url)
+    .toLowerCase()
+    .startsWith(`${API_PREFIX}/bank-data-providers/`.toLowerCase());
+
 /**
  * Initialize Sentry error tracking.
  * Should be called very early in app initialization (in bootstrap.ts).
@@ -79,11 +85,7 @@ export function initSentry(): void {
     // Integrations
     integrations: [
       // HTTP integration for tracing requests
-      Sentry.httpIntegration({
-        // This request carries a single-use Plaid public token.
-        ignoreIncomingRequestBody: (url) =>
-          url.split('?', 1)[0]?.replace(/\/$/, '').toLowerCase() === `${API_PREFIX}/bank-data-providers/plaid/connect`,
-      }),
+      Sentry.httpIntegration({ ignoreIncomingRequestBody: isBankProviderRequest }),
       // Express integration
       Sentry.expressIntegration(),
       Sentry.postgresIntegration({ ignoreConnectSpans: true }),
