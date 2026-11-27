@@ -2,7 +2,7 @@
   "pages": {
     "household": {
       "title": "Household",
-      "description": "Invite trusted people to share access to all the accounts you own. Members see your accounts and (with write access) can record transactions on them.",
+      "description": "Invite trusted people to share access to all the accounts you own. Members see your accounts and (if they can edit) can record transactions on them.",
       "myHousehold": {
         "title": "My household",
         "description": "People here get access to every account you own. Per-account shares always override household access."
@@ -11,9 +11,9 @@
       "noMembers": "No one has joined your household yet.",
       "loadMembersError": "Couldn't load household members. Try refreshing.",
       "permissions": {
-        "read": "Read",
-        "write": "Write",
-        "manage": "Manage"
+        "read": "View only",
+        "write": "Can edit",
+        "manage": "Can manage"
       },
       "writeScope": {
         "all": "Can edit any transaction",
@@ -38,8 +38,8 @@
         "error": "Couldn't remove this member."
       },
       "permissionChange": {
-        "setRead": "Make read-only",
-        "setWrite": "Allow writes",
+        "setRead": "Make view only",
+        "setWrite": "Allow editing",
         "success": "Permission updated.",
         "error": "Couldn't update permission."
       },

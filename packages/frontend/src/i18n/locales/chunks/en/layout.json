@@ -44,6 +44,10 @@
       "hideZeroBalances": {
         "label": "Hide zero balances",
         "description": "Hide accounts and groups with a zero balance"
+      },
+      "includeSharedInTotal": {
+        "label": "Include shared accounts in total",
+        "description": "Count accounts shared with you in the Bank accounts total"
       }
     },
     "accountsView": {
@@ -327,7 +331,7 @@
           },
           "share-account": {
             "title": "Share an account",
-            "description": "Open any account and use the Share action to grant a single user read or write access."
+            "description": "Open any account and use the Share action to grant a single user view or edit access."
           }
         },
         "ui": {

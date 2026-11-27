@@ -9,6 +9,8 @@ import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { type MaybeRef, unref } from 'vue';
 
+import { invalidateAllForDeal } from './events';
+
 const invalidateAllVentureRelated = (queryClient: ReturnType<typeof useQueryClient>) => {
   queryClient.invalidateQueries({
     predicate: (q) => Array.isArray(q.queryKey) && q.queryKey.includes(VUE_QUERY_GLOBAL_PREFIXES.ventureChange),
@@ -77,7 +79,7 @@ export const useDeleteVentureDeal = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (dealId: string) => deleteVentureDeal({ dealId }),
-    onSuccess: () => invalidateAllVentureRelated(queryClient),
+    mutationFn: deleteVentureDeal,
+    onSuccess: () => invalidateAllForDeal(queryClient),
   });
 };

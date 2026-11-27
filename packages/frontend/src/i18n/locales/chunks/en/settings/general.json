@@ -102,7 +102,7 @@
       },
       "showUpcomingTransactions": {
         "label": "Show upcoming transactions",
-        "description": "Pin a section with overdue scheduled payments and ones due within the next 3 days at the top of the transactions list.",
+        "description": "Pin a section with your pending planned transactions and with scheduled payments that are overdue or due within the next 3 days at the top of the transactions list.",
         "successNotification": "Upcoming transactions setting updated",
         "errorNotification": "Failed to update upcoming transactions setting"
       },

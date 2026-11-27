@@ -352,6 +352,7 @@
     "empty": "No notifications yet",
     "containerAriaLabel": "Notifications",
     "closeToast": "Close notification",
+    "dismiss": "Dismiss notification",
     "viewOnGitHub": "View on GitHub",
     "newVersion": "New version {version}",
     "newRelease": "New release",
@@ -372,6 +373,9 @@
     "goalReached": {
       "title": "Goal reached: {name}",
       "message": "You've saved {amount}."
+    },
+    "plannedConfirmed": {
+      "title": "{count} planned entry confirmed | {count} planned entries confirmed"
     },
     "unrealizedLossAlert": {
       "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"

@@ -161,6 +161,7 @@ const emit = defineEmits<{
       :skip-temp-ids="skipTempIds"
       :side-options="sideOptions"
       :is-transaction-valid="isTransactionValid"
+      :currency-code="holding.currencyCode"
       :compact="compact"
       @toggle-skip="(txTempId) => emit('toggle-skip-transaction', txTempId)"
       @delete-transaction="(txTempId) => emit('delete-transaction', txTempId)"

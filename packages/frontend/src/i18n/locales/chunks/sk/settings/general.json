@@ -141,6 +141,30 @@
         "successNotification": "Predvolený spôsob platby aktualizovaný",
         "errorNotification": "Predvolený spôsob platby sa nepodarilo aktualizovať"
       }
+    },
+    "notifications": {
+      "title": "Oznámenia",
+      "description": "Vyberte, ktoré upozornenia sa k vám dostanú a kde.",
+      "successNotification": "Nastavenia oznámení uložené",
+      "channels": {
+        "inApp": "V aplikácíí",
+        "push": "Push (aplikácia pre iOS)",
+        "email": "E-mail"
+      },
+      "categories": {
+        "watchlistAlerts": {
+          "label": "Upozornenia zo zoznamu sledovaných",
+          "description": "Cenové upozornenia na cenné papiere v zoznamoch sledovaných vo vašich portfóliách. Každé upozornenie môže mať vlastné kanály aj vypnuté."
+        },
+        "subscriptionReminders": {
+          "label": "Pripomienky platieb",
+          "description": "Pripomienky pred splatnosťou opakovanej platby. Pre e-mail musí byť zapnutá aj možnosť e-mailu pri samotnej platbe."
+        },
+        "invitations": {
+          "label": "Pozvánky",
+          "description": "Keď s vami niekto zdieľa účet, sledovač alebo domácnosť."
+        }
+      }
     }
   }
 }

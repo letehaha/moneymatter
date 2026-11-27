@@ -181,21 +181,15 @@ const acceptImpl = async ({ token, userId }: { token: string; userId: number }):
       acceptedAt,
     }));
 
-  // Auto-merge prior per-resource grants when the recipient accepts a household
-  // invitation from the same owner: the broader household grant supersedes them,
-  // and keeping ghost per-resource rows around means revoking household later
-  // leaves the recipient with surprise access to whatever was shared per-resource
-  // before. The merge runs inside the same transaction as the household row's
-  // creation, so an accept either fully merges or fully rolls back.
-  //
-  // No revoke notifications fire for merged rows — the recipient initiated this,
-  // they're not being revoked by someone else.
+  // The household grant supersedes prior account grants from the same owner; leftover rows would
+  // resurface as access after a household revoke. Tracker shares stay: trackers never inherit
+  // household access. No revoke notifications: the recipient initiated this.
   if (invitation.resourceType === RESOURCE_TYPES.household && !existingShare) {
     await ResourceShares.destroy({
       where: {
         ownerUserId: invitation.ownerUserId,
         sharedWithUserId: userId,
-        resourceType: { [Op.ne]: RESOURCE_TYPES.household },
+        resourceType: RESOURCE_TYPES.account,
         acceptedAt: { [Op.not]: null },
       },
     });
@@ -205,7 +199,7 @@ const acceptImpl = async ({ token, userId }: { token: string; userId: number }):
         where: {
           ownerUserId: invitation.ownerUserId,
           inviteeUserId: userId,
-          resourceType: { [Op.ne]: RESOURCE_TYPES.household },
+          resourceType: RESOURCE_TYPES.account,
           status: SHARE_INVITATION_STATUSES.pending,
         },
       },

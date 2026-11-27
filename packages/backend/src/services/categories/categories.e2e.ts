@@ -1,4 +1,4 @@
-import { CATEGORY_TYPES, CategoryModel } from '@bt/shared/types';
+import { CATEGORY_TYPES, CategoryModel, SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -488,6 +488,32 @@ describe('Delete custom categories', () => {
     const categories = await helpers.getCategoriesList();
     expect(categories.find((c) => c.id === defaultCategoryId)).toBeDefined();
     expect((await helpers.getUserInfo({ raw: true })).defaultCategoryId).toBe(defaultCategoryId);
+  });
+
+  it('should move recurring payments on the deleted category to the replacement', async () => {
+    const [doomed, replacement] = await Promise.all([
+      helpers.addCustomCategory({ name: 'Doomed', color: '#FF0000', raw: true }),
+      helpers.addCustomCategory({ name: 'Replacement', color: '#00FF00', raw: true }),
+    ]);
+    const subscription = await helpers.createSubscription({
+      name: 'Gym',
+      expectedAmount: 50,
+      expectedCurrencyCode: global.BASE_CURRENCY_CODE,
+      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+      startDate: '2025-01-01',
+      categoryId: doomed.id,
+      raw: true,
+    });
+
+    const res = await helpers.deleteCustomCategory({
+      categoryId: doomed.id,
+      replaceWithCategoryId: replacement.id,
+      raw: false,
+    });
+    expect(res.status).toBe(200);
+
+    const after = await helpers.getSubscriptionById({ id: subscription.id, raw: true });
+    expect(after.categoryId).toBe(replacement.id);
   });
 
   it('should return not found error for a non-existent category and validation error for an invalid category id', async () => {

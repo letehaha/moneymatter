@@ -1,4 +1,4 @@
-import { ImportSource, type RecordId } from '@bt/shared/types';
+import { ImportSource, TRANSACTION_TYPES, type RecordId } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import { asUser, signUpSecondUser, withoutSession } from '@tests/helpers/share';
@@ -167,5 +167,53 @@ describe('GET /import/batches-history', () => {
     const historyAfterUndo = await helpers.getBatchesHistory({ raw: true });
     expect(historyAfterUndo.items.map((item) => item.batchId)).toEqual([linking.batchId]);
     expect((await helpers.getAccounts()).map((account) => account.id)).toEqual([existing.id]);
+  });
+
+  it('counts the transfer legs linked to a transaction outside the batch', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const otherAccount = await helpers.createAccount({ raw: true });
+
+    const linked = await helpers.runCsvImport({ accountId: account.id, currencyCode: account.currencyCode });
+    const [manualTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: otherAccount.id,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    await helpers.linkTransactions({
+      payload: { ids: [[manualTx!.id as RecordId, linked.newTransactionIds[0] as RecordId]] },
+      raw: true,
+    });
+
+    const plainAccount = await helpers.createAccount({ raw: true });
+    const plain = await helpers.runCsvImport({
+      accountId: plainAccount.id,
+      currencyCode: plainAccount.currencyCode,
+    });
+
+    // Both legs of this transfer belong to the batch, so undo touches nothing outside it.
+    const intraAccount = await helpers.createAccount({ raw: true });
+    const intraIncomeAccount = await helpers.createAccount({ raw: true });
+    const intraBatch = await helpers.runCsvImport({
+      accountId: intraAccount.id,
+      currencyCode: intraAccount.currencyCode,
+      incomeAccountId: intraIncomeAccount.id,
+    });
+    const intraRows = await helpers.getTransactions({ batchId: intraBatch.batchId, raw: true });
+    const income = intraRows.find((tx) => tx.transactionType === TRANSACTION_TYPES.income)!;
+    const expense = intraRows.find((tx) => tx.transactionType === TRANSACTION_TYPES.expense)!;
+    await helpers.linkTransactions({
+      payload: { ids: [[income.id as RecordId, expense.id as RecordId]] },
+      raw: true,
+    });
+
+    const history = await helpers.getBatchesHistory({ raw: true });
+
+    expect(Object.fromEntries(history.items.map((item) => [item.batchId, item.linkedTransferCount]))).toEqual({
+      [linked.batchId]: 1,
+      [plain.batchId]: 0,
+      [intraBatch.batchId]: 0,
+    });
   });
 });

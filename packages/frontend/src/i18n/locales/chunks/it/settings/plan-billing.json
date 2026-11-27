@@ -19,7 +19,7 @@
       "saveUpTo": "Risparmia fino al {percent}%",
       "promotion": {
         "title": "{name}: {percent}% di sconto sul primo pagamento",
-        "subtitle": "Applicato automaticamente al momento del pagamento, nessun codice necessario. Termina il {date}.",
+        "subtitle": "Applicato automaticamente al checkout, nessun codice necessario. Termina il {date}.",
         "badge": "{name} −{percent}%",
         "firstCycle": {
           "year": "/ primo anno",
@@ -29,7 +29,7 @@
           "year": "Poi {amount}/anno",
           "month": "Poi {amount}/mese"
         },
-        "billedToday": "Addebito di oggi: {amount}. Annullabile in qualsiasi momento.",
+        "billedToday": "Addebito oggi: {amount}. Annullabile in qualsiasi momento.",
         "names": {
           "blackFriday2026": "Black Friday"
         }
@@ -75,7 +75,8 @@
         "cancelNote": "Ci hai ripensato? Rinnova dal portale di fatturazione e la data di rinnovo resta invariata.",
         "monthlyHint": "Passa all'annuale e risparmia {amount} all'anno.",
         "noCard": "Nessuna carta registrata",
-        "readOnlyHelp": "Cosa significa sola lettura?"
+        "readOnlyHelp": "Cosa significa sola lettura?",
+        "gift": "{tier} in regalo"
       },
       "status": {
         "pastDue": "Pagamento non riuscito",
@@ -85,7 +86,8 @@
         "trial": "Funzioni Plus",
         "processing": "In elaborazione",
         "earlyAdopter": "Early adopter",
-        "endsOn": "Termina il {date}"
+        "endsOn": "Termina il {date}",
+        "gift": "Regalo"
       },
       "cta": {
         "activating": "Attivazione in corso...",
@@ -99,7 +101,17 @@
         "viaPortal": "Modificabile nel portale di fatturazione.",
         "viaAppStore": "Le modifiche al piano avvengono nell'App Store",
         "billedToday": "Addebito oggi. Annullabile in qualsiasi momento.",
-        "earlyAdopter": "Sconto del 50% a vita, applicato al checkout"
+        "earlyAdopter": "Sconto del 50% a vita, applicato al checkout",
+        "afterGift": "Disponibile al termine del regalo il {date}"
+      },
+      "gift": {
+        "title": "Riscatta un codice regalo",
+        "description": "Si è ricevuto un abbonamento in regalo? Inserire il codice ricevuto via email.",
+        "placeholder": "Inserire il codice regalo",
+        "redeem": "Riscatta",
+        "redeemed": "Regalo riscattato: {tier} fino al {date}",
+        "redeemedQueued": "Regalo riscattato. {tier} inizia il {start} e dura fino al {date}.",
+        "redeemFailed": "Impossibile riscattare il codice regalo. Riprovare."
       },
       "plans": {
         "essential": "Essential",

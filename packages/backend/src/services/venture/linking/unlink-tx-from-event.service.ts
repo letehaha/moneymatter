@@ -57,3 +57,24 @@ const unlinkTxFromEventImpl = async ({ userId, eventId, linkId }: UnlinkTxFromEv
 };
 
 export const unlinkTxFromEvent = withTransaction(unlinkTxFromEventImpl);
+
+/** Unlinks every link (restoring each tx) and, with `deleteLinkedTransactions`, deletes the txs. */
+export const unlinkEventLinks = withTransaction(
+  async ({
+    userId,
+    links,
+    deleteLinkedTransactions = false,
+  }: {
+    userId: number;
+    links: readonly Pick<VentureEventLinks, 'id' | 'transactionId'>[];
+    deleteLinkedTransactions?: boolean;
+  }) => {
+    for (const link of links) {
+      await unlinkTxFromEvent({ userId, linkId: link.id });
+
+      if (deleteLinkedTransactions) {
+        await Transactions.deleteTransactionById({ id: link.transactionId, userId });
+      }
+    }
+  },
+);

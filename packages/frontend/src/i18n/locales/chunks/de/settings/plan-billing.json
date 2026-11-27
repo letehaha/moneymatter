@@ -18,18 +18,18 @@
       "roadmapNote": "Kostenlos. Stimme dafür ab und wir informieren dich, sobald es verfügbar ist.",
       "saveUpTo": "Spare bis zu {percent}%",
       "promotion": {
-        "title": "{name}: {percent}% Rabatt auf deine erste Zahlung",
-        "subtitle": "Wird an der Kasse automatisch angewendet, kein Code erforderlich. Endet am {date}.",
-        "badge": "{name} –{percent}%",
+        "title": "{name}: {percent}% off your first payment",
+        "subtitle": "Applied automatically at checkout, no code needed. Ends {date}.",
+        "badge": "{name} −{percent}%",
         "firstCycle": {
-          "year": "/ erstes Jahr",
-          "month": "/ erster Monat"
+          "year": "/ first year",
+          "month": "/ first month"
         },
         "renews": {
-          "year": "Danach {amount}/Jahr",
-          "month": "Danach {amount}/Monat"
+          "year": "Then {amount}/year",
+          "month": "Then {amount}/month"
         },
-        "billedToday": "Heute abgebucht: {amount}. Jederzeit kündbar.",
+        "billedToday": "Billed today: {amount}. Cancel anytime.",
         "names": {
           "blackFriday2026": "Black Friday"
         }
@@ -75,7 +75,8 @@
         "cancelNote": "Meinung geändert? Verlängere im Abrechnungsportal und dein Verlängerungsdatum bleibt unverändert.",
         "monthlyHint": "Wechsle zu jährlich und spare {amount} im Jahr.",
         "noCard": "Keine Karte hinterlegt",
-        "readOnlyHelp": "Was bedeutet schreibgeschützt?"
+        "readOnlyHelp": "Was bedeutet schreibgeschützt?",
+        "gift": "{tier} gift"
       },
       "status": {
         "pastDue": "Zahlung fehlgeschlagen",
@@ -85,7 +86,8 @@
         "trial": "Plus-Funktionen",
         "processing": "In Bearbeitung",
         "earlyAdopter": "Early Adopter",
-        "endsOn": "Endet am {date}"
+        "endsOn": "Endet am {date}",
+        "gift": "Gift"
       },
       "cta": {
         "activating": "Wird aktiviert…",
@@ -99,7 +101,17 @@
         "viaPortal": "Im Abrechnungsportal geändert.",
         "viaAppStore": "Tarifänderungen erfolgen im App Store",
         "billedToday": "Heute abgerechnet. Jederzeit kündbar.",
-        "earlyAdopter": "50% Rabatt für immer, wird beim Checkout angewendet"
+        "earlyAdopter": "50% Rabatt für immer, wird beim Checkout angewendet",
+        "afterGift": "Available after your gift ends on {date}"
+      },
+      "gift": {
+        "title": "Redeem a gift code",
+        "description": "Got a gift subscription? Enter the code from your email.",
+        "placeholder": "Enter your gift code",
+        "redeem": "Redeem",
+        "redeemed": "Gift redeemed: {tier} until {date}",
+        "redeemedQueued": "Gift redeemed. {tier} starts on {start} and runs until {date}.",
+        "redeemFailed": "Couldn't redeem the gift code. Try again."
       },
       "plans": {
         "essential": "Essential",

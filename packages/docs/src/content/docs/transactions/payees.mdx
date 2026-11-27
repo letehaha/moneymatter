@@ -71,7 +71,7 @@ Click a payee in the list to open its page. It shows:
 - The **Categorization** section: **Default category**, the categorization setting, **Auto-apply tags** and **Default location**.
 - **Aliases**: other spellings that link to this payee.
 - An **Actions** menu with **Rename**, **Merge into…**, **Delete** and **Delete & ignore**.
-- The logo, which you can replace with **Change logo**.
+- The logo, which you can replace with **Change logo** (see [logos](#logos)).
 
 Changes in the **Categorization** section save as soon as you make them. There's no Save button.
 
@@ -80,6 +80,17 @@ Changes in the **Categorization** section save as soon as you make them. There's
   alt="A payee's page with its transaction count, net flow and top category, the Categorization section with a default category and auto-apply tags, and two aliases."
   hint="Open /settings/payees and click a payee such as 'Lidl' that has transactions. Set Default category 'Groceries', keep the mode on 'Always use payee category', add one auto-apply tag, and make sure the Aliases card shows two aliases (e.g. 'LIDL SAGT DANKE', 'LIDL 1234'). Crop to the stat tiles, the Categorization section and the Aliases card."
 />
+
+## Logos
+
+MoneyMatter looks for a brand logo for each payee by itself, based on its name. It only picks a brand whose name matches the payee's, so a generic name such as "Phone" gets no logo rather than a wrong one. You don't need to do anything for well-known shops and services.
+
+If the logo is wrong or missing, open the payee and click **Change logo**. You can pick:
+
+- **Brand**: search by brand name, or type the company's website, such as amazon.com, for an exact match.
+- **Letters**: a few letters on a colored background.
+
+A logo you pick yourself is kept. To go back to the one MoneyMatter finds, open **Change logo** and click **Reset to automatic**.
 
 ## Default category and auto-apply tags
 
@@ -92,6 +103,8 @@ A payee's **Default category** is used for new transactions linked to it, whethe
 - **Off**: the default category is never applied automatically. Picking the payee in the transaction form still suggests it, and you can change it before saving.
 
 In the transaction form, picking a payee fills in its default category, or its **Top category** if it has no default. That only happens if you haven't chosen a category yourself yet.
+
+On bank-synced and imported transactions, two things take precedence over the default category: a category set by a [recurring payment](/planned/recurring-payments/#organize-category-payee-and-tags), and one set by an [automation](/transactions/automations/). The payee's default category is only applied when neither of them set one.
 
 <Aside type="caution" title="The default category wins when you save">
 With **Always use payee category** or **Use as a hint**, the payee's default category is applied when a new transaction is saved, even if you picked a different category in the form. If a payee covers many kinds of purchases, like a big online store, and you'd rather pick the category yourself, leave its **Default category** empty or set **AI categorization** to **Off**.
@@ -124,6 +137,7 @@ Detection never touches:
 
 - **Transfers you create between your own accounts** aren't matched to a payee. A transaction that already has a payee keeps it if you turn it into a transfer, but transfers never count toward a payee's **# tx** or **Net flow**.
 - **Transactions whose payee you set or cleared yourself.** Your choice is locked on that transaction.
+- **Transactions whose payee an [automation](/transactions/automations/) set.** A payee set by a rule's **Set payee** action is locked the same way.
 
 ### Detection settings
 
@@ -133,7 +147,7 @@ On the **Settings** tab of the **Payees** page:
 - **Create a payee after N occurrences:** how many transactions must share an unknown name before a payee is created: 1, 2 or 3. The default is 2, which avoids creating a payee for a one-off name. Choose 1 to create payees from the first transaction.
 - **Ignored merchant names:** names that should never turn into a payee automatically, such as "Card transfer". Type the name and click **Add**. You can still link transactions with that name to a payee by hand.
 
-If you add an ignored name that matches an existing payee, MoneyMatter offers **Delete Payee and ignore**. The payee is deleted; its transactions stay but lose the link.
+If you add an ignored name that matches an existing payee, MoneyMatter offers **Delete payee and ignore**. The payee is deleted; its transactions stay but lose the link.
 
 <Screenshot
   src="/screenshots/transactions/payee-detection-settings.png"
@@ -175,6 +189,7 @@ What happens:
 - Its name and aliases become aliases of the payee you keep, so future bank transactions link correctly.
 - Its auto-apply tags are added to the kept payee's tags.
 - The kept payee's default category stays; the other one's is dropped.
+- [Recurring payments](/planned/recurring-payments/) and [automations](/transactions/automations/) that used the merged payee switch to the one you keep.
 - The merged payee is deleted.
 
 ## Delete a payee
@@ -184,7 +199,12 @@ Open **Actions** and choose one of:
 - **Delete**: removes the payee and its aliases. Its transactions stay, with their categories, but no longer have a payee. If new bank or imported transactions keep arriving with this merchant name, MoneyMatter can create the payee again and re-link the old transactions. Use **Delete & ignore** to stop that.
 - **Delete & ignore**: does the same, and also adds the payee's name and all its aliases to your ignored names, so automatic detection won't create it again.
 
-Neither can be undone.
+Either way:
+
+- [Automations](/transactions/automations/#when-a-rule-is-paused-for-you) that use the payee in a condition or a **Set payee** action are paused until you open them and pick another payee.
+- [Recurring payments](/planned/recurring-payments/) that had this payee lose it.
+
+Neither can be undone. If you want to keep the payee's transactions and rules together, [merge](#merge-payees) it into another payee instead.
 
 ## Unlink a transaction
 
@@ -197,5 +217,6 @@ You can also change or clear the **Payee** in the [transaction form](/transactio
 - [Add and edit transactions](/transactions/add-and-edit/)
 - [Categories](/transactions/categories/)
 - [Tags](/transactions/tags/)
+- [Automations](/transactions/automations/)
 - [Bank connections](/import/bank-connections/)
 - [Import from CSV](/import/import-from-csv/)

@@ -21,7 +21,7 @@ The **Security** settings page covers everything about your login and your accou
 
 You can also open the user menu in the sidebar, the one showing your email, and choose **Account details**.
 
-The page has five tabs: **Login Methods**, **Active Sessions**, **Password**, **Backup & restore** and **Danger Zone**.
+The page has five tabs: **Login methods**, **Active sessions**, **Password**, **Backup & restore** and **Danger zone**.
 
 ## Login methods
 
@@ -32,7 +32,7 @@ You can sign in to MoneyMatter with any of these, and you can have several at on
 - **GitHub**
 - a passkey saved on your device
 
-The **Login Methods** tab shows each one and whether it's set up.
+The **Login methods** tab shows each one and whether it's set up.
 
 <Screenshot
   src="/screenshots/settings/login-methods.png"
@@ -54,7 +54,7 @@ If you sign in with Google or GitHub using the same email as your existing Money
 
 <Steps>
 
-1. In the **Passkeys** card, click **Add Passkey**.
+1. In the **Passkeys** card, click **Add passkey**.
 2. Follow your browser's or device's prompt to create the passkey.
 
 </Steps>
@@ -69,7 +69,7 @@ If adding fails, check that your device and browser support passkeys.
 
 ## Active sessions
 
-The **Active Sessions** tab lists every device where you're signed in. For each one you see the browser, the type of device, the IP address, and when it was last active. The device you're using now is at the top with a **Current** badge.
+The **Active sessions** tab lists every device where you're signed in. For each one you see the browser, the type of device, the IP address, and when it was last active. The device you're using now is at the top with a **Current** badge.
 
 - **Sign out one device:** click the sign-out icon on its row.
 - **Sign out everywhere else:** click **Sign out of all other sessions**. The device you're using stays signed in.
@@ -89,9 +89,9 @@ If you don't recognize a device, sign it out and [change your password](#change-
 <Steps>
 
 1. Open the **Password** tab.
-2. Enter your **Current Password**.
-3. Enter a **New Password** and type it again in **Confirm Password**.
-4. Click **Change Password**.
+2. Enter your **Current password**.
+3. Enter a **New password** and type it again in **Confirm password**.
+4. Click **Change password**.
 
 </Steps>
 
@@ -112,8 +112,8 @@ If you signed up with Google or GitHub, you don't have a password yet. You can a
 <Steps>
 
 1. Open the **Password** tab.
-2. Enter a **Password** and type it again in **Confirm Password**.
-3. Click **Set Password**.
+2. Enter a **Password** and type it again in **Confirm password**.
+3. Click **Set password**.
 
 </Steps>
 
@@ -182,18 +182,18 @@ After restoring, reconnect your banks and enter your AI keys again if you use th
 
 - The restore happens all at once. If it fails, you'll see **Restore failed**.
 - While the restore runs, the rest of the app is locked, the same way it is during a [base currency change](/settings/base-currency-and-currencies/#change-your-base-currency).
-- If other people have access to your accounts, the restore removes that access. MoneyMatter asks you to confirm this before it starts.
+- If other people have access to your accounts, trackers or household, the restore removes that access and they're notified. MoneyMatter asks you to confirm this before it starts.
 
 ### Backup or export?
 
 The **Import/Export** settings page also lets you export your data. The two do different jobs:
 
 - A **backup** is a full copy you can restore into MoneyMatter.
-- An **export** is for spreadsheets, taxes, or moving to another app. It still works when your account is [read-only](/settings/plans-and-billing/#read-only-mode), when backups don't.
+- An **export** is for spreadsheets, taxes, or moving to another app. It still works when your account is [read-only](/settings/plans-and-billing/#read-only-mode), when backups don't. See [export your data](/settings/export-data/).
 
 ## Danger zone
 
-The **Danger Zone** tab has two ways to clear out your account. Both are permanent.
+The **Danger zone** tab has two ways to clear out your account. Both are permanent.
 
 <Screenshot
   src="/screenshots/settings/danger-zone.png"
@@ -207,17 +207,32 @@ This deletes everything in your workspace but keeps your login, so you can start
 
 <Steps>
 
-1. On the **Danger Zone** tab, click **Wipe data**.
+1. On the **Danger zone** tab, click **Wipe data**.
 2. Read the **Wipe all your data?** dialog.
 3. Type **WIPE MY DATA** in the box and click **Wipe data**.
 
 </Steps>
 
-If other people have access to your accounts, a **You're sharing data with other users** dialog lists what they'll lose access to. Click **Wipe anyway** to go ahead. Wiping also removes your access to anything others shared with you.
+If other people have access to your accounts, trackers or household, a **You're sharing data with other users** dialog lists what they'll lose access to. Click **Wipe anyway** to go ahead. They're notified that they lost access. Wiping also removes your access to anything others shared with you. See [Household and sharing](/settings/household-and-sharing/).
 
-The wipe deletes your accounts and balances, transactions, categories, tags, payees, bank connections, settings, and your base currency and exchange rates. The app then reloads into the start-up flow, where you choose a base currency again. You start with the same default categories and tags as a new account.
+The wipe deletes everything you own in MoneyMatter:
 
-Your login, profile and plan stay as they were. Wiping doesn't restart your free trial.
+- accounts, balances and transactions, including their splits, attachments and planned transactions
+- categories, tags, payees and tag reminders
+- bank connections and import history
+- [budgets](/budgeting/start-budgeting/), [goals](/goals/overview/) and [trackers](/planned/trackers/)
+- [recurring payments](/planned/recurring-payments/), transaction templates, [automations](/transactions/automations/) and transaction groups
+- investment portfolios with their holdings, cash and watchlists, plus [loans](/accounts/loans/), [vehicles](/accounts/vehicles/) and [ventures](/investments/venture/)
+- your base currency, connected currencies, [custom currencies](/settings/custom-currencies/) and their exchange rates
+- your settings, including saved AI provider keys and your dashboard layout
+- your notifications
+- everything you share with others, everything shared with you, and all invitations
+
+Transactions you added to someone else's shared account stay on their account.
+
+The app then reloads into the start-up flow, where you choose a base currency again. You start with the same default categories and tags as a new account.
+
+Your login, sign-in methods, profile and plan stay as they were, and so do the AI apps you connected over MCP. Wiping doesn't restart your free trial or any feature trial.
 
 ### Delete your account
 
@@ -225,7 +240,7 @@ This deletes your account and all your data for good, including your login.
 
 <Steps>
 
-1. On the **Danger Zone** tab, click **Delete my account**.
+1. On the **Danger zone** tab, click **Delete my account**.
 2. In the **Are you absolutely sure?** dialog, type your email address to confirm.
 3. Click **Delete my account**.
 
@@ -233,7 +248,7 @@ This deletes your account and all your data for good, including your login.
 
 If you have a paid subscription, it's cancelled first, so you're never left paying for an account that no longer exists. If the cancellation fails, your account isn't deleted. Try again, or first cancel your subscription on the **Plan & billing** page (see [Cancel](/settings/plans-and-billing/#cancel)).
 
-Once your account is deleted, you're signed out and taken to the sign-in page. Anyone you shared accounts with loses access.
+Once your account is deleted, you're signed out and taken to the sign-in page. Anyone you shared accounts, trackers or your household with loses access and is notified.
 
 | | Wipe all data | Delete your account |
 |---|---|---|

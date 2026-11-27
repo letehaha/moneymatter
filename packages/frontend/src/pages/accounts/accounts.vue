@@ -348,21 +348,24 @@ const archivedAccounts = computed(() =>
   ),
 );
 
+const sharedAccountIds = computed(() => new Set(sharedAccounts.value.map((account) => account.id)));
+
 // Overview net worth spans grouped + ungrouped money accounts (vehicles counted separately),
-// excluding archived accounts so a grouped-but-archived one doesn't skew net worth.
+// excluding archived accounts and accounts shared with the user. Grouped accounts carry no
+// `share` block, so shared ones are matched by id.
 const moneyAccounts = computed(() =>
   [...Object.values(accountsInGroups.value), ...ungroupedAccounts.value].filter(
     (account) =>
       account.accountCategory !== ACCOUNT_CATEGORIES.vehicle &&
       account.accountCategory !== ACCOUNT_CATEGORIES.loan &&
-      account.status !== ACCOUNT_STATUSES.archived,
+      account.status !== ACCOUNT_STATUSES.archived &&
+      !sharedAccountIds.value.has(account.id),
   ),
 );
 
 // VehicleModel.account is nullable — render/count only vehicles that have one, so the
 // section, its count, its total, and the overview all agree and no row null-derefs.
 // Shared-in vehicles render under "Shared with me" and stay out of the caller's totals.
-const sharedAccountIds = computed(() => new Set(sharedAccounts.value.map((account) => account.id)));
 const vehiclesWithAccount = computed(() =>
   (vehicles.value ?? []).filter((v) => v.account != null && !sharedAccountIds.value.has(v.accountId)),
 );

@@ -3,6 +3,7 @@ import ImportBatchAccountEffects from '@models/import-batch-account-effects.mode
 import ImportBatches from '@models/import-batches.model';
 import { findTransactions } from '@models/transactions-query';
 import { trashedWhere } from '@models/transactions-query/deletion-where';
+import { type BatchLeg, findExternalTransferTwins } from '@services/import-export/delete-batch.service';
 import { Op, col, fn, literal } from 'sequelize';
 
 const BATCH_ID_EXPR = `"Transactions"."externalData"->'importDetails'->>'batchId'`;
@@ -16,6 +17,33 @@ interface StampGroup {
   transactionCount: string | number;
   accountIds: string[];
 }
+
+type StampedLeg = BatchLeg & { batchId: string; deletedAt: Date | null };
+
+/** Stamped rows undo deletes: no planned rows (imports never write them), adjustments, transfer legs and trashed rows kept. */
+const stampedRowsFilter = ({ userId }: { userId: number }) =>
+  ({
+    planned: 'exclude',
+    access: { creator: userId },
+    balanceAdjustments: 'include',
+    paranoid: false,
+    completeness: 'all',
+  }) as const;
+
+const stampedWhere = [literal(`${BATCH_ID_EXPR} IS NOT NULL`), { [Op.or]: [{ deletedAt: null }, trashedWhere] }];
+
+/** Per batch, the transfer legs undo would unlink: their twin lies outside the batch. */
+const countLinkedTransfersByBatch = async ({ legs }: { legs: StampedLeg[] }) => {
+  const [live, trashed] = await Promise.all([
+    findExternalTransferTwins({ legs: legs.filter((leg) => leg.deletedAt === null), trashed: false }),
+    findExternalTransferTwins({ legs: legs.filter((leg) => leg.deletedAt !== null), trashed: true }),
+  ]);
+  const counts = new Map<string, number>();
+  for (const leg of [...live.legsWithTwin, ...trashed.legsWithTwin]) {
+    counts.set(leg.batchId!, (counts.get(leg.batchId!) ?? 0) + 1);
+  }
+  return counts;
+};
 
 /**
  * One entry per import batch, merged from `ImportBatches` rows and the `importDetails`
@@ -33,16 +61,11 @@ export async function listBatchesHistory({
 }): Promise<ImportBatchesHistoryResponse> {
   // ponytail: loads every batch of the user per request and pages in memory, fine while
   // a user has tens of batches. Move the visibility predicate into SQL and page there.
-  const [groups, batches] = await Promise.all([
+  const [groups, batches, transferLegs] = await Promise.all([
     findTransactions({
-      // Same row set undo deletes, so `transactionCount` matches its `deletedCount`:
-      // no planned rows (imports never write them), adjustments, transfer legs and trashed rows kept.
-      planned: 'exclude',
-      access: { creator: userId },
-      balanceAdjustments: 'include',
-      paranoid: false,
-      where: { [Op.and]: [literal(`${BATCH_ID_EXPR} IS NOT NULL`), { [Op.or]: [{ deletedAt: null }, trashedWhere] }] },
-      completeness: 'all',
+      // Same row set undo deletes, so `transactionCount` matches its `deletedCount`.
+      ...stampedRowsFilter({ userId }),
+      where: { [Op.and]: stampedWhere },
       attributes: [
         [literal(BATCH_ID_EXPR), 'batchId'],
         // Identical on every row of a batch, so MIN/MAX just pick the shared value.
@@ -59,7 +82,17 @@ export async function listBatchesHistory({
       raw: true,
     }) as unknown as Promise<StampGroup[]>,
     ImportBatches.findAll({ where: { userId } }),
+    findTransactions({
+      ...stampedRowsFilter({ userId }),
+      where: {
+        [Op.and]: [...stampedWhere, { transferId: { [Op.ne]: null } }],
+      },
+      attributes: ['id', 'transferId', 'transferNature', [literal(BATCH_ID_EXPR), 'batchId'], 'deletedAt'],
+      raw: true,
+    }) as unknown as Promise<StampedLeg[]>,
   ]);
+
+  const linkedTransferCounts = await countLinkedTransfersByBatch({ legs: transferLegs });
 
   const effects =
     batches.length > 0
@@ -90,6 +123,7 @@ export async function listBatchesHistory({
       transactionCount: Number(group?.transactionCount ?? 0),
       accountIds: [...new Set([...(group?.accountIds ?? []), ...undoableEffects.map((effect) => effect.accountId)])],
       createdAccountCount: undoableEffects.filter((effect) => effect.createdByImport).length,
+      linkedTransferCount: linkedTransferCounts.get(batch.batchId) ?? 0,
     });
   }
 
@@ -101,6 +135,7 @@ export async function listBatchesHistory({
       transactionCount: Number(group.transactionCount),
       accountIds: group.accountIds,
       createdAccountCount: 0,
+      linkedTransferCount: linkedTransferCounts.get(group.batchId) ?? 0,
     });
   }
 

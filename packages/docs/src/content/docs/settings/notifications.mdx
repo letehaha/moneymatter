@@ -1,0 +1,120 @@
+---
+title: Notifications
+description: Find your notifications under the bell, mark them read or dismiss them, see what each kind means and where it takes you, and choose which alerts reach you in the app, on your iPhone or by email.
+sidebar:
+  order: 25
+---
+
+import { Aside, Badge, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+MoneyMatter sends you a notification when something needs your attention: a payment is due, a goal is reached, a bank sync confirmed your planned transactions, someone shared an account with you. They all collect under the bell at the top right of the app.
+
+## The notification center
+
+Click the bell in the header to open **Notifications**. A number on the bell shows how many you haven't read yet. Above 9 it shows **9+**.
+
+The list shows your 50 most recent notifications, newest first. Unread ones have a highlighted background and a bold title. Each one shows how long ago it arrived, for example "2 hours ago". If you have none, you'll see **No notifications yet**.
+
+The bell checks for new notifications every few minutes, so a new one can take a moment to show up.
+
+<Screenshot
+  src="/screenshots/settings/notifications-popover.png"
+  alt="The Notifications popover opened from the bell in the header, with the unread count on the bell, the Mark all as read button, and a mix of read and unread notifications such as a payment reminder and a goal reached."
+  hint="With the seeded docs test user, create two or three notifications first: add a recurring payment due tomorrow with a 1-day reminder and let the reminder job run, or reach a goal by adding a transaction. Leave at least one unread and mark one read. Open the app, click the bell at the top right. Crop to the bell and the open popover."
+/>
+
+### Read, dismiss and open notifications
+
+- **Open one**: click it. It's marked as read, and most kinds take you to what they're about, for example the payment, the goal or the account. See [what each notification is about](#what-each-notification-is-about).
+- **Mark all as read**: click **Mark all as read** at the top of the list. It only shows while you have unread notifications.
+- **Dismiss one**: click the × (**Dismiss notification**) at its top right. On a computer it shows when you hover over the notification or reach it with the keyboard; on a touch screen it's always there. It disappears from the list for good. Dismissing doesn't open it.
+
+Clicking a notification that has nowhere to take you, such as a tag reminder, just marks it as read.
+
+When your account is [read-only](/settings/plans-and-billing/#read-only-mode), you can still open, mark read and dismiss notifications.
+
+## What each notification is about
+
+| Notification | When you get it | Clicking it opens |
+|---|---|---|
+| Payment reminder | Before a [recurring payment](/planned/recurring-payments/) is due, on the days you chose for [its reminders](/planned/recurring-payments/#schedule-and-reminders). Titled "Payment reminder" with the payment's name and due date. | The recurring payment |
+| Planned entries confirmed | A bank sync matched real transactions to your [planned transactions](/planned/planned-transactions/) and confirmed them, for example "2 planned entries confirmed". See [the notification](/planned/planned-transactions/#the-notification). | The account |
+| Smart tracking matches <Badge text="Plus" variant="tip" /> | A smart tracking scan added transactions to a [tracker](/planned/trackers/) or found some for you to review. The title names the tracker, for example "Groceries: 3 transactions added, 2 to review". | The tracker's transactions, ready to review |
+| Goal reached | A [goal](/goals/overview/#when-you-reach-a-goal) hit its target. Titled "Goal reached" with the goal's name and the amount you saved. | The goal |
+| Tag reminder | A [tag reminder](/transactions/tags/#tag-reminders) fired: **Tag Spending Alert** when spending passed your threshold, **Tag Activity Summary** for a scheduled check. | Nothing, it's only marked read |
+| Card payments haven't cleared | Some bank transactions have been pending for over a week. Titled "Some card payments haven't cleared". See [stuck pending transactions](/transactions/reconciliation/#resolve-stuck-pending-transactions). | Reconciliation, on its stuck pending list |
+| Watchlist alert | A security on a [watchlist](/investments/watchlist/#price-alerts) closed above or below your price, or moved more than your limit in a day, for example "AAPL closed below 180 USD". | The portfolio's watchlist |
+| Unrealized loss alert | One or more holdings fell past your [loss alert](#unrealized-loss-alerts) thresholds, for example "2 holdings crossed your loss alert", with each holding's loss. | The portfolio, or **Investments** when the holdings are in several portfolios |
+| Sharing and household | Someone shared an account or tracker with you, invited you to their household, or changed or ended your access. On your side, someone accepted, declined or left something you shared, an invitation expired, or its email couldn't be delivered. See [who is notified](/settings/household-and-sharing/#notifications). | An invitation opens the dialog to accept or decline it. Household notifications open **Household** or **Shared with me**. For a shared account, an acceptance or a failed invitation email opens the account. The rest, such as a declined, expired or revoked share of an account or tracker, are only marked read. |
+| New version | A new version of MoneyMatter was released. See [release notifications](#release-notifications). | Nothing; click **View on GitHub** to read the release notes |
+| Announcements | A message from the MoneyMatter team. | Its link, in a new tab, if it has one |
+
+## Choose how you're notified
+
+Some kinds of notification have their own switches, so you can turn them off or choose where they reach you.
+
+<Steps>
+
+1. Click the gear button (**Settings**) at the top right of the app.
+2. Under **Personal**, choose **General**.
+3. Scroll to the **Notifications** card, below the general settings.
+
+</Steps>
+
+Each kind has a switch and three channels:
+
+- **In-app**: the notification under the bell.
+- **Push (iOS app)**: a push notification on your iPhone, if you use the MoneyMatter iPhone app. While push is on, **In-app** stays on too, because opening a push takes you to its notification in the app.
+- **Email**: an email to your account's address.
+
+| Setting | Covers | Starts as |
+|---|---|---|
+| **Watchlist alerts** | Price alerts on your watchlists | On, all three channels. Each alert can also turn its own channels off. |
+| **Unrealized loss alerts** | Holdings that fell past your thresholds | Off. Once on: in-app and push, no email. |
+| **Payment reminders** | Reminders before a recurring payment is due | On, all three channels. Email also needs the email option on the payment itself. |
+| **Invitations** | Someone shares an account, tracker or household with you | On, in-app and push. **Email** is always ticked and can't be changed, because the invitation email is the invitation itself. |
+
+Turning a switch off stops that kind of notification on every channel. Changes save straight away and you'll see "Notification settings saved".
+
+Everything else in the table above, such as goals, tag reminders and planned confirmations, always arrives in the app and can't be turned off here.
+
+<Screenshot
+  src="/screenshots/settings/notification-settings.png"
+  alt="The Notifications card in General settings with Watchlist alerts, Unrealized loss alerts with its two thresholds, Payment reminders and Invitations, each with In-app, Push (iOS app) and Email checkboxes."
+  hint="Open /settings/general with the seeded docs test user. Turn Unrealized loss alerts on so its thresholds and channels show. Scroll to the Notifications card below the General card and crop to that card."
+/>
+
+### Unrealized loss alerts
+
+**Unrealized loss alerts** tell you when a holding in one of your portfolios has fallen a lot below what you paid for it. It's off until you turn it on.
+
+When it's on, set either or both thresholds:
+
+- **Loss percentage**: alert when a holding is down at least this much from its cost. Starts at 10%.
+- **Loss amount**: or when the loss reaches this amount in your base currency, whatever the percentage. Starts at 500.
+
+MoneyMatter checks once a day, after market prices update. You get one notification listing every holding that crossed a threshold. A holding won't alert again until it recovers above the threshold and drops past it again.
+
+## Release notifications
+
+When a new version of MoneyMatter is released, you get a **New version** notification, for example "New version v1.42.0", with the release's name and a **View on GitHub** link to its release notes.
+
+It goes to everyone who used MoneyMatter in the 30 days before the release. Pre-releases and small maintenance releases don't send one.
+
+<Aside type="note" title="On a self-hosted install">
+Release notifications come from a GitHub webhook, so a [self-hosted](/getting-started/self-hosting/) install doesn't get them on its own. To receive them:
+
+1. Add `GITHUB_WEBHOOK_SECRET` with a random secret to your `.env`, and restart the backend.
+2. On a GitHub repository you control, add a webhook with the payload URL `https://<your-domain>/api/v1/webhooks/github`, content type `application/json`, the same secret, and only the **Releases** event.
+
+The webhook announces that repository's releases. A fork's webhook only fires for releases you publish on the fork, not for new MoneyMatter versions. Without the secret, everything else works as usual. You just don't get these notifications.
+</Aside>
+
+## Related
+
+- [Recurring payments](/planned/recurring-payments/)
+- [Watchlist](/investments/watchlist/)
+- [Tags: tag reminders](/transactions/tags/#tag-reminders)
+- [Household and sharing](/settings/household-and-sharing/)
+- [General settings](/settings/general-settings/)

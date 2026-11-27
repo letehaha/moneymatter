@@ -16,27 +16,74 @@
       "exchangeCurrency": "Changer des devises"
     },
     "balance": {
-      "totalValue": "Valeur totale",
-      "baseCurrencyEquivalent": "≈ {value} en {code}",
-      "loadError": "Impossible de charger le récapitulatif du portefeuille.",
-      "metrics": {
-        "costBasis": "Prix de revient",
-        "unrealized": "Latent",
-        "realized": "Réalisé",
-        "totalReturn": "Rendement total"
+      "baseCurrencyEquivalent": "≈ {value} en {code}"
+    },
+    "hero": {
+      "loadError": "Couldn't load the portfolio summary",
+      "resizeHint": "Drag to resize · double-click to reset",
+      "modes": {
+        "value": "Value",
+        "return": "Return %"
+      },
+      "periods": {
+        "1W": "1W",
+        "1M": "1M",
+        "3M": "3M",
+        "ytd": "YTD",
+        "1Y": "1Y",
+        "all": "All"
+      },
+      "series": {
+        "value": "Value",
+        "netDeposits": "Net deposits",
+        "costBasis": "Cost basis"
+      },
+      "depositsAxis": {
+        "label": "Deposits axis",
+        "shared": "Shared",
+        "own": "Own scale"
+      },
+      "settings": {
+        "lines": "Lines"
+      },
+      "chart": {
+        "empty": "No history yet. Add a deposit or a transaction to start the chart.",
+        "loadError": "Couldn't load the chart",
+        "return": "Return",
+        "gain": "Gain",
+        "returnCaption": "Return excludes deposits and withdrawals, so a deposit never shows as a jump."
+      },
+      "stats": {
+        "totalValue": "Total value",
+        "marketGain": "market gain · {period}",
+        "marketLoss": "market loss · {period}",
+        "netDeposits": "Net deposits",
+        "totalReturn": "Total return",
+        "unrealized": "Unrealized",
+        "realized": "Realized",
+        "costBasis": "Cost basis",
+        "cash": "Cash"
       }
     },
+    "menu": {
+      "chartLayout": "Chart layout",
+      "layoutFloating": "Floating card",
+      "layoutPanel": "Side panel",
+      "resetChartHeight": "Reset chart height"
+    },
+    "tabs": {
+      "holdings": "Holdings",
+      "analytics": "Analytics",
+      "activity": "Activity",
+      "watchlist": "Watchlist",
+      "plusBadge": "Plus",
+      "analyticsGateDescription": "Returns that ignore deposit timing, drawdowns, holding-by-holding performance and allocation for every portfolio.",
+      "watchlistGateDescription": "Track securities you don't own yet and get alerted when their price crosses your targets."
+    },
     "cashBalances": {
-      "title": "Liquidités",
       "emptyState": "Aucune liquidité",
-      "tabs": {
-        "balances": "Soldes",
-        "cashTransactions": "Opérations",
-        "buysSells": "Achats et ventes"
-      },
       "cashTransactions": {
         "addButton": "Ajouter un mouvement de liquidités",
-        "emptyState": "Aucun mouvement de liquidités pour le moment",
         "deposit": "Dépôt",
         "withdrawal": "Retrait",
         "transferIn": "Virement entrant",
@@ -52,7 +99,6 @@
         "markedAsContribution": "Marqué comme versement réel",
         "adjustmentError": "Impossible de mettre à jour ce virement",
         "rowActions": "Actions sur l'opération",
-        "emptyStateDescription": "Les dépôts, retraits et virements de ce portefeuille apparaîtront ici.",
         "edit": "Modifier",
         "editDialog": {
           "title": "Modifier l'opération de trésorerie",
@@ -61,16 +107,29 @@
         }
       },
       "buysSells": {
-        "emptyState": "Aucune opération d'achat/vente",
         "shares": "actions"
       }
     },
+    "activity": {
+      "filters": {
+        "all": "All",
+        "trades": "Trades",
+        "cash": "Cash",
+        "income": "Income"
+      },
+      "empty": {
+        "title": "No activity yet",
+        "description": "Trades, deposits, withdrawals and transfers will show up here.",
+        "filteredTitle": "Nothing to show for this filter"
+      },
+      "loadError": "Couldn't load activity"
+    },
+    "cash": {
+      "title": "Cash"
+    },
     "holdings": {
-      "title": "Lignes de portefeuille",
-      "subtitle": "{count} symboles",
       "filterPlaceholder": "Filtrer par symbole ou nom…",
       "addButton": "Ajouter un symbole",
-      "importButton": "Importer des opérations",
       "importButtonShort": "Importer"
     },
     "holdingsTable": {
@@ -81,14 +140,17 @@
       "clearFilterButton": "Effacer la recherche",
       "headers": {
         "symbol": "Symbole",
-        "name": "Nom",
         "shares": "Titres",
         "price": "Cours",
-        "avgCostPerShare": "PRU/titre",
-        "totalCost": "Coût total",
         "marketValue": "Valeur marchande",
-        "unrealizedGain": "Gain latent",
-        "realizedGain": "Gain réalisé"
+        "weight": "Weight",
+        "unrealizedGain": "Gain latent"
+      },
+      "actions": {
+        "addTransaction": "Add transaction",
+        "addTransactionFor": "Add transaction for {symbol}",
+        "openHolding": "Open holding",
+        "openHoldingFor": "Open {symbol}"
       },
       "transactions": {
         "loading": "Chargement des opérations…",
@@ -106,8 +168,7 @@
         "error": "Échec de la suppression de la ligne."
       },
       "addTransactionDialog": {
-        "title": "Ajouter une opération",
-        "description": "Ajoutez une nouvelle opération à votre portefeuille."
+        "title": "Ajouter une opération"
       },
       "tryAgainLater": "Veuillez réessayer plus tard",
       "emptyDescription": "Ajoutez votre première opération pour commencer à suivre vos investissements",
@@ -152,6 +213,266 @@
       "deleteTransaction": {
         "tooltip": "Supprimer l'opération"
       }
+    },
+    "analytics": {
+      "loadError": "Couldn't load analytics",
+      "refreshError": "Couldn't refresh analytics. Showing the last loaded data.",
+      "empty": {
+        "title": "No analytics yet",
+        "description": "Add a holding or deposit cash to see returns, drawdowns and allocation."
+      },
+      "periods": {
+        "6M": "6M"
+      },
+      "periodShiftHint": "Shift-click to apply to all charts",
+      "kpis": {
+        "timeWeightedLabel": "Time-weighted return",
+        "maxDrawdownLabel": "Max drawdown",
+        "moneyWeightedLabel": "Money-weighted return",
+        "annualizedSinceFirstDeposit": "annualized since the first deposit",
+        "moneyWeightedUnavailable": "Needs 6+ months of history",
+        "drawdownRecovered": "{peak} → {trough}, recovered {date}",
+        "drawdownNotRecovered": "{peak} → {trough}, not yet recovered",
+        "noDrawdown": "No drawdown in this period",
+        "feesPaidLabel": "Fees paid",
+        "feesShareOfBuys": "{share} of buys"
+      },
+      "table": {
+        "title": "Performance",
+        "caption": "Price return per period, in each holding's currency",
+        "holding": "Holding",
+        "weight": "Weight",
+        "value": "Value",
+        "showAll": "Show all {count}",
+        "showLess": "Show less"
+      },
+      "relative": {
+        "title": "Holdings vs portfolio",
+        "caption": "Each line starts at 0% on the first day of the period. Holdings use their own currency.",
+        "portfolio": "Portfolio",
+        "addHolding": "Add more",
+        "searchPlaceholder": "Search holdings",
+        "noMatches": "No matching holdings",
+        "maxReached": "You can compare up to {count} holdings",
+        "remove": "Remove from comparison",
+        "removeNamed": "Remove {name} from comparison",
+        "benchmarkLabel": "Benchmark",
+        "noBenchmark": "No benchmark",
+        "benchmarkProxy": "via {symbol}",
+        "benchmarkUnavailable": "Benchmark prices are not available yet"
+      },
+      "allocation": {
+        "title": "Allocation",
+        "byHolding": "Holding",
+        "byType": "Type",
+        "byCurrency": "Currency",
+        "empty": "Nothing to allocate yet",
+        "other": "Other ({count})"
+      },
+      "securityTypes": {
+        "stock": "Stocks",
+        "etf": "ETFs",
+        "mutualFund": "Funds",
+        "bond": "Bonds",
+        "crypto": "Crypto",
+        "option": "Options",
+        "cash": "Cash",
+        "other": "Other"
+      },
+      "monthly": {
+        "title": "Market gain by month",
+        "caption": "Value change minus deposits · {period} total {total}",
+        "marketGain": "Market gain",
+        "best": "Best: {month} {amount}",
+        "worst": "Worst: {month} {amount}",
+        "empty": "No monthly data for this period"
+      }
+    },
+    "watchlist": {
+      "buy": "Buy",
+      "buyError": "Couldn't open the buy dialog",
+      "placeholderCleanupError": "Couldn't clean up the {symbol} holding created for this purchase. If it has no transactions, delete it from Holdings.",
+      "heldBadge": "Held",
+      "inBuyZone": "In buy zone",
+      "toGo": "{percent} to go",
+      "rangeUnavailable": "Not enough history",
+      "notInSection": "Not in a section",
+      "filterPlaceholder": "Filter by symbol or name",
+      "collapseAll": "Collapse all",
+      "expandAll": "Expand all",
+      "noMatches": "No securities match your filter",
+      "loadError": "Couldn't load the watchlist",
+      "refreshError": "Couldn't refresh the watchlist. Showing the last loaded data.",
+      "limits": {
+        "items": "You can watch up to {max} securities",
+        "sections": "You can have up to {max} sections",
+        "alerts": "You can set up to {max} alerts per security"
+      },
+      "pricesFootnote": "Prices are daily closes, updated once a day after markets close. Alerts are checked right after that update.",
+      "alertsActive": "{count} active alert | {count} active alerts",
+      "alertsNone": "No alerts",
+      "alertsFor": "Alerts for {symbol}",
+      "moreFor": "More actions for {symbol}",
+      "empty": {
+        "title": "Your watchlist is empty",
+        "description": "Track securities you're thinking of buying, set a buy-below price and get alerted when they move."
+      },
+      "columns": {
+        "security": "Security",
+        "lastClose": "Last close",
+        "dailyChange": "1D",
+        "range52w": "52-week range",
+        "buyBelow": "Buy below",
+        "note": "Note",
+        "actions": "Actions"
+      },
+      "sectionSummary": {
+        "inBuyZone": "{count} in buy zone",
+        "alerts": "{count} alert | {count} alerts"
+      },
+      "add": {
+        "open": "Add security",
+        "title": "Add to watchlist",
+        "description": "Search for a stock, ETF or coin to watch.",
+        "securityLabel": "Security",
+        "securityPlaceholder": "Search a stock, ETF or coin",
+        "sectionLabel": "Section",
+        "targetLabelOptional": "Buy below, {currency} (optional)",
+        "targetLabelOptionalNoCurrency": "Buy below (optional)",
+        "submit": "Add to watchlist"
+      },
+      "items": {
+        "editTitle": "Edit watchlist item",
+        "editAction": "Edit note and target",
+        "moveTo": "Move to section",
+        "remove": "Remove",
+        "removeTitle": "Remove {symbol} from the watchlist?",
+        "removeDescription": "Its note, buy-below price and alerts are deleted too.",
+        "targetLabel": "Buy below ({currency})",
+        "targetPlaceholder": "Enter a price",
+        "noteLabel": "Note",
+        "notePlaceholder": "Why are you watching it?",
+        "added": "Added to watchlist",
+        "updated": "Watchlist item updated",
+        "removed": "Removed from watchlist",
+        "addError": "Couldn't add to the watchlist",
+        "saveError": "Couldn't save the watchlist item",
+        "removeError": "Couldn't remove the watchlist item"
+      },
+      "sections": {
+        "new": "New section",
+        "newTitle": "New section",
+        "renameTitle": "Rename section",
+        "rename": "Rename",
+        "delete": "Delete section",
+        "menuFor": "Actions for {name}",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Buy candidates",
+        "empty": "No securities in this section",
+        "deleteTitle": "Delete \"{name}\"?",
+        "deleteDescription": "Its securities stay on the watchlist and move to Not in a section.",
+        "created": "Section created",
+        "renamed": "Section renamed",
+        "deleted": "Section deleted",
+        "saveError": "Couldn't save the section",
+        "deleteError": "Couldn't delete the section"
+      },
+      "layout": {
+        "open": "Manage layout",
+        "title": "Manage layout",
+        "description": "Drag sections to reorder them. Drag securities between sections.",
+        "saved": "Layout saved",
+        "saveError": "Couldn't save the layout"
+      },
+      "alerts": {
+        "title": "Alerts · {symbol}",
+        "lastClose": "Last close {price} · {date}",
+        "lastCloseUndated": "Last close {price}",
+        "listTitle": "Alerts",
+        "newTitle": "New alert",
+        "editTitle": "Edit alert",
+        "kindPrice": "Price target",
+        "kindMove": "Daily move",
+        "directionLabel": "When the close is",
+        "directionPlaceholder": "Select a direction",
+        "above": "Above",
+        "below": "Below",
+        "priceLabel": "Price ({currency})",
+        "pricePlaceholder": "Enter a price",
+        "percentLabel": "Move of at least (%)",
+        "percentPlaceholder": "e.g. 5",
+        "percentRange": "Enter a value from {min}% to {max}%",
+        "once": "Once",
+        "onceHint": "Turns off after it fires",
+        "everyTime": "Every time",
+        "everyTimeHint": "Re-arms once the price crosses back",
+        "channelsLabel": "Notify me via",
+        "channelInApp": "In-app",
+        "channelEmail": "Email",
+        "channelPushSoon": "iOS push · soon",
+        "channelRequired": "Pick at least one channel",
+        "checkHint": "Checked once a day against the closing price. A close that jumps past your price still counts.",
+        "describeAbove": "Closes above {price}",
+        "describeBelow": "Closes below {price}",
+        "describeMove": "Moves {percent}% or more in a day",
+        "lastFired": "last fired {date}",
+        "toggleLabel": "Alert on",
+        "addAlert": "Add alert",
+        "saveAlert": "Save alert",
+        "deleteTitle": "Delete this alert?",
+        "created": "Alert created",
+        "updated": "Alert updated",
+        "deleted": "Alert deleted",
+        "saveError": "Couldn't save the alert",
+        "deleteError": "Couldn't delete the alert"
+      }
+    }
+  },
+  "portfolioHolding": {
+    "notFoundTitle": "Holding not found",
+    "notFoundDescription": "This holding isn't in the portfolio or was deleted.",
+    "backToPortfolio": "Back to portfolio",
+    "loadError": "Couldn't load this holding.",
+    "sections": {
+      "transactions": "Transactions",
+      "openLots": "Open lots"
+    },
+    "chart": {
+      "buys": "Buys",
+      "sells": "Sells",
+      "bought": "Bought",
+      "sold": "Sold",
+      "buy": "Buy",
+      "sell": "Sell",
+      "tradeAmount": "Amount",
+      "close": "Close",
+      "averageCostLabel": "Avg cost {price}",
+      "unrealizedCaption": "unrealized",
+      "loadError": "Couldn't load price history",
+      "tradesError": "Couldn't load trades, so buy and sell markers are hidden.",
+      "empty": "No price history for this period"
+    },
+    "stats": {
+      "averageCost": "Avg cost",
+      "dividends": "Dividends",
+      "firstPurchase": "First purchase",
+      "openLotsCount": "No open lots | {count} open lot | {count} open lots",
+      "weightOf": "of {portfolio}"
+    },
+    "timing": {
+      "title": "Your timing",
+      "below": "Your average buy price {averageBuyPrice} is {difference} below the average daily close since your first buy on {firstBuyDate} ({averageClose}).",
+      "above": "Your average buy price {averageBuyPrice} is {difference} above the average daily close since your first buy on {firstBuyDate} ({averageClose})."
+    },
+    "lots": {
+      "empty": "No open lots",
+      "emptyDescription": "Lots appear here after you record a buy.",
+      "loadError": "Couldn't load the open lots.",
+      "date": "Purchased",
+      "costPerShare": "Cost per share",
+      "currentValue": "Current value",
+      "gain": "Gain",
+      "fifoHint": "First in, first out. Cost basis above uses your average cost, so totals can differ after a sale."
     }
   }
 }

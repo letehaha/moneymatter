@@ -414,7 +414,6 @@
           "accountsCount": "no accounts | {count} account | {count} accounts",
           "lastSync": "Last sync",
           "consent": "Consent",
-          "every": "Every {hours}h",
           "autoSyncOff": "Off",
           "connectedOf": "{connected} of {total}",
           "connectedSub": "connected",

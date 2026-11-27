@@ -49,19 +49,55 @@ export class ImportBatchTooLargeError extends Error {
   }
 }
 
+/** Legs of different batches are each other's external twins; legs without `batchId` form one batch. */
+export type BatchLeg = {
+  id: string;
+  transferId: string | null;
+  transferNature: TRANSACTION_TRANSFER_NATURE;
+  batchId?: string;
+};
+
 /**
- * Resolves every row stamped with this batch's `importDetails.batchId`, scoped to the
- * caller, then delegates to `bulkDelete` — balance recalculation, transfer-pair handling,
- * and refund unlinking all come from that same pipeline. The opening-balance absorbs the
- * import recorded in `ImportBatchAccountEffects` are then reversed.
- *
- * A batch with no `ImportBatches` row carries only its row stamps: its rows are deleted
- * and nothing is reversed.
- *
- * A batchId with no matching rows and no batch row is a no-op success, not a 404: it's
- * already deleted or belongs to another user, not a mistaken id to correct.
+ * Two-leg transfer legs whose twin lies outside the leg's own batch.
+ * Pairs are trashed together, so a trashed leg's twin is a trashed row, and a live leg's twin a live one.
  */
-type BatchLeg = { id: string; transferId: string | null; transferNature: TRANSACTION_TRANSFER_NATURE };
+export const findExternalTransferTwins = async ({ legs, trashed }: { legs: BatchLeg[]; trashed: boolean }) => {
+  const linkedLegs = legs.filter((row) => isTwoLegTransfer(row.transferNature) && row.transferId);
+  if (linkedLegs.length === 0) return { twinIds: [] as string[], legsWithTwin: [] as BatchLeg[] };
+
+  // Unauthenticated on purpose, mirroring `deleteTransaction`'s own cascade lookup: a
+  // cross-user (shared-account) transfer's twin can belong to a different userId.
+  const twins = (await findTransactions({
+    planned: 'include',
+    access: 'unscoped-internal',
+    balanceAdjustments: 'include',
+    completeness: 'all',
+    paranoid: !trashed,
+    where: {
+      transferId: { [Op.in]: [...new Set(linkedLegs.map((row) => row.transferId!))] },
+      ...(trashed ? trashedWhere : {}),
+    },
+    attributes: ['id', 'transferId'],
+    raw: true,
+  })) as unknown as { id: string; transferId: string }[];
+
+  const twinIdsByTransferId = new Map<string, string[]>();
+  for (const twin of twins) {
+    twinIdsByTransferId.set(twin.transferId, [...(twinIdsByTransferId.get(twin.transferId) ?? []), twin.id]);
+  }
+
+  const batchIdByLegId = new Map(legs.map((row) => [row.id, row.batchId]));
+  const externalTwinIds = new Set<string>();
+  const legsWithTwin = linkedLegs.filter((leg) => {
+    const external = (twinIdsByTransferId.get(leg.transferId!) ?? []).filter(
+      (id) => !batchIdByLegId.has(id) || batchIdByLegId.get(id) !== leg.batchId,
+    );
+    for (const id of external) externalTwinIds.add(id);
+    return external.length > 0;
+  });
+
+  return { twinIds: [...externalTwinIds], legsWithTwin };
+};
 
 /** Loads the batch, takes the account locks, runs every refusal check and unlinks
  *  external transfer twins. `null` when there is nothing to undo. */
@@ -165,39 +201,9 @@ const planUndo = async ({
   // row linked to a pre-existing manual transaction would silently destroy it too, uncounted.
   // Transfers created entirely within this batch (both legs present) are exempt: their
   // normal cascade-delete-together destroys nothing external.
-  // Pairs are trashed together, so a trashed leg's twin is a trashed row, and a live leg's twin a live one.
-  const findExternalTwins = async ({ legs, trashed }: { legs: BatchLeg[]; trashed: boolean }) => {
-    const linkedLegs = legs.filter((row) => isTwoLegTransfer(row.transferNature) && row.transferId);
-    if (linkedLegs.length === 0) return { twinIds: [] as string[], legsWithTwin: [] as BatchLeg[] };
-
-    const ownIds = new Set(legs.map((row) => row.id));
-    // Unauthenticated on purpose, mirroring `deleteTransaction`'s own cascade lookup: a
-    // cross-user (shared-account) transfer's twin can belong to a different userId.
-    const twins = (await findTransactions({
-      planned: 'include',
-      access: 'unscoped-internal',
-      balanceAdjustments: 'include',
-      completeness: 'all',
-      paranoid: !trashed,
-      where: {
-        transferId: { [Op.in]: [...new Set(linkedLegs.map((row) => row.transferId!))] },
-        ...(trashed ? trashedWhere : {}),
-      },
-      attributes: ['id', 'transferId'],
-      raw: true,
-    })) as unknown as { id: string; transferId: string }[];
-
-    const externalTwins = twins.filter((twin) => !ownIds.has(twin.id));
-    const transferIdsWithExternalTwin = new Set(externalTwins.map((twin) => twin.transferId));
-    return {
-      twinIds: externalTwins.map((twin) => twin.id),
-      legsWithTwin: linkedLegs.filter((row) => transferIdsWithExternalTwin.has(row.transferId!)),
-    };
-  };
-
   const transactionIds = rows.map((row) => row.id);
-  const liveTwins = await findExternalTwins({ legs: rows, trashed: false });
-  const trashedTwins = await findExternalTwins({ legs: trashedRows, trashed: true });
+  const liveTwins = await findExternalTransferTwins({ legs: rows, trashed: false });
+  const trashedTwins = await findExternalTransferTwins({ legs: trashedRows, trashed: true });
   const externalTwinIds = [...liveTwins.twinIds, ...trashedTwins.twinIds];
   const legsWithExternalTwin = [...liveTwins.legsWithTwin, ...trashedTwins.legsWithTwin];
 
@@ -369,6 +375,17 @@ const deleteCreatedAccountIfEmpty = withTransaction(
 );
 
 /**
+ * Resolves every row stamped with this batch's `importDetails.batchId`, scoped to the
+ * caller, then delegates to `bulkDelete` — balance recalculation, transfer-pair handling,
+ * and refund unlinking all come from that same pipeline. The opening-balance absorbs the
+ * import recorded in `ImportBatchAccountEffects` are then reversed.
+ *
+ * A batch with no `ImportBatches` row carries only its row stamps: its rows are deleted
+ * and nothing is reversed.
+ *
+ * A batchId with no matching rows and no batch row is a no-op success, not a 404: it's
+ * already deleted or belongs to another user, not a mistaken id to correct.
+ *
  * Created accounts are removed AFTER the undo transaction commits, each in its own
  * transaction. `deleteAccountById` notifies share recipients as soon as it returns, and
  * a failed SQL statement inside the undo transaction would abort the whole undo.

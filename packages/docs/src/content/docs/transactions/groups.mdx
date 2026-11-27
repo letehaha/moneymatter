@@ -33,10 +33,10 @@ Other things groups are good for:
 
 <Steps>
 
-1. Go to **Transactions** → **All Transactions** and select the transactions you want to group. Use [filters](/transactions/search-and-filter/) to find them, for example a note search or a payee.
+1. Go to **Transactions** → **All transactions** and select the transactions you want to group. Use [filters](/transactions/search-and-filter/) to find them, for example a note search or a payee.
 2. Click **Group** → **Create new group**.
 3. Enter a **Name** and, if you like, a **Note (optional)**.
-4. Click **Create Group**.
+4. Click **Create group**.
 
 </Steps>
 
@@ -46,7 +46,7 @@ Other things groups are good for:
   hint="Desktop width, /transactions in Table view. Select the four seeded pharmacy expenses, click Group → Create new group, fill Name 'Treatment plan: drugs' and Note 'Dr. Smith, September', then click the dialog title so no button shows a focus ring. Crop to the dialog."
 />
 
-To add more transactions later, select them and click **Group** → **Add to existing group**, pick the group (use **Search groups...** if you have many) and click **Add to Group**.
+To add more transactions later, select them and click **Group** → **Add to existing group**, pick the group (use **Search groups...** if you have many) and click **Add to group**.
 
 ## See a group's total
 
@@ -63,7 +63,7 @@ Amounts are added up in your [base currency](/settings/base-currency-and-currenc
 You can open a group from two places:
 
 - **Transactions** → **Groups** in the sidebar lists all your groups with their transaction count and date range. Use **Search groups...** to find one by name or note.
-- In the list view of **All Transactions**, a group shows as a single row with its name, transaction count and date range. Click it to open the group. When a filter other than the date is active, the row expands into its transactions instead.
+- In the list view of **All transactions**, a group shows as a single row with its name, transaction count and date range. Click it to open the group. When a filter other than the date is active, the row expands into its transactions instead.
 
 ## Change or delete a group
 
@@ -75,7 +75,12 @@ In the open group:
 
 Deleting a group, or removing a transaction from it, never deletes the transactions themselves.
 
+### When you delete a transaction in a group
+
+A deleted transaction goes to **Trash** and keeps its place in the group, so restoring it puts it back. Once it's deleted for good, it leaves the group, and a group left with fewer than 2 transactions is deleted automatically. The same happens when [reconciliation](/transactions/reconciliation/) removes a duplicate that was in a group.
+
 ## Limits
 
 - A group holds 2 to 500 transactions.
 - A transaction can be in only one group at a time.
+- Both sides of a transfer between your accounts always go together: adding or removing one side adds or removes the other too.

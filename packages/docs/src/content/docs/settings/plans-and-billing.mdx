@@ -45,6 +45,8 @@ There are two plans you can buy, **Essential** and **Plus**. Features not listed
 | Feature | Essential | Plus |
 |---|---|---|
 | Accounts, transactions, categories, stats | Yes | Yes |
+| [Investments](/investments/portfolios/), [loans](/accounts/loans/), [vehicles](/accounts/vehicles/) | Yes | Yes |
+| [MCP server access](/ai/connect-claude-chatgpt-mcp/) (connect Claude, ChatGPT and other AI apps) | Yes | Yes |
 | Imports from CSV, OFX, YNAB, Wallet and MS Money | Yes | Yes |
 | Transaction attachments | Yes | Yes |
 | [Download a backup and restore from backup](/settings/security-and-account/) | Yes | Yes |
@@ -61,7 +63,7 @@ There are two plans you can buy, **Essential** and **Plus**. Features not listed
 | [Custom currencies](#custom-currencies) (your own currency codes, such as points or tokens) | No | Yes |
 | Household seats | 2 | 5 |
 
-Household seats are how many people can join your household, not counting you. The same limit applies separately to each account you share. Only people who have accepted your invitation take up a seat. Pending invitations don't.
+Household seats are how many people can join your household, not counting you. The same limit applies separately to each account and each [tracker you share](/planned/trackers/#share-a-tracker). Only people who have accepted your invitation take up a seat. Pending invitations don't. See [Household and sharing](/settings/household-and-sharing/#seats).
 
 The third card, **Premium**, is marked **Planned** and isn't for sale yet. If you'd like it, click **Vote on the roadmap**. It costs nothing.
 
@@ -131,6 +133,10 @@ Once you've subscribed, you make every change in Stripe's billing portal. Click 
 
 You can have only one subscription at a time, so once you're subscribed the other plan's card offers **Switch to ...** instead of **Get ...**.
 
+<Aside type="note" title="Subscribed through the App Store?">
+If you subscribed in the MoneyMatter iPhone app, Apple bills you instead of Stripe. The **Current plan** box says "Billed through the App Store" and has **Manage in the App Store** instead of **Manage billing**, and the plan cards say "Plan changes happen in the App Store". Switch, cancel or update your payment in your Apple ID subscription settings. The Stripe steps below don't apply.
+</Aside>
+
 <Screenshot
   src="/screenshots/settings/plan-billing-active-subscription.png"
   alt="The Current plan box for an active Plus Yearly subscription, with the Manage billing button and the Plus card marked Your plan."
@@ -174,14 +180,14 @@ Your account becomes read-only when your trial ends without a subscription, when
 **In read-only mode you can:**
 
 - View all your accounts, transactions and stats.
-- Export your data: go to **Settings** → **Import/Export** → **Export**.
+- Export your data: go to **Settings** → **Import/Export** → **Export**. See [export your data](/settings/export-data/).
 - View and download attachments already added to your transactions.
 - Subscribe to a plan or open the billing portal.
 - Delete your account.
 
 **You can't:**
 
-- Add, edit or delete your data, such as accounts, transactions or categories. (Most of your preferences under **Appearance**, **Language** and **General** can still be changed. The **Quick Start guide** toggle can't, and neither can currency or AI settings.)
+- Add, edit or delete your data, such as accounts, transactions or categories. (Most of your preferences under **Appearance**, **Language** and **General** can still be changed. The **Quick start guide** toggle can't, and neither can currency or AI settings.)
 - Download a backup. Use **Export** to take your data with you instead.
 - Connect a bank or sync your bank connections.
 
@@ -199,6 +205,10 @@ If you open something your plan doesn't include, you'll see a lock card that say
 
 During the trial, the **Select backup file** button under **Restore from backup** is turned off, because restore isn't part of the trial.
 
+## Self-hosted MoneyMatter
+
+If you [host MoneyMatter yourself](/getting-started/self-hosting/), there are no plans, trial or billing. Every paid feature is unlocked, nothing becomes read-only, and the **Plan & billing** page isn't shown. Each household, shared account and shared tracker has 10 seats.
+
 ## Good to know
 
 - **Everyone needs their own plan to make changes.** If you share data with someone, whether they can edit depends on their own trial or plan, not yours.
@@ -210,4 +220,5 @@ During the trial, the **Select backup file** button under **Restore from backup*
 - [Gift subscriptions](/settings/gift-subscriptions/), to give someone a year of MoneyMatter or redeem a gift code
 - [Bank connections](/import/bank-connections/)
 - [Security and account](/settings/security-and-account/), for backups and deleting your account
+- [Household and sharing](/settings/household-and-sharing/)
 - [What is MoneyMatter?](/getting-started/what-is-moneymatter/)

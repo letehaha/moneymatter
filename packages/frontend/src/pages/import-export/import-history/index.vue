@@ -137,7 +137,7 @@
       </template>
 
       <Callout
-        v-if="!isPendingBatchEmpty"
+        v-if="!isPendingBatchEmpty && batchPendingDelete?.linkedTransferCount"
         variant="warning"
         :title="$t('pages.importExport.importHistory.deleteLinkedTransfersWarningTitle')"
       >

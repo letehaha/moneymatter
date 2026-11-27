@@ -1,0 +1,268 @@
+---
+title: Recurring payments
+description: Track subscriptions, bills, installments and regular income, link their payments automatically or record them yourself, get reminders before they're due, and find the ones you forgot with Discover.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+A recurring payment is money that leaves or arrives on a schedule: a streaming subscription, the electricity bill, a phone you pay off in 24 installments, your salary. You add it once, and MoneyMatter shows when the next payment is due, what you spend on recurring payments each month, and which payments are late.
+
+Open it from **Planning** → **Recurring payments** in the sidebar.
+
+A recurring payment doesn't create transactions on its own unless you ask it to. You choose how each payment reaches your transactions: MoneyMatter can [link the matching transaction](#match-bank-transactions) when it arrives, [book it for you](#auto-record-payments) on the due date, or [leave it to you](#handle-it-myself).
+
+## Types
+
+Every recurring payment has a **Type**:
+
+- **Subscription**: a recurring service payment, such as Netflix or a gym. A subscription needs an amount and currency.
+- **Bill**: a recurring bill or utility. The amount can be left empty when it changes every time.
+- **Installment**: a purchase you pay off in a fixed number of payments. It needs a first payment date and a **Number of installments**, and it shows its progress until the last payment is made.
+
+Each one is also an **Expense** or **Income** (the **Transaction type**). Use **Income** for a paycheck, a retainer or any scheduled deposit. You can't change the transaction type after you create the recurring payment.
+
+## Add a recurring payment
+
+<Steps>
+
+1. On the **Recurring payments** page, click **Add recurring payment**.
+2. Enter a **Name**, for example "Netflix" or "Electricity bill".
+3. Choose the **Type** and the **Transaction type**.
+4. Enter the **Expected amount** and **Currency**. Leave the amount empty for a bill that varies.
+5. Choose the **Frequency**: **Weekly**, **Biweekly**, **Monthly**, **Quarterly**, **Semi-annual** or **Annual**. For any other rhythm, choose **Custom** and set **Repeat every** and the **Unit** (days, weeks, months or years).
+6. Optionally pick the **Next payment** date. Without it, the recurring payment has no schedule: there's nothing to mark paid and no reminders. See [schedule and reminders](#schedule-and-reminders).
+7. For an installment, enter the **Number of installments**. The dialog shows the **Total commitment**.
+8. Click **Create**.
+
+</Steps>
+
+A new recurring payment starts with one matching rule: the transaction's note contains its name. So when a bank transaction mentioning "Netflix" comes in, it's linked to your Netflix subscription without any extra setup. You can change or remove the rule in [Automation](#how-payments-reach-your-transactions).
+
+Open the recurring payment afterwards to add an account, category, payee, tags and reminders.
+
+## The recurring payments list
+
+The page lists all your recurring payments, active and paused. Each row shows the name and logo, the type, the category, the amount, when the next payment is due, how many transactions are linked, a **Mark as paid** button when a payment is open, and a menu with **Pause** (or **Resume**) and **Delete**.
+
+A recurring payment with a payee shows the payee's logo. Without a payee, or if the payee has no logo, MoneyMatter looks for a brand whose name matches the payment's name. A logo you pick yourself under **Basics** on the payment's page always wins.
+
+Narrow the list with:
+
+- The **All**, **Subscriptions**, **Bills** and **Installments** tabs.
+- The date range next to them. It starts on **All time**. Pick **Next 7 days**, **Next 30 days**, **Next 3 months**, **Next 6 months** or **Next year**, or choose your own range, to see only the payments whose next due date falls in it. The ranges start today, so overdue payments and recurring payments without a schedule are hidden while a range is set. Click ✕ to go back to **All time**.
+- **Sort**: **Due date · soonest** (the default), **Amount · high to low**, **Name · A–Z** or **Recently added**.
+
+Sorted by due date, the list is grouped:
+
+- **Overdue**: the due date has passed and the payment isn't marked paid or skipped.
+- **Due this week**: due within the next 7 days.
+- **Later this month**: due later in the current month.
+- **Upcoming**: due after this month.
+- **No schedule**: no next payment date.
+- **Paused**: recurring payments you've paused.
+
+With any other sort, the list has just two groups, **Active** and **Paused**.
+
+<Screenshot
+  src="/screenshots/planned/recurring-payments-list.png"
+  alt="The Recurring payments page with the type tabs, date range and sort controls, the summary card with monthly spending and its split by type, and the list grouped by due date, starting with Overdue and Due this week."
+  hint="Open /planned/recurring-payments. First create, through the UI, at least 5 recurring payments in USD: Netflix (Subscription, 15.99 monthly, next payment 3 days from today), Spotify (Subscription, 10.99 monthly, next payment 2 days ago so it's overdue), Electricity (Bill, 80 monthly, next payment 20 days from today), Phone (Installment, 45 monthly, 12 installments, next payment 10 days from today) and Salary (Income, 4000 monthly, next payment 12 days from today). Keep the default Due date · soonest sort and All tab. Crop to the page header, controls, summary card and list."
+/>
+
+### The summary card
+
+The card above the list sums up your active recurring payments in your base currency:
+
+- **Monthly spending**: what your recurring expenses cost per month on average. A yearly payment counts as one twelfth, a weekly one about four times. Next to it, the share of your average monthly income over the last 6 full months.
+- A bar that splits that monthly cost into subscriptions, bills and installments (on the **All** tab).
+- **Projected / yr**: the yearly cost.
+- **Active**: how many active recurring payments have an amount.
+- **Expected income**: what your recurring income adds up to per month, when you have any.
+
+The card follows the type tab. The date range only filters the list. Recurring payments without an amount don't count toward the totals.
+
+## The recurring payment page
+
+Click a recurring payment to open it. Four cards sum up its settings, each with its own edit button:
+
+- **Basics**: name, logo, type, amount and currency.
+- **Schedule**: frequency, next expected date, end date, reminders and email.
+- **Automation**: how payments reach your transactions, and the account.
+- **Organize**: category, payee, tags and notes.
+
+Below them you'll find the next payment, the payment history and the linked transactions. **Pause** and **Delete** are at the top right. On smaller screens, they're in the ⋮ menu.
+
+An installment, or any recurring payment with a set number of payments, also shows a progress bar, for example "3 of 12 paid", with how many payments and how much is left. When the last one is paid, it's marked **Completed**.
+
+<Screenshot
+  src="/screenshots/planned/recurring-payment-detail.png"
+  alt="A recurring payment's page with the Basics, Schedule, Automation and Organize cards, the Next due card with Skip and Mark paid, and the start of the payment history."
+  hint="Open /planned/recurring-payments/<id> for the Netflix subscription from the list shot, after setting its account to Everyday Checking, a category, two reminders (1 day before, On due date) and marking one earlier period paid. Crop from the title down to the first month of Payment history."
+/>
+
+### Organize: category, payee and tags
+
+What you set in **Organize** is applied to transactions linked to the recurring payment:
+
+- **Category**: a transaction that's linked automatically gets this category. When you edit a transaction and it gets linked, a category you picked yourself is kept.
+- **Payee**: set on linked transactions that don't have a payee yet.
+- **Tags**: added to every linked transaction. Tags already on the transaction are kept.
+
+Planned transactions are left as they are. They're only linked.
+
+Changing these settings later only affects transactions linked from then on. Transactions already linked keep what they got.
+
+A recurring payment's category wins over a category set by an [automation](/transactions/automations/). See [how rules fit with recurring payments](/transactions/automations/#how-rules-fit-with-recurring-payments-and-payees).
+
+## How payments reach your transactions
+
+Click the edit button on the **Automation** card and choose one of three modes.
+
+<Screenshot
+  src="/screenshots/planned/recurring-payment-automation.png"
+  alt="The Automation dialog with Match bank transactions selected and two matching rules: note contains netflix, and amount between 14 and 18 USD."
+  hint="On the Netflix recurring payment page, click the edit button on the Automation card. Keep Match bank transactions selected and add a second rule, Amount between 14 and 18 USD, below the note rule. Crop to the dialog. Don't save."
+/>
+
+### Match bank transactions
+
+MoneyMatter links new transactions that match all of the recurring payment's rules. This works for transactions from a bank sync, from a file import, and ones you add by hand. A transaction is checked again when you change its note, amount, account, type or date.
+
+A rule checks one of these:
+
+- **Note**: the note contains any of the keywords you enter. Upper and lower case don't matter.
+- **Amount**: the amount, without its sign, is between a minimum and a maximum. If you set a **Currency code** and the transaction is in another currency, the amount is converted and gets 5% leeway on each side.
+- **Transaction type**: **Income** or **Expense**.
+- **Account**: the transaction is on a specific account.
+
+A transaction is only linked when it has the recurring payment's transaction type and, if the recurring payment has an account, is on that account. If it matches several recurring payments, it's linked to the one whose expected amount is closest. Transfers between your accounts are never matched.
+
+When a linked payment lands within half a billing cycle of an open payment's due date (about 15 days for a monthly one), that payment is marked paid with it.
+
+You need at least one complete rule to save this mode.
+
+### Auto-record payments
+
+MoneyMatter books the payment for you on each due date: it adds the transaction to the account you choose and marks the payment paid. The transaction is dated on the due date.
+
+Auto-record needs:
+
+- An amount and currency, set in **Basics**, because it always books the same amount.
+- A manual account. Bank-connected accounts can't be used, since their transactions come from the bank.
+- A schedule. Payments are only booked when they come due, so a recurring payment without a next payment date has nothing to book.
+
+Auto-record and matching rules don't mix: choosing this mode removes the rules, so the same payment isn't recorded twice. Payments that were already overdue when you turned auto-record on aren't booked. Mark those yourself.
+
+### Handle it myself
+
+Nothing happens automatically. You [mark each payment paid](#mark-paid-skip-and-revert) yourself. Choosing this mode removes the matching rules.
+
+<Aside type="note" title="Good to know">
+- If you archive or delete an account, the recurring payments that used it lose the account and auto-record is switched off. Pick a new account and turn it back on.
+- A paused recurring payment doesn't match transactions, book payments or send reminders.
+</Aside>
+
+## Schedule and reminders
+
+Set the next payment date in **Next payment** when you create a recurring payment, or later with the **Payment schedule date** in **Schedule**. With a date, the recurring payment gets payment periods: one open payment at a time that you mark paid or skip, after which the next one is created. To stop tracking due payments, click **Clear** next to the date. The recurring payment then only links matching transactions.
+
+Once a date is set, **Schedule** also has **Remind me before due date**. Pick up to 3 of **On due date**, **1 day before**, **2 days before**, **3 days before**, **5 days before**, **1 week before**, **2 weeks before** and **1 month before**. Reminders show in the app's notifications, as a push notification on the iPhone app, and also by email if you turn on **Also email me**.
+
+A payment that isn't marked paid or skipped by its due date becomes **Overdue**.
+
+You can also set a **Start date** and an **End date**. **Number of installments** caps how many payments there are, also for a subscription or bill. Leave it blank for no limit. An installment always needs a payment schedule date, so it has no **Clear** button.
+
+## Mark paid, skip and revert
+
+The **Next due** card on the recurring payment page shows the open payment with **Skip** and **Mark paid**. In **Payment history**, each open payment has the same two buttons, and each paid or skipped one has **Revert**. You can also click **Mark as paid** on the list, or **Mark paid** in the dashboard widgets.
+
+What **Mark paid** does depends on the recurring payment:
+
+- **A transaction already linked in this period**: you can choose **Use the existing payment**, so nothing new is added, or **Record a new payment**.
+- **No account set**: choose **Just mark as paid**, which only updates the schedule, or **Create a transaction** in an account you pick.
+- **A bank-connected account**: the payment is marked paid without a new transaction. The real one comes from your bank.
+- **A manual account and a fixed amount in the account's currency**: the transaction is booked straight away, no dialog.
+- **A varying amount or another currency**: a dialog asks for the **Amount** and **Payment date**. For another currency, the converted amount is filled in as an estimate you can correct.
+
+The other actions:
+
+- **Skip**: you didn't pay this time. The period is marked **Skipped** and the next one opens.
+- **Revert**: the period becomes unpaid again. A transaction MoneyMatter created, when you marked it paid or by auto-record, is deleted. A transaction you linked stays, and is just detached.
+- **Unlink transaction** (on a paid period with a transaction): detaches the transaction from the period. The period stays paid and the transaction is kept.
+
+If the paying transaction was moved to Trash, the period shows **Payment in Trash**.
+
+## Linked transactions
+
+**Linked transactions** lists every transaction linked to the recurring payment, grouped by year, with:
+
+- **Total paid**, **Average** and **Last payment**.
+- A chart of payment amounts over time, colored by how each one was linked: **Matched by rule**, **Matched by AI** or **Linked manually**. When the price changed, a line such as "↑ 12% since first payment (Jan 2025)" shows by how much.
+
+To remove a transaction, click **Unlink transaction** on it. The transaction itself isn't deleted.
+
+### Suggest matches
+
+To link past transactions:
+
+<Steps>
+
+1. Click **Suggest matches**.
+2. Select the transactions to link. The list shows up to 100 transactions from the last 12 months that match the recurring payment's rules and aren't linked to it yet.
+3. Click **Link … selected**.
+
+</Steps>
+
+Transactions you link this way get the recurring payment's payee and tags, but keep their category.
+
+The suggestions need matching rules. If there are none, or nothing matches, click **Add matching rules** or **Update matching rules** to adjust them.
+
+## Discover recurring payments
+
+**Discover** looks through your transaction history for payments that repeat, so you can add the ones you haven't set up yet.
+
+<Steps>
+
+1. On the **Recurring payments** page, click **Discover**.
+2. Review the list. Each card shows the suggested name, the amount and frequency, how many transactions it's **Based on**, and how sure MoneyMatter is: **Likely match**, **Possible match** or **Weak match**. Click the "Based on … transactions" line to see sample transactions.
+3. For each one:
+   - **Add** opens the create dialog with the name, amount, currency, frequency and account filled in. After you click **Create**, the sample transactions are linked to the new recurring payment.
+   - **Link to existing** appears when it looks like a recurring payment you already have ("Similar to existing: …"). It links the sample transactions to that one.
+   - **Dismiss** hides the suggestion.
+
+</Steps>
+
+Discover looks at expenses with a note from the last 12 months, and needs at least 3 similar transactions at a regular interval. Transfers, planned transactions and transactions already linked to a recurring payment are left out. Suggestions that haven't had a payment for 2 or more billing cycles are listed separately, since they may have ended.
+
+The scan reruns at most once an hour. MoneyMatter also runs it on its own at the start of every month.
+
+<Screenshot
+  src="/screenshots/planned/discover-recurring-payments.png"
+  alt="The Discover subscriptions dialog listing suggested recurring payments with their amount, frequency, transaction count, confidence and the Add and Dismiss buttons."
+  hint="On /planned/recurring-payments, click Discover. The seeded SimpleFIN demo accounts need at least 3 monthly expenses with the same note (the demo usually has some; otherwise add 3 manual expenses on Everyday Checking a month apart with the note 'Gym membership' and the same amount). Create that data before opening Discover for the first time, since its results are cached for an hour. Crop to the dialog."
+/>
+
+## Pause, resume and delete
+
+- **Pause** stops a recurring payment without losing its history. It no longer matches transactions, books payments, sends reminders or counts in the summary. It moves to the **Paused** group. Click **Resume** to bring it back. A completed installment can't be paused or resumed.
+- **Delete** removes the recurring payment with its schedule and payment history. Its linked transactions are kept, they're just no longer linked. You can't undo this.
+
+## Recurring payments elsewhere
+
+- **Dashboard**: the [Recurring payments widget](/stats/dashboard/#recurring-payments) and the scheduled rows in [Latest transactions](/stats/dashboard/#latest-transactions), both with **Mark paid**.
+- **Transactions page**: the **Upcoming** section lists recurring payments that are overdue or due within the next 3 days. See [planned transactions](/planned/planned-transactions/).
+- **Budget**: the [side panel](/budgeting/side-panel/) shows recurring payments that fall into your budget.
+- A [planned transaction](/planned/planned-transactions/) can be linked to a recurring payment. When the planned transaction is confirmed, it marks the matching payment paid.
+
+## Related
+
+- [Planned transactions](/planned/planned-transactions/)
+- [Trackers](/planned/trackers/)
+- [Dashboard](/stats/dashboard/)
+- [Payees](/transactions/payees/)
+- [Automations](/transactions/automations/)
+- [Notifications](/settings/notifications/)
+- [Bank connections](/import/bank-connections/)

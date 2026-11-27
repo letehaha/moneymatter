@@ -59,6 +59,12 @@ export const updateVentureDeal = async (params: {
   return api.put(`/venture/deals/${params.dealId}`, params.payload);
 };
 
-export const deleteVentureDeal = async (params: { dealId: string; force?: boolean }): Promise<void> => {
-  return api.delete(`/venture/deals/${params.dealId}`, { data: { force: params.force } });
+export const deleteVentureDeal = async (params: {
+  dealId: string;
+  force?: boolean;
+  deleteLinkedTransactions?: boolean;
+}): Promise<void> => {
+  return api.delete(`/venture/deals/${params.dealId}`, {
+    data: { force: params.force, deleteLinkedTransactions: params.deleteLinkedTransactions },
+  });
 };

@@ -476,6 +476,12 @@
       "plus": "Súčasť plánu Plus",
       "hint": "Váš súčasný plán túto funkciu neobsahuje. Ak ju chcete odomknúť, prejdite na vyšší plán."
     },
+    "featureTrialGate": {
+      "title": "Vyskúšajte zadarmo na {days} dní",
+      "startTrial": "Spustiť {days}-dňovú bezplatnú skúšobnú verziu",
+      "trialEnded": "Vaša bezplatná skúšobná verzia skončila. Ak ju chcete používať ďalej, prejdite na Plus.",
+      "daysLeft": "Vaša bezplatná skúšobná verzia skončí o {n} deň | Vaša bezplatná skúšobná verzia skončí o {n} dni | Vaša bezplatná skúšobná verzia skončí o {n} dní"
+    },
     "banner": {
       "trial": "V skúšobnej verzii zostáva {count} deň · {link} | V skúšobnej verzii zostávajú {count} dni · {link} | V skúšobnej verzii zostáva {count} dní · {link}",
       "readOnly": "Vaša skúšobná verzia sa skončila. Údaje si môžete prezerať a exportovať; na ich ďalšiu úpravu si predplaťte plán. {link}",

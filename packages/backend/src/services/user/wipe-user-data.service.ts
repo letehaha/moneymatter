@@ -1,5 +1,4 @@
-import { HouseholdSharePermission, RecordId, RESOURCE_TYPES } from '@bt/shared/types';
-import * as Accounts from '@models/accounts.model';
+import { HouseholdSharePermission, RecordId, RESOURCE_TYPES, WipeDataSharedResources } from '@bt/shared/types';
 import BudgetPlans from '@models/budget-plans.model';
 import ResourceShares from '@models/resource-shares.model';
 import ShareInvitations from '@models/share-invitations.model';
@@ -8,14 +7,7 @@ import { BACKUP_TABLES, type BackupFileName } from '@services/backup/registry';
 import { Op } from 'sequelize';
 
 import { seedUserDefaults } from './create-user-with-defaults.service';
-import { runUserDestroyLifecycle } from './user-destroy-lifecycle';
-
-interface SharedResourceSummary {
-  /** Accounts this user OWNS that another user currently has share access to. */
-  accounts: Array<{ id: string; name: string; recipientUserId: number }>;
-  /** Households this user OWNS with at least one accepted member. */
-  households: Array<{ shareId: RecordId; recipientUserId: number; permission: HouseholdSharePermission }>;
-}
+import { loadResourceNames, runUserDestroyLifecycle } from './user-destroy-lifecycle';
 
 /**
  * Preflight check for the wipe-data flow. Returns a summary of shared resources the user
@@ -23,13 +15,22 @@ interface SharedResourceSummary {
  * action behind an extra acknowledgement step — wiping their data will revoke access for
  * those other users.
  */
-export const getOwnedSharedResourceSummary = async ({ userId }: { userId: number }): Promise<SharedResourceSummary> => {
-  const [accountShareRows, householdShareRows] = await Promise.all([
+export const getOwnedSharedResourceSummary = async ({
+  userId,
+}: {
+  userId: number;
+}): Promise<WipeDataSharedResources> => {
+  const [accountShareRows, trackerShareRows, householdShareRows] = await Promise.all([
     ResourceShares.findAll({
       where: { ownerUserId: userId, resourceType: RESOURCE_TYPES.account },
       attributes: ['resourceId', 'sharedWithUserId'],
       raw: true,
-    }) as unknown as Promise<Array<{ resourceId: string; sharedWithUserId: number }>>,
+    }) as unknown as Promise<Array<{ resourceId: RecordId; sharedWithUserId: number }>>,
+    ResourceShares.findAll({
+      where: { ownerUserId: userId, resourceType: RESOURCE_TYPES.tracker },
+      attributes: ['resourceId', 'sharedWithUserId'],
+      raw: true,
+    }) as unknown as Promise<Array<{ resourceId: RecordId; sharedWithUserId: number }>>,
     ResourceShares.findAll({
       where: {
         ownerUserId: userId,
@@ -41,20 +42,26 @@ export const getOwnedSharedResourceSummary = async ({ userId }: { userId: number
     }) as unknown as Promise<Array<{ id: RecordId; sharedWithUserId: number; permission: HouseholdSharePermission }>>,
   ]);
 
-  const accountIds = [...new Set(accountShareRows.map((s) => s.resourceId))];
-  const accountRows = accountIds.length
-    ? ((await Accounts.default.findAll({
-        where: { id: { [Op.in]: accountIds } },
-        attributes: ['id', 'name'],
-        raw: true,
-      })) as Array<{ id: string; name: string }>)
-    : [];
-  const namesById = new Map(accountRows.map((a) => [a.id, a.name]));
+  const [accountNameOf, trackerNameOf] = await Promise.all([
+    loadResourceNames({
+      resourceType: RESOURCE_TYPES.account,
+      ids: [...new Set(accountShareRows.map((s) => s.resourceId))],
+    }),
+    loadResourceNames({
+      resourceType: RESOURCE_TYPES.tracker,
+      ids: [...new Set(trackerShareRows.map((s) => s.resourceId))],
+    }),
+  ]);
 
   return {
     accounts: accountShareRows.map((s) => ({
       id: s.resourceId,
-      name: namesById.get(s.resourceId) ?? 'Shared account',
+      name: accountNameOf({ id: s.resourceId }),
+      recipientUserId: s.sharedWithUserId,
+    })),
+    trackers: trackerShareRows.map((s) => ({
+      id: s.resourceId,
+      name: trackerNameOf({ id: s.resourceId }),
       recipientUserId: s.sharedWithUserId,
     })),
     households: householdShareRows.map((s) => ({
@@ -64,6 +71,9 @@ export const getOwnedSharedResourceSummary = async ({ userId }: { userId: number
     })),
   };
 };
+
+export const hasSharedResources = (summary: WipeDataSharedResources) =>
+  summary.accounts.length > 0 || summary.trackers.length > 0 || summary.households.length > 0;
 
 // Transactions, splits and refunds carry the CREATOR's userId, so on a shared
 // account they are the owner's data, not the wiper's. The Accounts cascade

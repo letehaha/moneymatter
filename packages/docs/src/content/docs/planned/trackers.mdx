@@ -1,0 +1,300 @@
+---
+title: Trackers
+description: Follow the money for a trip, a project or a set of categories and tags, with an optional spending limit, income target or income cap. Add transactions by hand, by rule or with AI, split spending into lines, and share a tracker with others.
+sidebar:
+  order: 3
+---
+
+import { Badge, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+A tracker collects the transactions that belong to one thing, such as a trip to Greece, a kitchen renovation or a year of freelance income, and shows what they add up to. You can give it a limit and dates, and it tells you how much is left and whether you're on pace.
+
+You fill a tracker in three ways, and you can combine them:
+
+- **By hand:** pick the transactions yourself.
+- **By rule:** turn on **Auto-add**, and every transaction in the tracker's dates with the categories or tags you choose is added for you.
+- **With AI:** turn on [smart tracking](#smart-tracking), describe what belongs in the tracker, and AI finds the transactions.
+
+## Trackers or the budget?
+
+MoneyMatter also has a [Budget](/budgeting/start-budgeting/). They answer different questions:
+
+| | Budget | Tracker |
+|---|---|---|
+| What it's for | Planning all your everyday spending, period after period | Following one trip, project or goal |
+| How many | One | As many as you like |
+| Time | Repeats every period, with rollover | One date range, or no dates at all. Never repeats |
+| What counts | Every transaction in the line's categories, on the accounts you chose | Only the transactions linked to the tracker |
+| Amounts | An amount assigned to every line | One optional limit, plus optional limits per line |
+| Sharing | No | Yes, per tracker |
+| Plans | Essential and Plus | Every plan. Only [smart tracking](#smart-tracking) needs Plus |
+
+Use the budget to run your month. Use a tracker when you want to know what a single thing cost you, or to watch a target over a fixed stretch of time.
+
+## Open your trackers
+
+In the sidebar, open **Planning** and choose **Trackers**.
+
+The list groups your trackers by their dates: **Active now**, **Upcoming**, **No dates**, **Ended** and **Archived**. Only the three most recent ended trackers show; click **Show N more ended** for the rest. The archived group stays folded until you click it.
+
+Each row shows the tracker's dates, its auto-add categories and tags, how many transactions it has, how much of its limit is used, and its net amount: income minus expenses, in your base currency. A chip such as **12 days left** or **Starts tomorrow** tells you where it is in time.
+
+Use the search box to find a tracker by name, and the chips to narrow the list:
+
+- **Auto-add on:** trackers that add transactions by rule.
+- **Hand-picked:** trackers you fill by hand or with AI.
+- **Archived:** show or hide archived trackers.
+
+Trackers that other people [share with you](#share-a-tracker) are in the same list.
+
+<Screenshot
+  src="/screenshots/planned/trackers-list.png"
+  alt="The Trackers page with trackers grouped under Active now, Upcoming and Ended, each row showing dates, transaction count, a usage bar with a percentage, a days-left chip and the net amount."
+  hint="First create, via the UI, at least 4 trackers for the docs test user: 'Greece trip' (dates covering today, limit 2000, Spending, a few expenses added by hand), 'Rides' (Auto-add on with the Taxi category, dates = current month, limit 150; not Groceries, whose auto-add pulls in dozens of the SimpleFIN demo's grocery transactions), 'Ski weekend' (dates starting next month), 'Spring cleanup' (dates that ended last month). Open /planned/trackers with the default All filter. Crop to the page title, the search and filter chips, and the list card."
+/>
+
+## Create a tracker
+
+<Steps>
+
+1. On the **Trackers** page, click **New tracker**.
+2. Enter a **Tracker name**. Optionally click the square next to it to pick a logo: a brand, an icon or your own image.
+3. Optionally set **From date** and **To date**.
+4. Choose a **Limit type** and enter the amount, or leave the amount empty to track without a limit. See [Limit types](#limit-types).
+5. Optionally switch on **Add matching transactions automatically** under **Auto-add** and pick categories, tags or both. See [Add transactions by rule](#add-transactions-by-rule).
+6. Optionally switch on **Find matching transactions for me** under **Smart tracking**. See [Smart tracking](#smart-tracking).
+7. Click **Add tracker**.
+
+</Steps>
+
+Limits are always in your [base currency](/settings/base-currency-and-currencies/). Transactions in other currencies count at their base-currency value.
+
+<Screenshot
+  src="/screenshots/planned/tracker-create.png"
+  alt="The Create tracker dialog with the name Greece trip, From and To dates, Limit type set to Spending with a limit of 2,000, and the Auto-add and Smart tracking sections below."
+  hint="Open /planned/trackers and click New tracker. Type 'Greece trip', pick From date and To date two weeks apart, keep Limit type on Spending and type 2000 as the Limit. Leave Auto-add and Smart tracking off. Crop to the dialog."
+/>
+
+### What the dates do
+
+- **Status.** The dates decide which group a tracker is in and drive the days-left chip, the daily pace and the projection.
+- **Auto-add.** Rules only look at transactions inside the dates. A tracker without dates matches transactions from any date.
+- **Smart tracking** needs a **From date**. AI looks from there, plus an optional window before it.
+
+Transactions you add by hand count even if they fall outside the dates. Changing the dates later doesn't remove transactions you already added.
+
+### Limit types
+
+Click **What to choose?** next to **Limit type** for a short guide. There are three types:
+
+- **Spending:** spend at most this much. Use it for a trip, a renovation or a year of groceries. The amount field is called **Limit**.
+- **Income target:** earn at least this much, such as a yearly salary or freelance revenue. Going over is a win. The amount field is called **Target amount**.
+- **Income cap:** stay under this income, such as a tax or benefits threshold. The amount field is called **Cap**.
+
+A spending tracker measures net spending: expenses minus any income in the tracker. The two income types measure net income: income minus expenses.
+
+The usage colour is green up to 70% of the limit, amber above that and red above 90%. When a tracker has both dates, these thresholds move later as time passes, so spending in step with time stays green: 80% used when 85% of the time has gone is still green. An income target turns amber when it falls more than 10 points behind time passing and never turns red.
+
+To save up for something instead, [create a goal](/goals/overview/). Goals track what you've saved; trackers track what flows in or out.
+
+## The tracker page
+
+Click a tracker to open it. The header shows its name, logo, dates and transaction count, plus chips for its status, **Archived**, or **Shared by @name** when someone else owns it. If **Auto-add** is on, the categories and tags it matches are listed under **Auto-adds**.
+
+Below that, a strip of totals:
+
+- **With a limit:** **Limit**, **Spent** with the percentage used, **Left** (or **Over by**), **Income** and **Net**. While the tracker runs, **Left** also shows how much you can spend per day until the end date. Income trackers label these **Target amount** or **Cap**, **Earned**, and **To go**, **Headroom** or **Above target by**.
+- **Without a limit:** **Income**, **Expenses**, **Net** and **Transactions**.
+
+The page has up to three tabs: **Limits** (only once you [set limits](#split-spending-into-lines)), **Transactions** and **Statistics**.
+
+<Screenshot
+  src="/screenshots/planned/tracker-details.png"
+  alt="A tracker page for Greece trip with a days-left chip, the totals strip showing Limit, Spent with a percentage, Left with a per-day amount, Income and Net, and the Transactions tab below."
+  hint="Use the 'Greece trip' tracker from the list shot (Spending, limit 2000, dates covering today) with 5-6 expenses added by hand from the seeded accounts. Open /planned/trackers/<id>, Transactions tab. Crop to the header, the totals strip, the tabs and the first few transaction rows."
+/>
+
+## Add transactions by hand
+
+<Steps>
+
+1. Open the tracker and go to the **Transactions** tab.
+2. Click **Add transactions**.
+3. Use the filters to narrow the list, then tick the transactions you want. Hold Shift to tick a range.
+4. Click **Add selected**.
+
+</Steps>
+
+You can add any of your transactions, whether or not it matches the tracker's rules, including [planned transactions](/planned/planned-transactions/) for spending you haven't made yet.
+
+To take transactions out, tick them in the list and click **Unlink**. They stay in your account, only the link to the tracker goes. A transaction you remove won't come back through **Auto-add** or smart tracking, see [Transactions that won't be added again](#transactions-that-wont-be-added-again).
+
+In the list, a lightning icon marks a transaction **Added by the tracker's rules**, and a sparkle icon one **Matched by AI**. Hover the sparkle to read why AI picked it.
+
+## Add transactions by rule
+
+With **Auto-add** on, a tracker adds your transactions by itself. Turn it on when you create the tracker, or later with **Edit** in the tracker's ⋯ menu.
+
+<Steps>
+
+1. Switch on **Add matching transactions automatically**.
+2. Pick **Categories**, **Tags** or both. A transaction needs just one of them to match. Picking a parent category also picks its subcategories. Untick any you want to leave out.
+3. Keep **Remove transactions that stop matching** on, or switch it off to keep everything the rules ever added.
+4. Save the tracker.
+
+</Steps>
+
+What the rules add:
+
+- Your own transactions dated inside the tracker's dates, with a matching category or tag. A [split transaction](/transactions/split-a-transaction/) matches when any of its parts has a matching category, and the whole transaction is added.
+- Not transfers, [planned transactions](/planned/planned-transactions/), transactions on accounts you've [excluded from statistics](/accounts/manage-accounts/), or transactions you've marked **Exclude from stats**.
+
+The rules run when you save them, when you open the tracker, and in the background every 6 hours. The background check skips archived trackers and stops 14 days after a tracker's end date.
+
+With **Remove transactions that stop matching** on, a transaction the rules added is taken out once it no longer matches, for example after you change its category. Transactions you added by hand are never removed.
+
+When you turn **Auto-add** on for an existing tracker, or change its categories, tags or dates, MoneyMatter asks **Save new matching rules?** before it checks all your transactions again. Click **Save and check**.
+
+Turning **Auto-add** off keeps every transaction it already added.
+
+### Transactions that won't be added again
+
+When you remove a transaction from a tracker, or skip an AI suggestion, the tracker remembers it and neither the rules nor AI add it again.
+
+To let one back in, open the tracker's ⋯ menu and choose **Edit**. Under **Auto-add**, the line "N transactions won't be added again" has a **Review** button. In **Not added again**, click **Allow again** next to a transaction. It's added back the next time the rules run, if it still matches.
+
+## Split spending into lines
+
+A line is a set of categories with its own limit, such as Hotels, Flights and Food inside a trip. Lines don't add transactions to the tracker. They split what's already in it.
+
+<Steps>
+
+1. Open a **Spending** tracker and click **Set limits**.
+2. Click **Add line**.
+3. Enter a **Name**, pick **Categories**, and optionally a **Limit (optional)**. Picking a parent category includes its subcategories.
+4. Click **Add line**.
+
+</Steps>
+
+The **Limits** tab lists each line with its **Limit**, **Spent** and **Left**. Expenses that fit no line show under **Other spending**, and the **Total** row adds everything up against the tracker's overall limit. Click a line's limit to change it, or use the line's menu to **Edit line** or **Delete line**. To remove every line at once, choose **Remove limits** in the ⋯ menu. Deleting lines never removes transactions.
+
+Some details:
+
+- An expense counts in the first line that includes its category.
+- A split transaction counts whole, under its main category.
+- Line amounts don't subtract refunds, so they can add up to more than the tracker's **Spent**.
+- **Set limits** is only offered on spending trackers.
+
+<Screenshot
+  src="/screenshots/planned/tracker-limits.png"
+  alt="The Limits tab of a trip tracker with lines for Hotels, Flights and Food, each with a limit, amount spent and amount left, an Other spending row and a Total row."
+  hint="On the 'Greece trip' tracker, add expenses in at least three categories by hand, then click Set limits and add three lines (e.g. Hotels 800, Flights 600, Food 400) using categories that the seeded transactions have. Keep one expense in a category that no line covers so Other spending is not empty. Open /planned/trackers/<id>?tab=limits. Crop to the totals strip and the Limits table."
+/>
+
+## How totals are counted
+
+- **Base currency.** Every amount is converted to the tracker owner's base currency at the transaction's own rate.
+- **Transfers don't count**, even if they're linked: moving money between your own accounts, or to a portfolio or a venture, isn't spending. A [loan](/accounts/loans/) payment is the exception and counts as an expense.
+- **Refunds cancel out.** A refunded expense counts net of its [refund](/transfers-and-refunds/refunds/), and the refund never counts as income, whether or not you added the refund to the tracker.
+- **Split transactions** count whole, at their full amount, under their main category.
+- **Exclude from stats.** A transaction you've marked **Exclude from stats** never counts. Transactions you added by hand from an account excluded from statistics do count, because you chose them.
+- **Planned transactions** you added count straight away, so you can see where a trip will land before you pay for it. Each person only sees their own planned transactions in a shared tracker's totals.
+
+The [Trackers dashboard widget](/stats/dashboard/) shows your active trackers with the same numbers. Trackers don't change your Analytics reports or your budget.
+
+## Statistics
+
+The **Statistics** tab breaks the tracker down. For income trackers it measures income instead of spending.
+
+- **Daily pace** and **Projected total**: what you spend per day so far, what you're allowed per day to stay within the limit, and where you'll end up at this pace. Without a limit, you see **Average per day** instead. Without both dates, you see **First transaction** and **Last transaction**.
+- **Transactions**, with the average amount, and **Biggest day**.
+- **By category**: how the total splits across categories.
+- **By currency**: what you paid in each currency, with its base-currency value.
+- **Timeline**: a running total against an even pace to the limit, with a bar per day, week or month depending on the length of the tracker.
+- **Top payees**: the five payees with the largest amounts.
+
+<Screenshot
+  src="/screenshots/planned/tracker-statistics.png"
+  alt="The Statistics tab of a trip tracker with Daily pace, Projected total, Transactions and Biggest day across the top, then By category, By currency, Timeline with a cumulative line and even-pace line, and Top payees."
+  hint="On the 'Greece trip' tracker (dates covering today, limit 2000, 6+ expenses on different days with payees, at least one paid from an EUR account created for this, since the seeded accounts are USD), open /planned/trackers/<id>?tab=statistics. Crop to the tabs row and the full Statistics content."
+/>
+
+## Smart tracking
+
+<Badge text="Plus" variant="tip" /> Smart tracking lets AI fill a tracker for you. You describe what belongs in it, for example "Two weeks in Greece: flights, ferries, rental car, island hotels", and every night AI checks your new and edited transactions against that description. Sure matches are added straight away, and the rest wait for you to review.
+
+<Steps>
+
+1. Make sure the tracker has a **From date**.
+2. In the tracker's ⋯ menu, choose **Edit**. You can also set it up while creating the tracker.
+3. Switch on **Find matching transactions for me** under **Smart tracking**.
+4. Fill in **What belongs in this tracker?**.
+5. Optionally choose how far to look before the start date in **Also look before the start date**, to catch flights and hotels you booked in advance.
+6. Save.
+
+</Steps>
+
+The first scan starts within a minute or two. When AI has suggestions, the **Transactions** tab shows "N to review" with a **Review** button. Each suggestion is marked **Likely** or **Possible**. Click **Add** or **Skip**, or **Add all** or **Skip all**. Skipped transactions aren't suggested again.
+
+Good to know:
+
+- Only the tracker's owner can turn smart tracking on and review suggestions.
+- It pauses when the tracker is archived, and stops 14 days after the tracker's end date.
+- AI doesn't look at accounts you've excluded from statistics.
+- It runs on MoneyMatter's included AI or your own model. Essential and Early Adopter get a 14-day free trial. See [Smart tracking in AI features](/ai/ai-features/#smart-tracking-free-trial).
+
+<Screenshot
+  src="/screenshots/ai/smart-tracking-fields.png"
+  alt="The Smart tracking section of the tracker form, with Find matching transactions for me switched on, a description of the trip filled in, and Also look before the start date set to 1 month."
+  hint="Open /planned/trackers, edit a tracker that has a start date, switch on Find matching transactions for me, type a trip description and set Also look before the start date to 1 month. Use an account with the included AI. Crop to the Smart tracking section."
+/>
+
+## Edit, duplicate, archive or delete
+
+Use the ⋯ menu on the tracker page. The ⋯ button at the end of a row on the **Trackers** page has **Duplicate**, **Archive** and **Delete** too, but not **Edit**.
+
+- **Edit** changes the name, logo, limit type and amount, and dates. The owner also sees **Auto-add** and **Smart tracking** here. Clear the amount to track without a limit.
+- **Duplicate** makes a copy called "… copy" with the same limit, lines, logo, auto-add rules and smart tracking description. The copy keeps the same dates, smart tracking is off, and transactions you added by hand aren't copied. If the copy has **Auto-add** on, it straight away holds every matching transaction within those dates. If you change its dates afterwards with **Remove transactions that stop matching** on, the ones outside the new dates are removed again.
+- **Archive** moves the tracker to the **Archived** group and stops auto-add and smart tracking. It keeps all its transactions and statistics, and you can **Unarchive** it any time. About a month after a tracker ends, its row shows an **Archive?** chip. Click it to archive, or choose **Don't ask for this tracker**.
+- **Delete** removes the tracker for good. Its transactions stay in your account, only their link to the tracker goes. Anyone you shared it with loses access and is notified.
+
+Only the owner can duplicate or delete a tracker.
+
+## Share a tracker
+
+You can share a single tracker with someone, for example your partner on a shared trip, so both of you add your own spending to it.
+
+Open the tracker and click **Share**, then **Invite someone**. Enter their email and choose a permission:
+
+- **View only:** sees the tracker, its transactions and its totals.
+- **Attach own transactions:** also adds their own transactions to it, and removes the ones they added.
+- **Manage:** also edits the tracker and its limits, archives it, and changes or revokes other members' access.
+
+Only the owner can invite people, delete or duplicate the tracker, or change **Auto-add** and smart tracking. Auto-add only ever adds the owner's transactions.
+
+Things to know:
+
+- **Seats.** Each tracker can have 2 people on Essential and 5 on Plus, besides you. The owner's plan decides. Only accepted invitations take a seat.
+- **Same base currency.** The person you invite must use the same base currency as you to accept.
+- **Same numbers.** Everyone sees the same totals, in the owner's base currency, except that each person's planned transactions only count for them.
+- **Household sharing doesn't include trackers.** Sharing your household never shares a tracker; share each one on its own.
+- **Leaving.** When someone leaves or you revoke their access, the transactions they added are removed from the tracker. They stay in their account.
+
+See [Household and sharing](/settings/household-and-sharing/#share-a-tracker) for how invitations work.
+
+## Find a tracker's transactions on the Transactions page
+
+On the tracker's **Transactions** tab, click **Open in Transactions** to see the same transactions in the full [transaction list](/transactions/search-and-filter/), where you can sort them and add more filters.
+
+You can also filter the Transactions page yourself: add **Trackers** from the **Filters** menu, then pick one or more trackers, or **Not in any tracker** to find transactions that aren't in any.
+
+## Related
+
+- [Start budgeting](/budgeting/start-budgeting/)
+- [Planned transactions](/planned/planned-transactions/)
+- [AI features](/ai/ai-features/)
+- [Household and sharing](/settings/household-and-sharing/)
+- [Search and filter transactions](/transactions/search-and-filter/)
+- [Dashboard](/stats/dashboard/)
+- [Goals](/goals/overview/)

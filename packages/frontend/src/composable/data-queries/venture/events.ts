@@ -36,7 +36,7 @@ export const useVentureEvents = (dealId: DealIdSource, queryOptions = {}) => {
  * any transaction-derived queries (linked-mode events create/restore real
  * transactions, so balances and tx lists must refresh).
  */
-const invalidateAllForDeal = (queryClient: ReturnType<typeof useQueryClient>) => {
+export const invalidateAllForDeal = (queryClient: ReturnType<typeof useQueryClient>) => {
   queryClient.invalidateQueries({
     predicate: (q) =>
       Array.isArray(q.queryKey) &&

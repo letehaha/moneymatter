@@ -452,6 +452,9 @@ describe('Loan balance anchor', () => {
         raw: false,
       });
       expect(response.statusCode).toBe(422);
+      const { message } = (response as helpers.CustomResponse<unknown>).body.response as unknown as { message: string };
+      expect(message).toContain(`500.00 ${global.BASE_CURRENCY_CODE}`);
+      expect(message).toContain(`400.00 ${global.BASE_CURRENCY_CODE}`);
 
       // Full rollback: balance, anchor, and events all untouched.
       const reloaded = await helpers.getLoanById({ id: loan.id, raw: true });

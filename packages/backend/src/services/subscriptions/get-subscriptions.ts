@@ -84,8 +84,13 @@ interface SubscriptionBase extends Pick<
  * request; cache misses are enqueued for async logo.dev resolution.
  */
 async function backfillLogosForUnresolved({ subscriptions }: { subscriptions: Subscriptions[] }): Promise<void> {
-  const misses = await applyCachedLogos({ entity: 'subscription', rows: subscriptions });
-  for (const subscription of misses) {
+  // A linked payee's logo wins over the name cache, and only the worker reads the payee.
+  const withPayee = subscriptions.filter((s) => s.payeeId && s.logoSource == null);
+  const misses = await applyCachedLogos({
+    entity: 'subscription',
+    rows: subscriptions.filter((s) => !s.payeeId),
+  });
+  for (const subscription of [...withPayee, ...misses]) {
     void enqueueLogoResolution({ entity: 'subscription', id: subscription.id });
   }
 }

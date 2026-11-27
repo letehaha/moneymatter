@@ -1,0 +1,290 @@
+---
+title: Loans
+description: Track a mortgage, car loan, student loan or personal loan. Learn how the balance works, record and link payments, read the payoff projection, and see what a paid-off loan cost you.
+sidebar:
+  order: 6
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+A loan is money you owe and pay back over time, like a mortgage or a car loan. MoneyMatter keeps track of what you still owe, projects when you'll be debt-free, and shows how much interest the loan will cost you.
+
+Loans only cover money you borrowed. Money you lent to someone else isn't a loan in MoneyMatter.
+
+## The Loans page
+
+In the sidebar, open **Accounts** → **Loans**. The page lists your loans in three groups:
+
+- **Active loans** at the top, with a summary card above them: **Total outstanding**, how much principal you've repaid, your **Monthly obligation**, the **Avg APR** and the **Interest projected** until all of them are paid off.
+- **Paid off**: loans you've paid back in full. See [when a loan is paid off](#when-a-loan-is-paid-off).
+- **Archived**: loans you no longer track, collapsed. Click it to expand.
+
+Each active loan shows its progress, **Balance**, **APR**, **Monthly** payment, **Payoff** date and **Interest left**. Click a loan to open it.
+
+Your loans also appear under **Loans** in the sidebar's Accounts panel, with their total.
+
+## Add a loan
+
+<Steps>
+
+1. Open **Accounts** → **Loans** and click **Add loan**.
+2. Enter a **Loan name** and choose the **Loan type**: **Mortgage**, **Vehicle**, **Student** or **Personal**. The type only sets the icon and label.
+3. Choose the **Currency**.
+4. Enter the **Original principal**, the amount you borrowed, and the **Current outstanding balance**, what you owe today.
+5. Enter the **Interest rate (APR %)**.
+6. Optionally enter the **Term (months)**. The arrow at the end of the field opens **Common terms**, like 30 years.
+7. Set the **Start date**, the day you took out the loan.
+8. Optionally enter the **Planned monthly payment** (what you actually pay) and the **Minimum monthly payment** (what your lender requires).
+9. Optionally add the **Payment day of month**, the **Lender** and the **Account / loan number**.
+10. Click **Create loan**.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/accounts/add-loan-dialog.png"
+  alt="The Add a loan dialog filled in for a mortgage, with the loan name, type, currency, original principal, current outstanding balance, interest rate, term, start date, planned and minimum monthly payment fields, and the estimated minimum payment shown above the Minimum monthly payment field."
+  hint="Open /loans and click Add loan. Fill in: Loan name 'Home mortgage', Loan type Mortgage, Currency EUR, Original principal 250000, Current outstanding balance 212000, Interest rate 3.9, Term 360, Start date 5 years ago, Planned monthly payment 1200. Leave Minimum monthly payment empty so the estimate link shows above it. Crop to the dialog."
+/>
+
+### What the fields do
+
+- **Original principal** is used for the **Paid** progress: how much of it you've paid back so far.
+- **Current outstanding balance** is your starting point. Payments you record from now on lower it. See [how the balance works](#how-the-balance-works).
+- **Interest rate (APR %)** is the yearly rate. It's used to estimate interest and the payoff date. It can be between 0 and 99.9999.
+- **Term (months)** can be between 1 and 1200 months.
+- **Start date** is for your records. It doesn't change the balance or the projection. It can't be in the future.
+- **Planned monthly payment** drives the [projection](#the-loan-page). Without it, MoneyMatter can't project a payoff date.
+- **Minimum monthly payment** shows as its own line on the payoff chart. If you've entered the balance, rate and term, an estimate appears above the field. Click it to fill it in. The estimate is the payment that clears what you owe now by the end of the term.
+
+If the current balance is higher than the original principal, you'll see a warning. That can be right, for example when unpaid interest was added to the loan, so it doesn't stop you from saving.
+
+## How the balance works
+
+This is the part that surprises people most, so it's worth a minute.
+
+**Only payments lower the balance.** MoneyMatter doesn't add interest to the balance each month. When you record a payment, the whole amount comes off the balance. Your lender's statement is always the real figure. When it drifts from MoneyMatter, [correct the balance](#correct-the-balance).
+
+**The balance is anchored to a date.** The balance you enter is what you owe on a specific day. That day is shown as **Balance as of** on the loan page. When you add a loan, it's the day you add it. When you correct the balance, it's the date you choose.
+
+From that day on, every payment you record lowers the balance. Payments dated **before** that day are saved as history but don't change the balance, because the balance you entered already includes them.
+
+Say you took out a car loan in January and add it to MoneyMatter on June 10 with a **Current outstanding balance** of 15,000 EUR:
+
+| Payment | Date | Effect |
+|---|---|---|
+| 500 EUR | May 15 | Saved as history. The balance stays 15,000 EUR, because the 15,000 already takes it into account. |
+| 500 EUR | June 10 | Counts. The balance drops to 14,500 EUR. |
+| 500 EUR | July 15 | Counts. The balance drops to 14,000 EUR. |
+
+When you record or link a payment dated before the **Balance as of** date, MoneyMatter tells you it will be saved as history only.
+
+<Aside type="tip" title="Adding a loan you've been paying for years?">
+Enter today's outstanding balance from your lender, then [link your previous payments](#link-previous-payments) if you want them on the loan's history. They won't be subtracted a second time.
+</Aside>
+
+A payment can't take the balance below zero. If a payment is larger than what you still owe, you'll see **Payment exceeds the remaining loan balance** with the most you can pay.
+
+## The loan page
+
+Click a loan to open it. At the top are **Record payment** (for active loans), **Edit** and **More**.
+
+- **Summary** card: the loan's name, lender and type, the **Current balance**, the **APR**, **Original principal**, **Term**, **Start date**, **Payment day**, **Balance as of** and the **Account number**, if you entered one.
+- **Projection** card: how much you've **Paid** so far, your **Payoff date**, **Months remaining**, the **Total interest remaining**, and how your next payment splits into **Next month's interest** and **Next month's principal**. It's based on your **Planned payment**.
+- **Payoff projection** chart: see [below](#play-with-the-payoff-date).
+- **Recent payments**: the latest payments on the loan. Click **See all** for the full list, or click a payment to [edit it](#edit-unlink-or-delete-a-payment).
+- **Timeline**: changes to the rate, term and planned payment, balance corrections, notes, and the day the loan was paid off.
+
+On a narrow screen, the chart is folded into the **Projection** card. Click **Payoff projection** to open it.
+
+<Screenshot
+  src="/screenshots/accounts/loan-detail-page.png"
+  alt="A loan page with the Summary card, the Projection card showing the paid percentage, payoff date and months remaining, the Payoff projection chart with minimum, planned and custom payment lines, the Recent payments list and the Timeline."
+  hint="Open /loans/:id for the 'Home mortgage' loan with a Minimum monthly payment of 1000 set, two payments recorded from the seeded Everyday Checking account (USD, so set Amount applied to loan to 1200 EUR), both dated today (the loan's Balance as of date, so they count), and one rate change made through Edit so the Timeline has an entry. Type 1500 into the chart's Custom payment field so the custom line differs from the planned one. Use a window at least 1300px wide so the two-column layout shows. Crop to the page content."
+/>
+
+### Projection warnings
+
+The **Projection** card warns you when it can't project a payoff:
+
+- **No planned payment set – projected payoff unavailable.** Add a **Planned monthly payment** with **Edit**.
+- **Planned payment doesn't cover monthly interest – loan would grow.** Your planned payment is less than one month's interest, so the loan would never be paid off.
+
+The interest figures are estimates from the APR and the current balance. They're not what your lender charged.
+
+### Play with the payoff date
+
+The **Payoff projection** chart shows how the balance goes down over time with up to three payments:
+
+- **Minimum payment**, if you entered one (dashed line).
+- **Planned payment**.
+- **Custom payment**, which you type in the **Custom payment** field above the chart.
+
+Below the chart, each line shows its payoff date and total interest, compared with the planned payment, for example "2 yr 3 mo earlier". Try a bigger custom payment to see how much sooner you'd be debt-free.
+
+If you like the custom amount, click the button next to the field (**Apply as planned payment**) and confirm. It becomes your **Planned monthly payment**, and the change is added to the **Timeline**.
+
+## Record a payment
+
+There are four ways to record a payment, depending on where the money comes from.
+
+### From the loan page
+
+Use this for payments from a manual account.
+
+<Steps>
+
+1. Open the loan and click **Record payment**.
+2. Choose the account the money comes from under **From account**.
+3. Enter the **Amount**.
+4. If the account is in a different currency than the loan, check **Amount applied to loan**. It's filled in at today's exchange rate. Change it if your bank used a different rate.
+5. Set the date. It can't be in the future.
+6. Click **Record**.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/accounts/record-loan-payment.png"
+  alt="The Record payment dialog with Paying to showing the loan, the From account picker, the hint about synced accounts, the Amount field in the account's currency, the Amount applied to loan field in the loan's currency, and the date field."
+  hint="Open /loans/:id for the 'Home mortgage' loan and click Record payment. Choose the seeded Everyday Checking account (USD) under From account, enter the USD amount and set Amount applied to loan to 1200 (EUR). Keep today's date. Crop to the dialog."
+/>
+
+The payment is recorded as a transfer: an expense on your account and a payment on the loan.
+
+**From account** only lists manual accounts. A bank-connected account gets the payment from your bank, so recording it here as well would count it twice. Once your bank's transaction arrives, [link it](#link-previous-payments) or [turn it into a loan payment](#from-an-existing-expense) instead.
+
+### From the Add transaction form
+
+<Steps>
+
+1. Click **Add transaction** and select the **Transfer** tab.
+2. Enter the **Amount** and pick the account the money comes from in **From account**.
+3. In the **Where the money goes** panel, choose **Loan** and pick the loan in **To loan**.
+4. Click **Create**.
+
+</Steps>
+
+If you choose **Account** instead of **Loan** and pick a loan from the list, it's still recorded as a loan payment.
+
+### From an existing expense
+
+If you already recorded the payment as an expense, or your bank imported it:
+
+<Steps>
+
+1. Open the expense and select the **Transfer** tab.
+2. In the **Where the money goes** panel, choose **Loan** and pick the loan in **To loan**.
+3. Click **Edit**.
+
+</Steps>
+
+Only an expense can become a loan payment. Income can't.
+
+### Link previous payments
+
+To turn many existing expenses into loan payments at once, for example a year of mortgage payments your bank imported:
+
+<Steps>
+
+1. Open the loan, click **More** and choose **Link previous payments**.
+2. The list shows your expenses since the loan's start date. Use the filters to narrow it down, for example by account or payee.
+3. Select the payments that belong to this loan.
+4. Click **Link** with the number you selected.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/accounts/link-previous-payments.png"
+  alt="The Link previous payments dialog listing expenses with three of them selected, a warning that two of the selected payments are dated before the balance anchor, and the Link 3 button."
+  hint="Before capturing, add four 1317 USD expenses (about 1200 EUR) to Everyday Checking with the note 'Mortgage', dated 3 months ago, 2 months ago, 1 month ago and today, all after the loan's start date. Open /loans/:id for 'Home mortgage', click More → Link previous payments, set Filters → Amount from to 1000 so the list shows the large expenses, and select today's Mortgage expense plus two older ones so the history-only warning shows. Crop to the dialog."
+/>
+
+Each selected expense becomes a loan payment. Amounts in another currency are converted at the rate on each payment's date.
+
+Payments dated before the loan's **Balance as of** date are linked as history only, and the dialog warns you how many there are. If the payments that count add up to more than you owe, you're asked to confirm with **Link anyway**. The loan is then paid off, and the extra isn't credited to the loan.
+
+## Edit, unlink or delete a payment
+
+Click a loan payment anywhere it appears: in **Recent payments**, in your transaction lists or on the account it was paid from. It opens the **Edit loan payment** dialog instead of the usual transaction form.
+
+- To change the account, amount or date, edit the fields and click **Save**.
+- **Unlink** keeps the transaction as a regular expense on your account but removes it from the loan. The loan balance is recalculated.
+- **Delete** moves both sides of the payment to [Trash](/transactions/add-and-edit/#delete-a-transaction), and the loan balance goes back up. You can restore it from Trash for 30 days.
+
+## Correct the balance
+
+When your lender's statement shows a different balance, correct it in MoneyMatter.
+
+<Steps>
+
+1. Open the loan and click **Edit**.
+2. Change the **Current outstanding balance**.
+3. A **Balance as of** field appears. Set the date of the statement. It's today by default, and can't be earlier than the loan's start date or in the future.
+4. Click **Save changes**.
+
+</Steps>
+
+The corrected balance becomes the new starting point, and **Balance as of** moves to the date you chose. Payments dated on or after that date are subtracted from it. Earlier payments become history.
+
+<Aside type="caution" title="Enter the balance before that day's payments">
+The balance you enter counts as what you owed at the start of the **Balance as of** day. A payment dated that same day is still subtracted. So if your statement already includes today's payment and you've recorded that payment for today, the payment is counted twice. Set **Balance as of** to the day after the payment, or enter the balance from before it.
+</Aside>
+
+If payments recorded after the new date add up to more than the corrected balance, the correction is rejected. Check the date or the amount.
+
+Every correction is added to the **Timeline** as "Outstanding balance corrected from … to …". No transaction is created, so your spending doesn't change.
+
+## Edit a loan
+
+Click **Edit** on the loan page to change the **Loan name**, the balance, **Interest rate (APR %)**, **Term (months)**, **Start date**, the planned and minimum payments, the payment day, the **Lender** and the **Account / loan number**. Click **Save changes**.
+
+Changes to the rate, term and planned payment are added to the **Timeline**.
+
+The **Loan type**, **Currency** and **Original principal** can't be changed after the loan is added.
+
+To change the loan's logo, click the logo next to its name on the loan page (**Change logo**).
+
+## When a loan is paid off
+
+When your payments bring the balance to zero, the loan moves to the **Paid off** section of the **Loans** page and its page changes:
+
+- A banner says the loan was paid off in full, with how long it took and how much you repaid. If you paid it off before the end of the term, it shows how many months early.
+- **What this loan cost** shows the **Total cost**, split into **Principal** and **Interest (est.)**, and the effective cost as a percentage of what you borrowed. MoneyMatter records payments as principal only, so the interest is an estimate from the loan's schedule.
+- **Balance journey** charts your actual balance over time against the original schedule.
+
+The **Record payment** button is hidden on a paid-off loan. You can still record a late correction from **More** → **Record payment**. If you delete or change a payment and the loan owes money again, it moves back to the active loans.
+
+<Screenshot
+  src="/screenshots/accounts/loan-paid-off.png"
+  alt="A paid-off loan page with the 'paid off in full' banner, the What this loan cost card with total cost, principal and estimated interest, and the Balance journey chart."
+  hint="Create a small Personal loan (EUR, principal 3000, outstanding 1000, APR 8, term 12, start date 10 months ago, planned payment 500). Record two 500 EUR payments from Everyday Checking dated today. Open /loans/:id for that loan. Crop to the page content."
+/>
+
+## Archive, exclude or delete a loan
+
+All three are in the **More** menu on the loan page.
+
+- **Exclude from stats** keeps the loan out of your net worth, charts and reports, without archiving it. Toggle it off to count the loan again.
+- **Archive** moves the loan to the **Archived** section of the **Loans** page and hides it from the sidebar and account pickers. **Also exclude from statistics** is ticked by default. Use it for a loan you stopped tracking, for example one you refinanced. To bring it back, open it and click **Restore**.
+- **Delete** removes the loan and its timeline for good. You can only delete a loan with no payments. Delete or [unlink](#edit-unlink-or-delete-a-payment) its payments first.
+
+## How loans affect your stats
+
+- **The payment counts as spending.** Unlike other transfers, the expense on your account counts in your spending and cash flow reports. Paying off debt is money leaving your pocket.
+- **The loan side doesn't count as income.** It only lowers what you owe.
+- **Loans are a liability in your net worth.** By default, the dashboard's **Net worth** and **Balance trend** widgets subtract what you owe on your loans. Turn **Loans** off in a widget's settings to leave them out. See [dashboard](/stats/dashboard/).
+- **Loans aren't part of Total balance** on the **Accounts** page. See [manage accounts](/accounts/manage-accounts/#what-total-balance-includes).
+
+## Good to know
+
+- **Loans don't take transactions directly.** Their balance only changes through payments and corrections, so you can't add an expense or income to a loan, or plan a future payment on one.
+- **Only you see your loans on the Loans page.** If someone shares a loan account with you, you can open it from **Shared with me** on the **Accounts** page, but it isn't listed under **Loans**.
+- **Notes on the timeline** can be added through an AI assistant connected over MCP. See [connect Claude or ChatGPT](/ai/connect-claude-chatgpt-mcp/).
+
+## Related
+
+- [Manage accounts](/accounts/manage-accounts/)
+- [How transfers work](/transfers-and-refunds/how-transfers-work/#transfers-to-a-portfolio-loan-or-venture)
+- [Add and edit transactions](/transactions/add-and-edit/)
+- [How stats are calculated](/stats/how-stats-are-calculated/)
+- [Dashboard](/stats/dashboard/)

@@ -75,7 +75,8 @@
         "cancelNote": "Mudou de ideia? Renove no portal de cobrança e sua data de renovação continua a mesma.",
         "monthlyHint": "Mude para o anual e economize {amount} por ano.",
         "noCard": "Nenhum cartão cadastrado",
-        "readOnlyHelp": "O que significa somente leitura?"
+        "readOnlyHelp": "O que significa somente leitura?",
+        "gift": "{tier} gift"
       },
       "status": {
         "pastDue": "Pagamento falhou",
@@ -85,7 +86,8 @@
         "trial": "Recursos do Plus",
         "processing": "Processando",
         "earlyAdopter": "Early Adopter",
-        "endsOn": "Termina em {date}"
+        "endsOn": "Termina em {date}",
+        "gift": "Gift"
       },
       "cta": {
         "activating": "Ativando...",
@@ -99,7 +101,17 @@
         "viaPortal": "Alterado no portal de cobrança.",
         "viaAppStore": "As mudanças de plano são feitas na App Store",
         "billedToday": "Cobrado hoje. Cancele quando quiser.",
-        "earlyAdopter": "50% de desconto para sempre, aplicado no pagamento"
+        "earlyAdopter": "50% de desconto para sempre, aplicado no pagamento",
+        "afterGift": "Available after your gift ends on {date}"
+      },
+      "gift": {
+        "title": "Redeem a gift code",
+        "description": "Got a gift subscription? Enter the code from your email.",
+        "placeholder": "Enter your gift code",
+        "redeem": "Redeem",
+        "redeemed": "Gift redeemed: {tier} until {date}",
+        "redeemedQueued": "Gift redeemed. {tier} starts on {start} and runs until {date}.",
+        "redeemFailed": "Couldn't redeem the gift code. Try again."
       },
       "plans": {
         "essential": "Essential",

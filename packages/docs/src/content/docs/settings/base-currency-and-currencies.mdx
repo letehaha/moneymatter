@@ -12,7 +12,7 @@ You can keep accounts in as many currencies as you like. To add them all up, Mon
 
 ## What the base currency is used for
 
-You choose your base currency when you sign up, on the **Select Base Currency** screen. Pick the one you use most often, because every total in the app is shown in it:
+You choose your base currency when you sign up, on the **Select base currency** screen. Pick the one you use most often, because every total in the app is shown in it:
 
 - the dashboard, stats and reports
 - account group totals in the sidebar
@@ -160,7 +160,7 @@ Changing your base currency recalculates every converted amount in your account.
 
 1. On the **Currencies** page, add the new currency if it isn't in your list yet.
 2. Click its row and, in the dialog that opens, click **Set as base currency**.
-3. Read the **Change Base Currency?** dialog, then click **Change Base Currency**.
+3. Read the **Change base currency?** dialog, then click **Change base currency**.
 
 </Steps>
 
@@ -170,15 +170,18 @@ You can only switch to a currency that MoneyMatter has long-term exchange-rate h
 
 <Screenshot
   src="/screenshots/settings/change-base-currency-dialog.png"
-  alt="The Change Base Currency? confirmation dialog with its warnings and the rounding explanation expanded."
-  hint="Open /settings/currencies, click a non-base currency row and, in its dialog, click Set as base currency. In the Change Base Currency? dialog, expand 'How exactly is rounding calculated?'. Do NOT confirm. Crop to the dialog."
+  alt="The Change base currency? confirmation dialog with its warnings and the rounding explanation expanded."
+  hint="Open /settings/currencies, click a non-base currency row and, in its dialog, click Set as base currency. In the Change base currency? dialog, expand 'How exactly is rounding calculated?'. Do NOT confirm. Crop to the dialog."
 />
 
 ### What gets recalculated
 
-- **Every transaction** gets a new base amount, using the market exchange rate for its own date.
-- **Account balances and credit limits** are converted at today's rate.
+- **Every transaction** gets a new base amount, using the market exchange rate for its own date. Split parts are converted along with it.
+- **Account balances and credit limits** are converted at today's rate. This includes vehicles and the current balance of your [loans](/accounts/loans/).
 - **Balance history** is rebuilt in the new base currency.
+- **Loan details**: the original principal and the minimum and planned monthly payments are converted at today's rate.
+- **Investments**: trades and transfers to and from portfolios are converted at the rate for their own date. Holdings' cost basis and portfolio cash are converted at today's rate.
+- **FIRE planner** amounts you entered by hand are converted at today's rate.
 - The new currency gets the **Base** badge. Your old base currency stays in your list as a regular currency.
 
 The original amounts of your transactions are never touched. Only the converted amounts change.
@@ -199,7 +202,7 @@ If something goes wrong, you'll see **Base currency change failed**. Your transa
 Each change recalculates every converted amount from the original amounts. Because of rounding and small differences between exchange rates, switching back and forth several times can leave your converted totals a few cents different from where they started.
 </Aside>
 
-If you share accounts with other people or belong to a household, you can't change your base currency until you stop sharing. The error message tells you what to do.
+If you share accounts or [trackers](/planned/trackers/#share-a-tracker) with other people, or belong to a household, you can't change your base currency until you stop sharing (see [household and sharing](/settings/household-and-sharing/)). The same goes while you have a [budget](/budgeting/start-budgeting/): move it to trash first. The error message tells you what to do.
 
 ## Good to know
 

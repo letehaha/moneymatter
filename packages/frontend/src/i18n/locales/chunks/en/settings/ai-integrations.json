@@ -3,7 +3,7 @@
     "aiIntegrations": {
       "mcpServer": {
         "title": "MCP server",
-        "description": "Use this URL to connect AI assistants to your MoneyMatter account. Your data is shared read-only.",
+        "description": "Use this URL to connect AI assistants to your MoneyMatter account. When you connect one, you choose what it can do: read your data, make changes and, if you allow it, delete. You can revoke access at any time.",
         "copyTooltip": "Copy URL",
         "copiedNotification": "MCP server URL copied to clipboard"
       },

@@ -398,6 +398,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { StatusBadge } from '@/components/lib/ui/status-badge';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
+import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { useBankConnectionDetails } from '@/composable/data-queries/bank-providers/bank-connection-details';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useBaseBalanceTotals } from '@/composable/use-base-balance-totals';
@@ -407,9 +408,10 @@ import { ApiErrorResponseError, isNotFoundError } from '@/js/errors';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
 import { useAccountsStore } from '@/stores';
-import { BANK_PROVIDER_TYPE, DEACTIVATION_REASON } from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, DEACTIVATION_REASON, DEFAULT_BANK_SYNC_HOURS_UTC } from '@bt/shared/types';
 import { API_ERROR_CODES } from '@bt/shared/types/api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
+import { parseISO } from 'date-fns';
 import {
   ArrowLeftIcon,
   CircleAlertIcon,
@@ -479,19 +481,20 @@ const providerDisplayName = computed(() => {
   return meta ? t(meta.nameKey) : (connectionDetails.value?.provider.name ?? '');
 });
 
-const MS_PER_HOUR = 60 * 60 * 1000;
+const { data: userSettings } = useUserSettings();
 
-const autoSyncIntervalHours = computed(() => {
-  const features = connectionDetails.value?.provider.features;
-  if (!features?.supportsAutoSync || !features.defaultSyncInterval) return null;
-  return Math.round(features.defaultSyncInterval / MS_PER_HOUR);
+// Scheduled syncs run at the user's "Bank sync schedule" hours (UTC), shown in local time.
+const autoSyncStatLabel = computed(() => {
+  if (!connectionDetails.value?.provider.features.supportsAutoSync) {
+    return t('pages.integrations.details.summary.autoSyncOff');
+  }
+  if (!userSettings.value) return '—';
+  const today = formatDateLocale(new Date(), 'yyyy-MM-dd');
+  return [...new Set(userSettings.value.bankSyncHoursUtc ?? DEFAULT_BANK_SYNC_HOURS_UTC)]
+    .map((hour) => formatDateLocale(parseISO(`${today}T${String(hour).padStart(2, '0')}:00:00Z`), 'HH:mm'))
+    .sort()
+    .join(' · ');
 });
-
-const autoSyncStatLabel = computed(() =>
-  autoSyncIntervalHours.value === null
-    ? t('pages.integrations.details.summary.autoSyncOff')
-    : t('pages.integrations.details.summary.every', { hours: autoSyncIntervalHours.value }),
-);
 
 const lastSyncLabel = computed(() => {
   const lastSyncAt = connectionDetails.value?.lastSyncAt;

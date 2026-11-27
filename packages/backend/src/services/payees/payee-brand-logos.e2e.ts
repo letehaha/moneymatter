@@ -310,7 +310,8 @@ describe('Payee logo auto-resolution', () => {
   it('clamps an over-long provider brand name to the cache column width', async () => {
     global.mswMockServer.use(
       getLogoDevSearchMock({
-        results: [{ name: 'L'.repeat(300), domain: 'longbrand.com', logoUrl: null }],
+        // Punctuation normalizes away, so this still matches the payee name exactly.
+        results: [{ name: `Longbrand Co${'!'.repeat(300)}`, domain: 'longbrand.com', logoUrl: null }],
       }),
     );
 

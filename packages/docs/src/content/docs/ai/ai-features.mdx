@@ -12,7 +12,7 @@ MoneyMatter uses AI to sort your transactions, read statements and invoices, and
 
 All AI settings are in one place. Click the gear button (**Settings**) at the top right of the app, then choose **AI** under **Workspace**. It has three tabs:
 
-- **AI Features**: which model powers each feature, and how much of this month's included AI you've used.
+- **AI features**: which model powers each feature, and how much of this month's included AI you've used.
 - **AI models**: add your own model, such as an Anthropic, OpenAI or Gemini key, or a model running on your own computer.
 - **Connectors (MCP)**: connect Claude or ChatGPT to your data.
 
@@ -32,29 +32,29 @@ AI picks a category for your transactions based on their description and merchan
 
 A payee's **AI categorization** setting decides whether AI may replace that payee's default category. See [Payees](/transactions/payees/#default-category).
 
-## Statement Parser
+## Statement parser
 
 Upload a bank statement (PDF, CSV or TXT), a receipt or a screenshot from your banking app, and AI pulls out the transactions for you to review and import. It's handy when your bank only gives you PDFs.
 
-Find it under **Settings** → **Import/Export**, on the **Import** tab: **Import from any Text Source**. See [Import from any Text Source](/import/other-import-sources/#import-from-any-text-source).
+Find it under **Settings** → **Import/Export**, on the **Import** tab: **Import from any text source**. See [Import from any text source](/import/other-import-sources/#import-from-any-text-source).
 
 ## Investment transactions import
 
 AI reads an exchange export, a broker statement or pasted text and extracts your buy and sell transactions.
 
-Open a portfolio, click **Import transactions** above its holdings, and choose **AI Import**.
+Open a portfolio and click **Import** on the **Holdings** tab (in a portfolio with no holdings yet, click **Or import from a file**). Keep **AI import** selected. See [Import investment transactions](/investments/import-transactions/).
 
 ## Attach invoice <Badge text="Plus" variant="tip" />
 
-Drop in an invoice or receipt, and AI reads it and finds the transaction it belongs to. In **AI Settings** it's called **Invoice matching**.
+Drop in an invoice or receipt, and AI reads it and finds the transaction it belongs to. In **AI settings** it's called **Invoice matching**.
 
 **Attach invoice** is in the arrow menu next to **Add transaction** at the top of the app. Plus includes it. Without Plus, you get 5 free tries. See [Attach invoice free tries](/settings/plans-and-billing/#attach-invoice-free-tries).
 
 ## Smart tracking <Badge text="Plus" variant="tip" />
 
-Smart tracking fills a tracker for you. You describe what belongs in it, for example "Two weeks in Greece: flights, ferries, rental car, island hotels". Every night, AI checks new and edited transactions against that description. Sure matches are added to the tracker for you, and the rest wait for your review. In **AI Settings** it's called **Tracker matching**.
+Smart tracking fills a tracker for you. You describe what belongs in it, for example "Two weeks in Greece: flights, ferries, rental car, island hotels". Every night, AI checks new and edited transactions against that description. Sure matches are added to the tracker for you, and the rest wait for your review. In **AI settings** it's called **Tracker matching**.
 
-To turn it on, open **Planning** → **Trackers** in the sidebar, create or edit a tracker, and switch on **Find matching transactions for me** under **Smart tracking**. The tracker needs a start date. **Also look before the start date** catches flights and hotels you booked in advance.
+To turn it on, open **Planning** → **Trackers** in the sidebar, create or edit a tracker, and switch on **Find matching transactions for me** under **Smart tracking**. The tracker needs a start date. **Also look before the start date** catches flights and hotels you booked in advance. See [Smart tracking](/planned/trackers/#smart-tracking) on the trackers page.
 
 <Screenshot
   src="/screenshots/ai/smart-tracking-fields.png"
@@ -64,7 +64,7 @@ To turn it on, open **Planning** → **Trackers** in the sidebar, create or edit
 
 ## Transfer matching AI review <Badge text="Plus" variant="tip" />
 
-[Transfer matching](/transfers-and-refunds/link-existing-transactions/#find-pairs-with-transfer-matching) suggests expense and income pairs that could be transfers between your accounts. With **AI review** switched on, AI reads each pair's payees, notes, categories and accounts, and keeps only the ones that look like real transfers, each marked **Likely** or **Possible**. It runs each time you click **Scan**. In **AI Settings** it's called **Transfer matching**.
+[Transfer matching](/transfers-and-refunds/link-existing-transactions/#find-pairs-with-transfer-matching) suggests expense and income pairs that could be transfers between your accounts. With **AI review** switched on, AI reads each pair's payees, notes, categories and accounts, and keeps only the ones that look like real transfers, each marked **Likely** or **Possible**. It runs each time you click **Scan**. In **AI settings** it's called **Transfer matching**.
 
 ## Budget suggestions
 
@@ -82,7 +82,7 @@ Every AI feature runs either on **MoneyMatter's included AI**, which needs no se
 
 | Feature | Plus and the 40-day trial | Essential and Early Adopter |
 |---|---|---|
-| Transaction categorization, Statement Parser, investment import, Transfer matching AI review | Included AI | Your own model (Early Adopter: included AI too) |
+| Transaction categorization, Statement parser, investment import, Transfer matching AI review | Included AI | Your own model (Early Adopter: included AI too) |
 | Attach invoice | Included AI | 5 free tries on the included AI |
 | Smart tracking | Included AI | 14-day free trial, then your own model |
 | Budget suggestions | Included AI | Included AI |
@@ -92,7 +92,7 @@ Every AI feature runs either on **MoneyMatter's included AI**, which needs no se
 
 Plus includes MoneyMatter's AI for every feature, and so does the 40-day trial every new account starts with. The Early Adopter plan includes it too, with two exceptions: **Attach invoice** gives 5 free tries, and Smart tracking gives a 14-day free trial.
 
-The included AI comes with a monthly allowance. **Included AI usage** on the **AI Features** tab shows how much you've used. The allowance resets on the 1st of every month, and Plus gets more each month than the trial and the Early Adopter plan. Statement parsing, categorization, invoices, Smart tracking, Transfer matching AI review and budget suggestions all share it.
+The included AI comes with a monthly allowance. **Included AI usage** on the **AI features** tab shows how much you've used. The allowance resets on the 1st of every month, and Plus gets more each month than the trial and the Early Adopter plan. Statement parsing, categorization, invoices, Smart tracking, Transfer matching AI review and budget suggestions all share it.
 
 When the allowance runs out, features that use the included AI pause until it resets. To keep going before then, connect your own model, or subscribe to Plus if you're on the trial.
 
@@ -100,7 +100,7 @@ When the allowance runs out, features that use the included AI pause until it re
 
 On any plan, you can add your own model on the **AI models** tab: an Anthropic, OpenAI or Gemini key, or any OpenAI-compatible endpoint such as OpenRouter or a model running on your own computer. Your AI provider bills you directly, and your own model never counts toward the allowance.
 
-- **Once you add a model, every feature uses it.** To keep the included AI for one feature, pick it for that feature on the **AI Features** tab. That only works while your plan includes the included AI.
+- **Once you add a model, every feature uses it.** To keep the included AI for one feature, pick it for that feature on the **AI features** tab. That only works while your plan includes the included AI.
 - **If your own model stops working,** the feature pauses and **AI models** marks the model with a warning. It doesn't switch to the included AI on its own, so your data only goes to the provider you chose.
 - **Some limits stay.** Your own model doesn't lift the 5 free tries of **Attach invoice**, and budget suggestions always use the included AI.
 
@@ -122,4 +122,6 @@ When the 14 days are over, upgrade to Plus or connect your own model to keep it 
 
 - [Connect Claude or ChatGPT](/ai/connect-claude-chatgpt-mcp/)
 - [Plans and billing](/settings/plans-and-billing/)
-- [Import from any Text Source](/import/other-import-sources/#import-from-any-text-source)
+- [Import from any text source](/import/other-import-sources/#import-from-any-text-source)
+- [Import investment transactions](/investments/import-transactions/)
+- [Trackers](/planned/trackers/)

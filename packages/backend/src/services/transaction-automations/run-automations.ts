@@ -34,7 +34,8 @@ const pauseRuleOutOfBand = async ({
   await TransactionAutomations.update(
     missingReferencePatch({ refType: missing.refType, refId: missing.refId, label: '' }),
     {
-      where: { id: ruleId, userId },
+      // A delete that committed after this run loaded the rule has already paused it with the row's name.
+      where: { id: ruleId, userId, isEnabled: true },
       transaction: null,
     },
   );

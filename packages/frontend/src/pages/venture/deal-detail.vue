@@ -9,14 +9,16 @@ import VentureDealLogo from '@/components/common/venture-deal-logo.vue';
 import VentureDealForm from '@/components/forms/venture-deal-form.vue';
 import VentureEventForm from '@/components/forms/venture-event-form.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
+import { Checkbox } from '@/components/lib/ui/checkbox';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDeleteVentureDeal, useUpdateVentureDeal, useVentureDeal } from '@/composable/data-queries/venture/deals';
+import { useVentureEvents } from '@/composable/data-queries/venture/events';
 import DealStatusPill from '@/pages/venture/components/deal-status-pill.vue';
 import EventsTimeline from '@/pages/venture/components/events-timeline.vue';
 import MetricsSummary from '@/pages/venture/components/metrics-summary.vue';
 import { ROUTES_NAMES } from '@/routes';
-import type { NonImageLogoPayload } from '@bt/shared/types';
+import { type NonImageLogoPayload, VENTURE_CASH_FLOW_MODE } from '@bt/shared/types';
 import { ArrowLeftIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -30,9 +32,11 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
 
 const dealId = computed(() => (route.params.dealId as string) ?? '');
 const { data: deal, isPending } = useVentureDeal(dealId);
+const { data: events } = useVentureEvents(dealId);
 
 const editOpen = ref(false);
 const deleteOpen = ref(false);
+const deleteLinkedTx = ref(false);
 const createEventOpen = ref(false);
 
 const deleteMutation = useDeleteVentureDeal();
@@ -41,6 +45,15 @@ const updateMutation = useUpdateVentureDeal();
 const saveLogo = ({ payload }: { payload: NonImageLogoPayload }) =>
   updateMutation.mutateAsync({ dealId: dealId.value, payload });
 
+const hasLinkedTransactions = computed(
+  () => events.value?.some((event) => event.cashFlowMode === VENTURE_CASH_FLOW_MODE.linked) ?? false,
+);
+
+const requestDelete = () => {
+  deleteLinkedTx.value = false;
+  deleteOpen.value = true;
+};
+
 const onEditSaved = () => {
   editOpen.value = false;
 };
@@ -48,7 +61,10 @@ const onEditSaved = () => {
 const onDelete = async () => {
   if (!deal.value) return;
   try {
-    await deleteMutation.mutateAsync(deal.value.id);
+    await deleteMutation.mutateAsync({
+      dealId: deal.value.id,
+      deleteLinkedTransactions: deleteLinkedTx.value,
+    });
     addNotification({
       text: t('venture.deals.notifications.deleted'),
       type: NotificationType.success,
@@ -104,7 +120,7 @@ const onDelete = async () => {
             <PencilIcon class="size-4" />
             <span>{{ $t('venture.deals.edit') }}</span>
           </UiButton>
-          <UiButton variant="ghost-destructive" @click="deleteOpen = true">
+          <UiButton variant="ghost-destructive" @click="requestDelete">
             <Trash2Icon class="size-4" />
             <span>{{ $t('venture.deals.delete') }}</span>
           </UiButton>
@@ -193,6 +209,10 @@ const onDelete = async () => {
     >
       <template #title>{{ $t('venture.deals.deleteTitle') }}</template>
       <template #description>{{ $t('venture.deals.deleteDescription', { name: deal?.name ?? '' }) }}</template>
+      <label v-if="hasLinkedTransactions" class="mt-2 flex items-center gap-2 text-sm">
+        <Checkbox v-model="deleteLinkedTx" />
+        <span>{{ $t('venture.events.deleteLinkedTransactionsLabel') }}</span>
+      </label>
     </ResponsiveAlertDialog>
 
     <ResponsiveDialog v-model:open="createEventOpen" :hide-drawer-footer="true">

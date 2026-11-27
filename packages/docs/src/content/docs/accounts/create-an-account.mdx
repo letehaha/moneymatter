@@ -16,12 +16,12 @@ If you'd rather have your bank send transactions automatically, see [bank connec
 
 <Steps>
 
-1. In the sidebar, open **Accounts** → **All Accounts**.
+1. In the sidebar, open **Accounts** → **All accounts**.
 2. Click **Create account** at the top of the page. On a narrow screen, click the ⋮ button (**Account actions**) first, then **Create account**.
 3. Enter an **Account name**. You can also click the square next to the name to pick a logo (more on that [below](#account-name-and-logo)).
 4. Choose the **Currency**.
 5. Enter the **Initial balance**. Read [choose the right initial balance](#choose-the-right-initial-balance) first if you plan to add past transactions.
-6. Pick an **Account Category**.
+6. Pick an **Account category**.
 7. Leave **Credit limit** at 0 unless you know you need it (see [credit limit](#credit-limit)).
 8. Click **Create**.
 
@@ -38,7 +38,7 @@ The new account appears in the sidebar and on the **Accounts** page right away.
 ### Other ways to open the form
 
 - In the sidebar, find the **Accounts** heading above your list of accounts (it has a gear and a **+** button). Click **+** and choose **New account**.
-- If you have no accounts yet, the **Accounts** page shows a **Create Manual Account** button.
+- If you have no accounts yet, the **Accounts** page shows a **Create manual account** button.
 
 ## What each field means
 
@@ -75,7 +75,7 @@ Money in and out includes everything recorded on the account: income, expenses, 
 
 You can see and [change the initial balance](/accounts/manage-accounts/#change-the-initial-balance) later on the account's **Details** tab. An import may also adjust it for you (see [below](#choose-the-right-initial-balance)). If the balance drifted from a specific date, use [Adjust balance](/accounts/manage-accounts/#adjust-a-balance) instead.
 
-### Account Category
+### Account category
 
 The category describes what kind of account this is. You can choose from:
 
@@ -90,15 +90,15 @@ The category describes what kind of account this is. You can choose from:
 - **Overdraft**
 - **Crypto**
 
-The category mostly sets the icon and the label shown in your account lists. It doesn't change the balance or which transactions count. For example, choosing **Credit card** doesn't turn on any credit features, and choosing **Investment** doesn't create an investment portfolio. One exception: the [Net Worth History](/stats/analytics-reports/#net-worth-history) report sorts debts by type, so a negative balance on a **Credit card** account counts as a **Credit card** liability, while on most other accounts it counts as **Overdraft**. You can [change the category](/accounts/manage-accounts/#change-the-category) at any time.
+The category mostly sets the icon and the label shown in your account lists. It doesn't change the balance or which transactions count. For example, choosing **Credit card** doesn't turn on any credit features, and choosing **Investment** doesn't create an investment portfolio. One exception: the [Net worth history](/stats/analytics-reports/#net-worth-history) report sorts debts by type, so a negative balance on a **Credit card** account counts as a **Credit card** liability, while on most other accounts it counts as **Overdraft**. You can [change the category](/accounts/manage-accounts/#change-the-category) at any time.
 
 For savings, GICs and investment accounts your bank manages, see [savings and investment accounts](/accounts/savings-and-investment-accounts/) for how to record interest, dividends and changes in value.
 
-Vehicles have their own form. See [vehicles](/accounts/vehicles/).
+Loans and vehicles have their own forms, so they aren't in this list. See [loans](/accounts/loans/) and [vehicles](/accounts/vehicles/).
 
 ### Credit limit
 
-For credit cards and overdrafts. Accounts with a credit limit show up in the **Credit Utilization** widget on the [dashboard](/stats/dashboard/).
+For credit cards and overdrafts. Accounts with a credit limit show up in the **Credit utilization** widget on the [dashboard](/stats/dashboard/).
 
 Some banks show a balance that **already includes** your credit line. For example, a card with a 1,000 EUR limit where you've spent 200 EUR shows a balance of 800 EUR. In that case, enter the credit line (1,000) here. When **Include credit limits in balance** is turned on in **Settings** → **General** (see [general settings](/settings/general-settings/)), MoneyMatter subtracts the limit and shows what you actually owe: −200 EUR.
 
@@ -122,7 +122,7 @@ Say your bank shows 1,200 EUR today, and you're about to add last month's transa
 - **Off** (the default): enter today's balance, 1,200 EUR. The import keeps it and adjusts the initial balance for you.
 - **On**: imported transactions move the balance, so enter the balance before the first transaction, 1,500 EUR, as above.
 
-See [how an import affects balances](/import/import-from-csv/#how-an-import-affects-balances). **Import from any Text Source** has no such checkbox and always moves the balance, so treat it like adding transactions by hand. See [other import sources](/import/other-import-sources/#import-from-any-text-source).
+See [how an import affects balances](/import/import-from-csv/#how-an-import-affects-balances). **Import from any text source** has no such checkbox and always moves the balance, so treat it like adding transactions by hand. See [other import sources](/import/other-import-sources/#import-from-any-text-source).
 
 <Aside type="tip" title="Not sure of the starting number?">
 Leave the initial balance at 0 and add your transactions by hand. Then [change the initial balance](/accounts/manage-accounts/#change-the-initial-balance) to your bank's balance today minus the balance MoneyMatter shows. For example, if your bank shows 1,200 EUR and MoneyMatter shows −300 EUR, set the initial balance to 1,500. The whole history moves with it, so there's no jump in your balance history.

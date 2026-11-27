@@ -280,6 +280,26 @@ describe('User deletion: family-sharing cleanup', () => {
     });
   }, 60_000);
 
+  it('notifies recipients of the shared trackers', async () => {
+    const tracker = await helpers.createTracker({ name: 'Holiday', raw: true });
+    const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+    await helpers.shareTrackerWith({ trackerId: tracker.id, recipient, permission: SHARE_PERMISSIONS.read });
+
+    const deleteRes = await helpers.deleteUserAccount();
+    expect(deleteRes.statusCode).toBe(200);
+
+    const notifications = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getNotifications({ type: NOTIFICATION_TYPES.shareOwnerTrackerDeleted, raw: true }),
+    });
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]!.payload).toMatchObject({
+      resourceType: RESOURCE_TYPES.tracker,
+      resourceId: tracker.id,
+      resourceName: 'Holiday',
+    });
+  });
+
   it('stamps creatorSnapshot on tx the user created on others’ shared accounts', async () => {
     // Capture primary-user identity now — `helpers.deleteUserAccount()` removes the row
     // we'd otherwise read from. Username is the field the snapshot freezes; we assert

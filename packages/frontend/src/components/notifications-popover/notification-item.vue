@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { NotificationStruct } from '@/api/notifications';
+import Button from '@/components/lib/ui/button/Button.vue';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import {
@@ -220,6 +222,10 @@ const getTitle = (notification: NotificationStruct): string => {
     const payload = notification.payload as Partial<GoalReachedNotificationPayload> | undefined;
     if (payload?.goalName) return t('notifications.goalReached.title', { name: payload.goalName });
   }
+  if (notification.type === NOTIFICATION_TYPES.plannedConfirmed) {
+    const count = (notification.payload as { mergedCount?: number } | undefined)?.mergedCount;
+    if (count) return t('notifications.plannedConfirmed.title', { count }, count);
+  }
   if (notification.type === NOTIFICATION_TYPES.unrealizedLossAlert) {
     const count = (notification.payload as Partial<UnrealizedLossAlertNotificationPayload>)?.holdings?.length;
     if (count) return t('notifications.unrealizedLossAlert.title', { count }, count);
@@ -296,12 +302,17 @@ const handleDismiss = (event: Event) => {
           >
             {{ getTitle(notification) }}
           </p>
-          <button
-            class="text-muted-foreground hover:text-foreground shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-            @click="handleDismiss"
-          >
-            <XIcon class="size-4" />
-          </button>
+          <DesktopOnlyTooltip :content="$t('notifications.dismiss')">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              class="text-muted-foreground hover:text-foreground size-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-transparent focus-visible:opacity-100 pointer-coarse:opacity-100"
+              :aria-label="$t('notifications.dismiss')"
+              @click="handleDismiss"
+            >
+              <XIcon class="size-4" />
+            </Button>
+          </DesktopOnlyTooltip>
         </div>
 
         <!-- Type-specific content -->

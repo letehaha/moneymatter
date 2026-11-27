@@ -31,7 +31,7 @@
           "read": "View only",
           "writeOwn": "Can edit own transactions",
           "writeAll": "Can edit transactions",
-          "manage": "Manager"
+          "manage": "Can manage"
         },
         "projectedBalance": "Projected balance {amount} · {count} planned entry through {date} | Projected balance {amount} · {count} planned entries through {date}"
       },
@@ -221,7 +221,7 @@
       },
       "syncTransactions": {
         "title": "Sync latest transactions",
-        "autoSyncInfo": "Transactions are auto-synced every 12 hours",
+        "autoSyncInfo": "Transactions sync automatically on your bank sync schedule (Settings → General), and when you open the app if 12 hours have passed since the last sync.",
         "syncing": "Syncing...",
         "syncButton": "Sync",
         "notLinked": "This account is not linked to a bank connection",
@@ -273,9 +273,9 @@
         "pendingHeading": "Pending invitations",
         "loadError": "Failed to load sharing details.",
         "permissions": {
-          "read": "Read",
-          "write": "Write",
-          "manage": "Manage"
+          "read": "View only",
+          "write": "Can edit",
+          "manage": "Can manage"
         },
         "writeScope": {
           "all": "All transactions",
@@ -288,7 +288,7 @@
           "ownerHint": "Full control",
           "revoke": "Remove access",
           "revokeTitle": "Remove access?",
-          "revokeDescription": "{user} will lose access to {account}. They won't be notified.",
+          "revokeDescription": "{user} will lose access to {account}. We'll let them know in the app and by email.",
           "revokeConfirm": "Remove",
           "updateSuccess": "Member updated.",
           "updateError": "Could not update member.",

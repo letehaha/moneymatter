@@ -60,14 +60,14 @@ describe('GET /transactions/:transactionId/venture-link', () => {
     expect(link.logoDomain).toBe('stripe.com');
   });
 
-  it('flags a soft-deleted deal while still resolving its name', async () => {
+  it('returns 404 once the deal is deleted, since deleting it unlinks the transaction', async () => {
     const { deal, tx } = await createLinkedTransaction();
 
     await helpers.deleteVentureDeal({ dealId: deal.id });
 
-    const link = await helpers.getTransactionVentureLink({ transactionId: tx.id, raw: true });
+    const response = await helpers.getTransactionVentureLink({ transactionId: tx.id });
 
-    expect(link).toMatchObject({ dealId: deal.id, dealName: 'SK 116', isDealDeleted: true });
+    expect(response.statusCode).toBe(ERROR_CODES.NotFoundError);
   });
 
   it('returns 404 for a transaction with no venture link', async () => {

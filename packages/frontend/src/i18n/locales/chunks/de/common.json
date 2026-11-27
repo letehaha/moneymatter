@@ -476,6 +476,12 @@
       "plus": "Enthalten im Plus-Tarif",
       "hint": "Dein aktueller Tarif enthält diese Funktion nicht. Führe ein Upgrade durch, um sie freizuschalten."
     },
+    "featureTrialGate": {
+      "title": "Try it free for {days} days",
+      "startTrial": "Start {days}-day free trial",
+      "trialEnded": "Your free trial has ended. Upgrade to Plus to keep using it.",
+      "daysLeft": "Your free trial ends in {n} day | Your free trial ends in {n} days"
+    },
     "banner": {
       "trial": "Noch {count} Tag in deinem Testzeitraum · {link} | Noch {count} Tage in deinem Testzeitraum · {link}",
       "readOnly": "Dein Testzeitraum ist abgelaufen. Du kannst deine Daten ansehen und exportieren; abonniere, um sie weiterhin zu bearbeiten. {link}",

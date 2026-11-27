@@ -30,12 +30,12 @@ const READ_ONLY_ROUTES = new Set([
 
 const READ_ONLY_PREFIXES = ['/billing/', '/auth/', '/tests/', '/admin/'];
 
-const NOTIFICATION_READ = /^\/notifications\/[^/]+\/read$/;
+const NOTIFICATION_CLEAR = /^\/notifications\/[^/]+\/(read|dismiss)$/;
 
 const isReadOnlyAllowed = ({ method, path }: { method: string; path: string }): boolean =>
   READ_ONLY_ROUTES.has(`${method} ${path}`) ||
   READ_ONLY_PREFIXES.some((prefix) => path.startsWith(prefix)) ||
-  NOTIFICATION_READ.test(path);
+  NOTIFICATION_CLEAR.test(path);
 
 const planRequired = ({ res, message }: { res: Response; message: string }) =>
   res.status(ERROR_CODES.PaymentRequired).json({

@@ -16,13 +16,13 @@
       "viaHousehold": "Via {handle} household",
       "unnamedResource": "Untitled",
       "permissions": {
-        "read": "Read",
-        "write": "Write",
-        "manage": "Manage"
+        "read": "View only",
+        "write": "Can edit",
+        "manage": "Can manage"
       },
       "leave": "Leave",
       "leaveTitle": "Leave share?",
-      "leaveDescription": "You'll lose access to {resource} owned by {owner}. The owner won't be notified.",
+      "leaveDescription": "You'll lose access to {resource} owned by {owner}. We'll let the owner know in the app and by email.",
       "leaveConfirm": "Leave",
       "leaveSuccess": "You've left the share.",
       "leaveError": "Could not leave the share.",

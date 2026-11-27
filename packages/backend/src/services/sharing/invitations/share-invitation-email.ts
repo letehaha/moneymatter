@@ -17,6 +17,12 @@ const PERMISSION_LABELS: Record<SharePermission, string> = {
   [SHARE_PERMISSIONS.manage]: 'Can manage',
 };
 
+const TRACKER_PERMISSION_LABELS: Record<SharePermission, string> = {
+  [SHARE_PERMISSIONS.read]: 'View only',
+  [SHARE_PERMISSIONS.write]: 'Attach own transactions',
+  [SHARE_PERMISSIONS.manage]: 'Manage',
+};
+
 // Household invitations have their own email template — this map is only hit
 // for per-resource invitations. Keep the household entry for type
 // exhaustiveness; if it ever appears in copy, the wording is reasonable.
@@ -89,14 +95,15 @@ export const sendInvitationEmail = async ({
   // the share-invitation dialog. The landing path matches the resource flavour so the
   // recipient lands somewhere they expect to see this share even before opening the
   // dialog; the dialog itself overlays whatever route the user ended up on.
-  const landingPath = resourceType === RESOURCE_TYPES.tracker ? '/planned/trackers' : '/accounts';
+  const isTracker = resourceType === RESOURCE_TYPES.tracker;
+  const landingPath = isTracker ? '/planned/trackers' : '/accounts';
   const acceptUrl = `${appUrl}${landingPath}?invitation_token=${encodeURIComponent(token)}`;
-  const summaryLine = policySummary({ permission, policy });
+  const summaryLine = isTracker ? null : policySummary({ permission, policy });
   const html = buildEmailHtml({
     ownerDisplayName,
     resourceTypeLabel: RESOURCE_TYPE_LABELS[resourceType],
     resourceName,
-    permissionLabel: PERMISSION_LABELS[permission],
+    permissionLabel: (isTracker ? TRACKER_PERMISSION_LABELS : PERMISSION_LABELS)[permission],
     summaryLine,
     acceptUrl,
     expiresAt,

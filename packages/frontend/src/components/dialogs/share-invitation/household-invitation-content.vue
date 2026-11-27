@@ -21,7 +21,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import { type InvitationLike, extractApiError, formatExpiry, permissionLabel as resolvePermissionLabel } from './utils';
+import { type InvitationLike, extractApiError, formatExpiry, permissionLabel } from './utils';
 
 /**
  * Household invitation body + footer. Owns the back-invite form, currency-mismatch
@@ -92,8 +92,6 @@ watch(backInvitePermissionOptions, () => {
 watch(backInviteWriteScopeOptions, () => {
   backInviteWriteScope.value = findWriteScopeOption(backInviteWriteScope.value.value);
 });
-
-const permissionLabel = (permission: InvitationLike['permission']) => resolvePermissionLabel(permission, t);
 
 const acceptMutation = useMutation({
   mutationFn: () => acceptShareInvitation(props.invitation.token),
@@ -241,7 +239,7 @@ const goToCurrencySettings = () => {
         <ul class="flex flex-col gap-2">
           <li class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
             <span class="text-muted-foreground">{{ $t('dialogs.shareInvitationDialog.permissionLabel') }}</span>
-            <strong>{{ permissionLabel(invitation.permission) }}</strong>
+            <strong>{{ permissionLabel({ invitation, t }) }}</strong>
           </li>
           <li class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
             <span class="text-muted-foreground">{{ $t('dialogs.shareInvitationDialog.expiresLabel') }}</span>

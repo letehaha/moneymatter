@@ -76,7 +76,7 @@ const handleDismiss = (id: string) => {
       </template>
       <!-- Header mode: icon-only button -->
       <template v-else>
-        <Button variant="secondary" size="icon" class="relative">
+        <Button variant="secondary" size="icon" class="relative" :aria-label="t('notifications.title')">
           <BellIcon class="size-5" />
           <span
             v-if="unreadCount && unreadCount > 0"

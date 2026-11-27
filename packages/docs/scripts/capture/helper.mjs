@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { chromium } from 'playwright';
 
@@ -24,6 +24,7 @@ export const API = process.env.DOCS_API_URL ?? `https://localhost:${env.APPLICAT
 export const EMAIL = process.env.DOCS_USER_EMAIL ?? 'docs-test@example.com';
 export const PASSWORD = process.env.DOCS_USER_PASSWORD ?? 'DocsTest!2026';
 export const STATE = new URL('./.state.json', import.meta.url).pathname;
+const FAILURES = new URL('./.failures/', import.meta.url).pathname;
 
 // Headless Chrome's default UA gets bank and brand logos blocked.
 const USER_AGENT =
@@ -48,6 +49,40 @@ export async function open({
     userAgent,
   });
   return { browser, ctx, page: await ctx.newPage() };
+}
+
+/**
+ * Opens the browser, runs `steps({ browser, ctx, page })` and always closes it. Waits time out after 6s
+ * (navigation 30s) so a wrong locator fails fast; on failure the viewport and its aria tree go to `.failures/`.
+ */
+async function saveFailure({ page }) {
+  mkdirSync(FAILURES, { recursive: true });
+  const base = join(FAILURES, new Date().toISOString().replace(/[:.]/g, '-'));
+  const tree = await page
+    .locator('body')
+    .ariaSnapshot({ timeout: 3000 })
+    .catch((e) => `(aria snapshot failed: ${e.message})`);
+  writeFileSync(`${base}.txt`, `${page.url()}\n\n${tree}`);
+  const shotOk = await page.screenshot({ path: `${base}.png` }).then(
+    () => true,
+    () => false,
+  );
+  return `Failure capture: ${base}.txt${shotOk ? `, ${base}.png` : ' (no screenshot)'}`;
+}
+
+export async function run({ steps, ...options }) {
+  const session = await open(options);
+  session.ctx.setDefaultTimeout(6000);
+  session.ctx.setDefaultNavigationTimeout(30_000);
+  try {
+    return await steps(session);
+  } catch (error) {
+    const note = await saveFailure({ page: session.page }).catch((e) => `Failure capture failed: ${e.message}`);
+    if (error instanceof Error) error.message += `\n${note}`;
+    throw error;
+  } finally {
+    await session.browser.close();
+  }
 }
 
 export async function api({ page, method = 'GET', path, body }) {
@@ -106,7 +141,7 @@ export async function shot({ page, src, target, clip, dark = false }) {
     clip = await clipAround({ locators: [target] });
     const viewport = page.viewportSize();
     if (clip.y + clip.height > viewport.height)
-      throw new Error(`shot: ${src} is taller than the viewport; open() with a larger height`);
+      throw new Error(`shot: ${src} is taller than the viewport; run({ height }) with a larger height`);
   }
   await page.screenshot({ path, clip, animations: 'disabled' });
   return path;

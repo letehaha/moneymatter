@@ -9,7 +9,8 @@ import Big from 'big.js';
  * Rules:
  *   - Any `writedown` event with navAfter=0      → written_off
  *   - Any `exit` event with navAfter=0           → fully_exited
- *   - Any other distribution/exit/writedown     → partial_exit (any NAV>0)
+ *   - Any other distribution/exit                → partial_exit (any NAV>0)
+ *   - Writedown with NAV>0 (no money moved)      → does not progress
  *   - Otherwise (nav_update only, no cash flow)  → unchanged from initial
  *
  * Terminal states (`fully_exited`, `written_off`) are preserved only when
@@ -46,11 +47,7 @@ export function progressDealStatus({ events }: { events: readonly ProgressStatus
     if (event.type === VENTURE_EVENT_TYPE.exit && isZeroNav(event.navAfter)) {
       hasExitToZero = true;
     }
-    if (
-      event.type === VENTURE_EVENT_TYPE.distribution ||
-      event.type === VENTURE_EVENT_TYPE.exit ||
-      event.type === VENTURE_EVENT_TYPE.writedown
-    ) {
+    if (event.type === VENTURE_EVENT_TYPE.distribution || event.type === VENTURE_EVENT_TYPE.exit) {
       hasMoneyMovingEvent = true;
     }
   }

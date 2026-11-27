@@ -4,7 +4,7 @@ import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import Users from '@models/users.model';
 import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
-import { getOwnedSharedResourceSummary } from '@services/user/wipe-user-data.service';
+import { getOwnedSharedResourceSummary, hasSharedResources } from '@services/user/wipe-user-data.service';
 
 import { loadValidatedArchive } from './load-validated-archive';
 
@@ -32,7 +32,7 @@ export async function preflightRestore({
 
   if (!acknowledgeSharing) {
     const summary = await getOwnedSharedResourceSummary({ userId });
-    if (summary.accounts.length > 0 || summary.households.length > 0) {
+    if (hasSharedResources(summary)) {
       throw new ConflictError({
         code: API_ERROR_CODES.wipeDataSharingAcknowledgementRequired,
         message:

@@ -43,7 +43,7 @@ Each tag shows its color, icon, name and description. A bell with a number means
 
 <Steps>
 
-1. On the **Tags** page, click **Add Tag**.
+1. On the **Tags** page, click **Add tag**.
 2. Enter a **Name** (up to 100 characters). Each tag name must be unique.
 3. Pick a **Color** and, if you like, an **Icon**.
 4. Optionally add a **Description** (up to 500 characters), to remind yourself what the tag is for.
@@ -58,7 +58,10 @@ In the transaction form, open **More options** and pick one or more tags in **Ta
 A few other ways tags get added:
 
 - **From a payee.** Tags set as a payee's **Auto-apply tags** are added when you pick that payee, and to new bank-synced and imported transactions linked to it. See [payees](/transactions/payees/#default-category-and-auto-apply-tags).
+- **From a category.** A category's **Default tags** are added when you pick it in the transaction form, and when AI categorizes a transaction if the category is set to. See [default tags](/transactions/categories/#default-tags).
 - **In bulk.** Select several transactions and use **Edit** to add, replace or remove tags on all of them. See [edit several transactions at once](/transactions/search-and-filter/#edit-several-transactions-at-once).
+- **From an automation.** A rule with an **Add tags** action tags matching transactions from your bank or imports as they arrive. See [automations](/transactions/automations/).
+- **From a recurring payment.** Tags set on a [recurring payment](/planned/recurring-payments/) are added to every transaction linked to it.
 
 You can't create a new tag from the transaction form. Create it on the **Tags** page first.
 
@@ -68,13 +71,22 @@ On a [split transaction](/transactions/split-a-transaction/), tags apply to the 
 
 ## Find tagged transactions
 
-On the **All Transactions** page, use the **Tags** filter. It shows transactions that have **any** of the tags you pick. Choose **No tags** to find transactions without a tag. See [search and filter](/transactions/search-and-filter/#available-filters).
+On the **All transactions** page, use the **Tags** filter. It shows transactions that have **any** of the tags you pick. Choose **No tags** to find transactions without a tag. See [search and filter](/transactions/search-and-filter/#available-filters).
 
 ## Edit or delete a tag
 
-Click a tag in the list to open **Edit Tag**. Change what you need and click **Save**.
+Click a tag in the list to open **Edit tag**. Change what you need and click **Save**.
 
 To delete it, click **Delete** in the same window and confirm. The tag is removed from every transaction that had it; the transactions themselves stay. This can't be undone.
+
+Deleting a tag also:
+
+- pauses [automations](/transactions/automations/#when-a-rule-is-paused-for-you) that use it, until you open them and pick another tag,
+- removes it from payees' **Auto-apply tags** and from [recurring payments](/planned/recurring-payments/),
+- removes it from the **Auto-add** tags of your [trackers](/planned/trackers/). A tracker left with no category or tag there stops adding transactions automatically,
+- deletes its reminders.
+
+There's no way to merge two tags. To combine them, select the transactions with the old tag on the **All transactions** page, add the other tag in bulk, then delete the old tag.
 
 ## Tag reminders
 
@@ -84,12 +96,12 @@ A reminder lets MoneyMatter keep an eye on a tag for you, for example to warn yo
 
 <Steps>
 
-1. On the **Tags** page, click the tag to open **Edit Tag**.
+1. On the **Tags** page, click the tag to open **Edit tag**.
 2. Open the **Reminders** tab. (It only appears for a tag that's already saved.)
-3. Click **Add Reminder**.
-4. Choose the **Reminder Type**:
-   - **Amount Threshold** notifies you when the total for this tag goes over an amount you set. Enter it in **Amount Threshold**, in your base currency.
-   - **Activity Check** notifies you when there are transactions with this tag.
+3. Click **Add reminder**.
+4. Choose the **Reminder type**:
+   - **Amount threshold** notifies you when the total for this tag goes over an amount you set. Enter it in **Amount threshold**, in your base currency.
+   - **Activity check** notifies you when there are transactions with this tag.
 5. Choose the **Frequency** (see below). For **Monthly**, **Quarterly** and **Yearly**, also pick the **Day of month**.
 6. Leave **Enabled** on and click **Save**.
 
@@ -114,11 +126,11 @@ A reminder lets MoneyMatter keep an eye on a tag for you, for example to warn yo
 
 If you pick a day that a month doesn't have, such as the 31st, the last day of that month is used.
 
-An **Amount Threshold** reminder adds up every transaction with the tag in that period, converted to your base currency, and compares the total with your threshold. Every tagged transaction counts toward the total, including income, refunds and transfers, so keep the tag on expenses only if you want a pure spending limit. An **Activity Check** only counts transactions dated after it last notified you, so it doesn't repeat itself.
+An **Amount threshold** reminder adds up every transaction with the tag in that period, converted to your base currency, and compares the total with your threshold. Every tagged transaction counts toward the total, including income, refunds and transfers, so keep the tag on expenses only if you want a pure spending limit. An **Activity check** only counts transactions dated after it last notified you, so it doesn't repeat itself.
 
 ### Where reminders show up
 
-When a reminder fires, you get an in-app notification. Open it from the bell (**Notifications**) in the header at the top of the app. A threshold reminder is titled **Tag Spending Alert** and says how much you spent against your threshold; an activity check is titled **Tag Activity Summary**.
+When a reminder fires, you get an in-app [notification](/settings/notifications/). Open it from the bell (**Notifications**) in the header at the top of the app. A threshold reminder is titled **Tag Spending Alert** and says how much you spent against your threshold; an activity check is titled **Tag Activity Summary**.
 
 To pause a reminder without deleting it, edit it and turn off **Enabled**. The list shows each reminder as **Enabled** or **Disabled**.
 
@@ -128,5 +140,6 @@ You can have up to 50 reminders in total, and a tag can't have two identical rem
 
 - [Categories](/transactions/categories/)
 - [Payees](/transactions/payees/)
+- [Automations](/transactions/automations/)
 - [Search and filter](/transactions/search-and-filter/)
 - [Add and edit transactions](/transactions/add-and-edit/)

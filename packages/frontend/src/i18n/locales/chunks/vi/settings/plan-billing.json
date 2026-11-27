@@ -75,7 +75,8 @@
         "cancelNote": "Đổi ý rồi? Hãy gia hạn trong cổng thanh toán; ngày gia hạn của bạn sẽ không thay đổi.",
         "monthlyHint": "Chuyển sang gói năm để tiết kiệm {amount} mỗi năm.",
         "noCard": "Chưa lưu phương thức thanh toán",
-        "readOnlyHelp": "Quyền chỉ xem nghĩa là gì?"
+        "readOnlyHelp": "Quyền chỉ xem nghĩa là gì?",
+        "gift": "{tier} gift"
       },
       "status": {
         "pastDue": "Thanh toán thất bại",
@@ -85,7 +86,8 @@
         "trial": "Tính năng Plus",
         "processing": "Đang xử lý",
         "earlyAdopter": "Người dùng từ những ngày đầu",
-        "endsOn": "Ends {date}"
+        "endsOn": "Ends {date}",
+        "gift": "Gift"
       },
       "cta": {
         "activating": "Đang kích hoạt…",
@@ -99,7 +101,17 @@
         "viaPortal": "Đã thay đổi trong cổng thanh toán.",
         "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Thanh toán ngay hôm nay. Có thể hủy bất cứ lúc nào.",
-        "earlyAdopter": "Giảm 50% trọn đời, tự động áp dụng khi thanh toán"
+        "earlyAdopter": "Giảm 50% trọn đời, tự động áp dụng khi thanh toán",
+        "afterGift": "Available after your gift ends on {date}"
+      },
+      "gift": {
+        "title": "Redeem a gift code",
+        "description": "Got a gift subscription? Enter the code from your email.",
+        "placeholder": "Enter your gift code",
+        "redeem": "Redeem",
+        "redeemed": "Gift redeemed: {tier} until {date}",
+        "redeemedQueued": "Gift redeemed. {tier} starts on {start} and runs until {date}.",
+        "redeemFailed": "Couldn't redeem the gift code. Try again."
       },
       "plans": {
         "essential": "Essential",

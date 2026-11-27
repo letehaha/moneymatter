@@ -476,6 +476,12 @@
       "plus": "Inclus dans le forfait Plus",
       "hint": "Votre forfait actuel n'inclut pas cette fonctionnalité. Passez à la formule supérieure pour la débloquer."
     },
+    "featureTrialGate": {
+      "title": "Try it free for {days} days",
+      "startTrial": "Start {days}-day free trial",
+      "trialEnded": "Your free trial has ended. Upgrade to Plus to keep using it.",
+      "daysLeft": "Your free trial ends in {n} day | Your free trial ends in {n} days"
+    },
     "banner": {
       "trial": "Plus que {count} jour d'essai · {link} | Plus que {count} jours d'essai · {link}",
       "readOnly": "Votre période d'essai est terminée. Vous pouvez consulter et exporter vos données ; abonnez-vous pour continuer à les modifier. {link}",

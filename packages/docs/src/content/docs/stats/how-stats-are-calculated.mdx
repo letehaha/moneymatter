@@ -14,8 +14,8 @@ This page explains the rules behind every number on the [dashboard](/stats/dashb
 
 MoneyMatter shows two different kinds of numbers, and they follow different rules.
 
-- *Income and expense numbers* answer "how much came in or went out during this period?" They add up your transactions. The **Expenses Structure**, **Cash Flow** and **Categories Watchlist** widgets work this way, and so do the **Trends Comparison**, **Cash Flow** and **Pivot** reports.
-- *Balance numbers* answer "how much did I have on this day?" They read your account balances, not individual transactions. The **Balance trend** and **Net Worth** widgets and the **Net Worth History** report work this way.
+- *Income and expense numbers* answer "how much came in or went out during this period?" They add up your transactions. The **Expenses structure**, **Cash flow** and **Categories watchlist** widgets work this way, and so do the **Trends comparison**, **Cash flow** and **Pivot** reports.
+- *Balance numbers* answer "how much did I have on this day?" They read your account balances, not individual transactions. The **Balance trend** and **Net worth** widgets and the **Net worth history** report work this way.
 
 This is why a number can move in one place and not the other. A transfer or a balance correction changes a balance without being income or an expense. Exchange rates can change the value of a foreign-currency balance on a day with no transactions at all.
 
@@ -29,7 +29,7 @@ This is why a number can move in one place and not the other. A transfer or a ba
 | Balance adjustments | Not counted | Change the balance |
 | Linked refunds | Subtracted from the original purchase, not counted as new income | Change the balance |
 | Split transactions | Each part counts under its own category | The whole amount changes the balance |
-| Accounts with **Exclude from statistics** on | Left out | Left out |
+| Accounts with **Exclude from statistics** on | Left out | Left out, except in goals and the projected balance |
 | Archived accounts | Counted, unless also excluded | Counted, unless also excluded |
 | Savings categories | Left out of cash-flow numbers only | No effect |
 | **Include credit limits in balance** setting | No effect | Credit limits subtracted when on |
@@ -44,7 +44,7 @@ A transaction's type decides where it goes: an **Expense** counts as spending an
 
 A **Transfer** between two of your accounts is never income or an expense. The money only moved from one of your pockets to another, so counting it would inflate both sides.
 
-The one exception is a loan payment. Money you transfer into a loan counts as an expense, because paying off debt is money leaving your pocket.
+The one exception is a loan payment. Money you transfer into a loan counts as an expense, because paying off debt is money leaving your pocket. See [how loans affect your stats](/accounts/loans/#how-loans-affect-your-stats).
 
 For example, you move 500 EUR from your current account to your savings account. Your expenses stay the same, your income stays the same, and your net worth doesn't change. One balance goes down by 500 and the other goes up by 500.
 
@@ -76,7 +76,7 @@ When you [link a refund](/transfers-and-refunds/refunds/) to the original transa
 
 Each side of a refund pair is netted in its own period. The purchase is taken off expenses in the period it happened, and the refund is taken off income in the period it arrived. A side is netted only when its transaction is inside the dates and filters you're looking at.
 
-This is the same in every report: the **Cash Flow** widget and report, **Trends Comparison** (the total, **Category breakdown** and both **Over time** modes), **Pivot**, and the spending-by-category views such as **Expenses Structure**.
+This is the same in every report: the **Cash flow** widget and report, **Trends comparison** (the total, **Category breakdown** and both **Over time** modes), **Pivot**, and the spending-by-category views such as **Expenses structure**.
 
 Here's an example. You spend 100 EUR on January 10, and a 30 EUR refund linked to it arrives on February 5.
 
@@ -104,7 +104,7 @@ If you hide a category from a widget with **Exclude categories**, only the parts
 
 ## Categories and subcategories
 
-- The **Expenses Structure** widget groups subcategories under their top-level category.
+- The **Expenses structure** widget groups subcategories under their top-level category.
 - Hiding a parent category from a widget with **Exclude categories** hides all of its subcategories too, including ones you create later.
 - Hiding only a subcategory keeps the parent counting, minus that subcategory.
 
@@ -114,7 +114,7 @@ For how categories are organised, see [Categories](/transactions/categories/).
 
 ### Exclude from statistics
 
-Turn this on for an account you don't want in any numbers, for example an account you track for someone else. The account is then left out of every stat: income and expenses, balances and net worth.
+Turn this on for an account you don't want in any numbers, for example an account you track for someone else. The account is then left out of income and expenses, balances and net worth. Two places still count it: [goals](/goals/how-progress-is-calculated/) and the projected balance in the dashboard's [**Planned** widget](/stats/dashboard/#planned).
 
 To change it, open the account, go to the **Settings** tab and switch **Exclude from statistics** on or off. See [Exclude an account from statistics](/accounts/manage-accounts/#exclude-an-account-from-statistics) for details.
 
@@ -131,7 +131,7 @@ Archiving an account doesn't remove it from stats by itself. Its past transactio
 When you archive an account, the confirmation dialog has an **Also exclude from statistics** checkbox. It's ticked by default, so most archived accounts end up excluded.
 
 <Aside type="caution" title="Unarchiving doesn't bring it back into stats">
-**Unarchive Account** only makes the account active again. If you archived it with **Also exclude from statistics** ticked, it stays excluded until you switch **Exclude from statistics** off in the **Settings** tab.
+**Unarchive account** only makes the account active again. If you archived it with **Also exclude from statistics** ticked, it stays excluded until you switch **Exclude from statistics** off in the **Settings** tab.
 </Aside>
 
 See [Manage accounts](/accounts/manage-accounts/) for more on archiving.
@@ -140,7 +140,7 @@ See [Manage accounts](/accounts/manage-accounts/) for more on archiving.
 
 In [General settings](/settings/general-settings/#count-categories-as-savings), **Count categories as savings** lets you pick categories that mean "money I set aside" rather than "money I spent". Money in these categories and their subcategories is left out of both income and expenses, so it counts as savings instead.
 
-This applies to cash-flow numbers only: the **Cash Flow** widget, the **Cash Flow** report (where its flow diagram shows that money as a savings destination) and the **Per period** chart under **Over time** in **Trends Comparison**. Everything else still shows that money as spending: the **Expenses Structure** and **Categories Watchlist** widgets, the total, **Category breakdown** and **Cumulative** chart in **Trends Comparison**, and **Pivot**.
+This applies to cash-flow numbers only: the **Cash flow** widget, the **Cash flow** report (where its flow diagram shows that money as a savings destination) and the **Per period** chart under **Over time** in **Trends comparison**. Everything else still shows that money as spending: the **Expenses structure** and **Categories watchlist** widgets, the total, **Category breakdown** and **Cumulative** chart in **Trends comparison**, and **Pivot**.
 
 For example, you earn 3,000 EUR and spend 2,000 EUR, and 500 EUR of that goes to a savings category.
 
@@ -169,14 +169,14 @@ For example, you hold 1,000 USD and your base currency is EUR. If the dollar str
 
 ## Balances and net worth
 
-- The **Balance trend** and **Net Worth** widgets add up your own accounts, plus portfolios and other assets you track, minus loans. Accounts with **Exclude from statistics** on are left out. Archived accounts are included.
-- **Net Worth History** splits the same money into **Assets** (**Cash & accounts**, **Investments**, **Vehicles**, **Ventures**) and **Liabilities** (**Credit card**, **Loan**, **Overdraft**). Net worth is assets minus liabilities.
+- The **Balance trend** and **Net worth** widgets add up your own accounts, plus portfolios and other assets you track, minus loans. Accounts with **Exclude from statistics** on are left out. Archived accounts are included.
+- **Net worth history** splits the same money into **Assets** (**Cash & accounts**, **Investments**, **Vehicles**, **Ventures**) and **Liabilities** (**Credit card**, **Loan**, **Overdraft**). Net worth is assets minus liabilities.
   - A credit card or overdraft account with a positive balance counts as cash, not debt.
   - An ordinary account that's overdrawn counts as an **Overdraft** liability.
 
 ### Include credit limits in balance
 
-This setting is in [General settings](/settings/general-settings/#include-credit-limits-in-balance) and is off by default. Turn it on if your card's balance in MoneyMatter shows the available credit rather than what you owe. When it's on, each account's credit limit is subtracted from its balance in the **Balance trend** and **Net Worth** widgets and in **Net Worth History**.
+This setting is in [General settings](/settings/general-settings/#include-credit-limits-in-balance) and is off by default. Turn it on if your card's balance in MoneyMatter shows the available credit rather than what you owe. When it's on, each account's credit limit is subtracted from its balance in the **Balance trend** and **Net worth** widgets and in **Net worth history**.
 
 For example, a card with a 1,000 EUR limit where you've spent 200 EUR shows a balance of 800 EUR. With the setting on, it counts as −200 EUR, which is what you owe. With it off, it counts as 800 EUR.
 
@@ -189,14 +189,14 @@ In the charts, the setting only affects accounts with a credit limit above zero 
 
 ## Planned transactions
 
-A planned transaction is one you've added ahead of time, for a payment or income that hasn't happened yet. You create one by turning on **Planned** when you add a transaction, and it's listed under **Upcoming** on the **Transactions** page.
+A [planned transaction](/planned/planned-transactions/) is one you've added ahead of time, for a payment or income that hasn't happened yet. You create one by turning on **Planned** when you add a transaction, and it's listed under **Upcoming** on the **Transactions** page.
 
 Planned transactions haven't happened yet, so they never change a balance. Reports treat them differently:
 
 - Dashboard widgets that show income and expenses count them by default. Each widget has an **Include planned transactions** switch in its settings.
 - The **Balance trend** widget shows them as a dashed projection past today. It does this when the period reaches today and the line is set to **Total** or **Accounts**. The projection is on by default; switch off **Include planned transactions** in the widget's settings to hide it.
-- The **Cash Flow** report always counts them. So do the total, **Category breakdown** and the **Per period** chart in **Trends Comparison**.
-- The **Cumulative** chart in **Trends Comparison**, **Pivot** and **Net Worth Drivers** never count them.
+- The **Cash flow** report always counts them. So do the total, **Category breakdown** and the **Per period** chart in **Trends comparison**.
+- The **Cumulative** chart in **Trends comparison**, **Pivot** and **Net worth drivers** never count them.
 
 That's why two numbers on the same page can differ when you have planned transactions in the period.
 

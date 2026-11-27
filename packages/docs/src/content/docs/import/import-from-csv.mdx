@@ -1,6 +1,6 @@
 ---
 title: Import from CSV
-description: Bring transactions into MoneyMatter from a CSV file, map its columns, handle duplicates and currencies, and undo an import from Import History.
+description: Bring transactions into MoneyMatter from a CSV file, map its columns, handle duplicates and currencies, and undo an import from Import history.
 sidebar:
   order: 1
 ---
@@ -49,13 +49,13 @@ You don't need to say whether your file uses commas, semicolons or another separ
 <Steps>
 
 1. Drag your CSV file onto the upload area, or click it to browse. Add more files the same way if you have them.
-2. Click **Continue to Mapping**.
+2. Click **Continue to mapping**.
 
 </Steps>
 
 If a file can't be used, you'll see why. The most common messages are that the columns don't match the first file, that a file has no data rows, or that the files together are over the row limit.
 
-## Map Columns
+## Map columns
 
 This step tells MoneyMatter what's in each column. The top of the card shows the file name, the **Total rows** and the separator it detected. Below that are two tables.
 
@@ -101,7 +101,7 @@ Amounts can be written in the usual ways: 1234.56, 1,234.56 or 1.234,56. MoneyMa
 - Brackets for negative amounts: (12.00) is read as −12.00.
 - Currency symbols ($, €, £, ¥, ₴, ₽) and spaces, which are ignored.
 
-A sign after the number (12.00-) or a CR/DR marker isn't understood. The amount is read as positive, so with **From Amount Sign** those rows become income. Move the minus sign to the front in the file, or use **From Column (specify values)** if your file has a debit/credit column.
+A sign after the number (12.00-) or a CR/DR marker isn't understood. The amount is read as positive, so with **From amount sign** those rows become income. Move the minus sign to the front in the file, or use **From column (specify values)** if your file has a debit/credit column.
 
 When an amount has both a comma and a dot, the one that comes last is the decimal separator.
 
@@ -118,9 +118,9 @@ The second table decides how each transaction gets its category, account, curren
 | **Category** | **Map each CSV category to existing categories (on next step)**: pick a column, then choose a category for each value on the **Categories** step.<br/>**Create new categories from CSV values**: pick a column. You can still review each value on the **Categories** step.<br/>**Assign all to single existing category**: every transaction gets the category you pick. If you also map a **Payee** column, a payee's [default category](/transactions/payees/#default-category) can replace it. |
 | **Account** | **Map each CSV account to existing accounts (on next step)**: pick the column that names the account. You decide what happens to each account on the **Accounts** step.<br/>**Assign all to single existing account**: every transaction goes into the account you pick. |
 | **Currency** | **Map from CSV column**: pick the column with a three-letter currency code such as EUR.<br/>**Use same currency for all transactions**: pick one currency. |
-| **Transaction type** | **From Amount Sign (negative = expense, positive = income)**: the sign of the amount decides.<br/>**From Column (specify values)**: use a column that says whether each row is money in or out. It's picked for you when MoneyMatter finds a column that looks like one, such as "Type". |
+| **Transaction type** | **From amount sign (negative = expense, positive = income)**: the sign of the amount decides.<br/>**From column (specify values)**: use a column that says whether each row is money in or out. It's picked for you when MoneyMatter finds a column that looks like one, such as "Type". |
 
-With **From Amount Sign**, a negative amount is an expense, and zero or a positive amount is income.
+With **From amount sign**, a negative amount is an expense, and zero or a positive amount is income.
 
 If anything is still missing, the footer says what, for example "Still needed: Date format". When everything is set, click **Next**.
 
@@ -132,11 +132,11 @@ If anything is still missing, the footer says what, for example "Still needed: D
 
 ### Transaction type from a column
 
-Some banks don't use negative amounts. Instead they have a separate column, like "Type" with values "Credit" and "Debit". For those files, choose **From Column (specify values)** and fill in:
+Some banks don't use negative amounts. Instead they have a separate column, like "Type" with values "Credit" and "Debit". For those files, choose **From column (specify values)** and fill in:
 
-- **Transaction Type Column**: the column that holds the type.
-- **Income Values**: the values that mean money came in, separated by commas.
-- **Expense Values**: the values that mean money went out.
+- **Transaction type column**: the column that holds the type.
+- **Income values**: the values that mean money came in, separated by commas.
+- **Expense values**: the values that mean money went out.
 
 When MoneyMatter detects the type column for you, common words such as Credit, Deposit, Debit and Withdrawal are already sorted into the right list. If you pick the column yourself, fill in both lists. Every value that appears in the column must be in one of the two lists, otherwise **Next** stays blocked and a message lists the values that are left. Values must match exactly, including capital letters: "credit" and "Credit" are different values.
 
@@ -199,8 +199,8 @@ You can also give a mapping a name. Named mappings appear under **Saved template
 
 Before anything is saved, the **Review** step shows what will happen:
 
-- **Total Rows**, **Valid Rows**, **Invalid Rows** and **Duplicates**.
-- **Invalid Rows**: each row that can't be imported and why, such as an unreadable date or amount, an empty account name or currency, or a type value that isn't in your income or expense list. Click **Show full data** to see the whole row. Invalid rows are skipped.
+- **Total rows**, **Valid rows**, **Invalid rows** and **Duplicates**.
+- **Invalid rows**: each row that can't be imported and why, such as an unreadable date or amount, an empty account name or currency, or a type value that isn't in your income or expense list. Click **Show full data** to see the whole row. Invalid rows are skipped.
 - A list of potential duplicates: rows that look like transactions you already have. See [how duplicates are detected](#how-duplicates-are-detected).
 - A summary of how many transactions will be imported and how many will be skipped.
 
@@ -208,7 +208,7 @@ Duplicates start unchecked, which means they'll be skipped. Tick a row to import
 
 Here you also decide whether the import may change the current balance of accounts you already have, with **Update account balances from imported transactions**. See [how an import affects balances](#how-an-import-affects-balances).
 
-When you're happy, click the **Import** button. It shows how many transactions will be imported, for example **Import 120 Transactions**. To change something first, click **Back to Mapping**.
+When you're happy, click the **Import** button. It shows how many transactions will be imported, for example **Import 120 transactions**. To change something first, click **Back to mapping**.
 
 <Screenshot
   src="/screenshots/import/csv-review-duplicates.png"
@@ -222,15 +222,15 @@ MoneyMatter needs an exchange rate to show every transaction in your [base curre
 
 ## Done
 
-The import runs in the background, and you can watch its progress. When it finishes, you'll see **Import Complete!**, or **Import Completed with Issues** if some rows failed.
+The import runs in the background, and you can watch its progress. When it finishes, you'll see **Import complete!**, or **Import completed with issues** if some rows failed.
 
-The summary shows only the numbers that apply, such as **Imported**, **Skipped (Duplicates)**, **Failed**, **Accounts Created**, **Categories Created** and **Payees Created**.
+The summary shows only the numbers that apply, such as **Imported**, **Skipped (Duplicates)**, **Failed**, **Accounts created**, **Categories created** and **Payees created**.
 
 The **Account balance changes** table shows each account's balance **Before** and **After** the import, the **Change**, and how many **New rows** and **Backfill rows** it got (see [how an import affects balances](#how-an-import-affects-balances)). Accounts made by this import are marked **New account**.
 
-If any rows couldn't be saved, they're listed under **Import Errors**. One bad row doesn't stop the others.
+If any rows couldn't be saved, they're listed under **Import errors**. One bad row doesn't stop the others.
 
-Click **View Transactions** to open your transactions, or **Start New Import** to import another file. To see only what this import added, open it from [Import History](#undo-an-import).
+Click **View transactions** to open your transactions, or **Start new import** to import another file. To see only what this import added, open it from [Import history](#undo-an-import).
 
 <Screenshot
   src="/screenshots/import/csv-done.png"
@@ -247,6 +247,17 @@ Every imported transaction gets:
 - The account you chose, and the category from your file or the one you picked. With a single category, a mapped payee's default category can take its place.
 - The payee, if you mapped a **Payee** column. If that payee has [auto-apply tags](/transactions/payees/#auto-apply-tags), they're added too.
 - The tags from your **Tags** column, if you mapped one.
+
+Then, as for transactions from a bank, every imported transaction that isn't a transfer:
+
+- **Is matched to your [recurring payments](/planned/recurring-payments/).** A match links it to that payment and can set its category.
+- **Goes through your [automations](/transactions/automations/).** If the row's category came from your **Category** column, automations leave the category alone and only change the rest.
+
+### Planned transactions are confirmed, not duplicated
+
+If an account you import into has [planned transactions](/planned/planned-transactions/), an imported row can confirm one instead of being added next to it. That happens when the row has the same amount, currency and direction (income or expense) as the planned transaction and is dated within 7 days of it.
+
+The planned transaction then becomes a real one. It takes the date from your file, keeps its own category and tags (and its payee, if it had one), and gets the file's description added to its note. Recurring payments and automations don't run on it again. If two planned transactions could match, the one closest in date wins. See [planned transactions](/planned/planned-transactions/#automatically-from-your-bank-or-a-file-import).
 
 ## How currencies work
 
@@ -276,7 +287,7 @@ For example, your "Everyday card" shows 1,200 EUR and its latest transaction is 
 
 If the account had no transactions at all, every imported row counts as new when the box is on.
 
-MoneyMatter remembers your choice for next time. The checkbox doesn't affect accounts the import creates. Those use the **Current balance** you entered, or start at 0.
+MoneyMatter remembers your choice for next time. The checkbox doesn't affect accounts the import creates, or accounts you [linked to a bank](/import/bank-connections/#accounts-you-linked-yourself): those keep the balance the bank reports, and the import adjusts their opening balance instead. Accounts the import creates use the **Current balance** you entered, or start at 0.
 
 ## How duplicates are detected
 
@@ -295,17 +306,19 @@ If you import a file into an existing account a second time, its rows show up as
 
 ## Undo an import
 
-Every import is listed in **Import History**, where you can review it or delete it.
+Every import is listed in **Import history**, where you can review it or delete it.
 
 <Steps>
 
 1. Open **Settings** → **Import/Export**.
-2. Under **History**, click **Import History**.
+2. Under **History**, click **Import history**.
 3. Find the import. Each row shows when it ran, which importer it came from, how many transactions it added, and how many accounts they went into.
 4. Click a row to open your transactions filtered to that import, or click the trash button (**Delete import**) to undo it.
-5. In **Delete this import batch?**, click **Delete import** to confirm.
+5. In **Delete this import batch?**, click **Delete import** to confirm. If you ticked **Also delete the linked transfer transaction**, confirm a second time.
 
 </Steps>
+
+You can delete one import at a time. If another one is still being deleted, wait for it to finish.
 
 <Screenshot
   src="/screenshots/import/import-history.png"
@@ -317,24 +330,29 @@ What deleting an import does:
 
 - **It permanently deletes every transaction from that import.** This can't be undone.
 - **It deletes accounts the import created, if they have no transactions left.** An account that still has transactions is kept. Categories, payees and tags the import created stay. Delete them yourself if you don't need them.
+- **It deletes planned transactions the import confirmed.** A [planned transaction](#planned-transactions-are-confirmed-not-duplicated) that an imported row confirmed now belongs to the import, so it's deleted with it rather than turned back into a planned one. Plan it again if you still need it.
 - **It restores the opening balance the import adjusted.** If the import changed an account's initial balance to keep its current balance the same (see [how an import affects balances](#how-an-import-affects-balances)), that change is reversed.
 - **Imports made before this feature was added only delete their transactions.** Their accounts stay and their balances aren't restored.
-- **Transfers are unlinked, not deleted.** If one of your other transactions was linked as a [transfer](/transfers-and-refunds/how-transfers-work/) to an imported one, it stays, as an [Out of wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction. Tick **Also delete the linked transfer transaction** to delete it as well. You'll be asked to confirm a second time.
+- **Transfers are unlinked, not deleted.** If one of your other transactions was linked as a [transfer](/transfers-and-refunds/how-transfers-work/) to an imported one, it stays, as an [Out of wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction. For such an import, the delete window has an **Also delete the linked transfer transaction** checkbox: tick it to delete that transaction as well. You'll be asked to confirm a second time.
+- **Loan payments can't be unlinked.** If an imported transaction became a payment on a [loan](/accounts/loans/), for example because you linked it as a previous payment, the import can only be deleted together with the loan side of that payment. If you leave the checkbox unticked, you'll see "This import is linked to a loan payment and can't be undone on its own". Tick **Also delete the linked transfer transaction** and delete again.
 - **Large imports take a moment.** For imports with more than 100 transactions, the app shows "Deleting imported transactions" and is locked until it finishes. If the delete is interrupted, part of the import may already be removed: delete it again to finish.
 
 After deleting, check the balance of each affected account. If it doesn't match your bank, [adjust the balance](/accounts/manage-accounts/#adjust-a-balance).
 
 <Aside type="note" title="Why some imports can't be undone">
 If an account from the import has since been connected to a bank, you'll see "This import can no longer be undone because its account is now connected to a bank". The bank decides that account's balance, and deleting its history could throw the synced balance off.
+
+The exception is an account you [linked to your bank yourself](/import/bank-connections/#link-an-account-you-already-have). Everything dated before the day you linked it is still your own history, so an import whose transactions are all from before that day can still be undone.
 </Aside>
 
 If you delete all of an import's transactions by hand, the import stays in the list while it still has something to undo: an adjustment it made to an account's opening balance, or an account it created. Once nothing is left to undo, it disappears from the list. Imports made before this feature was added disappear as soon as their last transaction is deleted.
 
 ## Good to know
 
-- **Leaving the page before you click Import loses your choices.** The importer resets each time you open it, so finish setting up in one go. Once the import has started, it keeps running even if you leave, and you can find it in [Import History](#undo-an-import).
+- **Leaving the page before you click Import loses your choices.** The importer resets each time you open it, so finish setting up in one go. Once the import has started, it keeps running even if you leave, and you can find it in [Import history](#undo-an-import).
 - **You can go back.** Click a completed step in the stepper at the top to change your choices.
-- **If an import fails partway,** some rows may already be saved. Importing the same file again into new accounts could create duplicates, so check [Import History](#undo-an-import) first. Failed imports aren't retried automatically.
+- **If an import fails partway,** some rows may already be saved. Importing the same file again into new accounts could create duplicates, so check [Import history](#undo-an-import) first. Failed imports aren't retried automatically.
+- **Accounts you [linked to a bank](/import/bank-connections/#link-an-account-you-already-have) can be picked too.** Only rows dated before the day you linked the account are imported. Later rows are skipped, because the bank already provides them, and you'll see how many were skipped. Accounts that were created by connecting a bank can't be picked.
 - **Imports are paused while your base currency changes.** Wait for the change to finish, then try again. See [base currency and currencies](/settings/base-currency-and-currencies/#change-your-base-currency).
 - **Read-only mode blocks imports.** If your trial or plan has ended, you can export your data but not import. See [plans and billing](/settings/plans-and-billing/#read-only-mode).
 

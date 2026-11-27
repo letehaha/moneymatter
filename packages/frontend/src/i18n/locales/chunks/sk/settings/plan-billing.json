@@ -20,7 +20,7 @@
       "promotion": {
         "title": "{name}: zľava {percent} % na prvú platbu",
         "subtitle": "Uplatní sa automaticky pri platbe, kód nie je potrebný. Platí do {date}.",
-        "badge": "{name} −{percent} %",
+        "badge": "{name} −{percent}%",
         "firstCycle": {
           "year": "/ prvý rok",
           "month": "/ prvý mesiac"
@@ -29,7 +29,7 @@
           "year": "Potom {amount}/rok",
           "month": "Potom {amount}/mesiac"
         },
-        "billedToday": "Účtované dnes: {amount}. Kedykoľvek môžete zrušiť.",
+        "billedToday": "Dnes sa účtuje: {amount}. Zrušiť môžete kedykoľvek.",
         "names": {
           "blackFriday2026": "Black Friday"
         }
@@ -75,7 +75,8 @@
         "cancelNote": "Rozmysleli ste si to? Obnovte predplatné vo fakturačnom portáli a dátum obnovenia zostane rovnaký.",
         "monthlyHint": "Prejdite na ročné a ušetrite {amount} ročne.",
         "noCard": "Žiadna uložená karta",
-        "readOnlyHelp": "Čo znamená len na čítanie?"
+        "readOnlyHelp": "Čo znamená len na čítanie?",
+        "gift": "Darček {tier}"
       },
       "status": {
         "pastDue": "Platba zlyhala",
@@ -85,7 +86,8 @@
         "trial": "Funkcie Plus",
         "processing": "Prebieha spracovanie",
         "earlyAdopter": "Prvý používateľ",
-        "endsOn": "Končí {date}"
+        "endsOn": "Končí {date}",
+        "gift": "Darček"
       },
       "cta": {
         "activating": "Aktivácia…",
@@ -99,7 +101,17 @@
         "viaPortal": "Zmenené vo fakturačnom portáli.",
         "viaAppStore": "Zmeny plánu sa vykonávajú v App Store",
         "billedToday": "Účtované dnes. Kedykoľvek môžete zrušiť.",
-        "earlyAdopter": "50 % zľava navždy, uplatnená pri platbe"
+        "earlyAdopter": "50 % zľava navždy, uplatnená pri platbe",
+        "afterGift": "Dostupné po skončení darčeka dňa {date}"
+      },
+      "gift": {
+        "title": "Uplatniť darčekový kód",
+        "description": "Máte darčekové predplatné? Zadajte kód z e-mailu.",
+        "placeholder": "Zadajte darčekový kód",
+        "redeem": "Uplatniť",
+        "redeemed": "Darček uplatnený: {tier} do {date}",
+        "redeemedQueued": "Darček uplatnený. {tier} začne {start} a platí do {date}.",
+        "redeemFailed": "Darčekový kód sa nepodarilo uplatniť. Skúste to znova."
       },
       "plans": {
         "essential": "Essential",

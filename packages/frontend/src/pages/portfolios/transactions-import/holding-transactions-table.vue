@@ -3,6 +3,7 @@ import InputField from '@/components/fields/input-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { formatUIAmount, toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import type { InvestmentImportTransaction } from '@bt/shared/types/investments';
 import { useVirtualizer } from '@tanstack/vue-virtual';
 import { Trash2Icon, TriangleAlertIcon } from '@lucide/vue';
@@ -24,6 +25,7 @@ const props = defineProps<{
   skipTempIds: Set<string>;
   sideOptions: Array<{ value: TransactionSide; label: string }>;
   isTransactionValid: (tx: InvestmentImportTransaction) => boolean;
+  currencyCode: string | null;
   /** Switch row layout + height for narrow viewports. */
   compact: boolean;
 }>();
@@ -46,6 +48,11 @@ const virtualizer = useVirtualizer(
 
 const virtualRows = computed(() => virtualizer.value.getVirtualItems());
 const totalSize = computed(() => virtualizer.value.getTotalSize());
+
+const formatAmount = (amount: string) =>
+  props.currencyCode
+    ? formatUIAmount(Number(amount), { currency: props.currencyCode, revealed: true })
+    : toLocalCurrencyNumber(Number(amount), { revealed: true });
 
 function measureRow(el: Element | null) {
   if (el) virtualizer.value.measureElement(el as HTMLElement);
@@ -132,7 +139,7 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
               class="[&_input]:px-2 [&_input]:text-right"
             />
             <div class="text-right text-sm tabular-nums">
-              {{ Number(transactions[virtualRow.index]!.amount).toFixed(2) }}
+              {{ formatAmount(transactions[virtualRow.index]!.amount) }}
             </div>
             <div class="flex items-center justify-end gap-1.5">
               <DesktopOnlyTooltip
@@ -221,7 +228,7 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
             <div>
               <label class="text-muted-foreground text-xs">{{ $t('investmentsImport.review.cols.amount') }}</label>
               <div class="flex h-9 items-center justify-end pr-2 text-sm font-medium tabular-nums">
-                {{ Number(transactions[virtualRow.index]!.amount).toFixed(2) }}
+                {{ formatAmount(transactions[virtualRow.index]!.amount) }}
               </div>
             </div>
             <div class="col-span-2 flex items-center justify-between gap-2">
