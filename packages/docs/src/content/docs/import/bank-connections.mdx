@@ -109,6 +109,8 @@ Plaid is an optional provider for configured self-hosted instances. It reads bal
    ```
 
    Use the exact origin users open, including any non-default port, and the `/plaid-callback` path. Leave the setting unset when no redirect is needed. Finish authorization and return to MoneyMatter in the same browser tab that started Link.
+
+   An invalid `PLAID_REDIRECT_URI` disables Plaid, and the server logs a warning. The URL must use HTTPS (`http://localhost` is allowed only in Sandbox) and can't contain credentials, a query or a hash.
 4. Run `docker compose up -d` in `self-hosting` to apply the changes.
 
 Availability requires `PLAID_ENV` to be `sandbox` or `production` and both instance credentials to be set. Keep `.env`, secrets, Link tokens and Item access credentials private; never put credentials in frontend configuration. For production, use production credentials and an HTTPS callback registered for that environment. Plaid's production access and institution availability depend on Plaid's requirements. Changing environments does not convert existing Items.
@@ -214,6 +216,7 @@ If you use **Sync Now** in the header less than 4 hours after the last sync, Mon
 | Enable Banking | As much as your bank allows: about 3 years, 2 years, 1 year or 90 days, depending on the bank |
 | Lunch Flow | Whatever Lunch Flow has for the account |
 | Akahu | As far back as your Akahu app can see: up to 2 years |
+| Plaid | Up to 2 years, depending on the institution |
 
 After that, each sync picks up from your newest transaction.
 

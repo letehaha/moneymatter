@@ -96,9 +96,12 @@ CSP_PLAID_SCRIPT=""
 CSP_PLAID_FRAME=""
 CSP_PLAID_CONNECT=""
 if [ "$IS_SELF_HOST" = "true" ]; then
-  case "${PLAID_ENV:-}" in
+  PLAID_ENV="$(printf '%s' "${PLAID_ENV:-}" | tr -d '[:space:]')"
+  case "$PLAID_ENV" in
+    "" ) : ;;
     sandbox) CSP_PLAID_CONNECT="https://sandbox.plaid.com/" ;;
     production) CSP_PLAID_CONNECT="https://production.plaid.com/" ;;
+    * ) echo "WARNING: PLAID_ENV must be sandbox or production (got: $PLAID_ENV); Plaid stays disabled" >&2 ;;
   esac
   if [ -n "$CSP_PLAID_CONNECT" ]; then
     CSP_PLAID_SCRIPT="https://cdn.plaid.com/link/v2/stable/link-initialize.js"

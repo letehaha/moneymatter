@@ -81,12 +81,12 @@ instance credentials are set for that environment. Only `PLAID_ENV` is passed
 to the frontend container, to select the Plaid Content Security Policy hosts.
 Keep credentials and tokens private.
 
-| Variable | Purpose |
-| --- | --- |
-| `PLAID_ENV` | `sandbox` or `production`; selects the Plaid environment |
-| `PLAID_CLIENT_ID` | Instance Plaid client ID |
-| `PLAID_SECRET` | Instance Plaid secret for the selected environment |
-| `PLAID_REDIRECT_URI` | Optional for OAuth institutions: exact HTTPS frontend URL ending in `/plaid-callback`, registered identically in the Plaid Dashboard, including any port |
+| Variable             | Purpose                                                                                                                                                                                                                                                                                                                 |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PLAID_ENV`          | `sandbox` or `production`; selects the Plaid environment                                                                                                                                                                                                                                                                |
+| `PLAID_CLIENT_ID`    | Instance Plaid client ID                                                                                                                                                                                                                                                                                                |
+| `PLAID_SECRET`       | Instance Plaid secret for the selected environment                                                                                                                                                                                                                                                                      |
+| `PLAID_REDIRECT_URI` | Optional for OAuth institutions: exact HTTPS frontend URL ending in `/plaid-callback`, registered identically in the Plaid Dashboard, including any port. An invalid value (not HTTPS except `http://localhost` in Sandbox, or containing credentials, a query or a hash) disables Plaid, and the server logs a warning |
 
 See [Plaid setup and Sandbox](https://docs.moneymatter.app/import/bank-connections/#plaid-for-self-hosted-moneymatter).
 
