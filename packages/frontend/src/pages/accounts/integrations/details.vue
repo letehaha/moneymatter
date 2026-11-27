@@ -183,7 +183,6 @@
 
         <div
           v-if="
-            !isPlaidConnection &&
             connectionDetails.consent &&
             (connectionDetails.consent.isExpired || connectionDetails.consent.isExpiringSoon)
           "
@@ -226,8 +225,11 @@
           </p>
         </div>
 
+        <!-- Enable Banking and Plaid are excluded: their credentials can't be re-supplied inline. -->
         <div
-          v-if="needsReconnect && !isPlaidConnection && connectionDetails.providerType !== BANK_PROVIDER_TYPE.ENABLE_BANKING"
+          v-if="
+            needsReconnect && !isPlaidConnection && connectionDetails.providerType !== BANK_PROVIDER_TYPE.ENABLE_BANKING
+          "
           class="border-destructive/25 bg-destructive/5 text-destructive-text mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2.5 text-sm"
         >
           <CircleAlertIcon class="size-4 shrink-0" />

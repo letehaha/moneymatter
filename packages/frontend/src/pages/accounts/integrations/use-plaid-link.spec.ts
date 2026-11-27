@@ -1,4 +1,7 @@
-import { connectPlaid, createPlaidLinkToken } from '@/api/plaid';
+import { connectProvider } from '@/api/bank-data-providers';
+import { createPlaidLinkToken } from '@/api/plaid';
+import { ApiErrorResponseError } from '@/js/errors';
+import { API_ERROR_CODES } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, type EffectScope } from 'vue';
 
@@ -7,14 +10,18 @@ import { openPlaidLink } from './utils/plaid-link';
 
 const user = vi.hoisted(() => ({ id: 101 }));
 
-vi.mock('@/api/plaid', () => ({
-  createPlaidLinkToken: vi.fn(),
-  connectPlaid: vi.fn(),
-}));
+vi.mock('@/api/plaid', () => ({ createPlaidLinkToken: vi.fn() }));
+vi.mock('@/api/bank-data-providers', () => ({ connectProvider: vi.fn() }));
+vi.mock('@/lib/sentry', () => ({ captureException: vi.fn() }));
 vi.mock('@/stores/user', () => ({ useUserStore: () => ({ user }) }));
-vi.mock('@/components/notification-center', () => ({ useNotificationCenter: () => ({ addSuccessNotification: vi.fn() }) }));
+vi.mock('@/components/notification-center', () => ({
+  useNotificationCenter: () => ({ addSuccessNotification: vi.fn() }),
+}));
 vi.mock('@tanstack/vue-query', () => ({ useQueryClient: () => ({ invalidateQueries: vi.fn() }) }));
-vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }));
+vi.mock('vue-i18n', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('vue-i18n')>()),
+  useI18n: () => ({ t: (key: string) => key }),
+}));
 vi.mock('./utils/plaid-link', () => ({ openPlaidLink: vi.fn() }));
 
 const scopes: EffectScope[] = [];
@@ -53,20 +60,24 @@ describe('Plaid Link', () => {
   });
 
   it('does not exchange a second token while the connection is being saved', async () => {
-    const receipt = Promise.withResolvers<{ connectionId: string }>();
+    const receipt = Promise.withResolvers<Awaited<ReturnType<typeof connectProvider>>>();
     vi.mocked(openPlaidLink).mockResolvedValue({ status: 'success', publicToken: 'public-sandbox-test' });
-    vi.mocked(connectPlaid).mockReturnValue(receipt.promise);
+    vi.mocked(connectProvider).mockReturnValue(receipt.promise);
 
     const flow = startFlow();
     const result = flow.run();
-    await vi.waitFor(() => expect(connectPlaid).toHaveBeenCalledWith({ publicToken: 'public-sandbox-test' }));
+    await vi.waitFor(() =>
+      expect(connectProvider).toHaveBeenCalledWith('plaid', { publicToken: 'public-sandbox-test' }, undefined, {
+        silent: true,
+      }),
+    );
     const duplicate = flow.run();
-    receipt.resolve({ connectionId: '42' });
+    receipt.resolve({ connectionId: '42', message: '' });
 
     await expect(result).resolves.toMatchObject({ status: 'connected', connectionId: '42' });
     await expect(duplicate).resolves.toBeUndefined();
     expect(createPlaidLinkToken).toHaveBeenCalledTimes(1);
-    expect(connectPlaid).toHaveBeenCalledTimes(1);
+    expect(connectProvider).toHaveBeenCalledTimes(1);
   });
 
   it('ignores a token response after the user cancels before Link opens', async () => {
@@ -85,7 +96,7 @@ describe('Plaid Link', () => {
   it('resumes initial Link with the original token once and exchanges the public token', async () => {
     await leaveForBank();
     vi.mocked(openPlaidLink).mockResolvedValue({ status: 'success', publicToken: 'public-sandbox-test' });
-    vi.mocked(connectPlaid).mockResolvedValue({ connectionId: '42' });
+    vi.mocked(connectProvider).mockResolvedValue({ connectionId: '42', message: '' });
     const flow = startFlow();
 
     await expect(flow.run({ receivedRedirectUri: OAUTH_RETURN })).resolves.toEqual({
@@ -95,28 +106,32 @@ describe('Plaid Link', () => {
     expect(openPlaidLink).toHaveBeenLastCalledWith(
       expect.objectContaining({ linkToken: 'link-sandbox-test', receivedRedirectUri: OAUTH_RETURN }),
     );
-    expect(connectPlaid).toHaveBeenCalledWith({ publicToken: 'public-sandbox-test' });
+    expect(connectProvider).toHaveBeenCalledWith('plaid', { publicToken: 'public-sandbox-test' }, undefined, {
+      silent: true,
+    });
     await expect(flow.run({ receivedRedirectUri: OAUTH_RETURN })).resolves.toEqual({ status: 'unavailable' });
     expect(createPlaidLinkToken).toHaveBeenCalledTimes(1);
-    expect(connectPlaid).toHaveBeenCalledTimes(1);
+    expect(connectProvider).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects a pending update-mode session', async () => {
-    sessionStorage.setItem(
-      'pending-plaid-link',
-      JSON.stringify({ linkToken: 'link-sandbox-test', connectionId: '42', userId: 101, expiresAt: Date.now() + 60_000 }),
+  it('fails with the Plaid display message when Link exits with an error', async () => {
+    const cause = { error_code: 'INSTITUTION_DOWN', error_type: 'INSTITUTION_ERROR', display_message: 'Bank is down' };
+    vi.mocked(openPlaidLink).mockRejectedValue(new Error('Plaid Link did not complete', { cause }));
+
+    await expect(startFlow().run()).resolves.toEqual({ status: 'failed', message: 'Bank is down' });
+    expect(connectProvider).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [API_ERROR_CODES.validationError, 'Plaid is not configured'],
+    [API_ERROR_CODES.unexpected, undefined],
+  ])('shows the backend message only for expected API errors (%s)', async (code, message) => {
+    vi.mocked(openPlaidLink).mockResolvedValue({ status: 'success', publicToken: 'public-sandbox-test' });
+    vi.mocked(connectProvider).mockRejectedValue(
+      new ApiErrorResponseError('Plaid is not configured', { code, message: 'Plaid is not configured' }),
     );
 
-    await expect(startFlow().run({ receivedRedirectUri: OAUTH_RETURN })).resolves.toEqual({ status: 'unavailable' });
-    expect(openPlaidLink).not.toHaveBeenCalled();
-    expect(connectPlaid).not.toHaveBeenCalled();
-  });
-
-  it('rejects a successful Link callback without a public token', async () => {
-    vi.mocked(openPlaidLink).mockResolvedValue({ status: 'success', publicToken: null });
-
-    await expect(startFlow().run()).resolves.toEqual({ status: 'failed' });
-    expect(connectPlaid).not.toHaveBeenCalled();
+    await expect(startFlow().run()).resolves.toEqual({ status: 'failed', message });
   });
 
   it('does not resume Link under a different signed-in user', async () => {
@@ -125,6 +140,6 @@ describe('Plaid Link', () => {
 
     await expect(startFlow().run({ receivedRedirectUri: OAUTH_RETURN })).resolves.toEqual({ status: 'unavailable' });
     expect(openPlaidLink).toHaveBeenCalledTimes(1);
-    expect(connectPlaid).not.toHaveBeenCalled();
+    expect(connectProvider).not.toHaveBeenCalled();
   });
 });

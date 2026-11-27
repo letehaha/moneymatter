@@ -21,7 +21,7 @@ import { useFormatCurrency } from '@/composable/formatters';
 import { getCurrencyDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
-import { AccountModel, BANK_PROVIDER_TYPE, type LinkResidualTarget } from '@bt/shared/types';
+import { AccountModel, type LinkResidualTarget } from '@bt/shared/types';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { CheckIcon, Link2Icon } from '@lucide/vue';
 import { computed, ref } from 'vue';
@@ -139,16 +139,10 @@ const selectedExternalAccount = computed(() => {
   return externalAccounts.value.find((a) => a.externalId === selectedExternalAccountId.value);
 });
 
-const systemOwnFunds = computed(() =>
-  selectedConnection.value?.providerType === BANK_PROVIDER_TYPE.PLAID
-    ? props.account.currentBalance
-    : props.account.currentBalance - props.account.creditLimit,
+const systemOwnFunds = computed(() => props.account.currentBalance - props.account.creditLimit);
+const externalOwnFunds = computed(() =>
+  selectedExternalAccount.value ? selectedExternalAccount.value.balance - selectedExternalAccount.value.creditLimit : 0,
 );
-const externalBalance = (account: AvailableAccount) =>
-  selectedConnection.value?.providerType === BANK_PROVIDER_TYPE.PLAID
-    ? account.balance
-    : account.balance - account.creditLimit;
-const externalOwnFunds = computed(() => (selectedExternalAccount.value ? externalBalance(selectedExternalAccount.value) : 0));
 
 const balanceDifference = computed(() =>
   selectedExternalAccount.value
@@ -274,7 +268,7 @@ const linkingError = computed(() => {
               <template v-else-if="hasExternalAccounts">
                 <Select.SelectItem v-for="acc in externalAccounts" :key="acc.externalId" :value="acc.externalId">
                   {{ acc.name }} ({{
-                    formatAmountByCurrencyCode({ amount: externalBalance(acc), currencyCode: acc.currency })
+                    formatAmountByCurrencyCode({ amount: acc.balance - acc.creditLimit, currencyCode: acc.currency })
                   }})
                 </Select.SelectItem>
               </template>

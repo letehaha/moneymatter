@@ -1,12 +1,16 @@
-import { connectPlaid, createPlaidLinkToken } from '@/api/plaid';
+import { connectProvider } from '@/api/bank-data-providers';
+import { createPlaidLinkToken } from '@/api/plaid';
 import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { useNotificationCenter } from '@/components/notification-center';
+import { ApiErrorResponseError, extractApiErrorMessage, isApiErrorWithCode, NetworkError } from '@/js/errors';
+import { captureException } from '@/lib/sentry';
 import { useUserStore } from '@/stores/user';
+import { API_ERROR_CODES, BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
 import { nextTick, onScopeDispose, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { openPlaidLink } from './utils/plaid-link';
+import { openPlaidLink, type PlaidLinkError } from './utils/plaid-link';
 
 const RESUME_KEY = 'pending-plaid-link';
 const MAX_RESUME_AGE_MS = 30 * 60_000;
@@ -37,14 +41,18 @@ const consumeSession = ({ userId }: { userId: number }): LinkSession | undefined
     const stored = window.sessionStorage.getItem(RESUME_KEY);
     if (!stored) return;
     window.sessionStorage.removeItem(RESUME_KEY);
-    const session = JSON.parse(stored) as (Partial<LinkSession & { userId: number; expiresAt: number }> & Record<string, unknown>) | null;
+    const session: unknown = JSON.parse(stored);
     if (
-      session?.userId === userId &&
+      typeof session === 'object' &&
+      session !== null &&
+      'userId' in session &&
+      session.userId === userId &&
+      'linkToken' in session &&
       typeof session.linkToken === 'string' &&
       session.linkToken &&
+      'expiresAt' in session &&
       typeof session.expiresAt === 'number' &&
-      session.expiresAt > Date.now() &&
-      !('connectionId' in session)
+      session.expiresAt > Date.now()
     ) {
       return { linkToken: session.linkToken };
     }
@@ -57,7 +65,19 @@ type LinkRequest = { receivedRedirectUri?: string };
 type LinkResult =
   | { status: 'connected'; connectionId: string }
   | { status: 'cancelled' }
-  | { status: 'unavailable' | 'failed' };
+  | { status: 'unavailable' }
+  | { status: 'failed'; message?: string };
+
+export type PlaidLinkPhase = 'preparing' | 'open' | 'finishing' | null;
+
+const isExpectedApiError = (error: unknown) =>
+  error instanceof ApiErrorResponseError && !isApiErrorWithCode(error, API_ERROR_CODES.unexpected);
+
+const failureMessage = (error: unknown) => {
+  if (isExpectedApiError(error)) return extractApiErrorMessage(error);
+  if (error instanceof NetworkError) return error.message;
+  if (error instanceof Error) return (error.cause as PlaidLinkError | undefined)?.display_message ?? undefined;
+};
 
 export const usePlaidLink = () => {
   const userStore = useUserStore();
@@ -65,7 +85,7 @@ export const usePlaidLink = () => {
   const { addSuccessNotification } = useNotificationCenter();
   const { t } = useI18n();
 
-  const phase = ref<'preparing' | 'open' | 'finishing' | null>(null);
+  const phase = ref<PlaidLinkPhase>(null);
   let active: AbortController | undefined;
 
   const cancel = () => {
@@ -86,9 +106,7 @@ export const usePlaidLink = () => {
     const { signal } = controller;
     phase.value = 'preparing';
     try {
-      const session = receivedRedirectUri
-        ? consumeSession({ userId })
-        : await createPlaidLinkToken({ signal });
+      const session = receivedRedirectUri ? consumeSession({ userId }) : await createPlaidLinkToken({ signal });
       signal.throwIfAborted();
       if (!session) return { status: 'unavailable' };
 
@@ -108,14 +126,19 @@ export const usePlaidLink = () => {
       if (outcome.status === 'cancelled') return { status: 'cancelled' };
 
       phase.value = 'finishing';
-      if (!outcome.publicToken) return { status: 'failed' };
-      const result = await connectPlaid({ publicToken: outcome.publicToken });
+      const result = await connectProvider(BANK_PROVIDER_TYPE.PLAID, { publicToken: outcome.publicToken }, undefined, {
+        silent: true,
+      });
       await queryClient.invalidateQueries({ queryKey: [VUE_QUERY_GLOBAL_PREFIXES.bankConnectionChange] });
       if (signal.aborted || userStore.user?.id !== userId) return;
       addSuccessNotification(t('pages.integrations.notifications.connectionEstablished'));
       return { status: 'connected', connectionId: result.connectionId };
-    } catch {
-      if (!signal.aborted) return { status: 'failed' };
+    } catch (error) {
+      if (signal.aborted) return;
+      if (!isExpectedApiError(error)) {
+        captureException({ error, context: { scope: `plaid-link:${phase.value}` } });
+      }
+      return { status: 'failed', message: failureMessage(error) };
     } finally {
       if (active === controller) {
         active = undefined;

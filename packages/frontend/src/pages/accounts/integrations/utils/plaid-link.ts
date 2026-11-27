@@ -6,16 +6,22 @@ interface PlaidLinkHandler {
   destroy: () => void;
 }
 
+export interface PlaidLinkError {
+  error_code: string;
+  error_type: string;
+  display_message: string | null;
+}
+
 interface PlaidLinkSdk {
   create(options: {
     token: string;
     receivedRedirectUri?: string;
-    onSuccess: (publicToken: string | null) => void;
-    onExit: (error: unknown) => void;
+    onSuccess: (publicToken: string) => void;
+    onExit: (error: PlaidLinkError | null) => void;
   }): PlaidLinkHandler;
 }
 
-type LinkOutcome = { status: 'success'; publicToken: string | null } | { status: 'cancelled' };
+type LinkOutcome = { status: 'success'; publicToken: string } | { status: 'cancelled' };
 
 let sdkPromise: Promise<PlaidLinkSdk> | undefined;
 
@@ -81,7 +87,7 @@ export const openPlaidLink = async ({
         },
         onExit: (error) => {
           settled = true;
-          if (error) reject(new Error('Plaid Link did not complete'));
+          if (error) reject(new Error('Plaid Link did not complete', { cause: error }));
           else cancel?.();
         },
       });

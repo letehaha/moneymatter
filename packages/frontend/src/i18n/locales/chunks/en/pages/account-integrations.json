@@ -34,7 +34,7 @@
         },
         "plaid": {
           "name": "Plaid",
-          "description": "Connect supported banks through Plaid Link."
+          "description": "Connect supported banks through Plaid Link"
         }
       },
       "monobank": {
@@ -334,9 +334,7 @@
         "connectDescription": "Sign in to your bank through Plaid. Then choose which accounts MoneyMatter should sync.",
         "continueButton": "Continue with Plaid",
         "flowFailed": "Couldn't complete the Plaid connection. Try again.",
-        "reconnectDescription": "Reconnect through Plaid to resume syncing this bank.",
         "restoredDescription": "This connection needs Plaid authorization again. Disconnect it without deleting your local accounts, then create a new Plaid connection without importing duplicate accounts. In each existing account's Data Connection settings, link the corresponding new bank account. When relinking a fresh Plaid Item on the same day as existing imported transactions, Plaid may assign new transaction IDs. Review same-day postings for duplicates.",
-        "newConnectionButton": "Start a new connection",
         "resuming": "Resuming Plaid Link",
         "resumeUnavailable": "There’s no Plaid session to resume in this tab. Return to Accounts and start again."
       },

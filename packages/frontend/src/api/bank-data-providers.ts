@@ -66,7 +66,6 @@ interface BankConnectionDetails {
     name: string;
     externalId: string;
     currentBalance: number;
-    creditLimit: number;
     currencyCode: string;
     type: string;
     currencyFallback: { providerCurrency: string; assignedCurrency: string } | null;
@@ -127,11 +126,13 @@ export const connectProvider = async (
   providerType: BANK_PROVIDER_TYPE,
   credentials: Record<string, unknown>,
   providerName?: string,
+  { silent }: { silent?: boolean } = {},
 ): Promise<{ connectionId: string; authUrl?: string; message: string }> => {
-  const response = await api.post(`/bank-data-providers/${providerType}/connect`, {
-    credentials,
-    providerName,
-  });
+  const response = await api.post(
+    `/bank-data-providers/${providerType}/connect`,
+    { credentials, providerName },
+    { silent },
+  );
   return response;
 };
 

@@ -105,7 +105,7 @@
                 <AccountVisualChip :account="account" :provider-type="providerType" />
                 <span class="min-w-0 flex-1 truncate">{{ account.name }}</span>
                 <span class="shrink-0 text-xs whitespace-nowrap tabular-nums">
-                  {{ formatAmountByCurrencyCode({ amount: displayBalance(account), currencyCode: account.currency }) }}
+                  {{ formatAmountByCurrencyCode({ amount: account.balance, currencyCode: account.currency }) }}
                 </span>
               </div>
             </div>
@@ -223,8 +223,6 @@ const toggleAll = () => {
 };
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
-
-const displayBalance = (account: AvailableAccount) => account.balance;
 
 const secondaryMeta = (account: AvailableAccount): string | null => {
   const { iban } = getAccountSecondaryMeta({ metadata: account.metadata });

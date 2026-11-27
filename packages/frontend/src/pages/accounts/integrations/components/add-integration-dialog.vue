@@ -184,7 +184,7 @@ import WalutomatConnector from './walutomat-connector.vue';
 const { t } = useI18n();
 const router = useRouter();
 const { phase: plaidPhase, run: runPlaidLink, cancel: cancelPlaidLink } = usePlaidLink();
-const plaidError = ref(false);
+const plaidError = ref<string | null>(null);
 
 interface Props {
   open: boolean;
@@ -272,10 +272,14 @@ const handleProviderConnected = () => {
 };
 
 const handlePlaidConnect = async () => {
-  if (!props.open || plaidPhase.value || !props.providers.some((provider) => provider.type === BANK_PROVIDER_TYPE.PLAID)) {
+  if (
+    !props.open ||
+    plaidPhase.value ||
+    !props.providers.some((provider) => provider.type === BANK_PROVIDER_TYPE.PLAID)
+  ) {
     return;
   }
-  plaidError.value = false;
+  plaidError.value = null;
   const result = await runPlaidLink();
   if (!result) return;
   if (result.status === 'connected') {
@@ -286,7 +290,7 @@ const handlePlaidConnect = async () => {
       query: { connect: 'accounts' },
     });
   } else if (result.status !== 'cancelled') {
-    plaidError.value = true;
+    plaidError.value = (result.status === 'failed' && result.message) || '';
   }
 };
 
@@ -297,13 +301,13 @@ const handleOpenChange = (open: boolean) => {
 
 const handleCancel = () => {
   cancelPlaidLink();
-  plaidError.value = false;
+  plaidError.value = null;
   currentStep.value = 'select-provider';
   selectedProviderType.value = null;
 };
 
 const resetDialog = () => {
-  plaidError.value = false;
+  plaidError.value = null;
   currentStep.value = 'select-provider';
   selectedProviderType.value = null;
   selectedRegionFilter.value = REGION_FILTER_ALL;

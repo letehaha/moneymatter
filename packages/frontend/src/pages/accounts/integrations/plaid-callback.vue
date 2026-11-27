@@ -12,6 +12,7 @@ const route = useRoute();
 const router = useRouter();
 const { run } = usePlaidLink();
 const status = ref<'resuming' | 'unavailable' | 'failed'>('resuming');
+const failureMessage = ref<string>();
 
 onMounted(async () => {
   if (typeof route.query.oauth_state_id !== 'string' || !route.query.oauth_state_id) {
@@ -20,7 +21,10 @@ onMounted(async () => {
   }
 
   const result = await run({ receivedRedirectUri: window.location.href });
-  if (!result) return;
+  if (!result) {
+    status.value = 'unavailable';
+    return;
+  }
 
   if (result.status === 'connected') {
     await router.replace({
@@ -32,6 +36,7 @@ onMounted(async () => {
     await router.replace({ name: ROUTES_NAMES.accounts });
   } else {
     status.value = result.status;
+    if (result.status === 'failed') failureMessage.value = result.message;
     await router.replace({ name: ROUTES_NAMES.plaidCallback });
   }
 });
@@ -50,12 +55,14 @@ onMounted(async () => {
           {{
             status === 'unavailable'
               ? $t('pages.integrations.plaid.resumeUnavailable')
-              : $t('pages.integrations.plaid.flowFailed')
+              : failureMessage || $t('pages.integrations.plaid.flowFailed')
           }}
         </p>
       </div>
       <UiButton as-child>
-        <RouterLink :to="{ name: ROUTES_NAMES.accounts }">{{ $t('pages.bankCallback.error.backToIntegrations') }}</RouterLink>
+        <RouterLink :to="{ name: ROUTES_NAMES.accounts }">{{
+          $t('pages.bankCallback.error.backToIntegrations')
+        }}</RouterLink>
       </UiButton>
     </div>
   </PageWrapper>

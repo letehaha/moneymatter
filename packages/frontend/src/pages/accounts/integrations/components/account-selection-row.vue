@@ -92,12 +92,10 @@ const needsCurrency = computed(() => props.account.currency === NO_CURRENCY_CODE
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 
-const displayBalance = computed(() => props.account.balance);
-
 // No-currency accounts can't be currency-formatted — show a plain number.
 const formattedBalance = computed(() =>
   needsCurrency.value
-    ? maskAmountText({ text: toLocalNumber(displayBalance.value, { maximumFractionDigits: 2 }) })
-    : formatAmountByCurrencyCode({ amount: displayBalance.value, currencyCode: props.account.currency }),
+    ? maskAmountText({ text: toLocalNumber(props.account.balance, { maximumFractionDigits: 2 }) })
+    : formatAmountByCurrencyCode({ amount: props.account.balance, currencyCode: props.account.currency }),
 );
 </script>
