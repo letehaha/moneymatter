@@ -141,6 +141,30 @@
         "successNotification": "Forma de pagamento padrão atualizada",
         "errorNotification": "Não foi possível atualizar a forma de pagamento padrão"
       }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Choose which alerts reach you, and where.",
+      "successNotification": "Notification settings saved",
+      "channels": {
+        "inApp": "In-app",
+        "push": "Push (iOS app)",
+        "email": "Email"
+      },
+      "categories": {
+        "watchlistAlerts": {
+          "label": "Watchlist alerts",
+          "description": "Price alerts on securities in your portfolio watchlists. Each alert can also turn its own channels off."
+        },
+        "subscriptionReminders": {
+          "label": "Payment reminders",
+          "description": "Reminders before a recurring payment is due. Email also needs the email option on the payment itself."
+        },
+        "invitations": {
+          "label": "Invitations",
+          "description": "When someone shares an account, tracker or household with you."
+        }
+      }
     }
   }
 }

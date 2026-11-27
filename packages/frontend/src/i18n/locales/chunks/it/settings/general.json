@@ -141,6 +141,30 @@
         "successNotification": "Tipo di pagamento predefinito aggiornato",
         "errorNotification": "Impossibile aggiornare il tipo di pagamento predefinito"
       }
+    },
+    "notifications": {
+      "title": "Notifiche",
+      "description": "Scegliere quali avvisi ricevere e dove.",
+      "successNotification": "Impostazioni delle notifiche salvate",
+      "channels": {
+        "inApp": "In-app",
+        "push": "Push (app iOS)",
+        "email": "Email"
+      },
+      "categories": {
+        "watchlistAlerts": {
+          "label": "Avvisi della watchlist",
+          "description": "Avvisi di prezzo sui titoli nelle watchlist dei portafogli. Ogni avviso può anche disattivare i propri canali."
+        },
+        "subscriptionReminders": {
+          "label": "Promemoria di pagamento",
+          "description": "Promemoria prima della scadenza di un pagamento ricorrente. Per l'email è necessaria anche l'opzione email sul pagamento stesso."
+        },
+        "invitations": {
+          "label": "Inviti",
+          "description": "Quando qualcuno condivide un conto, un tracker o un nucleo familiare."
+        }
+      }
     }
   }
 }
