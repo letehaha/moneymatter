@@ -1,4 +1,4 @@
-import { PlaidApiClient, PlaidApiError, getPlaidConfig } from './api-client';
+import { PlaidApiClient, PlaidApiError, getPlaidConfig, readPlaidConfig } from './api-client';
 
 const config = { clientId: 'test-client', secret: 'test-secret', environment: 'sandbox' } as const;
 
@@ -12,6 +12,18 @@ const makeClient = (responses: Response[]) => {
   });
   return { client: new PlaidApiClient({ config, request }), request };
 };
+
+const tx = (id: string) => ({
+  transaction_id: id,
+  account_id: 'account',
+  amount: 1,
+  date: '2026-01-01',
+  name: id,
+  merchant_name: null,
+  pending: false,
+  iso_currency_code: 'USD',
+  unofficial_currency_code: null,
+});
 
 const page = ({
   cursor,
@@ -28,8 +40,8 @@ const page = ({
 }) => ({
   next_cursor: cursor,
   has_more: hasMore,
-  added: added.map((id) => ({ transaction_id: id })),
-  modified: modified.map((id) => ({ transaction_id: id })),
+  added: added.map(tx),
+  modified: modified.map(tx),
   removed: removed.map((id) => ({ transaction_id: id })),
 });
 
@@ -55,9 +67,19 @@ describe('Plaid configuration', () => {
     expect(getPlaidConfig()).toBeNull();
   });
 
+  it('names the failing check without exposing the secret', () => {
+    jest.replaceProperty(process, 'env', { ...process.env, ...env, PLAID_ENV: 'development' });
+    expect(readPlaidConfig()).toBe('PLAID_ENV must be "sandbox" or "production"');
+  });
+
   it('accepts a configured production environment and the exact registered HTTPS redirect', () => {
     const redirectUri = 'https://app.example.com/plaid-callback';
-    jest.replaceProperty(process, 'env', { ...process.env, ...env, PLAID_ENV: 'production', PLAID_REDIRECT_URI: redirectUri });
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      ...env,
+      PLAID_ENV: ' production ',
+      PLAID_REDIRECT_URI: redirectUri,
+    });
     expect(getPlaidConfig()).toEqual({
       clientId: 'id',
       secret: 'secret',
@@ -81,6 +103,7 @@ it('creates a Sandbox Link token for Transactions with the signed-in user ID', a
     products: ['transactions'],
     country_codes: ['US', 'CA'],
     language: 'en',
+    transactions: { days_requested: 730 },
   });
 });
 
@@ -92,8 +115,8 @@ it('combines all transaction pages and returns their final cursor', async () => 
 
   await expect(client.syncTransactions({ accessToken: 'access', cursor: 'start' })).resolves.toEqual({
     cursor: 'done',
-    added: [{ transaction_id: 'a' }],
-    modified: [{ transaction_id: 'b' }],
+    added: [tx('a')],
+    modified: [tx('b')],
     removed: [{ transaction_id: 'c' }],
   });
   expect(request.mock.calls.map(([, options]) => JSON.parse(String(options?.body)).cursor)).toEqual([
@@ -111,7 +134,7 @@ it('restarts from the original cursor if transactions mutate while paging', asyn
 
   await expect(client.syncTransactions({ accessToken: 'access' })).resolves.toEqual({
     cursor: 'fresh',
-    added: [{ transaction_id: 'fresh-row' }],
+    added: [tx('fresh-row')],
     modified: [],
     removed: [],
   });
@@ -129,6 +152,14 @@ it('keeps secrets and upstream response text out of provider errors', async () =
   expect(error).toBeInstanceOf(PlaidApiError);
   expect(error).toMatchObject({ code: 'ITEM_LOGIN_REQUIRED', status: 400 });
   expect(String(error)).not.toMatch(/sensitive|test-secret/);
+});
+
+it('rejects a malformed account list', async () => {
+  const { client } = makeClient([json({ accounts: [{ account_id: 'a' }] })]);
+  await expect(client.getAccounts({ accessToken: 'access' })).rejects.toMatchObject({
+    status: 502,
+    code: 'MALFORMED_RESPONSE',
+  });
 });
 
 it('rejects a successful-looking page that lacks a cursor instead of returning an unusable checkpoint', async () => {

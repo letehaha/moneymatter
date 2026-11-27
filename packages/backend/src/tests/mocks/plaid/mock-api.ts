@@ -18,7 +18,7 @@ export const page = ({
   removed?: { transaction_id: string; account_id?: string }[];
   hasMore?: boolean;
 }) => HttpResponse.json({ added, modified, removed, next_cursor: cursor, has_more: hasMore });
-type SyncRequest = { cursor?: string; options?: unknown; access_token: string };
+type SyncRequest = { cursor?: string; access_token: string };
 
 export const mockProvider = () => {
   const exchanges: unknown[] = [];
@@ -36,6 +36,7 @@ export const mockProvider = () => {
     },
     exchangeResult: { access_token: PLAID_ACCESS_TOKEN, item_id: PLAID_ITEM_ID },
     loginRequired: false,
+    removeFails: false,
     sync: (_: SyncRequest): Response => page({ cursor: 'initial' }),
     exchanges,
     links,
@@ -47,17 +48,12 @@ export const mockProvider = () => {
     http.post(`${PLAID_BASE_URL}/link/token/create`, async ({ request }) => {
       const body = (await request.json()) as Record<string, unknown>;
       links.push(body);
-      return HttpResponse.json({ link_token: body.access_token ? 'link-sandbox-update' : 'link-sandbox-new' });
+      return HttpResponse.json({ link_token: 'link-sandbox-new' });
     }),
     http.post(`${PLAID_BASE_URL}/item/public_token/exchange`, async ({ request }) => {
       exchanges.push(await request.json());
       return HttpResponse.json(state.exchangeResult);
     }),
-    http.post(`${PLAID_BASE_URL}/item/get`, () =>
-      HttpResponse.json({
-        item: { item_id: PLAID_ITEM_ID, error: state.loginRequired ? { error_code: 'ITEM_LOGIN_REQUIRED' } : null },
-      }),
-    ),
     http.post(`${PLAID_BASE_URL}/accounts/get`, async ({ request }) => {
       accountRequests.push(await request.json());
       return state.loginRequired
@@ -69,7 +65,9 @@ export const mockProvider = () => {
     }),
     http.post(`${PLAID_BASE_URL}/item/remove`, async ({ request }) => {
       removals.push(await request.json());
-      return HttpResponse.json({ removed: true });
+      return state.removeFails
+        ? HttpResponse.json({ error_code: 'INTERNAL_SERVER_ERROR', error_type: 'API_ERROR' }, { status: 500 })
+        : HttpResponse.json({ request_id: 'remove' });
     }),
     http.post(`${PLAID_BASE_URL}/transactions/sync`, async ({ request }) => {
       const body = (await request.json()) as SyncRequest;

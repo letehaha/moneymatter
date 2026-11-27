@@ -6,7 +6,7 @@ const checking: PlaidAccount = {
   name: 'Checking',
   subtype: 'checking',
   type: 'depository',
-  balances: { current: 127.31, available: 100, limit: null, iso_currency_code: 'USD' },
+  balances: { current: 127.31, available: 100, limit: null, iso_currency_code: 'USD', unofficial_currency_code: null },
 };
 
 const purchase: PlaidTransaction = {
@@ -18,6 +18,7 @@ const purchase: PlaidTransaction = {
   merchant_name: 'Coffee Shop',
   pending: false,
   iso_currency_code: 'USD',
+  unofficial_currency_code: null,
 };
 
 it('normalizes the current balance rather than the available balance', () => {
@@ -34,38 +35,23 @@ it('does not expose a depository limit that is absent from its balance', () => {
   expect(account?.creditLimit).toBeUndefined();
 });
 
-it('stores production credit card debt separately from its limit', () => {
-  const account = normalizePlaidAccount({
-    account: {
-      ...checking,
-      type: 'credit',
-      balances: { ...checking.balances, current: 3174.77, limit: 30000 },
-    },
-  });
-  expect(account?.balance?.toNumber()).toBe(-3174.77);
-  expect(account?.creditLimit?.toNumber()).toBe(30000);
-});
-
-it('represents credit card debt separately from the credit limit', () => {
-  const account = normalizePlaidAccount({
-    account: { ...checking, type: 'credit', subtype: 'credit card', balances: { ...checking.balances, limit: 2000 } },
-  });
-  expect(account?.balance?.toNumber()).toBe(-127.31);
-  expect(account?.creditLimit?.toNumber()).toBe(2000);
-});
-
 it.each([
+  { limit: 30000, current: 3174.77, balance: 26825.23, creditLimit: 30000 },
+  { limit: 2000, current: 127.31, balance: 1872.69, creditLimit: 2000 },
   { limit: 0, current: 31.5, balance: -31.5, creditLimit: 0 },
   { limit: null, current: 31.5, balance: -31.5, creditLimit: undefined },
-  { limit: 1000, current: -25, balance: 25, creditLimit: 1000 },
-  { limit: -1000, current: 25, balance: -25, creditLimit: 1000 },
-])('normalizes credit balance with limit $limit and debt $current', ({ limit, current, balance, creditLimit }) => {
-  const account = normalizePlaidAccount({
-    account: { ...checking, type: 'credit', balances: { ...checking.balances, current, limit } },
-  });
-  expect(account?.balance?.toNumber()).toBe(balance);
-  expect(account?.creditLimit?.toNumber()).toBe(creditLimit);
-});
+  { limit: 1000, current: -25, balance: 1025, creditLimit: 1000 },
+  { limit: -1000, current: 25, balance: 975, creditLimit: 1000 },
+])(
+  'stores a limit-inclusive credit balance with limit $limit and debt $current',
+  ({ limit, current, balance, creditLimit }) => {
+    const account = normalizePlaidAccount({
+      account: { ...checking, type: 'credit', balances: { ...checking.balances, current, limit } },
+    });
+    expect(account?.balance?.toNumber()).toBe(balance);
+    expect(account?.creditLimit?.toNumber()).toBe(creditLimit);
+  },
+);
 
 it('does not substitute available funds when the current balance is missing', () => {
   expect(

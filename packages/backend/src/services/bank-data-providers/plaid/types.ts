@@ -1,9 +1,9 @@
-import type { AuthTrackingMetadata } from '../types';
+import type { z } from 'zod';
 
-export interface PlaidCredentials {
-  access_token: string;
-  item_id: string;
-}
+import type { AuthTrackingMetadata } from '../types';
+import type { plaidCredentialsSchema } from './api-client';
+
+export type PlaidCredentials = z.infer<typeof plaidCredentialsSchema>;
 
 export interface PlaidMetadata extends AuthTrackingMetadata {
   plaidCursors?: Record<string, { externalId: string; linkedAt: string | null; value: string }>;

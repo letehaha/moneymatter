@@ -126,7 +126,8 @@ export const linkAccountToBankConnection = withTransaction(
       externalId: externalAccountId,
     });
 
-    // Plaid reconciliation uses raw balances; other links retain their limit-delta adjustment.
+    // Stored balances include the credit limit. Adopting the bank's limit shifts
+    // the stored balance by the same delta so displayed history stays put.
     const newCreditLimit = await roundToCurrency({
       money: externalAccount.creditLimit ?? Money.zero(),
       userId,
@@ -138,9 +139,7 @@ export const linkAccountToBankConnection = withTransaction(
         id: accountId,
         userId,
         creditLimit: newCreditLimit,
-        currentBalance: bankConnection.providerType === BANK_PROVIDER_TYPE.PLAID
-          ? account.currentBalance
-          : account.currentBalance.add(newCreditLimit.subtract(account.creditLimit)),
+        currentBalance: account.currentBalance.add(newCreditLimit.subtract(account.creditLimit)),
       });
       await account.reload();
     }
@@ -264,13 +263,12 @@ export const linkAccountToBankConnection = withTransaction(
     // The inline sync's SYNCING lands at once, its COMPLETED only on commit: a rollback would leave SYNCING.
     let updatedAccount: Accounts;
     try {
-      // Auth tracking writes the connection outside this transaction, so acquire its row lock only after sync.
+      // Don't write the connection row before this: auth tracking updates it outside this transaction and would block on our lock.
       await syncTransactionsForAccount({
         connectionId,
         userId,
         accountId,
       });
-      await bankConnection.update({ lastSyncAt: new Date() });
 
       // The sync's own balance write is best-effort; without it S would anchor on the pre-link balance.
       await lockedAccount.reload();

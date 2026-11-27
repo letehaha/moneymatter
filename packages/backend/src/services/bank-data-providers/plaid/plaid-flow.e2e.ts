@@ -5,42 +5,25 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import Transactions from '@models/transactions.model';
+import { SyncStatus } from '@services/bank-data-providers/sync/sync-status-tracker';
 import * as helpers from '@tests/helpers';
+import { PLAID_REDIRECT_URI, PLAID_TEST_ENV } from '@tests/helpers/plaid';
 import { checking, credit, posted, PLAID_ACCESS_TOKEN, PLAID_PUBLIC_TOKEN } from '@tests/mocks/plaid/data';
 import { mockProvider as createMockProvider, page } from '@tests/mocks/plaid/mock-api';
 import { HttpResponse } from 'msw';
+
 import type { PlaidMetadata } from './types';
 
 const api = helpers.bankDataProviders;
-const callback = 'https://money.test/plaid-callback';
 const publicToken = PLAID_PUBLIC_TOKEN;
 const accessToken = PLAID_ACCESS_TOKEN;
-const enabledEnv = {
-  IS_SELF_HOST: 'true',
-  PLAID_ENABLED: 'false',
-  PLAID_ENV: 'sandbox',
-  PLAID_CLIENT_ID: 'plaid-test-client',
-  PLAID_SECRET: 'plaid-test-secret',
-  PLAID_REDIRECT_URI: callback,
-};
-const envKeys = Object.keys(enabledEnv);
-let savedEnv: Record<string, string | undefined>;
 
-beforeEach(() => {
-  savedEnv = Object.fromEntries(envKeys.map((key) => [key, process.env[key]]));
-  Object.assign(process.env, enabledEnv);
-});
-
-afterEach(() => {
-  for (const [key, value] of Object.entries(savedEnv)) {
-    if (value === undefined) delete process.env[key];
-    else process.env[key] = value;
-  }
-});
+helpers.plaid.usePlaidEnv();
 
 const mockProvider = () => {
   const { state, handlers } = createMockProvider();
@@ -72,7 +55,8 @@ describe('Plaid Link endpoints', () => {
         user: { client_user_id: expect.stringMatching(/^\d+$/) },
         country_codes: ['US', 'CA'],
         products: ['transactions'],
-        redirect_uri: callback,
+        transactions: { days_requested: 730 },
+        redirect_uri: PLAID_REDIRECT_URI,
       }),
     ]);
     expect(upstream.links[0]).not.toHaveProperty('access_token');
@@ -109,13 +93,14 @@ describe('Plaid Link endpoints', () => {
       ['PLAID_ENV', 'development'],
       ['PLAID_ENV', ''],
     ]) {
-      Object.assign(process.env, enabledEnv, { [key!]: value });
+      Object.assign(process.env, PLAID_TEST_ENV, { [key!]: value });
       expect((await api.getSupportedBankProviders({ raw: true })).providers).not.toContainEqual(
         expect.objectContaining({ type: BANK_PROVIDER_TYPE.PLAID }),
       );
       expect((await helpers.plaid.createLinkToken()).statusCode).toBe(ERROR_CODES.NotAllowed);
       expect(
-        (await api.connectProvider({ providerType: BANK_PROVIDER_TYPE.PLAID, credentials: { publicToken } })).statusCode,
+        (await api.connectProvider({ providerType: BANK_PROVIDER_TYPE.PLAID, credentials: { publicToken } }))
+          .statusCode,
       ).toBe(ERROR_CODES.NotAllowed);
     }
     expect(upstream.links).toHaveLength(0);
@@ -136,7 +121,6 @@ describe('Plaid Link endpoints', () => {
     expect(response.statusCode).toBe(422);
     expect(upstream.exchanges).toEqual([]);
   });
-
 
   it('exchanges only the public token and keeps stored credentials out of public connection data', async () => {
     const upstream = mockProvider();
@@ -176,7 +160,7 @@ describe('Plaid Link endpoints', () => {
           externalId: credit().account_id,
           name: 'Credit card',
           type: 'credit card',
-          balance: -31.5,
+          balance: 968.5,
           creditLimit: 1000,
           currency: global.BASE_CURRENCY_CODE,
         }),
@@ -222,7 +206,9 @@ describe('Plaid Link endpoints', () => {
       });
     const replacement = await helpers.plaid.pairPlaidUser({ publicToken: 'public-sandbox-replacement' });
     expect(upstream.exchanges).toContainEqual(expect.objectContaining({ public_token: 'public-sandbox-replacement' }));
-    expect((await api.getConnectionDetails({ connectionId: replacement.connectionId, raw: true })).connection.accounts).toEqual([]);
+    expect(
+      (await api.getConnectionDetails({ connectionId: replacement.connectionId, raw: true })).connection.accounts,
+    ).toEqual([]);
     jest.useFakeTimers({
       now: linkTime,
       doNotFake: ['setTimeout', 'setInterval', 'setImmediate', 'queueMicrotask', 'nextTick', 'performance'],
@@ -237,9 +223,9 @@ describe('Plaid Link endpoints', () => {
     } finally {
       jest.useRealTimers();
     }
-    expect((await api.getConnectionDetails({ connectionId: replacement.connectionId, raw: true })).connection.accounts).toEqual([
-      expect.objectContaining({ id: account.id }),
-    ]);
+    expect(
+      (await api.getConnectionDetails({ connectionId: replacement.connectionId, raw: true })).connection.accounts,
+    ).toEqual([expect.objectContaining({ id: account.id })]);
     expect(await helpers.getAccount({ id: account.id, raw: true })).toMatchObject({
       id: account.id,
       externalId: 'plaid-checking-replacement',
@@ -266,7 +252,9 @@ describe('Plaid Link endpoints', () => {
       expect.objectContaining({ originalId: 'new-same-day-posting', amount: 7, accountId: account.id }),
     );
     expect(await helpers.getAccounts()).toHaveLength(accountCount);
-    expect(upstream.accountRequests).toContainEqual(expect.objectContaining({ access_token: 'access-sandbox-replacement' }));
+    expect(upstream.accountRequests).toContainEqual(
+      expect.objectContaining({ access_token: 'access-sandbox-replacement' }),
+    );
   });
 
   it('rolls back a manual link while persisting a sync-only Plaid authentication failure', async () => {
@@ -295,10 +283,67 @@ describe('Plaid Link endpoints', () => {
     expect(after!.isActive).toBe(true);
     expect(after!.lastSyncAt).toEqual(beforeConnection!.lastSyncAt);
     expect(after!.metadata).toMatchObject({ consecutiveAuthFailures: 1 });
-    expect((after!.metadata as PlaidMetadata).plaidCursors).toEqual((beforeConnection!.metadata as PlaidMetadata | null)?.plaidCursors);
+    expect((after!.metadata as PlaidMetadata).plaidCursors).toEqual(
+      (beforeConnection!.metadata as PlaidMetadata | null)?.plaidCursors,
+    );
     expect(await helpers.getTransactions({ accountIds: [account.id], raw: true })).toEqual([]);
   });
 
+  it('relinks a credit card by its Plaid id with a limit-inclusive balance even when the sync fails', async () => {
+    const upstream = mockProvider();
+    const firstConnection = await connect();
+    const first = await api.connectSelectedAccounts({
+      connectionId: firstConnection.connectionId,
+      accountExternalIds: [credit().account_id],
+      raw: true,
+    });
+    const accountId = first.syncedAccounts[0]!.id;
+    await api.disconnectProvider({ connectionId: firstConnection.connectionId, raw: true });
+
+    const replacementToken = 'access-sandbox-replacement';
+    upstream.exchangeResult = { access_token: replacementToken, item_id: 'item-replacement' };
+    const changed = { ...credit(), balances: { ...credit().balances, current: 3174.77, limit: 30000 } };
+    upstream.accounts = [changed];
+    upstream.sync = () => HttpResponse.json({ error_code: 'INTERNAL_SERVER_ERROR' }, { status: 500 });
+    const replacement = await helpers.plaid.pairPlaidUser({ publicToken: 'public-sandbox-replacement' });
+    const previousSyncRequestCount = upstream.syncRequests.length;
+    const relink = await api.connectSelectedAccounts({
+      connectionId: replacement.connectionId,
+      accountExternalIds: [changed.account_id],
+      raw: true,
+    });
+
+    expect(relink.syncedAccounts).toEqual([expect.objectContaining({ id: accountId, balance: -2174.77 })]);
+    expect(upstream.syncRequests.slice(previousSyncRequestCount)).toContainEqual(
+      expect.objectContaining({ access_token: replacementToken }),
+    );
+    const { accounts } = await api.getAccountsSyncStatus({ raw: true });
+    expect(accounts).toContainEqual(expect.objectContaining({ accountId, status: SyncStatus.FAILED }));
+    expect(await helpers.getAccount({ id: accountId, raw: true })).toMatchObject({
+      currentBalance: -2174.77,
+      creditLimit: 1000,
+      refCurrentBalance: -2174.77,
+      refCreditLimit: 1000,
+    });
+    const stored = await Accounts.findByPk(accountId);
+    expect(stored?.externalData?.bankConnection?.balanceReconciliation).toMatchObject({
+      systemBalance: 968.5,
+      externalBalance: -2174.77,
+      difference: -3143.27,
+    });
+  });
+
+  it('deletes the connection locally when Plaid fails to remove the Item', async () => {
+    const upstream = mockProvider();
+    const { connectionId } = await connect();
+    upstream.removeFails = true;
+
+    const response = await api.disconnectProvider({ connectionId });
+
+    expect(response.statusCode).toBe(200);
+    expect(upstream.removals).toEqual([expect.objectContaining({ access_token: accessToken })]);
+    expect(await BankDataProviderConnections.findByPk(connectionId)).toBeNull();
+  });
 });
 
 describe('Plaid transaction sync', () => {
@@ -312,8 +357,10 @@ describe('Plaid transaction sync', () => {
     expect(cursors?.[account.id]).toMatchObject({ value: 'initial' });
 
     upstream.loginRequired = true;
-    await api.syncTransactionsForAccount({ connectionId, accountId: account.id });
-    await api.syncTransactionsForAccount({ connectionId, accountId: account.id });
+    upstream.sync = () => page({ cursor: 'must-not-be-saved' });
+    const firstFailure = await api.syncTransactionsForAccount({ connectionId, accountId: account.id });
+    const secondFailure = await api.syncTransactionsForAccount({ connectionId, accountId: account.id });
+    expect([firstFailure.statusCode, secondFailure.statusCode]).toEqual([ERROR_CODES.Forbidden, ERROR_CODES.Forbidden]);
     const details = await api.getConnectionDetails({ connectionId, raw: true });
     expect(details.connection).toMatchObject({ isActive: false, deactivationReason: DEACTIVATION_REASON.AUTH_FAILURE });
     const after = await BankDataProviderConnections.findByPk(connectionId);
@@ -324,6 +371,23 @@ describe('Plaid transaction sync', () => {
     expect(status.connectionsNeedingReauth).toContainEqual(expect.objectContaining({ connectionId }));
     await api.disconnectProvider({ connectionId, raw: true });
     expect(upstream.removals).toContainEqual(expect.objectContaining({ access_token: accessToken }));
+  });
+
+  it('fails a sync on an upstream outage without counting an auth failure', async () => {
+    const upstream = mockProvider();
+    const { connectionId } = await connect();
+    const account = await mapChecking({ connectionId });
+    upstream.sync = () =>
+      HttpResponse.json({ error_code: 'INTERNAL_SERVER_ERROR', error_type: 'API_ERROR' }, { status: 500 });
+
+    const response = await api.syncTransactionsForAccount({ connectionId, accountId: account.id });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ServiceUnavailable);
+    const after = await BankDataProviderConnections.findByPk(connectionId);
+    expect(after!.isActive).toBe(true);
+    expect(after!.metadata).toMatchObject({ consecutiveAuthFailures: 0 });
+    const { accounts } = await api.getAccountsSyncStatus({ raw: true });
+    expect(accounts).toContainEqual(expect.objectContaining({ accountId: account.id, status: SyncStatus.FAILED }));
   });
 
   it('keeps independent Item-stream checkpoints per mapped account and imports posted rows only', async () => {
@@ -346,13 +410,12 @@ describe('Plaid transaction sync', () => {
       syncedAccounts: [b],
     } = await api.connectSelectedAccounts({ connectionId, accountExternalIds: [credit().account_id], raw: true });
     const accountB = b!;
-    expect((await api.getConnectionDetails({ connectionId, raw: true })).connection.accounts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: a.id, currentBalance: 145.25, creditLimit: 0 }),
-        expect.objectContaining({ id: accountB.id, currentBalance: -31.5, creditLimit: 1000 }),
-      ]),
-    );
-    // The stored limit remains authoritative when Plaid changes its reported limit.
+    expect(await helpers.getAccount({ id: a.id, raw: true })).toMatchObject({ currentBalance: 145.25, creditLimit: 0 });
+    expect(await helpers.getAccount({ id: accountB.id, raw: true })).toMatchObject({
+      currentBalance: 968.5,
+      creditLimit: 1000,
+    });
+    // The stored limit stays authoritative when Plaid changes its reported limit, so the debt stays 31.5.
     upstream.accounts[1]!.balances.limit = 2000;
 
     await api.syncTransactionsForAccount({ connectionId, accountId: a.id, raw: true });
@@ -366,9 +429,7 @@ describe('Plaid transaction sync', () => {
       'initial',
       'later',
     ]);
-    expect(upstream.syncRequests.every((request) => !request.options && request.access_token === accessToken)).toBe(
-      true,
-    );
+    expect(upstream.syncRequests.every((request) => request.access_token === accessToken)).toBe(true);
     const rowsA = await helpers.getTransactions({ accountIds: [a.id], raw: true });
     const rowsB = await helpers.getTransactions({ accountIds: [accountB.id], raw: true });
     expect(rowsA.map((row) => row.originalId).sort()).toEqual(['a1', 'a2', 'income']);
@@ -377,23 +438,25 @@ describe('Plaid transaction sync', () => {
       amount: 12,
       transactionType: TRANSACTION_TYPES.expense,
     });
-    expect((await Transactions.findByPk(rowsA.find((row) => row.originalId === 'a1')!.id))?.externalData).toMatchObject({
-      plaidAccountId: checking().account_id,
-    });
+    expect((await Transactions.findByPk(rowsA.find((row) => row.originalId === 'a1')!.id))?.externalData).toMatchObject(
+      {
+        plaidAccountId: checking().account_id,
+      },
+    );
     expect(rowsA.find((row) => row.originalId === 'income')).toMatchObject({
       amount: 8,
       transactionType: TRANSACTION_TYPES.income,
     });
     expect(await helpers.getAccount({ id: accountB.id, raw: true })).toMatchObject({
       type: ACCOUNT_TYPES.plaid,
-      currentBalance: -31.5,
+      currentBalance: 968.5,
       creditLimit: 1000,
     });
   });
 
-  it('overwrites a stale positive credit balance on the next successful sync', async () => {
+  it('stores the limit-inclusive credit balance on link and on every sync', async () => {
     const upstream = mockProvider();
-    upstream.accounts[1]!.balances.current = -26825.23;
+    upstream.accounts[1]!.balances.current = 3174.77;
     upstream.accounts[1]!.balances.limit = 30000;
     const { connectionId } = await connect();
     const { syncedAccounts } = await api.connectSelectedAccounts({
@@ -407,11 +470,11 @@ describe('Plaid transaction sync', () => {
       creditLimit: 30000,
     });
 
-    upstream.accounts[1]!.balances.current = 3174.77;
+    upstream.accounts[1]!.balances.current = 4000;
     await api.syncTransactionsForAccount({ connectionId, accountId: account.id, raw: true });
     expect(await helpers.getAccount({ id: account.id, raw: true })).toMatchObject({
-      currentBalance: -3174.77,
-      refCurrentBalance: -3174.77,
+      currentBalance: 26000,
+      refCurrentBalance: 26000,
       creditLimit: 30000,
     });
   });

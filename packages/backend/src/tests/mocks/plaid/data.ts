@@ -4,23 +4,18 @@ import { subDays } from 'date-fns';
 export const PLAID_PUBLIC_TOKEN = 'public-sandbox-fake';
 export const PLAID_ACCESS_TOKEN = 'access-sandbox-fake';
 export const PLAID_ITEM_ID = 'item-fake';
-export const PLAID_ACCOUNT_ID = 'plaid-checking';
-
-export const getMockedPlaidAccounts = (): PlaidAccount[] => [
-  {
-    account_id: PLAID_ACCOUNT_ID,
-    name: 'Checking',
-    type: 'depository',
-    subtype: 'checking',
-    balances: { current: 145.25, available: 140, limit: null, iso_currency_code: global.BASE_CURRENCY_CODE },
-  },
-];
 export const checking = (): PlaidAccount => ({
   account_id: 'plaid-checking',
   name: 'Checking',
   type: 'depository',
   subtype: 'checking',
-  balances: { current: 145.25, available: 140, limit: null, iso_currency_code: global.BASE_CURRENCY_CODE },
+  balances: {
+    current: 145.25,
+    available: 140,
+    limit: null,
+    iso_currency_code: global.BASE_CURRENCY_CODE,
+    unofficial_currency_code: null,
+  },
 });
 
 export const credit = (): PlaidAccount => ({
@@ -50,5 +45,6 @@ export const posted = ({
   name: `Statement ${id}`,
   merchant_name: null,
   iso_currency_code: account.balances.iso_currency_code,
+  unofficial_currency_code: null,
   pending,
 });

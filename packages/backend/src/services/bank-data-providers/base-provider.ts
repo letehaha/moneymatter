@@ -153,19 +153,13 @@ export abstract class BaseBankDataProvider {
    * save: the caller's single save() must persist credentials and this state together.
    */
   protected reactivateConnection({ connection }: { connection: BankDataProviderConnections }): void {
-    this.writeAuthMetadata({ connection, patch: { consecutiveAuthFailures: 0, deactivationReason: null } });
+    // Always a new object: Sequelize only flags a JSONB column changed when its reference changes.
+    connection.metadata = {
+      ...(connection.metadata as AuthTrackingMetadata | null),
+      consecutiveAuthFailures: 0,
+      deactivationReason: null,
+    } satisfies AuthTrackingMetadata;
     connection.isActive = true;
-  }
-
-  // Always a new object: Sequelize only flags a JSONB column changed when its reference changes.
-  private writeAuthMetadata({
-    connection,
-    patch,
-  }: {
-    connection: BankDataProviderConnections;
-    patch: AuthTrackingMetadata;
-  }): void {
-    connection.metadata = { ...(connection.metadata as AuthTrackingMetadata | null), ...patch };
   }
 
   /**
@@ -192,7 +186,11 @@ export abstract class BaseBankDataProvider {
           WHERE "id" = :connectionId
           RETURNING ("metadata"->>'consecutiveAuthFailures')::integer AS failures`,
         {
-          replacements: { connectionId, threshold: AUTH_FAILURE_DEACTIVATION_THRESHOLD, reason: DEACTIVATION_REASON.AUTH_FAILURE },
+          replacements: {
+            connectionId,
+            threshold: AUTH_FAILURE_DEACTIVATION_THRESHOLD,
+            reason: DEACTIVATION_REASON.AUTH_FAILURE,
+          },
           transaction: null,
         },
       );
@@ -225,8 +223,11 @@ export abstract class BaseBankDataProvider {
             AND COALESCE(("metadata"->>'consecutiveAuthFailures')::integer, 0) <> 0`,
         { replacements: { connectionId }, transaction: null },
       );
-    } catch {
-      // Non-critical, ignore
+    } catch (error) {
+      logger.warn(`[${this.metadata.name}] Failed to reset auth failure count`, {
+        connectionId,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

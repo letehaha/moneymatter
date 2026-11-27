@@ -1,4 +1,5 @@
-import { BANK_PROVIDER_TYPE, type RecordId } from '@bt/shared/types';
+import type { RecordId } from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { ListExternalAccountsResponseData } from '@controllers/bank-data-providers/connections/list-external-accounts';
 import * as connectProviderService from '@services/bank-data-providers/connection/connect-provider';
 import * as getConnectionDetailsService from '@services/bank-data-providers/connection/get-connection-details';
@@ -42,7 +43,6 @@ export function connectProvider<R extends boolean | undefined = false>({
     raw,
   });
 }
-
 
 export function listUserConnections<R extends boolean | undefined = false>({
   raw,

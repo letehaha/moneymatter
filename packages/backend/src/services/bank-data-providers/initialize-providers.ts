@@ -6,6 +6,7 @@ import { LunchFlowProvider } from './lunchflow/lunchflow.provider';
 import { MonobankProvider } from './monobank';
 import { ensureMonobankQueueRecovery } from './monobank/transaction-sync-queue';
 import { plaidProvider } from './plaid';
+import { readPlaidConfig } from './plaid/api-client';
 import { bankProviderRegistry } from './registry';
 import { SimplefinProvider } from './simplefin/simplefin.provider';
 import { WalutomatProvider } from './walutomat';
@@ -35,6 +36,13 @@ export function initializeBankProviders(): void {
     bankProviderRegistry.register(new AkahuProvider());
 
     bankProviderRegistry.register(plaidProvider);
+    const plaidConfig = readPlaidConfig();
+    if (
+      typeof plaidConfig === 'string' &&
+      Object.entries(process.env).some(([key, value]) => key.startsWith('PLAID_') && value?.trim())
+    ) {
+      logger.warn(`[Plaid] Disabled: ${plaidConfig}`);
+    }
 
     const registeredTypes = bankProviderRegistry.listTypes();
     logger.info(

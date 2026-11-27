@@ -215,8 +215,22 @@ const createAccountsForConnection = withTransaction(
         }
 
         const previousLink = existingAccount.externalData?.bankConnection;
+        // Plaid's sync rebases its limit-inclusive balance on the stored limit, so the relink must too.
+        const relinkProviderAccount =
+          connection.providerType === BANK_PROVIDER_TYPE.PLAID && providerAccount.balance
+            ? {
+                ...providerAccount,
+                balance: providerAccount.balance
+                  .subtract(providerAccount.creditLimit ?? Money.zero())
+                  .add(existingAccount.creditLimit),
+              }
+            : providerAccount;
         const relinkBankBalance = isRelink
-          ? await requireProviderBalance({ providerAccount, userId, currencyCode: existingAccount.currencyCode })
+          ? await requireProviderBalance({
+              providerAccount: relinkProviderAccount,
+              userId,
+              currencyCode: existingAccount.currencyCode,
+            })
           : null;
         // A relink starts a new link day. The queued sync's absorb stamps S from the bank
         // balance, so nothing from the previous link carries over.
