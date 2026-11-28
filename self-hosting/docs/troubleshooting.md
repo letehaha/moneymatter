@@ -83,6 +83,23 @@ Typically seen when opening the app via a LAN IP or a custom host. Two causes:
   the http value is also an origin mismatch. Set both vars to the public
   `https://` URL, then `up -d`.
 
+## iOS app: sign-in with Apple, Google or GitHub fails
+
+The app reached the server under a different address than `BETTER_AUTH_URL`.
+Each of these sign-ins is bound to that value:
+
+- **Apple** answers `403` with code `APPLE_NONCE_SERVER_MISMATCH` (visible in
+  the backend log as `better-auth 403`).
+- **Google / GitHub** end with the app saying the server's address doesn't
+  match its configuration.
+
+Set `BETTER_AUTH_URL` (and `AUTH_ORIGIN`) in `.env` to the exact URL you type
+into the app – same scheme, host and port, e.g. `https://budget.example.com` –
+then `up -d`. A proxy that serves the app on a second host name needs the app
+pointed at the one in `BETTER_AUTH_URL`. For Google and GitHub also check that
+`<BETTER_AUTH_URL>/api/v1/auth/callback/<provider>` is registered as a redirect
+URI. More: [Connect the iOS app](ios-app.md).
+
 ## Backend logs "ECONNREFUSED" to db
 
 Postgres can take 10–30s on first boot to initialise its data files. The

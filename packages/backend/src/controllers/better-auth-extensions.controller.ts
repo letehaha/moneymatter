@@ -3,6 +3,7 @@
  */
 import { AuthFeaturesResponse } from '@bt/shared/types';
 import { ENABLED_SOCIAL_PROVIDERS, auth } from '@config/auth';
+import { getNativeAppleAudience } from '@config/native-app-auth';
 import { oidcConfig } from '@config/oidc';
 import { createController } from '@controllers/helpers/controller-factory';
 import { isEmailEnabled } from '@services/email';
@@ -19,6 +20,8 @@ export const authFeatures = createController(z.object({}), async () => {
     emailEnabled: isEmailEnabled,
     socialProviders: ENABLED_SOCIAL_PROVIDERS,
     oidc: oidcConfig ? { name: oidcConfig.displayName } : null,
+    serverVersion: process.env.APP_VERSION || null,
+    nativeAppleSignIn: getNativeAppleAudience() !== null,
   };
   return { data };
 });

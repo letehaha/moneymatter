@@ -88,6 +88,10 @@ ENV NODE_ENV=production
 ARG SENTRY_RELEASE
 ENV SENTRY_RELEASE=$SENTRY_RELEASE
 
+# Release version reported by GET /auth/features; empty for a build without one
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 # Run the compiled app
