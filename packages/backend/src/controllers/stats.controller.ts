@@ -36,6 +36,7 @@ import { getVentureContributionsReport } from '@services/stats/reports/venture-c
 import { z } from 'zod';
 
 import { createController } from './helpers/controller-factory';
+import { requestTimezone } from '@controllers/helpers/request-timezone';
 
 const statsScopeQuery = {
   accountIds: optionalCommaSeparatedIds(),
@@ -79,9 +80,9 @@ const spendingsByCategoriesSchema = z.object({
   ),
 });
 
-export const getSpendingsByCategories = createController(spendingsByCategoriesSchema, async ({ user, query }) => {
+export const getSpendingsByCategories = createController(spendingsByCategoriesSchema, async ({ user, query, req }) => {
   const { groupByType, type: transactionType, ...filters } = query;
-  const params = { userId: user.id, ...filters };
+  const params = { userId: user.id, ...filters, timezone: await requestTimezone({ req }) };
 
   if (groupByType) {
     return { data: await getSpendingsByCategoriesByTypeReport(params) };
@@ -102,11 +103,11 @@ const monthlySpendingsByCategoriesSchema = z.object({
 
 export const getMonthlySpendingsByCategories = createController(
   monthlySpendingsByCategoriesSchema,
-  async ({ user, query }) => {
+  async ({ user, query, req }) => {
     const { from, to, categoryIds, excludePlanned } = query;
 
     return {
-      data: await getMonthlySpendingsByCategoriesReport({ userId: user.id, from, to, categoryIds, excludePlanned }),
+      data: await getMonthlySpendingsByCategoriesReport({ userId: user.id, from, to, categoryIds, excludePlanned, timezone: await requestTimezone({ req }) }),
     };
   },
 );
@@ -149,8 +150,8 @@ const cashFlowSchema = z.object({
   ),
 });
 
-export const getCashFlow = createController(cashFlowSchema, async ({ user, query }) => ({
-  data: await getCashFlowReport({ userId: user.id, ...query }),
+export const getCashFlow = createController(cashFlowSchema, async ({ user, query, req }) => ({
+  data: await getCashFlowReport({ userId: user.id, ...query, timezone: await requestTimezone({ req }) }),
 }));
 
 const netWorthDriversSchema = z.object({
@@ -221,8 +222,8 @@ const pivotReportSchema = z.object({
   ),
 });
 
-export const getPivotReport = createController(pivotReportSchema, async ({ user, query }) => ({
-  data: await getPivotTableReport({ userId: user.id, ...query }),
+export const getPivotReport = createController(pivotReportSchema, async ({ user, query, req }) => ({
+  data: await getPivotTableReport({ userId: user.id, ...query, timezone: await requestTimezone({ req }) }),
 }));
 
 export const getEarliestTransactionDate = createController(z.object({}), async ({ user }) => ({
