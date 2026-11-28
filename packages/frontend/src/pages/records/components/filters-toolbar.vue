@@ -131,8 +131,10 @@
             joined
             :amount-gte="filters.amountGte"
             :amount-lte="filters.amountLte"
+                    :amount-currency="filters.amountCurrency"
             @update:amount-gte="emitFilters({ ...filters, amountGte: $event })"
             @update:amount-lte="emitFilters({ ...filters, amountLte: $event })"
+                    @update:amount-currency="emitFilters({ ...filters, amountCurrency: $event })"
           />
         </div>
 
