@@ -1,5 +1,6 @@
 import type { PivotGranularity } from '@bt/shared/types';
 import { format, getQuarter, getYear, startOfWeek } from 'date-fns';
+
 import { PeriodBucket, generatePeriodBuckets } from '../utils';
 
 // Weeks start on Monday to match the cash-flow report and ISO conventions.
@@ -67,6 +68,6 @@ export const getBucketLabel = ({
     case 'monthly':
       return format(periodStart, 'MMM yyyy');
     case 'weekly':
-      return format(startOfWeek(periodStart, WEEK_OPTS), 'dd MMM yyyy');
+      return `Wk of ${format(startOfWeek(periodStart, WEEK_OPTS), 'yyyy-MM-dd')}`;
   }
 };
