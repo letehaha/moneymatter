@@ -84,7 +84,7 @@ export const EXTRA_FILTERS: Record<ExtraFilterKey, ExtraFilterDefinition> = {
   },
   amount: {
     menuLabelKey: 'transactions.filters.menu.amount',
-    defaultSlice: () => ({ amountGte: DEFAULT_FILTERS.amountGte, amountLte: DEFAULT_FILTERS.amountLte }),
+    defaultSlice: () => ({ amountGte: DEFAULT_FILTERS.amountGte, amountLte: DEFAULT_FILTERS.amountLte , amountCurrency: DEFAULT_FILTERS.amountCurrency}),
     isActive: (filters) => filters.amountGte != null || filters.amountLte != null,
     dissolvesGroups: true,
   },
