@@ -41,8 +41,8 @@ interface GetCashFlowParams extends StatsScopeFilters {
   /** Starts `monthly` buckets on the user's payday instead of the 1st. */
   alignToPayday?: boolean;
   /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
-de    cimals: number;
-    timezone?: string;
+  decimals: number;
+  timezone?: string;
 }
 
 type CategoryInfo = AccessibleCategoryInfo;
@@ -56,7 +56,7 @@ interface PeriodCategoryData {
   income: number;
   expenses: number;
   categories: Map<string, CategoryAmounts>; // categoryId -> amounts by type (aggregated by target category)
-    
+   
 
 /**
  * Resolves the category a leg is reported under.
