@@ -7,7 +7,7 @@ const makeChartData = (values: number[]) => computed(() => values.map((value, i)
 
 describe('useSpikeDetection', () => {
   describe('default behavior (no options)', () => {
-    it('returns empty array for less than 2 data points', () => {
+    it('returns empty array for a single point without a baseline', () => {
       const { spikePoints } = useSpikeDetection({ chartData: makeChartData([100]) });
       expect(spikePoints.value).toEqual([]);
     });
@@ -61,6 +61,43 @@ describe('useSpikeDetection', () => {
         isPositive: false,
         deltaAbsolute: -100,
       });
+    });
+  });
+
+  describe('baseline option', () => {
+    it('detects a spike on the first point against the baseline', () => {
+      const { spikePoints } = useSpikeDetection({
+        chartData: makeChartData([5000, 5000]),
+        baseline: computed(() => 10000),
+      });
+
+      expect(spikePoints.value).toHaveLength(1);
+      expect(spikePoints.value[0]).toMatchObject({
+        date: 1,
+        value: 5000,
+        deltaAbsolute: -5000,
+        deltaPercent: -50,
+        isPositive: false,
+      });
+    });
+
+    it('detects a spike when the period has a single point', () => {
+      const { spikePoints } = useSpikeDetection({
+        chartData: makeChartData([5000]),
+        baseline: computed(() => 10000),
+      });
+
+      expect(spikePoints.value).toHaveLength(1);
+      expect(spikePoints.value[0]).toMatchObject({ date: 1, deltaAbsolute: -5000 });
+    });
+
+    it('skips the first point when the baseline is null', () => {
+      const { spikePoints } = useSpikeDetection({
+        chartData: makeChartData([5000, 5000]),
+        baseline: computed(() => null),
+      });
+
+      expect(spikePoints.value).toEqual([]);
     });
   });
 
