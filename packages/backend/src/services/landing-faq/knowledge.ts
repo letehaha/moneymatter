@@ -60,6 +60,9 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - LunchFlow and SimpleFIN are separate paid services: you open an account with them and pay them
   directly, on top of Plus. Monobank, Walutomat and Akahu (your own accounts, via a personal app)
   cost nothing extra.
+- Self-hosted only: Plaid (US, Canada). The server owner creates a Plaid account and adds its
+  keys to the server's .env; everyone on that install can then connect banks through it. Plaid's
+  own terms and pricing apply. Plaid is not available on the cloud.
 - Banks in the EU, the UK and any other country not named above connect through LunchFlow. To
   see whether a country or one specific bank is covered, search LunchFlow's coverage list:
   https://www.lunchflow.app/coverage
@@ -69,7 +72,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Sync runs automatically while you use the app, at most once every 12 hours, and you can start a
   sync by hand anytime. Balances update with every sync.
 - History on first connect: 12 months with Walutomat, about 6 months with SimpleFIN, 31 days with
-  Monobank (Monobank's own limit), up to about 2 years with Akahu (its 730-day limit), and
+  Monobank (Monobank's own limit), up to about 2 years with Akahu (its 730-day limit) and Plaid, and
   whatever LunchFlow has already collected for LunchFlow.
 - A broken connection is flagged and you reconnect it.
 - You can connect several banks, providers and countries at once, and several accounts per bank.
@@ -260,7 +263,8 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Exchange rates and stock prices work without any API key. Crypto prices need your own CoinGecko
   key. AI, merchant logos, email and Google or GitHub sign-in are optional and use your own keys.
   Without email set up, invitation links are shared by hand.
-- Bank sync works on self-hosted with your own provider accounts.
+- Bank sync works on self-hosted with your own provider accounts. Self-hosted installs can also
+  add Plaid for banks in the US and Canada, using the server owner's Plaid keys.
 - Up to 10 users per instance. Sign-ups can be capped or closed.
 - Update with "docker compose pull" then "docker compose up -d". Back up with pg_dump plus the
   attachments volume; the same backup moves you to another server. Releases are tagged on GitHub

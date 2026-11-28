@@ -16,6 +16,7 @@ import updateConnectionDetails from '@controllers/bank-data-providers/connection
 import listBanks from '@controllers/bank-data-providers/enablebanking/list-banks';
 import listCountries from '@controllers/bank-data-providers/enablebanking/list-countries';
 import oauthCallback from '@controllers/bank-data-providers/enablebanking/oauth-callback';
+import createPlaidLinkToken from '@controllers/bank-data-providers/plaid/create-link-token';
 import * as providersController from '@controllers/bank-data-providers/providers.controller';
 import checkSync from '@controllers/bank-data-providers/sync/check-sync';
 import getSyncStatus from '@controllers/bank-data-providers/sync/get-sync-status';
@@ -155,6 +156,14 @@ router.post(
   checkBaseCurrencyLock,
   attachPsuContext,
   oauthCallback,
+);
+
+router.post(
+  '/plaid/link-token',
+  requireFeature(FEATURES.bank_providers),
+  blockDemoUsers,
+  checkBaseCurrencyLock,
+  createPlaidLinkToken,
 );
 
 export default router;

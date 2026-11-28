@@ -215,9 +215,21 @@
           </UiButton>
         </div>
 
-        <!-- Enable Banking is excluded: OAuth credentials can't be re-supplied inline. -->
         <div
-          v-if="needsReconnect && connectionDetails.providerType !== BANK_PROVIDER_TYPE.ENABLE_BANKING"
+          v-if="isPlaidConnection && (needsReconnect || isConnectionNeedingReauth(connectionId))"
+          class="border-warning/25 bg-warning/10 text-warning-text mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2.5 text-sm"
+        >
+          <TriangleAlertIcon class="size-4 shrink-0" aria-hidden="true" />
+          <p class="min-w-40 flex-1">
+            {{ $t('pages.integrations.plaid.restoredDescription') }}
+          </p>
+        </div>
+
+        <!-- Enable Banking and Plaid are excluded: their credentials can't be re-supplied inline. -->
+        <div
+          v-if="
+            needsReconnect && !isPlaidConnection && connectionDetails.providerType !== BANK_PROVIDER_TYPE.ENABLE_BANKING
+          "
           class="border-destructive/25 bg-destructive/5 text-destructive-text mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2.5 text-sm"
         >
           <CircleAlertIcon class="size-4 shrink-0" />
@@ -450,6 +462,18 @@ const {
   error,
 } = useBankConnectionDetails({ connectionId: connectionId, queryOptions: { retry: false } });
 
+watch(
+  [() => route.query.connect, () => connectionDetails.value?.id],
+  ([intent, id]) => {
+    if (intent !== 'accounts' || !id) return;
+    isFetchAccountsDialogOpen.value = true;
+    const query = { ...route.query };
+    delete query.connect;
+    void router.replace({ query });
+  },
+  { immediate: true },
+);
+
 const isConnectionNotFound = computed(() => isNotFoundError(error.value));
 
 const providerDisplayName = computed(() => {
@@ -615,7 +639,9 @@ const accountsStatValue = computed(() => {
   });
 });
 
-const { accountStatuses, syncStuck, watchSync, fetchStatus } = useSyncStatus();
+const { accountStatuses, syncStuck, watchSync, fetchStatus, isConnectionNeedingReauth } = useSyncStatus();
+
+const isPlaidConnection = computed(() => connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.PLAID);
 
 const connectionAccountIds = computed(() => new Set((connectionDetails.value?.accounts ?? []).map((a) => a.id)));
 
@@ -799,7 +825,7 @@ const handleSaveConnectionName = ({
 };
 
 const handleSyncSelectedAccounts = (payload: { externalIds: string[]; currencyOverrides: Record<string, string> }) => {
-  if (payload.externalIds.length === 0) return;
+  if (payload.externalIds.length === 0 || isSyncingAccounts.value) return;
   syncAccountsMutation(payload);
 };
 

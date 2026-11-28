@@ -4,6 +4,7 @@ import { IdColumn } from '@common/types/id-column';
 import Accounts from '@models/accounts.model';
 import Users from '@models/users.model';
 import { encryptCredentials, decryptCredentials } from '@services/bank-data-providers/utils/credential-encryption';
+import type { Optional } from 'sequelize';
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType, HasMany } from 'sequelize-typescript';
 
 /**
@@ -23,6 +24,11 @@ interface BankDataProviderConnectionsAttributes {
   updatedAt: Date;
 }
 
+type BankDataProviderConnectionCreationAttributes = Optional<
+  BankDataProviderConnectionsAttributes,
+  'id' | 'externalUrl' | 'isActive' | 'metadata' | 'lastSyncAt' | 'createdAt' | 'updatedAt'
+>;
+
 /**
  * BankDataProviderConnections model
  * Stores user connections to external bank data providers (Monobank, Enable Banking, etc.)
@@ -33,7 +39,10 @@ interface BankDataProviderConnectionsAttributes {
   tableName: 'BankDataProviderConnections',
   freezeTableName: true,
 })
-export default class BankDataProviderConnections extends Model<BankDataProviderConnectionsAttributes> {
+export default class BankDataProviderConnections extends Model<
+  BankDataProviderConnectionsAttributes,
+  BankDataProviderConnectionCreationAttributes
+> {
   @BelongsTo(() => Users, {
     as: 'user',
     foreignKey: 'userId',

@@ -11,6 +11,7 @@ export const ROUTES_NAMES = Object.freeze({
   accountsVehicleDetails: `${ROUTER_LAYOUTS.dashboard}.accounts.vehicle-details`,
   accountIntegrationDetails: `${ROUTER_LAYOUTS.dashboard}.account-integration-details`,
   bankCallback: `${ROUTER_LAYOUTS.dashboard}.bank-callback`,
+  plaidCallback: `${ROUTER_LAYOUTS.dashboard}.plaid-callback`,
   planned: `${ROUTER_LAYOUTS.dashboard}.planned`,
   plannedSubscriptions: `${ROUTER_LAYOUTS.dashboard}.planned.subscriptions`,
   plannedSubscriptionDetails: `${ROUTER_LAYOUTS.dashboard}.planned.subscription-details`,

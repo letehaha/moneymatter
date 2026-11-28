@@ -199,8 +199,6 @@ export const linkAccountToBankConnection = withTransaction(
       providerType: bankConnection.providerType as BANK_PROVIDER_TYPE,
     });
 
-    await bankConnection.update({ lastSyncAt: new Date() });
-
     const connectionGroup = await AccountGroup.findOne({
       where: { bankDataProviderConnectionId: connectionId, userId },
     });
@@ -216,6 +214,8 @@ export const linkAccountToBankConnection = withTransaction(
     }
 
     if (isQueuedSyncProvider) {
+      await bankConnection.update({ lastSyncAt: new Date() });
+
       // The bank balance is already in hand from fetchAccounts; write it now
       // or the account keeps the stale pre-link figure while the queue drains,
       // forever when the sync window returns nothing.
@@ -263,6 +263,7 @@ export const linkAccountToBankConnection = withTransaction(
     // The inline sync's SYNCING lands at once, its COMPLETED only on commit: a rollback would leave SYNCING.
     let updatedAccount: Accounts;
     try {
+      // Don't write the connection row before this: auth tracking updates it outside this transaction and would block on our lock.
       await syncTransactionsForAccount({
         connectionId,
         userId,

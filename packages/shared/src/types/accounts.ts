@@ -13,6 +13,7 @@ export enum ACCOUNT_TYPES {
   walutomat = 'walutomat', // walutomat provider connection
   simplefin = 'simplefin', // SimpleFIN Bridge provider connection
   akahu = 'akahu', // Akahu (NZ open banking) provider connection
+  plaid = 'plaid',
 }
 
 /**
@@ -25,6 +26,11 @@ export enum BANK_PROVIDER_TYPE {
   WALUTOMAT = 'walutomat',
   SIMPLEFIN = 'simplefin',
   AKAHU = 'akahu',
+  PLAID = 'plaid',
+}
+
+export interface PlaidLinkTokenResponse {
+  linkToken: string;
 }
 
 /**

@@ -106,6 +106,7 @@ services:
       # Hardcoded for the same reason as on the backend: the SPA needs to know
       # it is running self-hosted so its copy matches what the backend allows.
       IS_SELF_HOST: 'true'
+      PLAID_ENV: ${PLAID_ENV:-}
       # The landing page markets the hosted service, so "/" redirects straight
       # to /dashboard (or sign-in when logged out). Set SKIP_LANDING=false in
       # .env to serve the landing page instead.

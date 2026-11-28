@@ -188,6 +188,7 @@ export interface TransactionsAttributes {
      * the row changes account, so a relink of that account never retypes it.
      */
     originalSource?: { originalId: string; importedFrom: string | null; accountType: ACCOUNT_TYPES };
+    plaidAccountId?: string;
   } & Record<string, unknown>;
   commissionRate: Money;
   refCommissionRate: Money;

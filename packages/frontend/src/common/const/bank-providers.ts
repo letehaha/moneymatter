@@ -11,10 +11,10 @@ export interface ProviderRegion {
 interface ProviderMetainfo {
   nameKey: string;
   descriptionKey: string;
-  pricingLabelKey: string;
+  pricingLabelKey?: string;
   difficultyLabelKey: string;
   difficultyTooltipKey: string;
-  pricing: PricingType;
+  pricing?: PricingType;
   difficulty: DifficultyType;
   regions: ProviderRegion[];
 }
@@ -93,6 +93,14 @@ export const METAINFO_FROM_TYPE: Record<string, ProviderMetainfo> = {
     difficulty: 'easy',
     regions: [REGIONS.newZealand],
   },
+  [BANK_PROVIDER_TYPE.PLAID]: {
+    nameKey: 'pages.integrations.providers.plaid.name',
+    descriptionKey: 'pages.integrations.providers.plaid.description',
+    difficultyLabelKey: 'pages.integrations.labels.easySetup',
+    difficultyTooltipKey: 'pages.integrations.tooltips.plaid',
+    regions: [REGIONS.usa, REGIONS.canada],
+    difficulty: 'easy',
+  },
 };
 
 interface RegionFilterGroup {
@@ -124,6 +132,7 @@ export const providerMatchesRegionFilter = ({
 export const PROVIDER_DISPLAY_ORDER: readonly string[] = [
   BANK_PROVIDER_TYPE.LUNCHFLOW,
   BANK_PROVIDER_TYPE.SIMPLEFIN,
+  BANK_PROVIDER_TYPE.PLAID,
   BANK_PROVIDER_TYPE.AKAHU,
   BANK_PROVIDER_TYPE.MONOBANK,
   BANK_PROVIDER_TYPE.ENABLE_BANKING,

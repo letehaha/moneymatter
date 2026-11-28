@@ -11,7 +11,7 @@ export default createController(
     }),
     body: z.object({
       credentials: z.record(z.string(), z.unknown()),
-      providerName: z.string().optional(),
+      providerName: z.string().max(255).optional(),
       externalUrl: externalUrl().nullish(),
     }),
   }),

@@ -31,6 +31,10 @@
         "akahu": {
           "name": "Akahu",
           "description": "Sync transactions from New Zealand banks for free via an Akahu personal app"
+        },
+        "plaid": {
+          "name": "Plaid",
+          "description": "Connect supported banks through Plaid Link"
         }
       },
       "monobank": {
@@ -326,6 +330,14 @@
           "importFailed": "Failed to import accounts"
         }
       },
+      "plaid": {
+        "connectDescription": "Sign in to your bank through Plaid. Then choose which accounts MoneyMatter should sync.",
+        "continueButton": "Continue with Plaid",
+        "flowFailed": "Couldn't complete the Plaid connection. Try again.",
+        "restoredDescription": "This connection needs Plaid authorization again. Disconnect it without deleting your local accounts, then create a new Plaid connection without importing duplicate accounts. In each existing account's Data Connection settings, link the corresponding new bank account. When relinking a fresh Plaid Item on the same day as existing imported transactions, Plaid may assign new transaction IDs. Review same-day postings for duplicates.",
+        "resuming": "Resuming Plaid Link",
+        "resumeUnavailable": "There’s no Plaid session to resume in this tab. Return to Accounts and start again."
+      },
       "notifications": {
         "disconnectSuccess": "Integration disconnected successfully",
         "disconnectFailed": "Failed to disconnect integration",
@@ -485,7 +497,8 @@
         "lunchflow": "Just connect your banks on the LunchFlow side, then create and paste your LunchFlow API key",
         "simplefin": "SimpleFIN Bridge is a paid service. You create a bridge account, link your bank, and paste a setup token — no developer setup required.",
         "walutomat": "Requires generating an RSA key pair and uploading the public key to Walutomat dashboard",
-        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens"
+        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens",
+        "plaid": "No API key or setup token required."
       }
     },
     "connectionName": {

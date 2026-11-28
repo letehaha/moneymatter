@@ -91,6 +91,24 @@ EOF
 [ -n "$CSP_EXTRA_FORM_ACTION" ] || CSP_EXTRA_FORM_ACTION="$API_HTTP"
 [ -n "$CSP_EXTRA_ANALYTICS" ] || CSP_EXTRA_ANALYTICS="$POSTHOG_HOST"
 
+# Plaid is an opt-in SPA policy addition; neither credentials nor wildcards go to nginx.
+CSP_PLAID_SCRIPT=""
+CSP_PLAID_FRAME=""
+CSP_PLAID_CONNECT=""
+if [ "$IS_SELF_HOST" = "true" ]; then
+  PLAID_ENV="$(printf '%s' "${PLAID_ENV:-}" | tr -d '[:space:]')"
+  case "$PLAID_ENV" in
+    "" ) : ;;
+    sandbox) CSP_PLAID_CONNECT="https://sandbox.plaid.com/" ;;
+    production) CSP_PLAID_CONNECT="https://production.plaid.com/" ;;
+    * ) echo "WARNING: PLAID_ENV must be sandbox or production (got: $PLAID_ENV); Plaid stays disabled" >&2 ;;
+  esac
+  if [ -n "$CSP_PLAID_CONNECT" ]; then
+    CSP_PLAID_SCRIPT="https://cdn.plaid.com/link/v2/stable/link-initialize.js"
+    CSP_PLAID_FRAME="https://cdn.plaid.com/"
+  fi
+fi
+
 # 302, not 301: browsers cache a 301 indefinitely, which would keep redirecting
 # after the operator turns SKIP_LANDING back off.
 LANDING_REDIRECT=""
@@ -99,7 +117,8 @@ LANDING_REDIRECT=""
 # envsubst only touches the named placeholders; every other `$var` in the
 # template is an nginx runtime variable and must be left intact.
 export CSP_EXTRA_CONNECT CSP_EXTRA_FORM_ACTION CSP_EXTRA_ANALYTICS LANDING_REDIRECT LISTEN_PORT
-envsubst '$CSP_EXTRA_CONNECT $CSP_EXTRA_FORM_ACTION $CSP_EXTRA_ANALYTICS $LANDING_REDIRECT $LISTEN_PORT' \
+export CSP_PLAID_SCRIPT CSP_PLAID_FRAME CSP_PLAID_CONNECT
+envsubst '$CSP_EXTRA_CONNECT $CSP_EXTRA_FORM_ACTION $CSP_EXTRA_ANALYTICS $CSP_PLAID_SCRIPT $CSP_PLAID_FRAME $CSP_PLAID_CONNECT $LANDING_REDIRECT $LISTEN_PORT' \
   < /etc/nginx/templates/nginx.conf.template \
   > /etc/nginx/nginx.conf
 
