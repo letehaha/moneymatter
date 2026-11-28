@@ -563,48 +563,47 @@ const periodLabel = computed(() => {
   return `${format(from, 'MMM d, yyyy')} - ${format(to, 'MMM d, yyyy')}`;
 });
 
+const getSelectedBalance = ({ point }: { point: NetWorthComponentBalances }): number => {
+  switch (selectedBalanceType.value.value) {
+    case 'accounts':
+      return point.accountsBalance;
+    case 'portfolios':
+      return point.portfoliosBalance;
+    case 'ventures':
+      return point.venturesBalance;
+    case 'vehicles':
+      return point.vehiclesBalance;
+    case 'loans':
+      return point.loansBalance;
+    default:
+      return getEffectiveTotal(point);
+  }
+};
+
 // Chart data based on selected balance type
 const chartData = computed(() => {
   if (!balanceHistory.value) return [];
 
-  return balanceHistory.value.map((point) => {
-    const effectiveTotal = getEffectiveTotal(point);
-
-    let value: number;
-    switch (selectedBalanceType.value.value) {
-      case 'accounts':
-        value = point.accountsBalance;
-        break;
-      case 'portfolios':
-        value = point.portfoliosBalance;
-        break;
-      case 'ventures':
-        value = point.venturesBalance;
-        break;
-      case 'vehicles':
-        value = point.vehiclesBalance;
-        break;
-      case 'loans':
-        value = point.loansBalance;
-        break;
-      default:
-        value = effectiveTotal;
-    }
-
-    return {
-      date: startOfDay(new Date(point.date)).getTime(),
-      value,
-      accountsBalance: point.accountsBalance,
-      portfoliosBalance: point.portfoliosBalance,
-      venturesBalance: point.venturesBalance,
-      vehiclesBalance: point.vehiclesBalance,
-      loansBalance: point.loansBalance,
-      totalBalance: effectiveTotal,
-    };
-  });
+  return balanceHistory.value.map((point) => ({
+    date: startOfDay(new Date(point.date)).getTime(),
+    value: getSelectedBalance({ point }),
+    accountsBalance: point.accountsBalance,
+    portfoliosBalance: point.portfoliosBalance,
+    venturesBalance: point.venturesBalance,
+    vehiclesBalance: point.vehiclesBalance,
+    loansBalance: point.loansBalance,
+    totalBalance: getEffectiveTotal(point),
+  }));
 });
 
-const { spikePoints } = useSpikeDetection({ chartData, options: spikeSettings });
+// The previous period ends the day before this one starts, so its last point is
+// what the first day of the chart is compared against.
+const spikeBaseline = computed<number | null>(() => {
+  const prevPeriodLastEntry = prevPeriodBalance.value?.at(-1);
+  return prevPeriodLastEntry ? getSelectedBalance({ point: prevPeriodLastEntry }) : null;
+});
+
+const { spikePoints } = useSpikeDetection({ chartData, baseline: spikeBaseline, options: spikeSettings });
 
 // Plans only ever sit on money accounts, so the projection continues the accounts line
 // and the total line; the other balance types have nothing pending to add.
@@ -743,11 +742,11 @@ function openSpikePanel({ event, spike }: { event: MouseEvent; spike: SpikePoint
   spikePanel.y = y;
   spikePanel.spikePoint = spike;
 
-  // Compute per-component deltas from chartData
+  // Per-component deltas against the previous day; the first day uses the previous period's last point
   const spikeIndex = chartData.value.findIndex((d) => d.date === spike.date);
-  if (spikeIndex > 0) {
+  const prev = spikeIndex > 0 ? chartData.value[spikeIndex - 1] : prevPeriodBalance.value?.at(-1);
+  if (spikeIndex >= 0 && prev) {
     const curr = chartData.value[spikeIndex]!;
-    const prev = chartData.value[spikeIndex - 1]!;
     spikePanel.accountsDelta = curr.accountsBalance - prev.accountsBalance;
     spikePanel.portfoliosDelta = curr.portfoliosBalance - prev.portfoliosBalance;
   } else {

@@ -24,9 +24,12 @@ export const SPIKE_DEFAULTS = {
 
 export function useSpikeDetection({
   chartData,
+  baseline,
   options,
 }: {
   chartData: ComputedRef<{ date: number; value: number }[]>;
+  /** Value right before the first point, so the first point can be a spike too. */
+  baseline?: ComputedRef<number | null>;
   options?: ComputedRef<SpikeDetectionOptions>;
 }): {
   spikePoints: ComputedRef<SpikePoint[]>;
@@ -41,20 +44,22 @@ export function useSpikeDetection({
     const maxSpikes = Math.max(1, opts.maxSpikes ?? SPIKE_DEFAULTS.maxSpikes);
 
     const data = chartData.value;
-    if (data.length < 2) return [];
+    const baselineValue = baseline?.value ?? null;
 
     const candidates: SpikePoint[] = [];
 
-    for (let i = 1; i < data.length; i++) {
-      const prev = data[i - 1]!;
+    for (let i = 0; i < data.length; i++) {
+      const prevValue = i === 0 ? baselineValue : data[i - 1]!.value;
+      if (prevValue === null) continue;
+
       const curr = data[i]!;
 
-      const deltaAbsolute = curr.value - prev.value;
+      const deltaAbsolute = curr.value - prevValue;
 
       // Avoid division by zero — if previous value is 0, use absolute value as percent proxy
       let deltaPercent = 0;
-      if (prev.value !== 0) {
-        deltaPercent = (deltaAbsolute / Math.abs(prev.value)) * 100;
+      if (prevValue !== 0) {
+        deltaPercent = (deltaAbsolute / Math.abs(prevValue)) * 100;
       } else if (deltaAbsolute !== 0) {
         deltaPercent = 100;
       }
