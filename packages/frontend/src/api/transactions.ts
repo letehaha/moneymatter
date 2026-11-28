@@ -106,6 +106,8 @@ export const loadTransactions = async ({
   to?: string;
   amountLte?: number;
   amountGte?: number;
+    /** Compare the amount bounds in the base currency (refAmount) when 'base'; omit for the original currency. */
+    amountCurrency?: 'original' | 'base';
   /** Free text matched against note, payee name and tag names. Words are AND-ed. */
   search?: string;
   /** Case-insensitive substring match on the note field. Comma-separated terms are OR-ed. */
