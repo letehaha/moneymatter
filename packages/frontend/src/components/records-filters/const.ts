@@ -19,6 +19,7 @@ export interface FiltersStruct {
   transactionType: TRANSACTION_TYPES | null;
   amountGte: number | undefined;
   amountLte: number | undefined;
+    amountCurrency: 'original' | 'base' | undefined; 
   transferFilter: FILTER_OPERATION;
   refundFilter: FILTER_OPERATION;
   plannedFilter: FILTER_OPERATION;
@@ -44,6 +45,7 @@ export const DEFAULT_FILTERS: FiltersStruct = {
   transactionType: null,
   amountGte: undefined,
   amountLte: undefined,
+    amountCurrency: undefined,
   transferFilter: FILTER_OPERATION.all,
   refundFilter: FILTER_OPERATION.all,
   plannedFilter: FILTER_OPERATION.all,
