@@ -35,6 +35,7 @@ interface GetPivotReportParams {
   includeTransfers?: boolean;
   /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
   decimals: number;
+    timezone?: string;
 }
 
 /**
@@ -54,13 +55,14 @@ export const getPivotReport = async ({
   granularity,
   rowDimension,
   measure,
+    timezone,
   accountIds,
   categoryIds,
   payeeIds,
   includeTransfers,
   decimals,
 }: GetPivotReportParams): Promise<PivotReportResultMinor> => {
-  const buckets = generatePivotBuckets({ from, to, granularity });
+  const buckets = generatePivotBuckets({ from, to, granularity, timezone });
   const columnKeys = buckets.map((bucket) => getBucketKey({ periodStart: bucket.periodStart, granularity }));
 
   const { categories: allCategories, byId } = await getAccessibleCategoryMap({ userId });
@@ -124,7 +126,7 @@ export const getPivotReport = async ({
     columns.set(columnKey, (columns.get(columnKey) ?? 0) + minor);
   };
 
-  const bucketIndexForTime = (time: Date): number => findBucketIndex({ transactionTime: time, buckets });
+  const bucketIndexForTime = (time: Date): number => findBucketIndex({ transactionTime: time, buckets, timezone });
 
   await strategy.aggregate({
     transactions,
