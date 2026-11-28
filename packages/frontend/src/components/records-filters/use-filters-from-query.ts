@@ -71,6 +71,9 @@ export const useFiltersFromQuery = () => {
     if (query.amountLte) {
       filters.amountLte = Number(query.amountLte);
     }
+    if (query.amountCurrency === 'base' || query.amountCurrency === 'original') {
+        filters.amountCurrency = query.amountCurrency;
+    }
 
     if (typeof query.search === 'string' && query.search) {
       filters.search = query.search;
