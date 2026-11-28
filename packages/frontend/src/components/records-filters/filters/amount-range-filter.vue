@@ -29,6 +29,14 @@
       @update:model-value="$emit('update:amount-lte', $event)"
     />
   </div>
+    <label class="flex items-center gap-2 text-sm">
+          <input
+                  type="checkbox"
+                  :checked="amountCurrency === 'base'"
+                  @change="$emit('update:amount-currency', ($event.target as HTMLInputElement).checked ? 'base' : 'original')"
+                  />
+          <span v-text="$t('transactions.filters.amountRange.baseCurrency')" />
+        </label>
 </template>
 
 <script lang="ts" setup>
@@ -45,6 +53,7 @@ defineProps({
     type: Number,
     default: null,
   },
+    amountCurrency: { type: String as PropType<'original' | 'base'>, default: undefined, },
   /** Label-less variant for the inline filters toolbar; placeholders carry the meaning instead. */
   compact: {
     type: Boolean,
@@ -65,5 +74,5 @@ defineProps({
   },
 });
 
-defineEmits(['update:amount-gte', 'update:amount-lte']);
+defineEmits(['update:amount-gte', 'update:amount-lte', 'update:amount-currency']);
 </script>
