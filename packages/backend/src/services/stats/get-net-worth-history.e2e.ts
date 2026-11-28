@@ -123,6 +123,7 @@ describe('[Stats] Net worth history', () => {
           accountId: creditCard.id,
           amount: 500,
           transactionType: TRANSACTION_TYPES.expense,
+          time: monthTwoAgoStart.toISOString(),
         }),
         raw: true,
       });

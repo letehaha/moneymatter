@@ -317,6 +317,44 @@ describe('[Stats] Combined balance history', () => {
     }
   });
 
+  it('keeps past totals unchanged after a same-day transfer into an account created today', async () => {
+    const source = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ initialBalance: 10_000 }),
+      raw: true,
+    });
+    const preRangeDate = subDays(new Date(), 20);
+    preRangeDate.setHours(0, 0, 0, 0);
+    await Balances.update({ date: preRangeDate }, { where: { accountId: source.id } });
+
+    const target = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ initialBalance: 2_000 }),
+      raw: true,
+    });
+
+    await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({ accountId: source.id, amount: 5_000 }),
+        transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+        destinationAmount: 5_000,
+        destinationAccountId: target.id as RecordId,
+      },
+      raw: true,
+    });
+
+    for (const to of [new Date(), subDays(new Date(), 1)]) {
+      const data = (await helpers.getCombinedBalanceHistory({
+        from: format(subDays(new Date(), 7), 'yyyy-MM-dd'),
+        to: format(to, 'yyyy-MM-dd'),
+        raw: true,
+      })) as CombinedBalanceHistoryItem[];
+
+      expect(data.length).toBeGreaterThan(0);
+      for (const entry of data) {
+        expect(entry.accountsBalance).toBe(12_000);
+      }
+    }
+  });
+
   describe('Portfolio crypto intraday bucketing', () => {
     it('collapses same-UTC-day SecurityPricing rows onto one daily bucket, latest timestamp wins', async () => {
       // Test strategy: compare two API calls against the same portfolio. The
