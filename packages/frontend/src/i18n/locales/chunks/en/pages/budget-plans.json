@@ -14,6 +14,9 @@
       "accountsLabel": "Accounts on budget",
       "accountsPlaceholder": "Select accounts",
       "accountsRequired": "Keep at least one account",
+      "ignoredCategoriesLabel": "Ignored categories",
+      "ignoredCategoriesPlaceholder": "Select categories",
+      "ignoredCategoriesHint": "Left out of the spending outside your lines list. With the pool on, their spending still lowers ready to assign.",
       "autoAttachLabel": "Add new accounts automatically",
       "rolloverLabel": "Rollover default",
       "rolloverNote": "Each line can override this.",
@@ -343,7 +346,9 @@
       "toast": "Moved {amount} from {from} to {to}"
     },
     "unbudgeted": {
-      "summary": "Spending outside your lines: {amount} in {count} category | Spending outside your lines: {amount} in {count} categories"
+      "summary": "Spending outside your lines: {amount} in {count} category | Spending outside your lines: {amount} in {count} categories",
+      "ignore": "Ignore",
+      "ignored": "Category ignored. Manage ignored categories in budget settings."
     },
     "pool": {
       "readyToAssign": "Ready to assign",

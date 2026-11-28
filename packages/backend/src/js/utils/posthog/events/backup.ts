@@ -8,27 +8,21 @@ export function trackBackupExported({ userId, sizeBytes }: { userId: string | nu
   });
 }
 
-/**
- * `source_*` come from the archive's manifest, i.e. the account the backup was
- * exported from. A mismatch with the restoring user means data moved between accounts.
- */
+/** `false` means data moved between accounts; `null` when either email is unknown. */
 export function trackBackupRestored({
   userId,
-  sourceUsername,
-  sourceEmail,
+  sourceIsSameAccount,
   backupExportedAt,
 }: {
   userId: string | number;
-  sourceUsername?: string;
-  sourceEmail?: string | null;
+  sourceIsSameAccount: boolean | null;
   backupExportedAt?: string;
 }): void {
   trackEvent({
     userId,
     event: 'backup_restored',
     properties: {
-      source_username: sourceUsername,
-      source_email: sourceEmail,
+      source_is_same_account: sourceIsSameAccount,
       backup_exported_at: backupExportedAt,
     },
   });

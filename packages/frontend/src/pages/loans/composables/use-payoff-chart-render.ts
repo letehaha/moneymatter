@@ -48,6 +48,7 @@ interface UsePayoffChartRenderOptions {
 }
 
 const MOBILE_CHART_BREAKPOINT_PX = 400;
+const MIN_YEAR_LABEL_SPACING_PX = 48;
 // Approximation used ONLY to index into the per-month points array for hover snapping — never feeds
 // a displayed date or money math, so do not "fix" it into date-fns.
 const APPROX_MONTH_MS_FOR_HOVER_SNAP = 1000 * 60 * 60 * 24 * 30.4375;
@@ -141,7 +142,10 @@ export function usePayoffChartRender({
       });
 
     // X axis (years)
-    const yearTicks = xScale.ticks(d3.timeYear.every(isMobile ? 2 : 1) ?? d3.timeYear);
+    const yearSpan = domainEnd.getFullYear() - today.getFullYear();
+    const maxYearLabels = Math.max(1, Math.floor(innerWidth / MIN_YEAR_LABEL_SPACING_PX));
+    const yearStep = Math.max(isMobile ? 2 : 1, Math.ceil(yearSpan / maxYearLabels));
+    const yearTicks = xScale.ticks(d3.timeYear.every(yearStep) ?? d3.timeYear);
     g.append('g')
       .attr('transform', `translate(0,${innerHeight})`)
       .call(

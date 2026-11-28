@@ -12,7 +12,7 @@ export const updateBudgetPlanTool = defineTool({
   access: 'write',
   feature: FEATURES.budget_plan,
   description:
-    'Change the settings of a budget plan. Send only the fields to change: name, autoAttachAccounts, carryPolicy, poolEnabled, zeroSum, expectedIncome (null clears it). The cadence, anchor date, epoch and type are fixed when the plan is created and cannot be changed. To change the accounts use set_budget_plan_accounts. Returns the plan with its accountIds and lines. Needs a plan that includes budget plans.',
+    'Change the settings of a budget plan. Send only the fields to change: name, autoAttachAccounts, carryPolicy, poolEnabled, zeroSum, expectedIncome (null clears it), ignoredCategoryIds. The cadence, anchor date, epoch and type are fixed when the plan is created and cannot be changed. To change the accounts use set_budget_plan_accounts. Returns the plan with its accountIds and lines. Needs a plan that includes budget plans.',
   input: {
     planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
     name: updatePlanBodyFields.name.describe('New name, 1 to 200 characters'),
@@ -30,6 +30,9 @@ export const updateBudgetPlanTool = defineTool({
     ),
     expectedIncome: updatePlanBodyFields.expectedIncome.describe(
       'Income expected per period, a non-negative decimal in the plan currency; null clears it',
+    ),
+    ignoredCategoryIds: updatePlanBodyFields.ignoredCategoryIds.describe(
+      'The full list of category IDs (subtrees included) to leave out of the unbudgeted list. Their spending still lowers the pool. An empty array clears it',
     ),
   },
   run: async ({ userId, args }) => {

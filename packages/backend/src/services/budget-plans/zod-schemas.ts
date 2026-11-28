@@ -48,6 +48,7 @@ export const updatePlanBodyFields = {
   poolEnabled: z.boolean().optional(),
   zeroSum: z.boolean().optional(),
   expectedIncome: boundedDecimalAmount().nullable().optional(),
+  ignoredCategoryIds: uniqueRecordIds({ max: 500 }).optional(),
 };
 
 export const updatePlanBodySchema = z.strictObject(updatePlanBodyFields);

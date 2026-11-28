@@ -1,4 +1,4 @@
-import { API_ERROR_CODES, RESOURCE_TYPES, SHARE_PERMISSIONS } from '@bt/shared/types';
+import { API_ERROR_CODES, NOTIFICATION_TYPES, RESOURCE_TYPES, SHARE_PERMISSIONS } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
@@ -27,6 +27,20 @@ describe('Read-only allowlist (enforceReadOnly)', () => {
 
     const readOne = await helpers.makeRequest({ method: 'post', url: `/notifications/${NONEXISTENT_ID}/read` });
     expect(readOne.statusCode).not.toBe(402);
+  });
+
+  it('lets a read-only user dismiss a notification', async () => {
+    const created = await helpers.makeRequest<{ id: string }, true>({
+      method: 'post',
+      url: '/notifications',
+      payload: { type: NOTIFICATION_TYPES.trackerAlert, title: 'To be dismissed' },
+      raw: true,
+    });
+    await becomeReadOnly();
+
+    const dismiss = await helpers.dismissNotification({ id: created.id, raw: true });
+    expect(dismiss.success).toBe(true);
+    expect(await helpers.getNotifications({ raw: true })).toHaveLength(0);
   });
 
   it('blocks a read-only invitee from accepting an invitation', async () => {

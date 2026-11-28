@@ -161,6 +161,10 @@
       "ventureNotTrashable": "Unlink it from the venture first to delete it.",
       "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
       "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
+    },
+    "plannedConfirmedNotification": {
+      "title_one": "{{count}} planned entry confirmed",
+      "title_other": "{{count}} planned entries confirmed"
     }
   },
   "budgets": {
@@ -325,8 +329,8 @@
     "linkPaymentsOverpayConfirmation": "These payments exceed the remaining balance. Confirming will pay the loan off; the extra won't be credited back.",
     "unlinkPaymentNotFound": "Loan payment not found.",
     "unlinkPaymentInvalidSelection": "This transaction is not a payment on this loan.",
-    "correctionAsOfBeforeStartDate": "currentBalanceAsOf cannot be earlier than the loan start date",
-    "correctionOverpay": "Corrected balance would overpay the loan by {{overpayAmount}}: payments totaling {{paymentsTotal}} are dated on/after {{asOfDate}}"
+    "correctionAsOfBeforeStartDate": "The \"Balance as of\" date can't be earlier than the loan's start date.",
+    "correctionOverpay": "This balance is too low: you've already recorded {{paymentsTotal}} in payments on or after {{asOfDate}}, which would overpay the loan by {{overpayAmount}}. Enter a higher balance or a later date."
   },
   "errors": {
     "connectionNotFound": "Connection not found",
@@ -912,7 +916,9 @@
       "passwordTooShort": "Password is too short.",
       "passwordTooLong": "Password is too long.",
       "reauthenticationRequired": "For your security, sign in again to make this change.",
-      "signupsDisabled": "Signups are disabled by the administrator."
+      "signupsDisabled": "Signups are disabled by the administrator.",
+      "appleNonceInvalid": "Apple sign-in could not be verified. Please try again.",
+      "appleNonceServerMismatch": "Apple sign-in was refused: the address you connected to does not match this server's configured address (BETTER_AUTH_URL)."
     }
   },
   "backup": {
@@ -971,5 +977,15 @@
     "coveredByLifetime": "Your lifetime plan already includes everything in this gift. You can pass the code on to someone else.",
     "cancelAppStoreFirst": "Your subscription renews through the App Store. Turn off auto-renewal in your Apple ID settings, then redeem the gift. It will start when your paid period ends.",
     "checkoutBlocked": "You have a gift subscription until {{date}}. You can subscribe once it ends."
+  },
+  "sharing": {
+    "permissions": {
+      "read": "View only",
+      "write": "Can edit",
+      "manage": "Can manage"
+    },
+    "householdPermissionChangedNotification": {
+      "title": "Your access to {{household}} is now \"{{permission}}\""
+    }
   }
 }

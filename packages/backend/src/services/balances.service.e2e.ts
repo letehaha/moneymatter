@@ -91,8 +91,9 @@ describe('Balances service', () => {
       const finalBalancesHistory = await callGetBalanceHistory(accountData.id);
 
       expect(finalBalancesHistory.statusCode).toEqual(200);
-      expect(helpers.extractResponse(finalBalancesHistory).length).toEqual(1);
-      expect(helpers.extractResponse(finalBalancesHistory)[0].amount).toEqual(
+      expect(helpers.extractResponse(finalBalancesHistory).length).toEqual(2);
+      expect(helpers.extractResponse(finalBalancesHistory)[0].amount).toEqual(Number(accountData.initialBalance));
+      expect(helpers.extractResponse(finalBalancesHistory)[1].amount).toEqual(
         // since we have 2 expenses and 1 income, we can check for 1 expense
         Number(accountData.currentBalance) - expense.amount,
       );
@@ -166,9 +167,10 @@ describe('Balances service', () => {
 
       const afterBalance = await callGetBalanceHistory(accountData.id, true);
 
-      expect(afterBalance.length).toBe(2);
-      expect(afterBalance.at(0).amount).toBe(Number(accountData.initialBalance) + income.amount);
-      expect(afterBalance.at(1).amount).toBe(Number(accountData.initialBalance) - expense.amount + income.amount);
+      expect(afterBalance.length).toBe(3);
+      expect(afterBalance.at(0).amount).toBe(Number(accountData.initialBalance));
+      expect(afterBalance.at(1).amount).toBe(Number(accountData.initialBalance) + income.amount);
+      expect(afterBalance.at(2).amount).toBe(Number(accountData.initialBalance) - expense.amount + income.amount);
 
       // Then create a transaction BEFORE account creation date
       await helpers.createTransaction({
@@ -500,7 +502,7 @@ describe('Balances service', () => {
       const transactionId = transactionResponse[0].id;
 
       const initialHistory = helpers.extractResponse(await callGetBalanceHistory(accountData.id));
-      expect(initialHistory[0].amount).toBe(initialBalance - expenseAmount);
+      expect(initialHistory.at(-1).amount).toBe(initialBalance - expenseAmount);
 
       // Update the transaction with the same amount
       await helpers.updateTransaction({
@@ -510,7 +512,7 @@ describe('Balances service', () => {
 
       // Verify the balance is unchanged
       const updatedHistory = helpers.extractResponse(await callGetBalanceHistory(accountData.id));
-      expect(updatedHistory[0].amount).toBe(initialBalance - expenseAmount);
+      expect(updatedHistory.at(-1).amount).toBe(initialBalance - expenseAmount);
     });
     it.todo('creation transfer transactions');
     it.todo('updating expense/income => transfer => expense/income');

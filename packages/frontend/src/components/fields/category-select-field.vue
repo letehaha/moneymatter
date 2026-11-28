@@ -83,8 +83,8 @@
                   class="shrink-0"
                 />
                 <span
-                  class="text-muted-foreground min-w-0 flex-1 truncate text-left"
-                  :class="{ 'text-foreground': selectedValue }"
+                  class="min-w-0 flex-1 truncate text-left"
+                  :class="selectedValue ? 'text-foreground' : 'text-muted-foreground'"
                 >
                   {{ selectedValue?.name || placeholder }}
                 </span>
@@ -175,8 +175,8 @@
               class="shrink-0"
             />
             <span
-              class="text-muted-foreground min-w-0 flex-1 truncate text-left"
-              :class="{ 'text-foreground': selectedValue }"
+              class="min-w-0 flex-1 truncate text-left"
+              :class="selectedValue ? 'text-foreground' : 'text-muted-foreground'"
             >
               {{ selectedValue?.name || placeholder }}
             </span>

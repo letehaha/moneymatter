@@ -72,11 +72,23 @@ describe('progressDealStatus', () => {
     ).toBe(VENTURE_DEAL_STATUS.written_off);
   });
 
-  it('writedown with navAfter>0 → partial_exit (still some value)', () => {
+  it('writedown with navAfter>0 → outstanding (no money moved)', () => {
     expect(
       progressDealStatus({
         events: [
           { type: VENTURE_EVENT_TYPE.initial_investment, navAfter: null },
+          { type: VENTURE_EVENT_TYPE.writedown, navAfter: '5000' },
+        ],
+      }),
+    ).toBe(VENTURE_DEAL_STATUS.outstanding);
+  });
+
+  it('writedown with navAfter>0 after a distribution → partial_exit', () => {
+    expect(
+      progressDealStatus({
+        events: [
+          { type: VENTURE_EVENT_TYPE.initial_investment, navAfter: null },
+          { type: VENTURE_EVENT_TYPE.distribution, navAfter: null },
           { type: VENTURE_EVENT_TYPE.writedown, navAfter: '5000' },
         ],
       }),

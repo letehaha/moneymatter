@@ -395,6 +395,22 @@ const renderChart = () => {
       onLeave: handleMouseLeave,
       hitBand: true,
     });
+
+    // A % badge under the average label would be unreadable; the bar's tooltip still shows it.
+    const labelBox = g.select<SVGRectElement>('.average-label-bg').node()?.getBBox();
+    if (labelBox) {
+      badgeGroups
+        .filter(function () {
+          const box = this.getBBox();
+          return (
+            box.x < labelBox.x + labelBox.width &&
+            labelBox.x < box.x + box.width &&
+            box.y < labelBox.y + labelBox.height &&
+            labelBox.y < box.y + box.height
+          );
+        })
+        .remove();
+    }
   }
 };
 

@@ -91,26 +91,12 @@ export function initSentry(): void {
  * Set user context for error tracking.
  * Call this in authentication middleware.
  */
-export function setSentryUser({
-  userId,
-  email,
-  username,
-  sessionId,
-}: {
-  userId: string | number;
-  email?: string;
-  username?: string;
-  sessionId?: string | null;
-}): void {
+export function setSentryUser({ userId, sessionId }: { userId: string | number; sessionId?: string | null }): void {
   if (!isSentryEnabled()) {
     return;
   }
 
-  Sentry.setUser({
-    id: String(userId),
-    email,
-    username,
-  });
+  Sentry.setUser({ id: String(userId) });
 
   // Add sessionId as a tag for easier filtering
   if (sessionId) {
@@ -129,7 +115,7 @@ export function captureException({
 }: {
   error: Error | unknown;
   context?: Record<string, unknown>;
-  user?: { id: string | number; email?: string; username?: string };
+  user?: { id: string | number };
 }): void {
   if (!isSentryEnabled()) {
     return;
@@ -140,11 +126,7 @@ export function captureException({
       scope.setExtras(context);
     }
     if (user) {
-      scope.setUser({
-        id: String(user.id),
-        email: user.email,
-        username: user.username,
-      });
+      scope.setUser({ id: String(user.id) });
     }
     Sentry.captureException(error);
   });

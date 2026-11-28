@@ -288,7 +288,30 @@
     },
     "unrealizedLossAlert": {
       "title_one": "{{count}} pozícia prekročila vaše upozornenie na stratu",
-      "title_other": "{{count}} pozícií prekročilo vaše upozornenie na stratu"
+      "title_other": "{{count}} pozícií prekročilo vaše upozornenie na stratu",
+      "emailCta": "Otvoriť investície",
+      "emailFooter": "Tento e-mail dostávate, pretože ste v Nastaveniach zapli e-mail pre upozornenia na nerealizovanú stratu."
+    },
+    "watchlist": {
+      "itemNotFound": "Položka zoznamu sledovaných sa nenašla",
+      "sectionNotFound": "Sekcia zoznamu sledovaných sa nenašla",
+      "alertNotFound": "Ipozornenie zoznamu sledovaných sa nenašlo",
+      "securityAlreadyWatched": "Tento cenný papier už je v zozname sledovaných",
+      "layoutInvalid": "Rozloženie musí obsahovať každú sekciu raz a každú položku najviac raz",
+      "alertThresholdInvalid": "Cenové upozornenie vyžaduje cenu a upozornenie na denný pohyb vyžaduje percento",
+      "alertChannelRequired": "Vyberte aspoň jeden spôsob upozornenia",
+      "tooManyItems": "Zoznam sledovaných môže obsahovať najviac {{max}} cenných papierov",
+      "tooManySections": "Zoznam sledovaných môže mať najviac {{max}} sekcií",
+      "tooManyAlerts": "Cenný papier v zozname sledovaných môže mať najviac {{max}} upozornení"
+    },
+    "watchlistAlert": {
+      "closeAbove": "{{symbol}} zatvoril nad {{price}} {{currency}}",
+      "closeBelow": "{{symbol}} zatvoril pod {{price}} {{currency}}",
+      "dailyMove": "{{symbol}} sa za deň pohol o {{change}} %",
+      "message": "Zatvorenie dňa {{date}}: {{close}} {{currency}}",
+      "emailCta": "Otvoriť zoznam sledovaných",
+      "emailFooter": "Tento e-mail dostávate, pretože ste zapli e-mail pre tieto upozornenia zo zoznamu sledovaných.",
+      "digestSubject": "Spustené upozornenia zo zoznamu sledovaných: {{count}}"
     }
   },
   "landingFaq": {
@@ -940,5 +963,13 @@
   },
   "backgroundJobs": {
     "notFound": "Táto úloha už nebeží – server sa mohol reštartovať. Skúste to znova, prosím."
+  },
+  "gifts": {
+    "invalidCode": "Tento darčekový kód nie je platný. Skontrolujte, či v ňom nie je preklep.",
+    "alreadyRedeemed": "Tento darčekový kód už bol uplatnený.",
+    "expired": "Platnosť tohto darčekového kódu vypršala.",
+    "coveredByLifetime": "Váš doživotný plán už obsahuje všetko, čo je v tomto darčeku. Kód môžete odovzdať niekomu inému.",
+    "cancelAppStoreFirst": "Vaše predplatné sa obnovuje cez App Store. Vypnite automatické obnovovanie v nastaveniach Apple ID a potom uplatnite darček. Začne platiť po skončení vášho zaplateného obdobia.",
+    "checkoutBlocked": "Máte darčekové predplatné do {{date}}. Predplatiť si môžete po jeho skončení."
   }
 }

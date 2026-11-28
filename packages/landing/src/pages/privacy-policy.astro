@@ -79,7 +79,7 @@ const lastUpdated = 'November 3, 2026';
         </p>
         <p>
           <strong class="text-foreground">Billing Data:</strong> If you subscribe on the web, Stripe collects your
-          payment details and billing address directly; we never receive your card number. We store the Stripe
+          email address, payment details and billing address directly; we never receive your card number. We store the Stripe
           customer and subscription identifiers and the status, plan and renewal date of your subscription. If you
           subscribe in the iOS app, Apple collects your payment details directly. We receive the signed transaction
           and Apple's subscription updates, and we store the App Store transaction identifier, the status, plan and
@@ -159,7 +159,7 @@ const lastUpdated = 'November 3, 2026';
           </li>
           <li>
             Error monitoring (Sentry) and product analytics (PostHog), used only to run and improve the Service. Both
-            receive your app user ID, email address and username, which we derive from your name or email address.
+            receive your app user ID, and PostHog also receives your email address.
             PostHog also receives product usage events and account properties such as your plan. Sentry also receives
             error reports, which can include a session replay with text and media masked
           </li>

@@ -8,7 +8,7 @@ sidebar:
 import { Aside, Badge, Steps } from '@astrojs/starlight/components';
 import Screenshot from '~/components/screenshot.astro';
 
-Transactions from a [bank connection](/import/bank-connections/) belong to your bank, so you can't delete them from **Edit Transaction**. Most of the time that's what you want. But now and then a bank sends something wrong: the same payment twice, a card hold that was never charged, or a pending payment that sits there for weeks. **Reconciliation** is where you clean those up, without losing the ability to undo it.
+Transactions from a [bank connection](/import/bank-connections/) belong to your bank, so you can't delete them from **Edit transaction**. Most of the time that's what you want. But now and then a bank sends something wrong: the same payment twice, a card hold that was never charged, or a pending payment that sits there for weeks. **Reconciliation** is where you clean those up, without losing the ability to undo it.
 
 ## When to use it
 
@@ -131,7 +131,7 @@ When every stuck transaction is older than 90 days, there's nothing to check, so
 
 ### The daily reminder
 
-Once a day, MoneyMatter checks for transactions that have been pending for more than a week. If it finds some, you get a notification: **Some card payments haven't cleared**. Click it to open the **Stuck pending** tab.
+Once a day, MoneyMatter checks for transactions that have been pending for more than a week. If it finds some, you get a [notification](/settings/notifications/): **Some card payments haven't cleared**. Click it to open the **Stuck pending** tab.
 
 You won't get another reminder while the last one is unread, or until a new transaction gets stuck. The reminder doesn't sync with your bank. Use **Check with bank** for that.
 
@@ -165,3 +165,4 @@ Restoring brings back every transaction removed in that entry. They count in you
 - [Import pending bank transactions](/settings/general-settings/#import-pending-bank-transactions)
 - [Link existing transactions](/transfers-and-refunds/link-existing-transactions/)
 - [Transaction groups](/transactions/groups/)
+- [Automations](/transactions/automations/)

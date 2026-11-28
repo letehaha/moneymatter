@@ -42,14 +42,9 @@
       "transactionsLinked": "{count} transaction linked to this tracker | {count} transactions linked to this tracker",
       "tabs": {
         "statistics": "Statistics",
-        "transactions": "Transactions",
-        "sharing": "Sharing"
+        "transactions": "Transactions"
       },
       "statistics": {
-        "tabs": {
-          "categories": "Categories",
-          "timeline": "Timeline"
-        },
         "errorTitle": "Failed to load statistics",
         "errorDescription": "Something went wrong while loading the data. Please try again later.",
         "noDataTitle": "No spending data",

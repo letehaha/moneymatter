@@ -131,3 +131,13 @@ export async function mockBudgetPool({ page, planId, periodId, readyToAssign }) 
     await route.fulfill({ response: res, json: body });
   });
 }
+
+/** Marks sent invitations as emailed, hiding the dev server's "Email sending not configured" warning. */
+export async function mockInvitationEmailConfigured({ page }) {
+  await page.route(/\/api\/v1\/share\/invitations\/sent$/, async (route) => {
+    const res = await route.fetch();
+    const body = await res.json();
+    for (const inv of body.response) inv.emailConfigured = true;
+    await route.fulfill({ response: res, json: body });
+  });
+}

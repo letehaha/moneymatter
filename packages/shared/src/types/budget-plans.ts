@@ -93,6 +93,8 @@ export interface BudgetPlanModel {
   /** Keep Ready to Assign at 0. Only `true` while the pool is on. */
   zeroSum: boolean;
   expectedIncome: number | null;
+  /** Categories (subtrees included) left out of `unbudgeted`; their spending still lowers the pool. */
+  ignoredCategoryIds: string[];
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

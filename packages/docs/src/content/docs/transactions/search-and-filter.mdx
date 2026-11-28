@@ -8,9 +8,9 @@ sidebar:
 import { Aside, Steps } from '@astrojs/starlight/components';
 import Screenshot from '~/components/screenshot.astro';
 
-The **All Transactions** page shows every transaction across your accounts. Filters narrow it down, and selecting rows lets you change or delete many transactions in one go.
+The **All transactions** page shows every transaction across your accounts. Filters narrow it down, and selecting rows lets you change or delete many transactions in one go.
 
-To open it, go to the sidebar and choose **Transactions** → **All Transactions**.
+To open it, go to the sidebar and choose **Transactions** → **All transactions**.
 
 ## List view and table view
 
@@ -29,10 +29,13 @@ On a computer the page opens in **Table view**; on a phone it opens in **List vi
 
 ### Working with the table
 
-- **Open a transaction:** click its row.
+- **Edit a cell:** click a **Date**, **Account**, **Category**, **Payee**, **Amount**, **Note** or **Tags** cell to change it right in the table. Click **Save** or press Enter.
+- **Open a transaction:** click the arrow icon (↗, **Open details**) at the end of its row. Clicking a cell you can't edit in place, such as **Base amount**, opens it too.
 - **Sort:** click a column header. You can sort by **Date**, **Category**, **Amount**, **Base amount**, **Account**, **Payee**, **Note** and **Categorized by**. The default is **Date**, newest first.
 - **Choose columns:** open **Table settings** to show, hide and reorder columns, or click **Reset to defaults**. The available columns are **Date**, **Account**, **Category**, **Payee**, **Amount**, **Base amount**, **Original amount**, **Note**, **Tags**, **Categorized by**, **Group**, **Refund** and **Split**. **Categorized by** shows what set each transaction's category, for example **Manual** when you changed the category on an existing transaction (a category picked while creating the transaction leaves this blank), or **Payee rule** when a payee set to **Always use payee category** filled it in.
 - **Focus mode:** click **Focus mode** to hide the rest of the app and give the table the whole screen. Press Esc or click **Close** (**Exit focus mode** on a phone) to return.
+
+Some cells can't be edited in place. On a transfer, a split transaction or a payment split across accounts, clicking the date, account or amount opens the full transaction instead. Cells filled in by your bank (the date, account and amount of a synced transaction) and transactions that belong to a portfolio, venture, vehicle or loan are locked: they're shaded when you hover the row, and clicking one tells you why. Turn on **Always show locked cells** in **Table settings** to mark them on every row.
 
 Sorting by **Amount** uses each transaction's value in your base currency, so a list with several currencies still sorts in a sensible order.
 
@@ -56,16 +59,18 @@ Your filters and sorting stay in place while you move around the app in the same
 
 | Filter | What it does |
 | --- | --- |
-| Date | Pick a date or a range, or use a preset: **This month**, **Last 3 months**, **Last 6 months**, **Last 12 months**. |
+| Date | Pick a date or a range, or use a preset: **This month**, **Last month**, **Last 3 months**, **Last 6 months**, **Last 12 months**, **This year**, **Last year**. |
 | Accounts | Only transactions on the accounts you pick. Archived accounts are listed too. |
 | Categories | Only transactions in the categories you pick. Picking a parent category also picks all its subcategories. |
-| **Transaction type** | **All types**, **Income** or **Expense**. |
+| **Type** | **All types**, **Income** or **Expense**. |
 | **Amount range** | A minimum and/or maximum amount. |
 | **Tags** | Transactions with any of the tags you pick. Choose **No tags** to find untagged transactions. |
 | **Payees** | Transactions with any of the payees you pick. Choose **No payee** to find ones without a payee. |
+| **Trackers** | Transactions in any of the [trackers](/planned/trackers/) you pick. Choose **Not in any tracker** to find ones that aren't in any (see [find a tracker's transactions](/planned/trackers/#find-a-trackers-transactions-on-the-transactions-page)). |
 | **Refunds** | **All**, **Exclude** or **Only** transactions that are part of a refund link: both the refund and the purchase it refunds. |
 | **Transfers** | **All**, **Exclude** or **Only** transfers. |
-| **Transfer kinds** | Narrow transfers down by kind, such as **Between accounts** or **Out of wallet** (see [how transfers work](/transfers-and-refunds/how-transfers-work/)). Has no effect when **Transfers** is set to **Exclude**. |
+| **Transfer kinds** | Narrow transfers down by kind: **Between accounts**, **Out of wallet**, **To portfolio** or **To venture** (see [kinds of transfer](/transfers-and-refunds/how-transfers-work/#kinds-of-transfer)). Loan payments have no kind of their own. Has no effect when **Transfers** is set to **Exclude**. |
+| **Planned** | **All**, **Exclude** or **Only** [planned transactions](/planned/planned-transactions/). |
 | **Attachments** | **All**, **Exclude** or **Only** transactions that have attachments. |
 
 A few details worth knowing:
@@ -73,6 +78,7 @@ A few details worth knowing:
 - **The amount filter uses each transaction's own currency**, not your base currency. A filter of "at least 100" matches 100 EUR on a euro account and 100 USD on a dollar account.
 - **The categories filter also looks inside splits.** A transaction split between Groceries and Drug-store, chemist shows up when you filter by either one, and the whole transaction is listed. See [split a transaction](/transactions/split-a-transaction/).
 - **Refunds and Transfers both set to Only** show transactions that are refunds *or* transfers.
+- **Loan payments have no transfer kind of their own.** They show while every kind in **Transfer kinds** is ticked, and are hidden as soon as you untick any kind.
 
 ### Search
 
@@ -86,6 +92,24 @@ Type several words to narrow the results. A transaction matches only if it conta
 To find transactions by category or amount, use the **Categories** or **Amount** filter.
 </Aside>
 
+### Saved views
+
+A view stores your current filters and sorting under a name, so you can bring them back in one click. Views are saved to your account, so they're on every device you sign in on.
+
+<Steps>
+
+1. Set up the filters and sorting you want.
+2. Click **Views** and choose **Save as new view**.
+3. Enter a **Name** and click **Save**.
+
+</Steps>
+
+To use a view, click **Views** and pick it. While a view is applied, the button shows its name. If you change the filters afterwards, a dot appears on the button, and the **Views** menu offers to update the view with your current filters. In list view on a wide screen, the filters panel also shows a bar with **Update view** and **Revert**.
+
+The **This month**, **Last 3 months**, **Last 6 months** and **Last 12 months** date presets stay rolling in a view: a view saved with **This month** always shows the current month. Any other date range is saved as fixed dates.
+
+Each view in the list has a **View actions** menu with **Rename**, **Move up**, **Move down** and **Delete**. You can have up to 50 views.
+
 ### Open the list from a category
 
 In **Settings** → **Categories**, the menu next to a category has **View transactions**. It opens this page filtered to that one category. Unlike picking a parent in the categories filter, this doesn't include its subcategories. See [categories](/transactions/categories/).
@@ -95,9 +119,11 @@ In **Settings** → **Categories**, the menu next to a category has **View trans
 Tick the checkbox on a row to select it. You can also:
 
 - Hold **Shift** and click another checkbox to select everything in between.
-- Tick the checkbox in the table's header row (in list view, **Select all**) to select every transaction currently loaded.
+- Tick the checkbox in the table's header row (in list view, **Select all**) to select every transaction that matches your filters, including ones further down that haven't loaded yet. Untick rows to leave them out.
 
-The bar at the top shows how many rows are selected, with totals in your base currency: **Income**, **Expense**, **Net** and **Transfers**. Transfers between your own accounts are shown on their own and never counted in **Net**, since moving money between your accounts doesn't make you richer or poorer. Out of wallet transfers, including balance adjustments, count as income or expense here, even though your [stats](/stats/how-stats-are-calculated/) leave them out.
+Before you select anything, the bar at the top shows **Total:** and the number of transactions that match your filters. Once you select rows, it shows how many are selected. Either way it adds them up in your base currency: **Income**, **Expense**, **Net** and **Transfers**.
+
+**Transfers** collects money moved between your own accounts, loan payments, and transfers to a portfolio or venture. It's never counted in **Net**, since that money stays yours. Out of wallet transfers, including balance adjustments, count as income or expense here, even though your [stats](/stats/how-stats-are-calculated/) leave them out.
 
 <Screenshot
   src="/screenshots/transactions/bulk-selection-toolbar.png"
@@ -106,9 +132,9 @@ The bar at the top shows how many rows are selected, with totals in your base cu
 />
 
 <Aside type="note" title="Good to know">
-- **Selecting all only picks what's loaded.** The page loads more transactions as you scroll, so scroll to the end first if you want everything that matches.
+- **Grouping needs every row loaded.** After **Select all**, **Group** stays unavailable until you scroll to the end of the list. **Edit** and **Delete** work on everything that matches right away, but you can delete at most 500 transactions at once.
 - **Changing filters or sorting clears the selection.** The list reloads from the top, so you start a fresh selection.
-- **Split transactions can't be selected.** Bulk editing doesn't support them, so edit them one at a time.
+- **Transactions on accounts shared with you can't be selected.** Edit them one at a time. See [household and sharing](/settings/household-and-sharing/).
 </Aside>
 
 With rows selected you can **Edit**, **Group** or **Delete** them. On a phone, list view puts these actions in a menu; table view shows them as icon buttons. In table view, **Cancel selection** clears the selection.
@@ -152,7 +178,7 @@ A group bundles related transactions under one name, for example a salary and th
 
 1. Select at least two transactions.
 2. Click **Group** → **Create new group**.
-3. Enter a **Name** and, if you like, a **Note (optional)**, then click **Create Group**.
+3. Enter a **Name** and, if you like, a **Note (optional)**, then click **Create group**.
 
 </Steps>
 
@@ -163,7 +189,7 @@ To add transactions to a group you already have:
 1. Select one or more transactions.
 2. Click **Group** → **Add to existing group**.
 3. Pick the group. Use **Search groups...** if you have many.
-4. Click **Add to Group**.
+4. Click **Add to group**.
 
 </Steps>
 
@@ -184,9 +210,14 @@ You'll find your groups in the sidebar under **Transactions** → **Groups**. To
 
 </Steps>
 
-This can't be undone. If a selected transaction is one side of a transfer, both sides are deleted.
+Deleted transactions go to [**Trash**](/transactions/trash/), where they stay for 30 days and you can restore them until then. Click **Undo** in the message that appears right after to bring them all back at once. If a selected transaction is one side of a transfer, both sides move to Trash.
 
-If any selected transaction came from a bank connection, the **Delete** button is disabled and nothing is deleted. Bank-synced transactions can't be deleted, so remove them from the selection first. If a selected transfer has its other side on a bank-connected account, the bulk delete fails and nothing in the selection is deleted. Take that transfer out of the selection. Transfers like this can't be deleted, not even one at a time. See [bank-synced transactions](/transactions/add-and-edit/#bank-synced-transactions).
+Some transactions are skipped and stay where they are:
+
+- **Transactions linked to a payment, a portfolio or a venture.** The message after deleting says how many were skipped. Remove them from the payment, or unlink them from the portfolio or venture, first.
+- **Transactions from a bank connection.** If the selection includes any, or any manual transaction dated on or after the day the account was linked to the bank, the **Delete** button is disabled. Remove them from the selection first. See [bank-synced transactions](/transactions/add-and-edit/#bank-synced-transactions).
+
+If a selected transfer has its other side on a bank-connected account, the delete fails and nothing in the selection is deleted. Take that transfer out of the selection.
 
 ## Related
 

@@ -149,6 +149,7 @@ describe('Household cleanup + notification lifecycle', () => {
       });
       expect(permissionNote).not.toBeNull();
       expect((permissionNote!.payload as { permission: string }).permission).toBe(SHARE_PERMISSIONS.write);
+      expect(permissionNote!.title).toContain('"Can edit"');
 
       // Policy changes are user-visible (writeScope flips between `all` and `own`), so
       // we surface them through the same notification. The recipient otherwise has no

@@ -53,11 +53,12 @@ Most have subcategories, for example **Groceries**, **Restaurant, fast-food** an
 
 <Steps>
 
-1. On the **Categories** page, click **Add Category**.
+1. On the **Categories** page, click **Add category**.
 2. Enter a **Category name** (up to 200 characters).
 3. Leave **Parent category** on **Top level**, or pick a parent to make it a subcategory.
 4. Pick a **Color** and an **Icon**.
-5. Click **Create**.
+5. Optionally pick **Default tags**. See [default tags](#default-tags).
+6. Click **Create**.
 
 </Steps>
 
@@ -83,16 +84,22 @@ Categories can be nested **up to three levels deep**, for example Food & Drinks 
 
 ## Edit a category
 
-Open the **⋮** menu next to the category and choose **Edit**. In **Edit Category** you can change the **Category name**, **Parent category**, **Color** and **Icon**. Click **Save**.
+Open the **⋮** menu next to the category and choose **Edit**. In **Edit category** you can change the **Category name**, **Parent category**, **Color**, **Icon** and **Default tags**. Click **Save**.
 
 Changes apply everywhere at once, including past transactions, since they point to the category rather than a copy of its name.
+
+### Default tags
+
+**Default tags** are added to a transaction when you pick the category in the transaction form. Pick another category and only those automatic tags are swapped. Tags you added yourself stay.
+
+Once you've picked a default tag, the **Also apply when AI categorizes a transaction** checkbox appears. Tick it to add the tags when [AI categorization](/ai/ai-features/#transaction-categorization) puts a transaction in this category too. Those tags stay on the transaction if you change its category later.
 
 ## Move a category
 
 Moving a category takes its subcategories and all its transactions along. You have three ways to do it:
 
 - **Move to…** in the **⋮** menu: choose the new parent and click **Move**.
-- **Parent category** in the **Edit Category** window.
+- **Parent category** in the **Edit category** window.
 - **Organize**: click **Organize** at the top of the page, then drag categories onto a new parent, or onto the top area to make them top-level. Moves are queued until you click **Save changes**, so you can rearrange several at once.
 
 **Organize** isn't available on touch screens. On a phone or tablet, use **Move to…** instead.
@@ -104,7 +111,7 @@ A move is refused if it would put a category inside its own subcategory, or push
 Open the **⋮** menu next to the category and choose **Delete**.
 
 - **If the category has no transactions**, confirm in the **Delete category?** window.
-- **If it has transactions**, the **Reassign Transactions** window shows how many there are. Pick a **New category** and click **Reassign & Delete**.
+- **If it has transactions**, the **Reassign transactions** window shows how many there are. Pick a **New category** and click **Reassign & delete**.
 
 Reassigning moves everything that used the old category to the new one in a single step:
 
@@ -114,7 +121,23 @@ Reassigning moves everything that used the old category to the new one in a sing
 
 Nothing is left without a category, and your totals stay the same; they just show up under the new category.
 
-Payees that used the deleted category as their **Default category** lose it; it isn't moved to the new category. Set it again on the payee's page (see [payees](/transactions/payees/#default-category)).
+The new category also takes the old one's place in:
+
+- [automations](/transactions/automations/) that used it in **Set category**,
+- the **Auto-add** categories and lines of your [trackers](/planned/trackers/),
+- your [budget](/budgeting/lines-and-groups/) lines. If another line already covers the new category, the two lines' amounts are merged into it,
+- your [recurring payments](/planned/recurring-payments/).
+
+Payees that used the deleted category as their **Default category** lose it. Set it again on the payee's page (see [payees](/transactions/payees/#default-category)).
+
+### Deleting a category without transactions
+
+A category with no transactions is deleted without a replacement, so anything that used it loses it:
+
+- Automations that use it are paused, with a note saying the category was removed. See [when a rule is paused](/transactions/automations/#when-a-rule-is-paused-for-you).
+- Trackers drop it from **Auto-add**. A tracker left with no category or tag there stops adding transactions automatically, and a tracker line left with no category is removed.
+- Budget lines drop it. A line left with no category is archived.
+- Payees and recurring payments that used it lose it.
 
 <Screenshot
   src="/screenshots/transactions/reassign-transactions-dialog.png"
@@ -130,7 +153,7 @@ You can't delete a category that still has subcategories. Delete them or move th
 
 The **⋮** menu has two shortcuts:
 
-- **View transactions** opens the **All Transactions** page filtered to this category. It shows this exact category only, without its subcategories. To include them, pick the parent in the [categories filter](/transactions/search-and-filter/#available-filters) instead.
+- **View transactions** opens the **All transactions** page filtered to this category. It shows this exact category only, without its subcategories. To include them, pick the parent in the [categories filter](/transactions/search-and-filter/#available-filters) instead.
 - **View analytics** opens this category's trends in [analytics](/stats/analytics-reports/).
 
 ## Categories in your stats
@@ -144,10 +167,12 @@ The **⋮** menu has two shortcuts:
 
 - **You can't create a category from the transaction form.** Add it here first, then pick it in the form.
 - **Changing a transaction's category by hand shows it as "Manual"** in the **Categorized by** column of the transactions table (moving it back to Other clears the label).
+- **Categories set by an [automation](/transactions/automations/) show as "User rule"** in the same column. An automation never overwrites a category you changed by hand.
 
 ## Related
 
 - [Add and edit transactions](/transactions/add-and-edit/)
 - [Split a transaction](/transactions/split-a-transaction/)
 - [Tags](/transactions/tags/)
+- [Automations](/transactions/automations/)
 - [How stats are calculated](/stats/how-stats-are-calculated/)

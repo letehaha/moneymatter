@@ -1,7 +1,7 @@
 {
   "automations": {
     "title": "Automations",
-    "subtitle": "Run on new transactions from bank sync and file imports. First matching rule wins — drag a rule to reorder.",
+    "subtitle": "Run on new transactions from bank sync, file imports, and API or MCP apps that ask for them. First matching rule wins — drag a rule to reorder.",
     "newAutomation": "New automation",
     "new": "New",
     "dragHint": "Drag to reorder",
@@ -19,8 +19,8 @@
       "disabled": "Only disabled",
       "empty": "No automations match this filter."
     },
-    "pausedMissingRef": "Paused — {refType} \"{label}\" was deleted",
-    "pausedMissingRefUnnamed": "Paused: a {refType} this rule referenced was deleted",
+    "pausedMissingRef": "Paused — {refType} \"{label}\" was removed",
+    "pausedMissingRefUnnamed": "Paused: a {refType} this rule referenced was removed",
     "matchStats": "{count} match · last {date} | {count} matches · last {date}",
     "matchStatsNever": "Never matched",
     "loadError": "Couldn't load automations. Check your connection and try again.",
@@ -67,7 +67,7 @@
     },
     "emptyState": {
       "title": "No automations yet",
-      "description": "Automations categorize, tag, and annotate transactions the moment they arrive from a bank sync or a file import.",
+      "description": "Automations categorize, tag, and annotate transactions the moment they arrive from a bank sync, a file import, or an API or MCP app that asks for them.",
       "cta": "Create your first automation"
     },
     "delete": {

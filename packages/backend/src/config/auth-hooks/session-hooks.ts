@@ -60,7 +60,6 @@ export function createSessionHooks({ pool }: { pool: Pool }) {
               userId: appUser.id,
               properties: {
                 email,
-                username: appUser.username,
                 is_demo: isDemo,
                 user_role: appUser.role,
               },

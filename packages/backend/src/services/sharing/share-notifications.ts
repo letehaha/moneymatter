@@ -9,8 +9,10 @@ import {
   SharePermission,
   SharePolicy,
 } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import Users from '@models/users.model';
 import { createNotification } from '@services/notifications';
+import { getUserSettings } from '@services/user-settings/get-user-settings';
 
 import { SHARE_SNAPSHOT_MISSING_USER_ID, snapshotShareUser } from './share-user-snapshot';
 import { formatHouseholdLabel } from './sharing-utils';
@@ -589,11 +591,19 @@ export const notifyHouseholdPermissionChanged = async ({
     policy: policy ?? null,
     counterpartUser: ownerSnapshot,
   };
+  const { locale } = await getUserSettings({ userId: recipientUserId });
 
   return createNotification({
     userId: recipientUserId,
     type: NOTIFICATION_TYPES.householdPermissionChanged,
-    title: `Your access to ${formatHouseholdLabel(ownerSnapshot.username)} is now ${permission}`,
+    title: t({
+      key: 'sharing.householdPermissionChangedNotification.title',
+      variables: {
+        household: formatHouseholdLabel(ownerSnapshot.username),
+        permission: t({ key: `sharing.permissions.${permission}`, locale }),
+      },
+      locale,
+    }),
     payload,
   });
 };

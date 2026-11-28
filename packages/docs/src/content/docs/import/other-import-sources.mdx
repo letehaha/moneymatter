@@ -17,7 +17,7 @@ All of them are in the same place: click the gear button (**Settings**), then un
 
 | You have | Use | Can add to accounts you already have? |
 |---|---|---|
-| A bank statement as a PDF, a receipt or screenshot, or text from an email | [Import from any Text Source](#import-from-any-text-source) | Yes |
+| A bank statement as a PDF, a receipt or screenshot, or text from an email | [Import from any text source](#import-from-any-text-source) | Yes |
 | A CSV file from your bank | [Import CSV](/import/import-from-csv/) | Yes |
 | An .ofx or .qfx file from your bank | [OFX or QFX statement](#ofx-or-qfx-statement) | Yes |
 | Your YNAB budget | [Import from YNAB](#ynab) | No, it always creates new accounts |
@@ -27,7 +27,7 @@ All of them are in the same place: click the gear button (**Settings**), then un
 
 Don't see your app? Click **Want more options? Request here** at the bottom of the **From other apps** list to ask for it on the roadmap.
 
-## Import from any Text Source
+## Import from any text source
 
 This importer uses AI to read a bank statement, a receipt or a banking app screenshot and pull out the transactions. It's handy when your bank only gives you PDFs.
 
@@ -41,19 +41,19 @@ This importer uses AI to read a bank statement, a receipt or a banking app scree
 
 <Steps>
 
-1. On the **Import** tab, click **Import from any Text Source**.
+1. On the **Import** tab, click **Import from any text source**.
 2. Drag your statement onto the upload area.
-3. Click **Analyze File**. You'll see the AI **Model** that will be used, the **Estimated Cost** and the **Estimated Tokens**. If the PDF is password-protected, you'll be asked for the **PDF password**. Enter it and click **Unlock and analyze**.
-4. Click **Extract Transactions**. This usually takes 30 to 60 seconds, longer for big files.
-5. Check what was found and click **Continue to Account**.
-6. If MoneyMatter couldn't detect the statement's currency, choose it under **Select currency** first. Then choose **Select existing account**, or click **Create New** to make an account for this statement. Only accounts in the statement's currency can be picked, and a new account is locked to it.
-7. Click **Check for Duplicates** (for an existing account) or **Import Transactions** (for a new one).
-8. For an existing account, check the list. Duplicates start unchecked, so tick one to import it anyway. Then click **Continue to Import**.
-9. On **Ready to Import**, click **Import N Transactions**.
+3. Click **Analyze file**. You'll see the AI **Model** that will be used, the **Estimated cost** and the **Estimated tokens**. If the PDF is password-protected, you'll be asked for the **PDF password**. Enter it and click **Unlock and analyze**.
+4. Click **Extract transactions**. This usually takes 30 to 60 seconds, longer for big files.
+5. Check what was found and click **Continue to account**.
+6. If MoneyMatter couldn't detect the statement's currency, choose it under **Select currency** first. Then choose **Select existing account**, or click **Create new** to make an account for this statement. Only accounts in the statement's currency can be picked, and a new account is locked to it.
+7. Click **Check for duplicates** (for an existing account) or **Import transactions** (for a new one).
+8. For an existing account, check the list. Duplicates start unchecked, so tick one to import it anyway. Then click **Continue to import**.
+9. On **Ready to import**, click **Import N transactions**.
 
 </Steps>
 
-**Estimated Cost** is what the AI provider charges to read the file. If it's marked **(your API key)**, your own AI provider bills you. Otherwise, the AI included with MoneyMatter is used. **Estimated Tokens** is a measure of how much text the AI has to read.
+**Estimated cost** is what the AI provider charges to read the file. If it's marked **(your API key)**, your own AI provider bills you. Otherwise, the AI included with MoneyMatter is used. **Estimated tokens** is a measure of how much text the AI has to read.
 
 <Screenshot
   src="/screenshots/import/text-source-estimate.png"
@@ -69,9 +69,9 @@ This importer uses AI to read a bank statement, a receipt or a banking app scree
 
 ### Good to know
 
-- **Accounts connected to a bank can't be picked.** Statement import only works with accounts you update yourself.
-- **Imported transactions change the account's balance.** Every transaction you import into an existing account moves its current balance, even old ones. There's no option to keep the balance as it is, so [adjust the balance](/accounts/manage-accounts/#adjust-a-balance) afterwards if needed.
-- **Only accounts in the statement's currency can be picked.** Accounts in other currencies are greyed out under **Different Currency**. If MoneyMatter can't detect the currency and you don't choose one, any account can be picked, and the transactions are imported in that account's currency with the same numbers.
+- **Accounts connected to a bank can only be picked if you [linked them yourself](/import/bank-connections/#link-an-account-you-already-have).** Then only transactions dated before the day you linked the account are imported. Later ones are skipped, because the bank already provides them.
+- **Imported transactions change the account's balance.** Every transaction you import into an existing account moves its current balance, even old ones. Accounts you linked to a bank are the exception: they keep the balance the bank reports. There's no option to keep the balance as it is, so [adjust the balance](/accounts/manage-accounts/#adjust-a-balance) afterwards if needed.
+- **Only accounts in the statement's currency can be picked.** Accounts in other currencies are greyed out under **Different currency**. If MoneyMatter can't detect the currency and you don't choose one, any account can be picked, and the transactions are imported in that account's currency with the same numbers.
 - **Duplicates** are transactions already in the account on the same day, with the same amount and direction. The description isn't compared. Duplicates start unchecked, so they're skipped unless you tick them.
 - **AI can miss lines.** If some of the AI's answer couldn't be read, you'll see how many lines were skipped. Compare the imported count with your statement.
 
@@ -155,7 +155,7 @@ In YNAB, go to Budget → Export budget. Unzip the download and use the **Regist
 ### Good to know
 
 - **Dates are read the same way for the whole file.** MoneyMatter works out whether your dates are day-first or month-first. If it can't tell, it assumes month-first (MM/DD/YYYY) and warns you, so check a few transactions afterwards.
-- **Importing twice creates a second set of accounts.** There's no duplicate check, because every import makes new accounts. Undo an extra import from [Import History](/import/import-from-csv/#undo-an-import).
+- **Importing twice creates a second set of accounts.** There's no duplicate check, because every import makes new accounts. Undo an extra import from [Import history](/import/import-from-csv/#undo-an-import).
 - **Transfers between currencies** keep the same number on both sides. Fix the amount on one side after importing.
 - **Skipping an account** also drops any transfers to or from it.
 
@@ -233,8 +233,11 @@ This reads the .mny file that Microsoft Money saves on your computer. To see wha
 
 - **They run in the background.** You can watch the progress until the import finishes.
 - **They show a summary at the end**, with what was created, skipped or failed.
-- **With the CSV, OFX, Wallet and Microsoft Money importers, existing accounts keep their balance by default.** They all have the **Update account balances from imported transactions** checkbox, on the step where you map accounts (on **Review** for CSV). See [how an import affects balances](/import/import-from-csv/#how-an-import-affects-balances). [Statement imports](#import-from-any-text-source) always change the balance.
-- **Every import can be undone** from **Import History**, as long as its accounts haven't been connected to a bank since. See [undo an import](/import/import-from-csv/#undo-an-import).
+- **With the CSV, OFX, Wallet and Microsoft Money importers, existing accounts keep their balance by default.** They all have the **Update account balances from imported transactions** checkbox, on the step where you map accounts (on **Review** for CSV). See [how an import affects balances](/import/import-from-csv/#how-an-import-affects-balances). [Statement imports](#import-from-any-text-source) always change the balance, except on accounts you linked to a bank.
+- **Recurring payments and [automations](/transactions/automations/) run on imported transactions**, the same as on bank transactions. Transfers are left out. See [what each transaction gets](/import/import-from-csv/#what-each-transaction-gets).
+- **Planned transactions are confirmed, not duplicated.** Every importer except YNAB lets a matching row confirm a [planned transaction](/planned/planned-transactions/) in the same account instead of adding a second one. See [how it works](/planned/planned-transactions/#automatically-from-your-bank-or-a-file-import). Statement imports into an account you linked to a bank don't do this.
+- **Accounts you linked to a bank can be import targets.** The CSV, statement, OFX, Wallet and Microsoft Money importers offer them, and import only the rows dated before the day you linked the account.
+- **Imports can be undone** from **Import history**, with two exceptions. An import into an account that has since been connected to a bank can't be undone, unless you linked that account yourself and everything the import added is dated before the link day. And an import whose transaction became a loan payment can only be undone together with the loan side, by ticking **Also delete the linked transfer transaction**. See [undo an import](/import/import-from-csv/#undo-an-import).
 - **Imports need an active plan.** In read-only mode you can export your data but not import. See [plans and billing](/settings/plans-and-billing/#read-only-mode).
 
 <TryMoneyMatter />

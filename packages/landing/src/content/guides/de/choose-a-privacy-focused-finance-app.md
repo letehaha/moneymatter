@@ -43,7 +43,7 @@ Jede App stützt sich auf externe Dienste. Eine vertrauenswürdige App nennt sie
 
 - **Stripe** wickelt Zahlungen ab. Stripe nimmt deine Kartendaten entgegen, und MoneyMatter erhält die Kartennummer nie.
 - **Resend** verschickt Anmelde- und Konto-E-Mails.
-- **Sentry** erhält Absturzberichte, die deine E-Mail-Adresse enthalten. Eine Sitzung mit einem Fehler kann eine Aufzeichnung enthalten, bei der jeder Text maskiert und Medien blockiert sind.
+- **Sentry** erhält Absturzberichte, die mit deiner Konto-ID verknüpft sind, aber nicht mit deiner E-Mail-Adresse oder deinem Namen. Eine Sitzung mit einem Fehler kann eine Aufzeichnung enthalten, bei der jeder Text maskiert und Medien blockiert sind.
 - **PostHog** erhält Produktanalysen, die mit deinem Konto und deiner E-Mail-Adresse verknüpft sind. Echte Konten haben keine Sitzungsaufzeichnung. Schalte in deinem Browser Do Not Track ein, um die Analysen zu stoppen, die dein Browser sendet. Der Server erfasst weiterhin Ereignisse wie Anmeldungen.
 - **Dein Anbieter für Bankdaten und dein KI-Anbieter**, wenn du Banksynchronisierung oder KI nutzt.
 

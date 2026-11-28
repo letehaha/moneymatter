@@ -445,7 +445,7 @@ const extract = useMutation({
         <div class="@container/mapping">
           <div class="grid grid-cols-1 gap-3 @sm/mapping:grid-cols-2 @lg/mapping:grid-cols-3">
             <div>
-              <div class="mb-1.25 flex items-center gap-1.5 text-base leading-none font-normal tracking-wide">
+              <div class="text-muted-foreground mb-1 flex items-center gap-1.5 text-[13px]/[1.3] font-medium">
                 <span>{{ $t('investmentsImport.columnMapping.fields.fees') }}</span>
                 <DesktopOnlyTooltip
                   content-class-name="max-w-[300px]"
@@ -462,7 +462,7 @@ const extract = useMutation({
               />
             </div>
             <div>
-              <div class="mb-1.25 flex items-center gap-1.5 text-base leading-none font-normal tracking-wide">
+              <div class="text-muted-foreground mb-1 flex items-center gap-1.5 text-[13px]/[1.3] font-medium">
                 <span>{{ $t('investmentsImport.columnMapping.fields.currency') }}</span>
                 <DesktopOnlyTooltip
                   content-class-name="max-w-[300px]"
@@ -479,7 +479,7 @@ const extract = useMutation({
               />
             </div>
             <div>
-              <div class="mb-1.25 flex items-center gap-1.5 text-base leading-none font-normal tracking-wide">
+              <div class="text-muted-foreground mb-1 flex items-center gap-1.5 text-[13px]/[1.3] font-medium">
                 <span>{{ $t('investmentsImport.columnMapping.fields.name') }}</span>
                 <DesktopOnlyTooltip
                   content-class-name="max-w-[300px]"
@@ -505,7 +505,7 @@ const extract = useMutation({
         <div class="@container/mapping">
           <div class="grid grid-cols-1 gap-3 @sm/mapping:grid-cols-2">
             <div>
-              <div class="mb-1.25 flex items-center gap-1.5 text-base leading-none font-normal tracking-wide">
+              <div class="text-muted-foreground mb-1 flex items-center gap-1.5 text-[13px]/[1.3] font-medium">
                 <span>{{ $t('investmentsImport.columnMapping.fields.defaultCurrency') }}</span>
                 <DesktopOnlyTooltip
                   content-class-name="max-w-[300px]"
@@ -523,7 +523,7 @@ const extract = useMutation({
               />
             </div>
             <div>
-              <div class="mb-1.25 flex items-center gap-1.5 text-base leading-none font-normal tracking-wide">
+              <div class="text-muted-foreground mb-1 flex items-center gap-1.5 text-[13px]/[1.3] font-medium">
                 <span>{{ $t('investmentsImport.columnMapping.fields.defaultAssetClass') }}</span>
                 <DesktopOnlyTooltip
                   content-class-name="max-w-[300px]"

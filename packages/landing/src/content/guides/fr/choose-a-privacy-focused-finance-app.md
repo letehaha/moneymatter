@@ -43,7 +43,7 @@ Toute appli s'appuie sur des services externes. Une appli digne de confiance les
 
 - **Stripe** gère les paiements. Il reçoit les données de votre carte, et MoneyMatter ne reçoit jamais le numéro de carte.
 - **Resend** envoie les e-mails de connexion et de compte.
-- **Sentry** reçoit les rapports de plantage, qui incluent votre e-mail. Une session avec une erreur peut inclure un replay, avec tout le texte masqué et les médias bloqués.
+- **Sentry** reçoit les rapports de plantage, liés à l'ID de votre compte, mais pas à votre e-mail ni à votre nom. Une session avec une erreur peut inclure un replay, avec tout le texte masqué et les médias bloqués.
 - **PostHog** reçoit des statistiques d'usage liées à votre compte et à votre e-mail. Les vrais comptes n'ont pas d'enregistrement de session. Activez Do Not Track dans votre navigateur pour arrêter les statistiques que votre navigateur envoie. Le serveur enregistre quand même des événements comme les connexions.
 - **Votre fournisseur de données bancaires et votre fournisseur d'IA**, si vous utilisez la synchronisation bancaire ou l'IA.
 

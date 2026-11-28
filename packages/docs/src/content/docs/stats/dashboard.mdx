@@ -14,22 +14,22 @@ Until you add your first account, the dashboard shows setup steps instead of wid
 
 <Screenshot
   src="/screenshots/stats/dashboard-overview.png"
-  alt="The dashboard with the period selector, the Customize button and the Balance trend, Latest Transactions, Cash Flow, Expenses Structure and Categories Watchlist widgets."
-  hint="Open /dashboard with the current month selected on a user profile (or demo data) with a few months of realistic data. Make sure the Balance trend, Expenses Structure, Cash Flow, Net Worth and Categories Watchlist widgets are on the dashboard. Capture the whole dashboard including the period selector and the Customize button."
+  alt="The dashboard with the period selector, the Customize button and the Balance trend, Latest transactions, Cash flow, Expenses structure and Categories watchlist widgets."
+  hint="Open /dashboard with the current month selected on a user profile (or demo data) with a few months of realistic data. Make sure the Balance trend, Expenses structure, Cash flow, Net worth and Categories watchlist widgets are on the dashboard. Capture the whole dashboard including the period selector and the Customize button."
 />
 
 ## Choose the period
 
-The dashboard opens on the current month. Every widget that shows a period follows the date selector at the top of the dashboard (on a phone, it's pinned to the bottom of the screen).
+The dashboard opens on the current month, or on your current pay period if you set [**Pay cycle starts on**](/settings/general-settings/#pay-cycle-starts-on). Every widget that shows a period follows the date selector at the top of the dashboard (on a phone, it's pinned to the bottom of the screen).
 
-Use the arrows on either side of the date to move the whole range back or forward by its own length. For a single month that's one month; for **Last 3 Months** it's three months. A range that doesn't cover whole months moves by the same number of days.
+Use the arrows on either side of the date to move the whole range back or forward by its own length. For a single month that's one month; for **Last 3 months** it's three months. A range that doesn't cover whole months moves by the same number of days.
 
 To pick a different range:
 
 <Steps>
 
 1. Click the date.
-2. Choose a preset (**Current Month**, **Last 3 Months**, **Last 6 Months**, **Last 12 Months**, **This Year** or **Previous Year**), which applies straight away. Or choose **Day**, **Month**, **Quarter**, **Half-year** or **Year** and select a range.
+2. Choose a preset (**Current month**, **Last 3 months**, **Last 6 months**, **Last 12 months**, **This year** or **Previous year**), which applies straight away. Or choose **Day**, **Month**, **Quarter**, **Half-year** or **Year** and select a range.
 3. For a custom range, click **Apply**.
 
 </Steps>
@@ -37,13 +37,17 @@ To pick a different range:
 <Screenshot
   src="/screenshots/stats/dashboard-period-selector.png"
   alt="The dashboard's date picker open, showing the preset list and the Day, Month, Quarter, Half-year and Year options."
-  hint="On /dashboard, click the date button between the arrows so the picker opens. The Quick select presets (Current Month … Previous Year) and the period type tabs must be visible. Crop to the picker popover."
+  hint="On /dashboard, click the date button between the arrows so the picker opens. The Quick select presets (Current month … Previous year) and the period type tabs must be visible. Crop to the picker popover."
 />
 
 <Aside type="note" title="Good to know">
 - The forward arrow is disabled once the period reaches the current month.
 - A custom period is kept in the page address, so reloading the page keeps it.
-- **Latest Transactions**, **Credit Utilization** and **FIRE progress** don't follow the period. They always show your latest data. **Budget** always shows the current budget period. **Trackers** shows each tracker's own dates. **Goals** shows where each goal stands today.
+- These widgets don't follow the period:
+  - **Latest transactions**, **Credit utilization**, **Cash & accounts**, **Assets & liabilities**, **Recurring payments**, **Planned** and **FIRE progress** always show your latest data.
+  - **Spending pace** always shows the current month.
+  - **Average tax rate** covers the last 12 months.
+  - **Budget** shows the current budget period, **Trackers** each tracker's own dates, and **Goals** where each goal stands today.
 </Aside>
 
 ## Customize the layout
@@ -70,8 +74,7 @@ You choose which widgets appear, their size and their order.
 <Aside type="note" title="Good to know">
 - Your layout is saved to your MoneyMatter account, not to the browser, so it's the same on every device.
 - Widget settings (the gear icon on a widget) save as soon as you change them. You don't need to click **Customize** first.
-- On a dashboard you've never customized, changes to the **Balance trend** and **Latest Transactions** settings aren't kept. Click **Customize**, then **Done**, once to save your layout, and they'll stick from then on.
-- A new dashboard starts with **Balance trend**, **Latest Transactions**, **Subscriptions & Bills** and **Expenses Structure**.
+- A new dashboard starts with **Balance trend**, **Latest transactions**, **Recurring payments** and **Expenses structure**.
 </Aside>
 
 ## The widgets
@@ -80,22 +83,26 @@ The **Add widgets** panel and the widget itself sometimes use different names. H
 
 | In **Add widgets** | On the dashboard | What it shows |
 |---|---|---|
-| **Balance Trend** | **Balance trend** | Your total balance over the period |
-| **Spending by Categories** | **Expenses Structure** | Your spending split by category |
-| **Cash Flow** | **Cash Flow** | Income, expenses and how much you saved |
-| **Categories Watchlist** | **Categories Watchlist** | Chosen categories and what came in or went out of each |
-| **Net Worth** | **Net Worth** | How your net worth changed over the period |
-| **Credit Utilization** | **Credit Utilization** | How much of your credit limits you're using |
-| **Latest Records** | **Latest Transactions** | Your most recent transactions |
+| **Balance trend** | **Balance trend** | Your total balance over the period |
+| **Spending by categories** | **Expenses structure** | Your spending split by category |
+| **Cash flow** | **Cash flow** | Income, expenses and how much you saved |
+| **Categories watchlist** | **Categories watchlist** | Chosen categories and what came in or went out of each |
+| **Tag analysis** | **Tag analysis** | How your spending splits across tags you choose |
+| **Net worth** | **Net worth** | How your net worth changed over the period |
+| **Spending pace** | **Spending pace** | Spending so far this month, with a forecast for the rest of it |
+| **Cash & accounts** | **Cash & accounts** | Your total cash, its change since last month, and how many months of expenses it covers |
+| **Assets & liabilities** | **Assets & liabilities** | What you own, what you owe, and your net worth between them |
+| **Credit utilization** | **Credit utilization** | How much of your credit limits you're using |
+| **Latest records** | **Latest transactions** | Your most recent transactions, plus recurring payments that are due |
+| **Subscriptions & bills** | **Recurring payments** (or **Subscriptions**, **Bills** or **Installments**) | What your recurring payments cost and which are due |
+| **Planned overview** | **Planned** | Your pending planned transactions and projected balance |
 | **FIRE progress** | **FIRE progress** | How close you are to financial independence (Plus) |
 | **Budget** | **Budget** | What's left in the current budget period, line by line. Use **Sort by** in the gear menu to rank lines by **Highest spend first**, **Lowest spend first** or **Most overspent first** (least left at the top); **Custom order** keeps your plan's order |
-| **Trackers** | **Trackers** | Each active tracker with how much of its limit is used and its net |
+| **Trackers** | **Trackers** | Each active [tracker](/planned/trackers/) with how much of its limit is used and its net |
 | **Average tax rate** | **Average tax rate** | The share of your income paid in taxes, with a 12-month trend |
 | **Goals** | **Goals** | Progress toward your savings goals |
 
-**Subscriptions & Bills** and **Planned overview** are also available as widgets.
-
-The numbers follow the rules in [How stats are calculated](/stats/how-stats-are-calculated/). Transfers between your own accounts (except loan payments), **Out of wallet** transfers and balance adjustments never count as income or expenses. Accounts with **Exclude from statistics** on are left out of every widget's numbers. Their transactions still show in **Latest Transactions**.
+The numbers follow the rules in [How stats are calculated](/stats/how-stats-are-calculated/). Transfers between your own accounts (except loan payments), **Out of wallet** transfers and balance adjustments never count as income or expenses. Accounts with **Exclude from statistics** on are left out of most widgets' numbers. The exceptions are **Goals** and the projected balance in **Planned**, which still count them. Their transactions still show in **Latest transactions**.
 
 ### Balance trend
 
@@ -106,7 +113,7 @@ Use the line selector on the widget to switch between **Total**, **Accounts** an
 The gear icon opens **Settings**:
 
 - **Spike markers**: highlight days when your balance changed a lot. Set **Min change %**, **Min change $** and **Max markers**, or click **Reset defaults**, then **Accept**. Click a marker on the chart to see the transactions behind it, with a **See all transactions** link.
-- **Include in total**: choose whether **Vehicles**, **Ventures** and **Loans** count toward the **Total** line. All three are on by default. With **Loans** on, what you owe on loans is subtracted from the total.
+- **Include in total**: choose whether **Vehicles**, **Ventures** and **Loans** count toward the **Total** line. All three are on by default. With **Loans** on, what you owe on loans is subtracted from the total. See [how loans affect your stats](/accounts/loans/#how-loans-affect-your-stats).
 - **Fit to latest data**: when on, the chart stops at your latest data point. When off, it spans the whole period. While the planned-transactions projection is showing, this switch is disabled and the chart always runs to the end of the period. Turn off **Include planned transactions** to change it.
 - **Include planned transactions** (on by default): when the period reaches today and the line is **Total** or **Accounts**, a dashed line continues past today to show where your upcoming [planned transactions](/stats/how-stats-are-calculated/#planned-transactions) would take the balance.
 
@@ -116,7 +123,7 @@ The gear icon opens **Settings**:
   hint="On /dashboard, click the gear icon on the Balance trend widget. Capture the widget together with the open Settings popover showing Spike markers, Include in total, Fit to latest data and Include planned transactions."
 />
 
-### Expenses Structure
+### Expenses structure
 
 A donut chart of your spending by top-level category. Subcategories are grouped under their parent. The big number is your total spending for the period, with a percentage **vs previous period**.
 
@@ -137,23 +144,23 @@ Hidden categories leave both the chart and the total. A badge next to the widget
 <Screenshot
   src="/screenshots/stats/exclude-categories-dialog.png"
   alt="The Exclude categories dialog with two categories marked as Excluded."
-  hint="On /dashboard, click the gear icon on the Expenses Structure widget and choose Exclude categories. Exclude one or two categories so their chips and 'Excluded' tags are visible. Crop to the dialog."
+  hint="On /dashboard, click the gear icon on the Expenses structure widget and choose Exclude categories. Exclude one or two categories so their chips and 'Excluded' tags are visible. Crop to the dialog."
 />
 
 The same gear menu has an **Include planned transactions** switch.
 
-### Cash Flow
+### Cash flow
 
 Shows how much you saved in the period: income minus expenses. Below the headline you'll find a bar comparing the two, then **Income**, **Expenses** and **Saved**. **Saved** is your savings rate, the share of income you kept.
 
-**Previous periods trend** shows the five periods before this one next to it. Click the arrow icon (↗) in the widget's top corner (**View details**) to open the full [Cash Flow report](/stats/analytics-reports/#cash-flow). The arrow is hidden while the widget has no data.
+**Previous periods trend** shows the five periods before this one next to it. Click the arrow icon (↗) in the widget's top corner (**View details**) to open the full [Cash flow report](/stats/analytics-reports/#cash-flow). The arrow is hidden while the widget has no data.
 
-The gear menu has **Exclude categories** and **Include planned transactions**, which work the same way as in **Expenses Structure**.
+The gear menu has **Exclude categories** and **Include planned transactions**, which work the same way as in **Expenses structure**.
 
 <Screenshot
   src="/screenshots/stats/cash-flow-widget.png"
-  alt="The Cash Flow widget showing net savings, the income and expenses bar, the Income, Expenses and Saved tiles, and the previous periods trend."
-  hint="On /dashboard, with the current month selected on a user profile (or demo data) that has both income and expenses this month and in the five months before. Crop to the Cash Flow widget."
+  alt="The Cash flow widget showing net savings, the income and expenses bar, the Income, Expenses and Saved tiles, and the previous periods trend."
+  hint="On /dashboard, with the current month selected on a user profile (or demo data) that has both income and expenses this month and in the five months before. Crop to the Cash flow widget."
 />
 
 <Aside type="note" title="Good to know">
@@ -161,19 +168,20 @@ The gear menu has **Exclude categories** and **Include planned transactions**, w
 - A linked refund lowers expenses in the purchase's own period, and is taken off income in the period the money came back, as long as each side is within the selected period. See [Refunds](/stats/how-stats-are-calculated/#refunds).
 </Aside>
 
-### Categories Watchlist
+### Categories watchlist
 
 Keep an eye on the categories you care about. Each row shows what came in minus what went out for that category and its subcategories: green when it's positive, red when it's negative.
 
-- Click an empty **Add category** row to pick categories in **Select Categories**. The widget holds up to 7 categories at size **1×1** and 16 at **1×2**.
+- Click an empty **Add category** row to pick categories in **Select categories**. You can add up to 30 categories. The widget shows 7 rows at size **1×1** and 16 at **1×2**, and the list scrolls past that, with an **Add category** row at the end.
 - Click the pencil icon to edit the list: drag rows to reorder, click a row to swap its category, or click the bin icon to remove it. Click the save icon when you're done.
 - Click a row to open its transactions for the period.
-- The gear menu has **Include planned transactions**.
+- The gear menu has **Add category** and **Include planned transactions**.
+- **Sort by** in the gear menu ranks rows by **Highest spend first** or **Lowest spend first**. Categories with more income than spending sit below the spending ones. **Custom order** (the default) keeps your order, and dragging rows switches back to it.
 - Each row has a small trend line, which you can turn off with **Show 6-month trend** in the gear menu. It covers the six full months before the month your period ends in, and a higher point means more money moved: more spending on a red row, more income on a green one. The line is hidden when the widget is too narrow.
 
 If you add both a parent category and one of its subcategories, the subcategory's money shows only on its own row, not on the parent's.
 
-### Net Worth
+### Net worth
 
 Shows how your net worth changed over the period, including accounts, investments, loans and other assets.
 
@@ -183,17 +191,17 @@ The big number is how much your net worth changed over the period (**End** minus
 - **End**: your net worth at the end of the period.
 - **Growth**: the change as a percentage.
 
-You'll also see the change **vs previous** and a **Previous periods trend**. Click the arrow icon (↗) in the widget's top corner (**View history**) to open [Net Worth History](/stats/analytics-reports/#net-worth-history). The arrow is hidden while the widget has no data.
+You'll also see the change **vs previous** and a **Previous periods trend**. Click the arrow icon (↗) in the widget's top corner (**View history**) to open [Net worth history](/stats/analytics-reports/#net-worth-history). The arrow is hidden while the widget has no data.
 
 The gear menu opens **Include in net worth**, where you can leave out **Loans**, **Vehicles** or **Ventures**. When something is left out, a badge with a number appears next to the title. Hover it to see what's excluded.
 
 <Screenshot
   src="/screenshots/stats/net-worth-widget-settings.png"
-  alt="The Net Worth widget with the Include in net worth menu open, showing Loans, Vehicles and Ventures switches."
-  hint="On /dashboard, click the gear icon on the Net Worth widget. Capture the widget with the Include in net worth popover open."
+  alt="The Net worth widget with the Include in net worth menu open, showing Loans, Vehicles and Ventures switches."
+  hint="On /dashboard, click the gear icon on the Net worth widget. Capture the widget with the Include in net worth popover open."
 />
 
-### Credit Utilization
+### Credit utilization
 
 Shows how much of your credit limits you're using right now, per account and in total. It lists active accounts with a credit limit above zero that aren't excluded from statistics. Usage below 40% shows green, 40–69% amber, and 70% or more red. Click an account to open it.
 
@@ -224,7 +232,7 @@ Shows how much of your income goes to taxes: spending in your [tax categories](/
 - The bars show your taxes for each of the last 12 months, with the months in the averaging period highlighted. The dashed line is your monthly average (**avg**) over that period. Hover a bar to see that month's taxes and share of income.
 - The thin bar at the bottom splits the taxes in the averaging period by category, with each tax category you chose broken down into its subcategories. Up to four parts are shown; the rest are grouped and listed as, for example, "2 more".
 
-The widget always covers the last 12 months and doesn't follow the dashboard's date selector. Click the arrow icon (↗) in the widget's top corner (**View cash flow**) to open the [Cash Flow report](/stats/analytics-reports/#cash-flow).
+The widget always covers the last 12 months and doesn't follow the dashboard's date selector. Click the arrow icon (↗) in the widget's top corner (**View cash flow**) to open the [Cash flow report](/stats/analytics-reports/#cash-flow).
 
 <Screenshot
   src="/screenshots/stats/average-tax-rate-widget.png"
@@ -242,19 +250,59 @@ Goals read their accounts' balances, so accounts with **Exclude from statistics*
 
 With no active goals, the widget shows **Create a goal**. If your plan doesn't include goals either, it shows **Goals are locked** with a **Learn more** link to the **Goals** page.
 
-### Latest Transactions
+### Latest transactions
 
-Your most recent transactions. The arrow icon (↗) in the widget's top corner (**View all**) opens the full list. In its settings, under **Exclude transactions**, you can hide **Between accounts** transfers, **Out of wallet** transfers, **Balance adjustments** and **Planned transactions** from the list.
+Your most recent transactions, up to 20. Planned transactions dated in the future aren't listed. The arrow icon (↗) in the widget's top corner (**View all**) opens the full list.
+
+At the top, the widget also lists [recurring payments](/planned/recurring-payments/) that are overdue or due within the next 3 days. Each row is marked **Overdue** or **Scheduled**, with the due date and the expected amount. Click **Mark paid** to record the payment. See [mark paid, skip and revert](/planned/recurring-payments/#mark-paid-skip-and-revert) for what that does. These rows take up some of the 20 places.
+
+The gear icon opens **Settings**:
+
+- **Exclude transactions**: hide **Between accounts** transfers, **Out of wallet** transfers, **Balance adjustments**, **Planned transactions** or **Scheduled payments** (the recurring payment rows) from the list.
+- **Tags**: show tags as **Names** (the default) or as colored **Bars**.
+- **Account**: show the account logo on each transaction. On by default.
 
 **Out of wallet** transfers are hidden by default. Switch that exclusion off to see them.
 
 Balance adjustments are recorded as **Out of wallet** transfers, so they're hidden by default too. To see them, switch off the **Out of wallet** exclusion. **Balance adjustments** then lets you hide only the adjustments while keeping other **Out of wallet** transfers visible.
 
+### Recurring payments
+
+In **Add widgets**, this is **Subscriptions & bills**. It sums up your active [recurring payments](/planned/recurring-payments/) and shows which ones are due. A new dashboard has it.
+
+- The big number is what your recurring expenses cost per month, in your base currency. Next to it is that cost as a share of your average monthly income. Below it you'll see how many are active and the yearly cost, plus your monthly recurring income when you have any. If you only track recurring income, the big number is that income instead.
+- **Next 30 days** is a small chart with a bar for each day something is due, and how much is going out in total. A weekly payment shows up on each day it's due. An overdue payment is counted on today.
+- **Upcoming** lists every active recurring payment that has a next due date, overdue ones first, then by date. Overdue rows show how many days late they are, and rows due within 3 days show the date in color. The header says how many are overdue or due, or **Nothing due in 3 days**. On those rows, the check button (**Mark paid**) records the payment. Click a row to open the recurring payment.
+
+The arrow icon (↗) in the widget's top corner (**View all**) opens the **Recurring payments** page.
+
+The gear icon opens **Settings**:
+
+- **Show**: **All**, **Subscriptions**, **Bills** or **Installments**. The widget's title and numbers follow your choice. With **All**, the title is **Recurring payments**.
+- **Income window**: the months your average income is taken from for the share of income: **Last month**, **Last 3 months**, **Last 6 months** (the default) or **Last 12 months**. Only full months count.
+- **Show 30-day chart**: turn the **Next 30 days** chart off or on.
+
+<Screenshot
+  src="/screenshots/stats/recurring-payments-widget.png"
+  alt="The Recurring payments widget with the monthly cost and share of income, the Next 30 days chart, and the Upcoming list with an overdue payment and a payment due within 3 days, each with a check button."
+  hint="Create the recurring payments from the /planned/recurring-payments list shot (Spotify overdue, Netflix due in 3 days, Electricity, Phone, Salary) and add some income transactions in the last 6 months. On /dashboard, keep the Recurring payments widget (Add widgets: Subscriptions & bills) at 1×1. Crop to the widget."
+/>
+
+### Planned
+
+In **Add widgets**, this is **Planned overview**. It shows your pending [planned transactions](/planned/planned-transactions/) and where they'll take your balance.
+
+- The big number is your projected balance: the total balance of your accounts plus every pending planned transaction. Archived accounts, loans and vehicles aren't included. Accounts with **Exclude from statistics** on are.
+- **Projected by** shows the date of your latest planned transaction, next to how much the planned transactions add or take away in total.
+- **Upcoming** lists the pending planned transactions, oldest first, so the ones past their date come first. It shows up to 20.
+
+With no pending planned transactions, the widget is empty.
+
 ## Comparing with the previous period
 
 Several widgets compare the period with the one before it, and they don't all define "previous" the same way:
 
-- **Expenses Structure**, **Cash Flow** and **Net Worth**: when you've selected a whole month, the previous calendar month. Otherwise, the same number of days just before.
+- **Expenses structure**, **Cash flow** and **Net worth**: when you've selected a whole month, the previous calendar month. Otherwise, the same number of days just before.
 - **Balance trend**: always the same number of days just before.
 
 ## Related
@@ -262,4 +310,6 @@ Several widgets compare the period with the one before it, and they don't all de
 - [How stats are calculated](/stats/how-stats-are-calculated/)
 - [Analytics reports](/stats/analytics-reports/)
 - [FIRE planner](/stats/fire-planner/)
+- [Recurring payments](/planned/recurring-payments/)
+- [Planned transactions](/planned/planned-transactions/)
 - [General settings](/settings/general-settings/)

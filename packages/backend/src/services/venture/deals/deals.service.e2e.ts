@@ -1,8 +1,46 @@
-import { VENTURE_DEAL_STATUS, VENTURE_SPV_SUBTYPE, VENTURE_VEHICLE_TYPE } from '@bt/shared/types/venture';
+import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  VENTURE_CASH_FLOW_MODE,
+  VENTURE_DEAL_STATUS,
+  VENTURE_EVENT_TYPE,
+  VENTURE_SPV_SUBTYPE,
+  VENTURE_VEHICLE_TYPE,
+} from '@bt/shared/types/venture';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
+
+const createDealWithLinkedTx = async () => {
+  const account = await helpers.createAccount({ raw: true });
+  const [tx] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId: account.id,
+      amount: 10000,
+      transactionType: TRANSACTION_TYPES.expense,
+    }),
+    raw: true,
+  });
+  const deal = await helpers.createVentureDeal({
+    payload: { currencyCode: global.BASE_CURRENCY.code, principal: '10000', entryFeePct: '0' },
+    raw: true,
+  });
+  const event = await helpers.createVentureEvent({
+    dealId: deal.id,
+    payload: {
+      type: VENTURE_EVENT_TYPE.initial_investment,
+      eventDate: deal.investmentDate,
+      cashFlowMode: VENTURE_CASH_FLOW_MODE.linked,
+      transactionIds: [tx!.id],
+    },
+  });
+  expect(event.statusCode).toBe(200);
+
+  const linked = await helpers.getTransactionById({ id: tx!.id, raw: true });
+  expect(linked!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.transfer_to_venture);
+
+  return { deal, tx: tx! };
+};
 
 describe('Venture Deals E2E', () => {
   describe('POST /venture/deals', () => {
@@ -71,6 +109,21 @@ describe('Venture Deals E2E', () => {
       });
 
       expect(Number(deal.entryFee)).toBe(2000);
+    });
+
+    it('rounds the derived entryFee half-up to the currency decimals', async () => {
+      // 12345 * 0.085 = 1049.325; half-even would give 1049.32
+      const deal = await helpers.createVentureDeal({
+        payload: { currencyCode: 'USD', principal: '12345', entryFeePct: '0.085' },
+        raw: true,
+      });
+      expect(Number(deal.entryFee)).toBe(1049.33);
+
+      const renamed = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { name: 'Renamed', principal: '12345', entryFee: String(Number(deal.entryFee)) },
+      });
+      expect(renamed.statusCode).toBe(200);
     });
   });
 
@@ -224,6 +277,61 @@ describe('Venture Deals E2E', () => {
       const emptyBody = await helpers.updateVentureDeal({ dealId: deal.id, payload: {} });
       expect(emptyBody.statusCode).toBe(ERROR_CODES.ValidationError);
     });
+    it('allows non-term edits on a deal with events when unchanged terms are resent, rejects changed terms', async () => {
+      const deal = await helpers.createVentureDeal({
+        payload: { currencyCode: global.BASE_CURRENCY.code },
+        raw: true,
+      });
+      const event = await helpers.createVentureEvent({
+        dealId: deal.id,
+        payload: {
+          type: VENTURE_EVENT_TYPE.initial_investment,
+          eventDate: deal.investmentDate,
+          cashFlowMode: VENTURE_CASH_FLOW_MODE.out_of_wallet,
+        },
+      });
+      expect(event.statusCode).toBe(200);
+
+      const unchangedTerms = {
+        currencyCode: deal.currencyCode,
+        principal: String(Number(deal.principal)),
+        entryFee: String(deal.entryFee),
+        entryFeePct: '0.085',
+        carryPct: '0.2',
+        hurdlePct: '0',
+        investmentDate: deal.investmentDate,
+      };
+
+      const renamed = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { ...unchangedTerms, name: 'Renamed', notes: 'note' },
+      });
+      expect(renamed.statusCode).toBe(200);
+      expect(helpers.extractResponse(renamed).name).toBe('Renamed');
+
+      const changedCarry = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { ...unchangedTerms, carryPct: '0.25' },
+      });
+      expect(changedCarry.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const changedPrincipal = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { principal: '16000.01' },
+      });
+      expect(changedPrincipal.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const changedDate = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { investmentDate: '2026-03-25' },
+      });
+      expect(changedDate.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const after = await helpers.getVentureDeal({ dealId: deal.id, raw: true });
+      expect(Number(after.principal)).toBe(16000);
+      expect(after.carryPct).toBe(deal.carryPct);
+      expect(after.investmentDate).toBe(deal.investmentDate);
+    });
   });
 
   describe('deal logo', () => {
@@ -313,6 +421,39 @@ describe('Venture Deals E2E', () => {
       const get = await helpers.getVentureDeal({ dealId: created.id });
       expect(get.statusCode).toBe(ERROR_CODES.NotFoundError);
     });
+
+    it.each([{ force: undefined }, { force: true }])(
+      'unlinks the linked transactions back to ordinary ones (force=$force)',
+      async ({ force }) => {
+        const { deal, tx } = await createDealWithLinkedTx();
+
+        const response = await helpers.deleteVentureDeal({ dealId: deal.id, force });
+        expect(response.statusCode).toBe(200);
+
+        const restored = await helpers.getTransactionById({ id: tx.id, raw: true });
+        expect(restored!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+        expect(restored!.transactionType).toBe(TRANSACTION_TYPES.expense);
+
+        const link = await helpers.getTransactionVentureLink({ transactionId: tx.id });
+        expect(link.statusCode).toBe(ERROR_CODES.NotFoundError);
+
+        const edited = await helpers.updateTransaction({ id: tx.id, payload: { note: 'editable again' } });
+        expect(edited.statusCode).toBe(200);
+      },
+    );
+
+    it.each([{ force: undefined }, { force: true }])(
+      'deletes the linked transactions with deleteLinkedTransactions=true (force=$force)',
+      async ({ force }) => {
+        const { deal, tx } = await createDealWithLinkedTx();
+
+        const response = await helpers.deleteVentureDeal({ dealId: deal.id, force, deleteLinkedTransactions: true });
+        expect(response.statusCode).toBe(200);
+
+        const transactions = await helpers.getTransactions({ raw: true });
+        expect(transactions.find((t) => t.id === tx.id)).toBeUndefined();
+      },
+    );
 
     it('is idempotent on nonexistent id', async () => {
       const response = await helpers.deleteVentureDeal({ dealId: generateRandomRecordId() });

@@ -9,9 +9,16 @@ import { ArrowLeftIcon, ChevronRightIcon, InfoIcon, LayersIcon, SettingsIcon } f
 import { ref, watch } from 'vue';
 
 import { useHideZeroBalances } from './accounts-view/helpers/use-hide-zero-balances';
+import { useIncludeSharedInTotal } from './accounts-view/helpers/use-include-shared-in-total';
 
 const { sidebarSections, toggleSection, isUpdating } = useSidebarSections();
 const { hideZeroBalances, setHideZeroBalances, isUpdating: isUpdatingHideZeroBalances } = useHideZeroBalances();
+const {
+  includeSharedInTotal,
+  sharedWithMeIds,
+  setIncludeSharedInTotal,
+  isUpdating: isUpdatingIncludeShared,
+} = useIncludeSharedInTotal();
 
 const isOpen = ref(false);
 type View = 'main' | 'sections';
@@ -59,6 +66,20 @@ const goTo = (target: View) => {
                   :model-value="hideZeroBalances"
                   :disabled="isUpdatingHideZeroBalances"
                   @update:model-value="(v) => setHideZeroBalances(!!v)"
+                />
+              </div>
+
+              <div v-if="sharedWithMeIds.size" class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
+                <span class="flex flex-col">
+                  <span class="text-sm font-medium">{{ $t('sidebar.settings.includeSharedInTotal.label') }}</span>
+                  <span class="text-muted-foreground text-xs">
+                    {{ $t('sidebar.settings.includeSharedInTotal.description') }}
+                  </span>
+                </span>
+                <Switch
+                  :model-value="includeSharedInTotal"
+                  :disabled="isUpdatingIncludeShared"
+                  @update:model-value="(v) => setIncludeSharedInTotal(!!v)"
                 />
               </div>
 

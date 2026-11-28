@@ -43,7 +43,7 @@ Every app relies on some outside services. A trustworthy one names them and says
 
 - **Stripe** handles payments. It takes your card details, and MoneyMatter never receives the card number.
 - **Resend** sends sign-in and account emails.
-- **Sentry** receives crash reports, which include your email. A session with an error can include a replay, with all text masked and media blocked.
+- **Sentry** receives crash reports, tied to your account ID but not your email or name. A session with an error can include a replay, with all text masked and media blocked.
 - **PostHog** receives product analytics tied to your account and email. Real accounts have no session recording. Turn on Do Not Track in your browser to stop the analytics your browser sends. The server still records events such as sign-ins.
 - **Your bank data provider and your AI provider**, if you use bank sync or AI.
 

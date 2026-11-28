@@ -5,6 +5,7 @@ import {
   VENTURE_SPV_SUBTYPE,
   VENTURE_VEHICLE_TYPE,
 } from '@bt/shared/types/venture';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ValidationError } from '@js/errors';
@@ -80,12 +81,19 @@ const createVentureDealImpl = async (params: CreateVentureDealParams) => {
   const carryPct = params.carryPct ?? platform?.defaultCarryPct ?? '0';
   const hurdlePct = params.hurdlePct ?? platform?.defaultHurdlePct ?? '0';
 
-  // entryFee defaults to principal * entryFeePct if not provided.
-  const entryFee = params.entryFee ?? new Big(principal).times(entryFeePct).toString();
-
   if (new Big(principal).lt(0)) {
     throw new ValidationError({ message: 'Principal must be non-negative' });
   }
+
+  const rounded = await roundMoneyValues({
+    values: {
+      principal: Money.fromDecimal(principal),
+      entryFee: Money.fromDecimal(params.entryFee ?? new Big(principal).times(entryFeePct).toString()),
+    },
+    userId,
+    currencyCode,
+    mode: 'half-up',
+  });
 
   const deal = await VentureDeals.create({
     userId,
@@ -96,8 +104,8 @@ const createVentureDealImpl = async (params: CreateVentureDealParams) => {
     targetCompany,
     currencyCode,
     status: VENTURE_DEAL_STATUS.outstanding,
-    principal: Money.fromDecimal(principal),
-    entryFee: Money.fromDecimal(entryFee),
+    principal: rounded.principal,
+    entryFee: rounded.entryFee,
     entryFeePct,
     mgmtFeePct,
     carryPct,

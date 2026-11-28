@@ -397,6 +397,8 @@ export const ZodSettingsSchema = z.object({
   // When true, the sidebar Accounts panel hides accounts whose display balance is
   // zero, and hides any account group left with no non-zero account. Off by default.
   hideZeroBalances: z.boolean().optional(),
+  // The sidebar Bank Accounts total counts accounts shared with the user. On when unset.
+  includeSharedAccountsInSidebarTotal: z.boolean().optional(),
   // Hides the "turn on smart tracking" tip on every tracker's Transactions tab.
   hideSmartTrackingTip: z.boolean().optional(),
   // When true, manual (`system`) accounts are offered as candidates to the bank-sync transfer
@@ -512,6 +514,7 @@ export const ZodSettingsPatchSchema = z.object({
   showSupportButton: z.boolean().optional(),
   showPayeeLogos: z.boolean().optional(),
   hideZeroBalances: z.boolean().optional(),
+  includeSharedAccountsInSidebarTotal: z.boolean().optional(),
   hideSmartTrackingTip: z.boolean().optional(),
   matchTransfersWithManualAccounts: z.boolean().optional(),
   importPendingBankTransactions: z.boolean().optional(),

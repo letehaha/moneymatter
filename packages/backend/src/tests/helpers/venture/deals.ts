@@ -134,16 +134,18 @@ export async function getVentureDealMetrics<R extends boolean | undefined = fals
 export async function deleteVentureDeal<R extends boolean | undefined = false>({
   dealId,
   force,
+  deleteLinkedTransactions,
   raw,
 }: {
   dealId: string;
   force?: boolean;
+  deleteLinkedTransactions?: boolean;
   raw?: R;
 }) {
   return makeRequest<Awaited<ReturnType<typeof _deleteVentureDeal>>, R>({
     method: 'delete',
     url: `/venture/deals/${dealId}`,
-    payload: removeUndefinedKeys({ force }),
+    payload: removeUndefinedKeys({ force, deleteLinkedTransactions }),
     raw,
   });
 }

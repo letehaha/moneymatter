@@ -199,6 +199,7 @@ export const updateBudgetPlan = async ({
     poolEnabled?: boolean;
     zeroSum?: boolean;
     expectedIncome?: number | null;
+    ignoredCategoryIds?: string[];
   };
 }): Promise<BudgetPlanDetails> => api.patch(`/budget-plans/${planId}`, payload);
 

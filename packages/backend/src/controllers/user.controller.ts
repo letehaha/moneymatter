@@ -18,6 +18,7 @@ import * as userService from '@services/user.service';
 import { deleteUser as deleteUserService } from '@services/user/delete-user.service';
 import {
   getOwnedSharedResourceSummary,
+  hasSharedResources,
   wipeUserData as wipeUserDataService,
 } from '@services/user/wipe-user-data.service';
 import { UniqueConstraintError } from 'sequelize';
@@ -119,7 +120,7 @@ export const wipeUserData = createController(
   async ({ user, body }) => {
     if (!body.acknowledgeSharing) {
       const summary = await getOwnedSharedResourceSummary({ userId: user.id });
-      if (summary.accounts.length > 0 || summary.households.length > 0) {
+      if (hasSharedResources(summary)) {
         throw new ConflictError({
           code: API_ERROR_CODES.wipeDataSharingAcknowledgementRequired,
           message: 'Wiping your data will revoke access for other users currently sharing your resources.',

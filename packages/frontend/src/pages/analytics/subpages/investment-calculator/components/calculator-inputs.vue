@@ -9,10 +9,9 @@
         </label>
         <div class="flex items-center gap-1">
           <input
-            type="number"
-            step="any"
-            min="0"
-            :value="initialBalance"
+            type="text"
+            inputmode="decimal"
+            :value="initialBalanceInputValue"
             class="text-amount border-input focus:ring-ring bg-input-background h-8 w-28 [appearance:textfield] rounded-md border px-1.5 text-right text-sm transition-colors outline-none focus:ring-1 dark:bg-transparent [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             @change="handleExactBalanceInput($event)"
           />
@@ -267,6 +266,7 @@
 <script setup lang="ts">
 import InputField from '@/components/fields/input-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
+import { getAmountSeparators, parseAmountInput } from '@/components/fields/utils/formatted-amount';
 import { Button } from '@/components/lib/ui/button';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
@@ -288,7 +288,7 @@ import type { NetIncomePeriod } from '../composables/use-seed-data';
 import type { PortfolioAnnualizedReturnModel } from '@bt/shared/types/investments/portfolio-annualized-return.model';
 
 const { t } = useI18n();
-const { formatBaseCurrency, getCurrencySymbol } = useFormatCurrency();
+const { formatBaseCurrency, getCurrencySymbol, baseCurrencyDecimals } = useFormatCurrency();
 
 const BALANCE_STEP = 10_000;
 const CONTRIBUTION_STEP = 100;
@@ -336,9 +336,25 @@ const parseInputEvent = (event: Event): number => {
   return isNaN(raw) ? 0 : Math.max(0, raw);
 };
 
+const amountSeparators = getAmountSeparators();
+// Rendered with the locale decimal mark and no grouping, so the text parses back to the same value.
+const initialBalanceInputValue = computed(() =>
+  String(Number(props.initialBalance.toFixed(baseCurrencyDecimals.value))).replace('.', amountSeparators.decimal),
+);
+
 const handleExactBalanceInput = (event: Event) => {
-  const value = parseInputEvent(event);
-  emit('update:initialBalance', value);
+  const input = event.target as HTMLInputElement;
+  const { numeric } = parseAmountInput({
+    raw: input.value,
+    decimalSeparator: amountSeparators.decimal,
+    groupSeparator: amountSeparators.group,
+    decimals: baseCurrencyDecimals.value,
+  });
+  if (numeric === null) {
+    input.value = initialBalanceInputValue.value;
+    return;
+  }
+  emit('update:initialBalance', numeric);
 };
 
 const roundUpToStep = ({ value, step }: { value: number; step: number }): number => Math.ceil(value / step) * step;

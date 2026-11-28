@@ -353,89 +353,66 @@ export default class Balances extends Model {
       }
     }
 
-    // Try to find an existing balance for the account and date
-    let balanceForTxDate = await this.findOne({
+    const latestBalancePrior = await this.findOne({
+      where: {
+        date: {
+          [Op.lt]: date,
+        },
+        accountId,
+      },
+      order: [['date', 'DESC']],
+    });
+
+    // The day before the account's earliest activity holds its opening balance, even
+    // when a row already exists on `date` (an account's creation-day row): readers
+    // back-fill earlier days from the earliest row, which must not include this tx.
+    let priorAmount: Money;
+    if (latestBalancePrior) {
+      priorAmount = latestBalancePrior.amount;
+    } else {
+      const account = await Accounts.findOne({
+        where: { id: accountId },
+      });
+      const openingBalance = account!.refInitialBalance;
+      priorAmount = openingBalance;
+
+      try {
+        await runInSavepoint(() =>
+          this.create({
+            accountId,
+            date: subDays(new Date(date), 1),
+            amount: openingBalance,
+          }),
+        );
+      } catch (err) {
+        if (!(err instanceof UniqueConstraintError)) throw err;
+        // Seed row computed from the same `refInitialBalance` by every
+        // racing writer – the existing row already carries the right seed.
+      }
+    }
+
+    const balanceForTxDate = await this.findOne({
       where: {
         accountId,
         date,
       },
     });
 
-    // If history record has previous amount, it means it's updating,
-    // so we need to set newAmount - oldAmount
-    if (!balanceForTxDate) {
-      // If there's not balance for current tx data, we trying to find a balance
-      // prior tx date
-      const latestBalancePrior = await this.findOne({
-        where: {
-          date: {
-            [Op.lt]: date,
-          },
-          accountId,
-        },
-        order: [['date', 'DESC']],
-      });
-
-      // If there's no balance prior tx date, it means that we're adding
-      // the youngest transaction, aka the 1st one, so we need to check a balance
-      // that comes prior it
-      if (!latestBalancePrior) {
-        // Example of how this logic should work like
-        // Initially we had 100 at 10-10-23
-        // Then we added 10 at 11-10-23, so 11-10-23 is now 100 + 10 = 110
-        // Then we wanna add -10 at 9-10-23, so that we need to:
-        // 1. Create a record for 8-10-23, with amount of 100 (so it will represent the initialBalance of account)
-        // 2. Then create a record for 9-10-23 (our tx date), we correct amount
-        // 3. Then update all future amounts
-        const account = await Accounts.findOne({
-          where: { id: accountId },
-        });
-
-        // (1) Firstly we now need to create one more record that will represent the
-        // balance before that transaction
-        try {
-          await runInSavepoint(() =>
-            this.create({
-              accountId,
-              date: subDays(new Date(date), 1),
-              amount: account!.refInitialBalance,
-            }),
-          );
-        } catch (err) {
-          if (!(err instanceof UniqueConstraintError)) throw err;
-          // Seed row computed from the same `refInitialBalance` by every
-          // racing writer – the existing row already carries the right seed.
-        }
-
-        // (2) Then we create a record for that transaction
-        try {
-          await runInSavepoint(() =>
-            this.create({
-              accountId,
-              date,
-              amount: account!.refInitialBalance.add(amount),
-            }),
-          );
-        } catch (err) {
-          if (!(err instanceof UniqueConstraintError)) throw err;
-          await this.applyIncrementAtSql({ accountId, date, delta: amount });
-        }
-      } else {
-        try {
-          balanceForTxDate = await runInSavepoint(() =>
-            this.create({
-              accountId,
-              date,
-              amount: latestBalancePrior.amount.add(amount),
-            }),
-          );
-        } catch (err) {
-          if (!(err instanceof UniqueConstraintError)) throw err;
-          await this.applyIncrementAtSql({ accountId, date, delta: amount });
-        }
-      }
-    } else {
+    if (balanceForTxDate) {
       await this.applyIncrementAtSql({ accountId, date, delta: amount });
+    } else {
+      try {
+        await runInSavepoint(() =>
+          this.create({
+            accountId,
+            date,
+            amount: priorAmount.add(amount),
+          }),
+        );
+      } catch (err) {
+        if (!(err instanceof UniqueConstraintError)) throw err;
+        await this.applyIncrementAtSql({ accountId, date, delta: amount });
+      }
     }
 
     // Update the amount of all balances for the account that come after the date

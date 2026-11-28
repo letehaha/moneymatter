@@ -43,7 +43,7 @@ Todo app depende de alguns serviços externos. Um app confiável diz quais são 
 
 - **Stripe** cuida dos pagamentos. Ele recebe os dados do seu cartão, e o MoneyMatter nunca recebe o número do cartão.
 - **Resend** envia os e-mails de login e da conta.
-- **Sentry** recebe relatórios de falhas, que incluem seu e-mail. Uma sessão com erro pode incluir uma gravação, com todo o texto mascarado e as mídias bloqueadas.
+- **Sentry** recebe relatórios de falhas, vinculados ao ID da sua conta, mas não ao seu e-mail nem ao seu nome. Uma sessão com erro pode incluir uma gravação, com todo o texto mascarado e as mídias bloqueadas.
 - **PostHog** recebe análises de uso do produto vinculadas à sua conta e ao seu e-mail. Contas reais não têm gravação de sessão. Ative o Do Not Track no seu navegador para interromper as análises que o navegador envia. O servidor continua registrando eventos como logins.
 - **Seu provedor de dados bancários e seu provedor de IA**, se você usar sincronização bancária ou IA.
 

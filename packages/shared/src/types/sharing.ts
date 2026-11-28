@@ -240,6 +240,8 @@ export interface ShareInvitationModel {
 export interface WipeDataSharedResources {
   /** Accounts the user OWNS that another user currently has share access to. */
   accounts: Array<{ id: RecordId; name: string; recipientUserId: number }>;
+  /** Trackers the user OWNS that another user currently has share access to. */
+  trackers: Array<{ id: RecordId; name: string; recipientUserId: number }>;
   /** Households the user OWNS with at least one accepted member. */
   households: Array<{ shareId: RecordId; recipientUserId: number; permission: HouseholdSharePermission }>;
 }

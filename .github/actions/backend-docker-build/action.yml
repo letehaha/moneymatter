@@ -13,6 +13,10 @@ inputs:
     description: 'SENTRY_RELEASE - Release version (git SHA) for Sentry'
     required: false
     default: ''
+  app-version:
+    description: 'APP_VERSION - release version the backend reports (e.g. "1.2.3"); empty for an unversioned build'
+    required: false
+    default: ''
   image-tag:
     description: 'Docker image tag(s). Comma/space-separated for multiple (e.g. "latest,sha-abc1234"); each becomes a full ref on the be repo.'
     required: false
@@ -83,3 +87,4 @@ runs:
         tags: ${{ steps.tags.outputs.refs }}
         build-args: |
           SENTRY_RELEASE=${{ inputs.sentry-release }}
+          APP_VERSION=${{ inputs.app-version }}

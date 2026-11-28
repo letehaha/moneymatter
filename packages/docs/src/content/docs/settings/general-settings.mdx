@@ -19,7 +19,7 @@ This page walks through the options on the **General**, **Appearance** and **Lan
 
 </Steps>
 
-On a narrow screen, Settings first shows the list of pages. Use **Back to Settings** to return to it.
+On a narrow screen, Settings first shows the list of pages. Use **Back to settings** to return to it.
 
 There's no Save button on these pages. Every change is saved as soon as you make it.
 
@@ -43,15 +43,27 @@ Your choice is remembered by this browser only, so a new browser or device start
 
 ### Sidebar sections
 
-Choose which sections appear in the sidebar. **Bank Accounts** is always shown. You can hide **Portfolios**, **Ventures**, **Cars** and **Loans** if you don't use them. All of them are shown by default.
+Choose which sections appear in the sidebar. **Bank accounts** is always shown. You can hide **Portfolios**, **Ventures**, **Cars** and **Loans** if you don't use them. All of them are shown by default.
 
-You can also change this from the sidebar itself: click the small gear button next to the **Accounts** heading in the sidebar (not the **Settings** button at the top right). That menu also has **Hide zero balances**, which hides accounts with a zero balance, and any group whose accounts are all at zero. When [**Include credit limits in balance**](#include-credit-limits-in-balance) is on, it checks the balance after the credit limit is subtracted.
+You can also change this from the sidebar itself: click the small gear button next to the **Accounts** heading in the sidebar (not the **Settings** button at the top right). That menu also has **Hide zero balances**, which hides accounts with a zero balance, and any group whose accounts are all at zero. If an account is shared with you, it also has **Include shared accounts in total**, which decides whether shared accounts count in the sidebar's **Bank accounts** total. When [**Include credit limits in balance**](#include-credit-limits-in-balance) is on, it checks the balance after the credit limit is subtracted.
+
+### Sidebar navigation
+
+Choose which pages appear under **Accounts** in the sidebar menu: **Loans**, **Investments** and **Venture**. **All accounts** is always there. All of them are shown by default.
 
 ### Currency symbols
 
 Turn on **Use short currency symbols** to show amounts with short symbols like Rp, ₴ or zł instead of IDR, UAH or PLN. It changes how every amount in the app is displayed.
 
 The catch is that currencies sharing a symbol all look the same: USD, CAD, AUD and SGD all become $. If you hold several of those, leave this off.
+
+### Payee logos
+
+Under **Transactions**, **Payee logos** shows a payee's logo instead of the category icon in transaction rows, when the payee has one. It's on by default.
+
+### Support button
+
+On a [self-hosted](/getting-started/self-hosting/) install, the **Header** section has a **Support button** switch. It shows or hides the heart button at the top of the app, which opens a page where you can donate to MoneyMatter. It's on by default. The cloud version doesn't have this button.
 
 ## Language
 
@@ -80,6 +92,16 @@ The **General** page controls how your numbers are calculated and what forms sho
   hint="Open /settings/general at desktop width. Choose two categories in Count categories as savings, one in Tax categories, and set a Default account. Capture the whole General card, from Include credit limits in balance down to Optional transaction fields, in one image (zoom the browser to 80% if it doesn't fit)."
 />
 
+### Pay cycle starts on
+
+The day of the month your pay cycle starts, from 1 to 28. It starts at 1, which is the calendar month.
+
+Set it to the day you get paid, and the dashboard works in pay periods instead of calendar months. With 25, the dashboard opens on the 25th of one month to the 24th of the next, **Current month** picks that pay period, and the arrows move from one pay period to the next. It also applies to:
+
+- the dashboard's **Cash flow** and **Net worth** widgets, including their comparison with the previous period and the **Previous periods trend**;
+- the **Spending pace** widget, which follows the current pay period instead of the calendar month;
+- the [Cash flow report](/stats/analytics-reports/#cash-flow), which also offers **Current pay period**.
+
 ### Include credit limits in balance
 
 Off by default. When it's on, the credit limit of each credit account is subtracted from its balance. You see how much you actually owe instead of how much credit you have left.
@@ -90,7 +112,7 @@ For example, a credit card with a 1,000 EUR limit shows a balance of 700 EUR, me
 
 This changes more than charts:
 
-- **Stats:** the dashboard's **Balance trend** and **Net Worth** widgets, and the **Net Worth History** report in Analytics.
+- **Stats:** the dashboard's **Balance trend** and **Net worth** widgets, and the **Net worth history** report in Analytics.
 - **Displayed balances:** the account list in the sidebar, the **Accounts** page, the account's own page, and account group totals.
 - **Budget:** **Budgetable money** and **Ready to assign** in a budget that uses [a pool](/budgeting/ready-to-assign/).
 
@@ -100,9 +122,9 @@ Only accounts with a credit limit above 0 are affected. In stats, the limit isn'
 
 Choose categories that represent money you're setting aside, such as a "Savings" or "Emergency fund" category. Transactions in these categories, and in all their subcategories, drop out of cash-flow totals. That money then counts toward your monthly savings and savings rate instead of your expenses.
 
-For example, each month you pay 500 EUR into a savings plan you don't track in MoneyMatter and record it in your "Savings" category. Normally that's 500 EUR of expenses. With "Savings" chosen here, it leaves your expenses, so your net cash flow goes up by 500 EUR and your **Savings Rate** rises to match. If the money goes to one of your MoneyMatter accounts, record a [transfer](/transfers-and-refunds/how-transfers-work/) instead: transfers never count as expenses.
+For example, each month you pay 500 EUR into a savings plan you don't track in MoneyMatter and record it in your "Savings" category. Normally that's 500 EUR of expenses. With "Savings" chosen here, it leaves your expenses, so your net cash flow goes up by 500 EUR and your **Savings rate** rises to match. If the money goes to one of your MoneyMatter accounts, record a [transfer](/transfers-and-refunds/how-transfers-work/) instead: transfers never count as expenses.
 
-- It affects cash-flow views only: the **Cash Flow** report in Analytics, the dashboard's **Cash Flow** widget, and the **Per period** chart under **Over time** in **Trends Comparison**.
+- It affects cash-flow views only: the **Cash flow** report in Analytics, the dashboard's **Cash flow** widget, and the **Per period** chart under **Over time** in **Trends comparison**.
 - Other reports, like spending by category, still show these categories.
 - It applies to income in those categories too, not just spending.
 - Subcategories you create later are covered automatically.
@@ -113,11 +135,21 @@ See [how stats are calculated](/stats/how-stats-are-calculated/) for more on wha
 
 Choose the categories you record taxes in, such as "Taxes" or "Social security". Subcategories are included, and subcategories you create later are covered automatically.
 
-- In the money flow diagram of the [Cash Flow report](/stats/analytics-reports/#where-the-money-went), spending in these categories shows as **Taxes**, separate from your expenses.
+- In the money flow diagram of the [Cash flow report](/stats/analytics-reports/#where-the-money-went), spending in these categories shows as **Taxes**, separate from your expenses.
 - The [**Average tax rate**](/stats/dashboard/#average-tax-rate) dashboard widget uses them to work out how much of your income goes to taxes.
-- Everywhere else, including the Cash Flow chart and widget, taxes still count as expenses.
+- Everywhere else, including the Cash flow chart and widget, taxes still count as expenses.
 - Only spending moves to **Taxes**. A tax refund still counts as income.
 - A category chosen in both **Count categories as savings** and **Tax categories** counts as savings.
+
+### Income categories
+
+Choose the categories you record income in. Subcategories are included. When you sign up, the default **Income** category is chosen.
+
+This setting shapes the category list in the transaction form, through **Match categories to transaction type** below. It doesn't change how your stats are calculated.
+
+#### Match categories to transaction type
+
+With this on, the **Category** list in the transaction form shows only your income categories when you add income, and all the other categories when you add an expense. Search still finds every category. It's on by default, and only works once you've chosen at least one income category. On an account someone shared with you, the list isn't narrowed.
 
 ### Default account
 
@@ -138,13 +170,22 @@ Controls what the [Add Expense shortcut](/iphone/add-expense-shortcut/) on iPhon
 - **Show bank-connected accounts**: off by default, because transactions on bank-connected accounts arrive through sync. Turn it on to list them too.
 - **Hidden categories**: checked categories, with their subcategories, are hidden from the shortcut's category list.
 
-### Quick Start guide
+### Quick start guide
 
 Shows the Quick Start checklist: a panel on the right edge of the app on desktop, or a floating button on mobile. Turn it off to hide the checklist everywhere. You can turn it back on at any time. See [the Quick Start checklist](/getting-started/quick-start/#the-quick-start-checklist).
 
 ### Show upcoming transactions
 
-On by default. Pins a section at the top of the transactions list with scheduled payments that are overdue or due within the next 3 days.
+On by default. Pins the **Upcoming** section at the top of the **Transactions** page. It lists:
+
+- Your pending [planned transactions](/planned/planned-transactions/), oldest first, whatever their date. Up to 5 are shown, followed by a **+N more planned** line.
+- [Recurring payments](/planned/recurring-payments/) that are overdue or due within the next 3 days.
+
+The section is hidden while any filter is applied on the **Transactions** page. The eye button in the section's corner turns this setting off too.
+
+### Default payment type
+
+The **Payment type** that's already selected when you add a new transaction. It starts as **Credit card**. You can still change it in the form for each transaction.
 
 ### Optional transaction fields
 
@@ -161,7 +202,7 @@ Choose which extra fields appear in the transaction form. A field that already h
 
 ### Bank sync options <Badge text="Plus" variant="tip" />
 
-On the **General** page, these two switches come right after **Include credit limits in balance**.
+On the **General** page, these three settings come right after **Include credit limits in balance**.
 
 They only matter if you use [bank connections](/import/bank-connections/), which are part of the Plus plan. See [Plans and billing](/settings/plans-and-billing/).
 
@@ -176,6 +217,16 @@ It's off by default because a matched transaction becomes one side of a transfer
 Off by default. It only affects banks you connected through the Enable Banking provider. When it's on, transactions are saved before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until they're booked.
 
 Other connections work the same either way: SimpleFIN and Lunch Flow always import booked transactions only, and Monobank imports every transaction as a regular one.
+
+#### Bank sync schedule
+
+The two times of day your connected accounts sync on their own, shown in your local time. They start at 06:00 and 18:00 UTC, converted to your time zone. Pick the same time in both fields to sync once a day.
+
+The schedule covers automatic syncs only. You can still sync at any time. See [automatic sync](/import/bank-connections/#automatic-sync).
+
+## Notifications
+
+Below the **General** card, the **Notifications** card chooses which alerts reach you and where: **In-app**, **Push (iOS app)** or **Email**. It has **Watchlist alerts**, **Unrealized loss alerts**, **Payment reminders** and **Invitations**. See [choose how you're notified](/settings/notifications/#choose-how-youre-notified).
 
 ## Other settings areas
 
@@ -193,14 +244,16 @@ The settings menu has more pages. Here's what each one is for.
 - **Tags**: manage the tags you add to transactions. See [Tags](/transactions/tags/).
 - **Payees**: the list of merchants you transact with. See [Payees](/transactions/payees/).
 - **Accounts groups**: organize accounts into groups. See [Account groups](/accounts/account-groups/).
-- **Import/Export**: bring in data from files and other apps, or download your data as a zip for spreadsheets, taxes or moving elsewhere. See [Import from CSV](/import/import-from-csv/) and [Other import sources](/import/other-import-sources/).
+- **Import/Export**: bring in data from files and other apps, or download your data as a zip for spreadsheets, taxes or moving elsewhere. See [Import from CSV](/import/import-from-csv/), [Other import sources](/import/other-import-sources/) and [Export your data](/settings/export-data/).
 - **AI**: pick which AI model powers each feature, add your own models, and connect AI apps to your data.
 - **Shared with me**: data other people have shared with you.
 - **Household**: share your data with other people.
 
+See [Household and sharing](/settings/household-and-sharing/) for both.
+
 ## Good to know
 
-- **Most settings still work in read-only mode.** If your trial or plan has ended, you can still change the options on these pages, except the **Quick Start guide** switch. See [read-only mode](/settings/plans-and-billing/#read-only-mode).
+- **Most settings still work in read-only mode.** If your trial or plan has ended, you can still change the options on these pages, except the **Quick start guide** switch. See [read-only mode](/settings/plans-and-billing/#read-only-mode).
 - **Two settings change which transactions count as spending**: **Count categories as savings**, and **Match transfers with manual accounts**, which can turn a categorized transaction into a transfer.
 
 ## Related
@@ -208,3 +261,4 @@ The settings menu has more pages. Here's what each one is for.
 - [How stats are calculated](/stats/how-stats-are-calculated/)
 - [Base currency and currencies](/settings/base-currency-and-currencies/)
 - [Security and account](/settings/security-and-account/)
+- [Notifications](/settings/notifications/)

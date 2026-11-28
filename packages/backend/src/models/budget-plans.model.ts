@@ -78,6 +78,10 @@ export default class BudgetPlans
   @MoneyField({ allowNull: true })
   declare expectedIncome: Money | null;
 
+  /** Their spending (subtrees included) stays out of the outside-lines list but still lowers the pool. */
+  @Column({ type: DataType.ARRAY(DataType.UUID), allowNull: false, defaultValue: [] })
+  ignoredCategoryIds!: RecordId[];
+
   declare createdAt: Date;
   declare updatedAt: Date;
 

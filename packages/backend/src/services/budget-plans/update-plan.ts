@@ -3,13 +3,14 @@ import { BudgetPlanCarryPolicy } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
-import { ConflictError } from '@js/errors';
+import { ConflictError, ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { findPlan } from './find-plan';
 import { getPlan } from './get-plan';
 import { currentPeriodStart } from './periods/period-enumerator';
+import { ownerCategories } from './validate-line-categories';
 
 /**
  * A new plan default reaches every period of every line without its own
@@ -25,6 +26,7 @@ const updatePlanImpl = async ({
   poolEnabled,
   zeroSum,
   expectedIncome,
+  ignoredCategoryIds,
 }: {
   userId: number;
   planId: RecordId;
@@ -35,8 +37,18 @@ const updatePlanImpl = async ({
   zeroSum?: boolean;
   /** Decimal; `null` clears it. */
   expectedIncome?: number | null;
+  ignoredCategoryIds?: RecordId[];
 }) => {
   const plan = await findPlan({ planId, userId, lock: true });
+  let ignored = ignoredCategoryIds;
+  if (ignored?.length) {
+    const { byId } = await ownerCategories({ userId: plan.userId });
+    // An id already stored may have gone stale; it is dropped, not refused, so the list stays editable.
+    if (ignored.some((id) => !byId.has(id) && !plan.ignoredCategoryIds.includes(id))) {
+      throw new ValidationError({ message: t({ key: 'budgetPlans.categoryNotFound' }) });
+    }
+    ignored = ignored.filter((id) => byId.has(id));
+  }
   const income =
     expectedIncome == null
       ? expectedIncome
@@ -62,6 +74,7 @@ const updatePlanImpl = async ({
       poolFrom,
       zeroSum: poolOn ? zeroSum : false,
       expectedIncome: income,
+      ignoredCategoryIds: ignored,
     }),
   );
 

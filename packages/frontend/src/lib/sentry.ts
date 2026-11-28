@@ -151,24 +151,12 @@ export function initSentry({ app, router }: { app: App; router: Router }): void 
  * Set user context for error tracking.
  * Call this when user logs in.
  */
-export function setSentryUser({
-  userId,
-  email,
-  username,
-}: {
-  userId: string | number;
-  email?: string;
-  username?: string;
-}): void {
+export function setSentryUser({ userId }: { userId: string | number }): void {
   if (!isSentryEnabled()) {
     return;
   }
 
-  Sentry.setUser({
-    id: String(userId),
-    email,
-    username,
-  });
+  Sentry.setUser({ id: String(userId) });
 }
 
 /**

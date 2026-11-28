@@ -50,7 +50,6 @@ function identifyUserForTracking(user: UserInfoResponse) {
   identifyUser({
     userId: user.id,
     email: user.email ?? undefined,
-    username: user.username,
     properties: {
       is_demo: isDemo,
       user_role: user.role,
@@ -61,11 +60,7 @@ function identifyUserForTracking(user: UserInfoResponse) {
   });
 
   // Sentry error tracking
-  setSentryUser({
-    userId: user.id,
-    email: user.email ?? undefined,
-    username: user.username,
-  });
+  setSentryUser({ userId: user.id });
 }
 
 const HAS_EVER_LOGGED_IN_KEY = 'has-ever-logged-in';

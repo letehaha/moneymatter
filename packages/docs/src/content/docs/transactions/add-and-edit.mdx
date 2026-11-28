@@ -21,7 +21,8 @@ A transaction is a single movement of money: a coffee you paid for, a salary tha
 5. Check the **Category**. It starts with the first category in your list, so pick the right one.
 6. Check the **Datetime**. It starts at the current date and time.
 7. Optionally pick a **Payee** and fill in anything under **More options**, such as a **Note** or **Tags**.
-8. Click **Create**.
+8. If the money hasn't moved yet, turn on **Planned** next to the **Account** field (see [Planned](#planned)).
+9. Click **Create**.
 
 </Steps>
 
@@ -37,7 +38,7 @@ To record money moving between two of your own accounts, pick **Transfer** inste
 
 ### Create several transactions in a row
 
-In the **Add Transaction** form you open from the header, turn on **Create more** next to the **Create** button to keep the form open after each save. You see a **Transaction created** message, and the form clears for the next one. It keeps the type, the account (and the **To account** on a transfer), the **Datetime** and the **Payment type**; everything else starts fresh. **Planned** goes back to the account's default, and on an account that isn't bank-connected a future **Datetime** resets to now. **Create more** switches off again when you close the form. To keep the form open for just one save, press **Ctrl + Shift + Enter** (**⌘ + Shift + Enter** on a Mac).
+In the **Add transaction** form you open from the header, turn on **Create more** next to the **Create** button to keep the form open after each save. You see a **Transaction created** message, and the form clears for the next one. It keeps the type, the account (and the **To account** on a transfer), the **Datetime** and the **Payment type**; everything else starts fresh. **Planned** goes back to the account's default, and on an account that isn't bank-connected a future **Datetime** resets to now. **Create more** switches off again when you close the form. To keep the form open for just one save, press **Ctrl + Shift + Enter** (**⌘ + Shift + Enter** on a Mac).
 
 ## The fields
 
@@ -51,7 +52,7 @@ You can switch tabs while editing too, as long as the transaction is on a manual
 
 ### Amount
 
-Enter the amount in the account's currency. The currency code shows inside the field. The amount can't be negative, but 0 is allowed.
+Enter the amount in the account's currency. The currency code shows inside the field. The amount can't be negative, but 0 is allowed, except on a [planned](#planned) transaction.
 
 If the account's currency isn't your base currency, MoneyMatter also works out the amount in your base currency, using the exchange rate for the transaction's date. That converted amount is what your stats use. See [base currency and currencies](/settings/base-currency-and-currencies/#how-a-transaction-gets-its-base-currency-amount).
 
@@ -63,17 +64,29 @@ The account the money came from or went to. When you open the form:
 - Otherwise, it's your **Default account** from **Settings** → **General**, if you've set one. See [default account](/settings/general-settings/#default-account).
 - If you haven't, it's the first account in the list.
 
-Only [manual accounts](/accounts/create-an-account/), the ones you keep up to date yourself, are listed. Accounts connected to a bank aren't offered, because their transactions arrive from the bank itself. Archived accounts are hidden unless you turn on **Show archived accounts** in **Settings** → **General**; then they appear at the end of the list.
+Only [manual accounts](/accounts/create-an-account/), the ones you keep up to date yourself, are listed. Accounts connected to a bank aren't offered, because their transactions arrive from the bank itself. Turn on [Planned](#planned) to list them too: you can add a planned transaction to a bank-connected account, and the bank confirms it later. Loan and vehicle accounts aren't listed either; see [loans](/accounts/loans/) and [vehicles](/accounts/vehicles/). Archived accounts are hidden unless you turn on **Show archived accounts** in **Settings** → **General**; then they appear at the end of the list.
 
 ### Category
 
 Required for expenses and income. You can pick any category, whether it's a top-level one or a subcategory. The picker has a search box. You can't create a category from here; do that in [categories](/transactions/categories/) first.
 
+If the category has [default tags](/transactions/categories/#default-tags), they're added to **Tags**. Pick another category and only those automatic tags are swapped.
+
 The **Split** button next to the field lets you spread one transaction across several categories. See [split a transaction](/transactions/split-a-transaction/).
 
 ### Datetime
 
-The date and time of the transaction, in 24-hour format. It starts at the current moment. The calendar only offers dates up to today.
+The date and time of the transaction, in 24-hour format. It starts at the current moment. The calendar only offers dates up to today, unless [Planned](#planned) is on.
+
+### Planned
+
+Turn on **Planned**, next to the **Account** field, for an expense or income that hasn't happened yet. A planned transaction doesn't change the account balance until it's confirmed, by you or by a matching transaction from your bank or a file import. While **Planned** is on:
+
+- You can pick a future date.
+- Bank-connected accounts are listed in **Account**. If the form opens with a bank-connected account already selected, for example on that account's page, **Planned** is turned on for you, since only the bank adds real transactions there.
+- The **Transfer** tab is disabled, and you can't link a refund. The amount must be above 0.
+
+**Planned** isn't offered on loan and vehicle accounts, on accounts shared with you, or for transfers. When you edit a planned transaction on a manual account, turn **Planned** off and save to record it for real. Read the full guide in [planned transactions](/planned/planned-transactions/).
 
 ### Payee
 
@@ -93,15 +106,16 @@ If the payee has a default category and its **AI categorization** setting is **A
 
 ### More options
 
-- **Payment type:** how you paid. Choose from **Credit Card** (the default), **Bank Transfer**, **Cash**, **Debit Card**, **Mobile Payment**, **Voucher** or **Web Payment**.
+- **Payment type:** how you paid. Choose from **Credit card**, **Bank transfer**, **Cash**, **Debit card**, **Mobile payment**, **Voucher** or **Web payment**. New transactions start with **Credit card**, unless you pick another [default payment type](/settings/general-settings/#default-payment-type).
 - **Note:** free text, up to 1,000 characters. You can find transactions by their notes with the [search box](/transactions/search-and-filter/#search).
 - **Tags:** labels you can add on top of the category, such as "Need" or "Trip to Rome". You can pick several. Create them in [tags](/transactions/tags/).
 - **Attachments:** receipts and invoices. See [attachments](#attachments) below.
-- **Exclude from statistics:** for a one-off movement you'd rather not see in your reports, such as selling a property or lending money to a friend. Add it from the **Add** row and switch it on. The transaction keeps counting toward your balance and stays in your list, but the analytics reports, dashboard widgets, budget plans and trackers leave it out. On a transfer it matters only for a loan payment, since a plain transfer already stays out of the reports.
+- **Link refund:** marks this transaction as a refund of another one, or links the refunds it received. Click **Link refund** in the **Add** row and pick the transaction. It isn't offered for transfers, planned transactions, payments split across several accounts, or transactions on an account shared with you. See [refunds](/transfers-and-refunds/refunds/).
+- **Exclude from stats:** for a one-off movement you'd rather not see in your reports, such as selling a property or lending money to a friend. Add it from the **Add** row and switch it on. The transaction keeps counting toward your balance and stays in your list, but the analytics reports, dashboard widgets, budget plans and trackers leave it out. On a transfer it matters only for a loan payment, since a plain transfer already stays out of the reports.
 
 ### Optional fields
 
-A few extra fields only appear if you turn them on in **Settings** → **General** → **Optional transaction fields**. A field that already has a value on a transaction always shows. By default, only **Original amount** is on. See [optional transaction fields](/settings/general-settings/#optional-transaction-fields).
+A few extra fields are offered only if you turn them on in **Settings** → **General** → **Optional transaction fields**. Turned-on fields appear as buttons in the **Add** row under **More options**; click one to show the field. A field that already has a value on a transaction always shows. By default, only **Original amount** is on. See [optional transaction fields](/settings/general-settings/#optional-transaction-fields).
 
 - **Original amount:** for a purchase made in a currency different from the account's, the amount you actually paid in that currency. Pick the currency next to it. MoneyMatter suggests a value based on the exchange rate for the transaction date, which you can accept with **Apply**. It's for your records only and doesn't affect statistics. Not shown for transfers.
 - **External URL:** a link to the order, booking or receipt page. It must start with http:// or https://. The link icon next to the label opens it.
@@ -139,7 +153,7 @@ Large photos are shrunk before upload, so a phone picture takes up much less spa
 
 On a new transaction, the files upload right after you click **Create**. When you're creating a transfer, the **Attachments** field isn't shown; save the transfer first, then open it again to attach files.
 
-Deleting a transaction also deletes its attachments.
+Deleting a transaction for good, from **Trash**, also deletes its attachments.
 
 <Aside type="note" title="Which plans include attachments">
 Attachments are part of the Essential and Plus plans, and you can use them during the free trial. See [plans and billing](/settings/plans-and-billing/).
@@ -170,7 +184,7 @@ You can also create one from scratch with **New template**.
 
 <Steps>
 
-1. In **Add Transaction**, click **Templates**.
+1. In **Add transaction**, click **Templates**.
 2. Type in **Find a template…** to filter the list, if you have many.
 3. Click the template. The form fills in with its details.
 4. Check the fields, add anything missing (such as the amount), and click **Create**.
@@ -196,13 +210,24 @@ A template can store the type, account, amount, category, payee, tags, payment t
 
 <Steps>
 
-1. Click the transaction in any list, for example on the **All Transactions** page or an account's page.
-2. Change what you need in the **Edit Transaction** form.
+1. Click the transaction in any list, for example on an account's page. In **Table view** on the **All transactions** page, click the arrow icon (↗) at the end of its row instead. Clicking a cell there edits just that cell (see [working with the table](/transactions/search-and-filter/#working-with-the-table)).
+2. Change what you need in the **Edit transaction** form.
 3. Click **Edit** to save.
 
 </Steps>
 
 On a manual account you can change every field, including moving the transaction to another manual account or switching between **Expense**, **Income** and **Transfer**.
+
+A few kinds of transactions open their own view instead of the **Edit transaction** form:
+
+| Transaction | Opens | Where to change it |
+| --- | --- | --- |
+| Transfer to or from an investment portfolio | **Portfolio-linked transaction** | **Unlink from portfolio** in that view, or the [portfolio](/investments/portfolios/) |
+| Transaction linked to a venture deal | **Venture-linked transaction** | **Open venture**, then the deal's events. See [venture](/investments/venture/) |
+| Manual value change of a vehicle | **Vehicle adjustment** | The **Open** button with the vehicle's name, then manage the override on the vehicle's page. See [vehicles](/accounts/vehicles/) |
+| Loan payment | **Edit loan payment** | That dialog. See [loans](/accounts/loans/) |
+
+A planned transaction opens the normal form. On a manual account, turn **Planned** off and save to record it for real. See [planned transactions](/planned/planned-transactions/#confirm-a-planned-transaction).
 
 A few changes have side effects:
 
@@ -214,7 +239,7 @@ To change many transactions at once, use [bulk edit](/transactions/search-and-fi
 
 ### Duplicate a transaction
 
-To add a transaction like one you already have, open it and click **Duplicate**. The **Add Transaction** form opens with everything you see in the form copied over, including changes you haven't saved, and dated now. The original stays as it was. Refund links and attachments aren't copied. A copy on a bank-connected account starts as planned, since only the bank adds real transactions there. That's also why **Duplicate** isn't offered on a bank-connected account shared with you, or for a planned transaction on any account shared with you: only the owner can add plans. It isn't offered on loan or vehicle accounts either.
+To add a transaction like one you already have, open it and click **Duplicate**. The **Add transaction** form opens with everything you see in the form copied over, including changes you haven't saved, and dated now. The original stays as it was. Refund links and attachments aren't copied. A copy on a bank-connected account starts as planned, since only the bank adds real transactions there. That's also why **Duplicate** isn't offered on a bank-connected account shared with you, or for a planned transaction on any account shared with you: only the owner can add plans. It isn't offered on loan or vehicle accounts either.
 
 You can also duplicate a transfer between two of your own accounts, including one between accounts in different currencies, and an [out of wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transfer. The copy opens on the **Transfer** tab going the same way as the original, from the same **From account** to the same **To account**, whichever side you opened. It keeps both amounts, the note, the tags and the payment type, but not the external link, reference or location. On a transfer between currencies, check that the received amount still matches today's rate. **Duplicate** isn't offered for:
 
@@ -225,7 +250,7 @@ You can also duplicate a transfer between two of your own accounts, including on
 
 ## Bank-synced transactions
 
-Transactions that arrive through a [bank connection](/import/bank-connections/) mirror what your bank reports. Some fields are locked so your records don't drift away from the bank's.
+Transactions that arrive through a [bank connection](/import/bank-connections/) mirror what your bank reports. Some fields are locked so your records don't drift away from the bank's. A [planned transaction](/planned/planned-transactions/) on a bank-connected account isn't locked: you can change or delete it until the bank confirms it.
 
 | You can't change | You can change |
 | --- | --- |
@@ -252,15 +277,16 @@ Bank-synced transactions **can't be deleted**, so the **Delete** button isn't sh
 
 1. Open the transaction.
 2. Click **Delete**.
-3. Confirm with **Delete** in the **Delete this transaction?** window.
+3. Confirm in the **Move to Trash?** window.
 
 </Steps>
 
-This can't be undone. What else happens:
+The transaction moves to [**Trash**](/transactions/trash/) and stops counting toward balances and stats. A **Moved to Trash** message with an **Undo** button appears for a few seconds. It stays there for 30 days, then it's removed for good. To get it back, click **Trash** at the top of the **All transactions** page, pick the transaction and click **Restore**. Its splits, attachments and refund links come back with it. A refund link that no longer fits, for example because the other transaction changed in the meantime, is dropped, and you're told how many. To remove a transaction for good right away, click **Delete permanently** in **Trash**.
 
-- Its splits and attachments are deleted too.
-- Any refund links are removed. The transactions on the other side of those links stay.
-- **Deleting one side of a transfer deletes both sides**, since a transfer only makes sense as a pair. See [delete a transfer](/transfers-and-refunds/how-transfers-work/#delete-a-transfer).
+What else happens:
+
+- **Deleting one side of a transfer moves both sides to Trash**, since a transfer only makes sense as a pair. See [delete a transfer](/transfers-and-refunds/how-transfers-work/#delete-a-transfer).
+- A transaction linked to a portfolio or a venture deal, or that is part of a payment split across several accounts, must be unlinked or removed from that payment first.
 
 To delete several transactions at once, see [bulk delete](/transactions/search-and-filter/#delete-several-transactions).
 
@@ -269,13 +295,13 @@ To delete several transactions at once, see [bulk delete](/transactions/search-a
 These work while the transaction form is open:
 
 - **Ctrl + Enter** (**⌘ + Enter** on a Mac) saves the transaction.
-- **Ctrl + Shift + Enter** (**⌘ + Shift + Enter** on a Mac) creates the transaction and keeps the **Add Transaction** form you opened from the header open for the next one.
+- **Ctrl + Shift + Enter** (**⌘ + Shift + Enter** on a Mac) creates the transaction and keeps the **Add transaction** form you opened from the header open for the next one.
 - **Alt + T** (**⌥ Option + T** on a Mac) opens or closes the templates list when you're adding an expense or income.
 - **Ctrl + D** (**⌘ + D** on a Mac) duplicates the transaction you're editing, when **Duplicate** is offered.
 
 ## Good to know
 
-- **You can't add transactions to a bank-connected account by hand.** Real transactions on those accounts come from the bank.
+- **On a bank-connected account you can only add planned transactions.** Real transactions on those accounts come from the bank, which also confirms your plans. See [planned transactions](/planned/planned-transactions/).
 - **Bank-synced transactions that nothing else categorizes land in "Other".** Open them and pick a better category any time.
 - **After a trial or plan ends, your data becomes read-only.** You can still look at everything, but you can't add or edit transactions until you subscribe. See [read-only mode](/settings/plans-and-billing/#read-only-mode).
 
@@ -285,5 +311,6 @@ These work while the transaction form is open:
 - [Split a transaction](/transactions/split-a-transaction/)
 - [How transfers work](/transfers-and-refunds/how-transfers-work/)
 - [Refunds](/transfers-and-refunds/refunds/)
+- [Planned transactions](/planned/planned-transactions/)
 - [Payees](/transactions/payees/)
 - [Add Expense shortcut on iPhone](/iphone/add-expense-shortcut/)

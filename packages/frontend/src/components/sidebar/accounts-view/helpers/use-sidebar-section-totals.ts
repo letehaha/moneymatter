@@ -12,6 +12,7 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
 import { flattenAccounts } from './account-totals';
+import { useIncludeSharedInTotal } from './use-include-shared-in-total';
 
 /**
  * Per-section account splits, base-currency totals and visibility flags for the accounts view.
@@ -39,10 +40,16 @@ export const useSidebarSectionTotals = () => {
 
   const { baseCurrencyCode, sumBaseBalance } = useBaseBalanceTotals();
 
-  // Bank Accounts total = every account rendered under the section (grouped + ungrouped).
-  const bankAccountsTotal = computed(() =>
-    sumBaseBalance({ accounts: [...Object.values(accountsInGroups.value), ...accountsWithoutGroups.value] }),
-  );
+  const { includeSharedInTotal, sharedWithMeIds } = useIncludeSharedInTotal();
+
+  // Bank Accounts total = every account rendered under the section (grouped + ungrouped),
+  // minus accounts shared with the user when they opt out.
+  const bankAccountsTotal = computed(() => {
+    const accounts = [...Object.values(accountsInGroups.value), ...accountsWithoutGroups.value];
+    return sumBaseBalance({
+      accounts: includeSharedInTotal.value ? accounts : accounts.filter((a) => !sharedWithMeIds.value.has(a.id)),
+    });
+  });
 
   // Non-critical sidebar batches (portfolio roll-up summaries, venture deals) are deferred until
   // the browser is idle so above-the-fold dashboard data loads first.

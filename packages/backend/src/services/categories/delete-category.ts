@@ -3,6 +3,7 @@ import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import * as Categories from '@models/categories.model';
+import Subscriptions from '@models/subscriptions.model';
 import TrackerCategories from '@models/tracker-categories.model';
 import TrackerLineCategories from '@models/tracker-line-categories.model';
 import TrackerLines from '@models/tracker-lines.model';
@@ -146,6 +147,10 @@ export const deleteCategory = withTransaction(async (payload: DeleteCategoryPayl
       to: replacement.id,
     });
     await TransactionTemplates.update(
+      { categoryId: replacement.id },
+      { where: { userId: payload.userId, categoryId: category.id } },
+    );
+    await Subscriptions.update(
       { categoryId: replacement.id },
       { where: { userId: payload.userId, categoryId: category.id } },
     );

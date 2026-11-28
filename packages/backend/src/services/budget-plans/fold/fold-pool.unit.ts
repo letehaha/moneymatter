@@ -26,7 +26,7 @@ const period = ({
 
 const foldWith = ({ assignments }: { assignments: FoldAssignment[] }) =>
   foldPlan({
-    plan: { carryPolicy: 'floor' },
+    plan: { carryPolicy: 'floor', ignoredCategoryIds: [] },
     periods: [
       { id: 'jul', startDate: '2026-07-01', endDate: '2026-08-01', carryReset: false, note: null },
       { id: 'aug', startDate: '2026-08-01', endDate: '2026-09-01', carryReset: false, note: null },

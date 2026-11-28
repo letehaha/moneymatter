@@ -1,0 +1,128 @@
+---
+title: Import investment transactions
+description: Bring your trade history into a portfolio from a broker or exchange export. Let AI read any file, or map the columns of a CSV yourself, then review every holding before anything is saved.
+sidebar:
+  order: 5
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+Instead of adding your buys and sells one by one, you can import them from your broker's or exchange's export. Nothing is saved until you've checked it on the review step.
+
+To start, open a portfolio and click **Import** on the **Holdings** tab. In a portfolio with no holdings yet, click **Or import from a file**. The **Import transactions** page opens for that portfolio.
+
+There are two ways to import:
+
+- **AI import**: upload any file, or paste text, and AI finds the trades. It uses AI, so it counts toward your AI allowance or runs on your own model.
+- **CSV import**: upload a CSV and tell MoneyMatter which column is which. No AI is used, so it's available on every plan.
+
+## AI import
+
+<Steps>
+
+1. Keep **AI import** selected at the top.
+2. On the **File** tab, drop a CSV, TXT or PDF file, such as an exchange export or a broker statement. Or switch to **Paste text** and paste your transaction list.
+3. Optionally click **Estimate cost** to see the **Estimated cost** and the **Model** that will read the file.
+4. Click **Extract**. When AI is done, the [review step](#review-and-import) opens.
+
+</Steps>
+
+AI only picks up rows that your file marks as a buy or a sell. Dividends, deposits, withdrawals, staking rewards and other rows of their own type are left out. Add those by hand, or use CSV import, which can bring in dividends.
+
+**Extract** is greyed out once you've used up this month's included AI. Which plans include AI, and how to use your own model, is explained in [AI features](/ai/ai-features/#which-plan-includes-ai).
+
+<Screenshot
+  src="/screenshots/investments/import-upload.png"
+  alt="The Import transactions page with AI import selected, a broker PDF dropped on the File tab, the estimated cost and model, and the Estimate cost and Extract buttons."
+  hint="As the docs test user (40-day trial, so the included AI is on), create a portfolio 'Brokerage', open /portfolios/<id>/import-transactions, keep AI import, drop a small PDF or CSV of trades and click Estimate cost. Crop to the page title and the upload card."
+/>
+
+## CSV import
+
+<Steps>
+
+1. Select **CSV import** at the top.
+2. Drop your CSV file and click **Continue to mapping**. The file can have up to 50,000 rows.
+3. Map the columns, as described below.
+4. Click **Continue to review**.
+
+</Steps>
+
+### Map the columns
+
+The top of the page shows the file name, how many rows it has, the delimiter it uses, and a **Preview** of the rows. Columns whose header looks familiar, such as "Ticker", "Qty" or "Commission", are picked for you.
+
+| Column | Required | What it holds |
+|---|---|---|
+| **Symbol** | Yes | The ticker, such as AAPL or BTC. |
+| **Date** | Yes | The trade date. |
+| **Side / action** | Yes | Whether the row is a buy, a sell, a dividend and so on. |
+| **Quantity** | Yes | How many shares or coins. |
+| **Price** | Yes | The price per share or coin. |
+| **Fees** | No | Commission or fees. Without it, fees are 0. |
+| **Currency** | No | The currency the trade was paid in, such as USD or USDT. |
+| **Name** | No | The security's name, shown on the review step only. |
+
+Under **Defaults**:
+
+- **Default currency** is used for rows with no currency, or when you don't map a **Currency** column.
+- **Default asset class**, **Stocks** or **Crypto**, helps match your symbols to the right securities. Pick the one most rows are. You can still change any match on the review step.
+
+<Screenshot
+  src="/screenshots/investments/import-column-mapping.png"
+  alt="The column mapping step with the Preview table, the Required columns Symbol, Date, Side / action, Quantity and Price mapped, the Optional columns, the Defaults, and the Side value mapping with BUY, SELL, DIVIDEND and DEPOSIT."
+  hint="On the same portfolio, choose CSV import and upload a CSV with headers Date,Ticker,Action,Quantity,Price,Commission,Currency and rows using the actions BUY, SELL, DIVIDEND and DEPOSIT. Click Continue to mapping. Capture the full mapping card."
+/>
+
+### Side value mapping
+
+**Side value mapping** lists every value found in your **Side / action** column. Pick what each one means: **Buy**, **Sell**, **Dividend**, **Transfer**, **Tax**, **Fee**, **Cancel**, **Other** or **Skip these rows**. Every value needs a pick before you can continue.
+
+Common words like "buy", "sold" or "dividend" are matched for you. Deposits and withdrawals are set to **Skip these rows**, because the import doesn't bring in cash movements. Record those as [cash transactions](/investments/portfolios/#cash) instead.
+
+<Aside type="caution" title="Only buys, sells and dividends are imported">
+Rows mapped to **Transfer**, **Tax**, **Fee**, **Cancel** or **Other** show up on the review step, but they're skipped when you import, with a warning that the category isn't supported yet.
+</Aside>
+
+Rows with a missing symbol, a date that can't be read, or a quantity, price or fee that isn't a number are skipped. The review step lists them under **Warnings**, with their row numbers.
+
+## Review and import
+
+The review step groups the transactions by security, one row per holding:
+
+- **Security**: the security MoneyMatter matched the symbol to. If it couldn't find one, you see "We couldn't auto-match…". Click the field to search and pick the right one, or to fix a wrong match.
+- **Currency**: the currency the trades were paid in.
+- **Transactions**: how many there are. Click **Expand** to see and edit them.
+
+In the expanded list you can change each transaction's **Date**, **Type** (**Buy**, **Sell** or **Dividend**), **Quantity**, **Price** and **Fees**. **Amount** updates as you type. Use the bin buttons to remove a single transaction (**Delete transaction**) or a whole holding (**Delete holding**).
+
+A holding that the portfolio already has shows **Will merge into existing holding**: the new transactions are added to it. Two rows can't point to the same security. If they do, you see **Same security is picked on another row** until you change or delete one of them.
+
+**Import** stays greyed out until every holding has a security, a currency and at least one transaction with a date, a quantity above 0, and a price and fees of 0 or more.
+
+<Screenshot
+  src="/screenshots/investments/import-review.png"
+  alt="The review step with three holdings, one expanded to show its transactions with Date, Type, Quantity, Price, Fees and Amount, one transaction with a Possible duplicate badge, and the Back and Import buttons."
+  hint="Use the portfolio's existing VOO buy (or add one by hand), then CSV-import a file that repeats that buy with the same date, price and amount, plus a few more VOO, AAPL and BTC trades. BTC is not auto-matched with the default Stocks asset class: click Pick security… on it and choose BTC — Bitcoin. On the review step, expand VOO so the Possible duplicate badge shows. Do not click Import. Crop to the review card and the buttons below it."
+/>
+
+### Possible duplicates
+
+A buy or sell gets a **Possible duplicate** badge when the portfolio already has a transaction for the same security, of the same type, with exactly the same price and amount, within 3 days of it. Hover the badge for details.
+
+Click the badge to skip that transaction. It then reads **Skipping**. If you leave it, the transaction is imported as a new one next to the existing one. Nothing is merged or overwritten.
+
+### Import
+
+Click **Import**. You go back to the portfolio, and a message says how many transactions were added. If some holdings or transactions couldn't be imported, the message lists how many and why.
+
+Imported transactions work like the ones you add by hand: buys take cash from the portfolio, sells and dividends add to it, and price history is loaded for securities that are new to MoneyMatter.
+
+To change your mapping, click **Back** on the review step. CSV import takes you back to the mapping with your picks kept. AI import takes you back to the upload.
+
+## Related
+
+- [Portfolios](/investments/portfolios/)
+- [Holding page](/investments/holding-page/)
+- [AI features](/ai/ai-features/)
