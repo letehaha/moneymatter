@@ -41,7 +41,8 @@ interface GetCashFlowParams extends StatsScopeFilters {
   /** Starts `monthly` buckets on the user's payday instead of the 1st. */
   alignToPayday?: boolean;
   /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
-  decimals: number;
+de    cimals: number;
+    timezone?: string;
 }
 
 type CategoryInfo = AccessibleCategoryInfo;
@@ -55,7 +56,7 @@ interface PeriodCategoryData {
   income: number;
   expenses: number;
   categories: Map<string, CategoryAmounts>; // categoryId -> amounts by type (aggregated by target category)
-}
+    
 
 /**
  * Resolves the category a leg is reported under.
@@ -128,9 +129,10 @@ export const getCashFlow = withTransaction(
     excludePlanned,
     alignToPayday,
     decimals,
+      timezone,
   }: GetCashFlowParams): Promise<GetCashFlowResponse> => {
     const { savingsCategoryIds, payday } = await getUserSettings({ userId });
-    const buckets = generatePeriodBuckets({ from, to, granularity, payday: alignToPayday ? payday : 1 });
+    const buckets = generatePeriodBuckets({ from, to, granularity, payday: alignToPayday ? payday : 1, timezone });
 
     if (granularity === 'daily' && buckets.length > MAX_DAILY_BUCKETS) {
       throw new ValidationError({
@@ -261,7 +263,7 @@ export const getCashFlow = withTransaction(
         : null;
       if (categoryId && aggregationCategoryId === null) return;
 
-      const bucketIndex = findBucketIndex({ transactionTime: time, buckets });
+      const bucketIndex = findBucketIndex({ transactionTime: time, buckets, timezone });
       if (bucketIndex === -1) return;
 
       const periodData = periodDataMap.get(bucketIndex)!;
