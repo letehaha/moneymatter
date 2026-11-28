@@ -29,7 +29,8 @@
         "placeholderFrom": ">= than",
         "placeholderTo": "<= than",
         "compactFrom": "Min amount",
-        "compactTo": "Max amount"
+        "compactTo": "Max amount",
+              "baseCurrency": "Compare in base currency"
       },
       "refundsFilter": {
         "label": "Refunds"
