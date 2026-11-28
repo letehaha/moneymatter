@@ -14,8 +14,10 @@
     <AmountRangeFilter
       :amount-gte="filters.amountGte"
       :amount-lte="filters.amountLte"
+          :amount-currency="filters.amountCurrency"
       @update:amount-gte="$emit('update:filters', { ...filters, amountGte: $event })"
       @update:amount-lte="$emit('update:filters', { ...filters, amountLte: $event })"
+          @update:amount-currency="$emit('update:filters', { ...filters, amountCurrency: $event })"
     />
 
     <ExclusionsFilter
