@@ -53,6 +53,7 @@ export const transactionFilterInput = {
     ),
   amountGte: z.number().optional().describe('Minimum amount (positive decimal, in the original currency)'),
   amountLte: z.number().optional().describe('Maximum amount (positive decimal, in the original currency)'),
+    amountCurrency: z.enum(['original', 'base']).optional().describe('Compare the amount bounds in the base currency (refAmount) when base is chosen; omit for the original currency.'),
   noteSearch: z.string().optional().describe('Search the note: comma-separated terms'),
   search: z
     .string()
@@ -138,6 +139,8 @@ export function hasNarrowingFilter({ filters }: { filters: ReturnType<typeof par
     filters.endDate,
     filters.amountGte,
     filters.amountLte,
+      filters.refAmountGte,
+      filters.refAmountLte,
     filters.transactionType,
     filters.accountType,
     filters.categorizationSource,
