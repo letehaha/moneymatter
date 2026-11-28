@@ -29,7 +29,6 @@ export { getScopedEnabledPortfolios } from './scoped-portfolios';
 export { fetchSavingsTransactions } from './savings-transactions';
 
 type ColumnName = 'time' | 'date';
-
 interface DateQuery {
   // yyyy-mm-dd
   from?: string;
@@ -87,15 +86,15 @@ const GRANULARITY_SPECS: Record<StatsGranularity, GranularitySpec> = {
   yearly: { startOf: startOfYear, endOf: endOfYear, advance: (date) => addYears(date, 1) },
   quarterly: { startOf: startOfQuarter, endOf: endOfQuarter, advance: (date) => addQuarters(date, 1) },
   monthly: { startOf: startOfMonth, endOf: endOfMonth, advance: (date) => addMonths(date, 1) },
-  biweekly: {
-    startOf: (date) => startOfWeek(date, WEEK_OPTS),
-    endOf: (date) => endOfWeek(addWeeks(date, 1), WEEK_OPTS),
-    advance: (date) => addWeeks(date, 2),
-  },
   weekly: {
     startOf: (date) => startOfWeek(date, WEEK_OPTS),
     endOf: (date) => endOfWeek(date, WEEK_OPTS),
     advance: (date) => addWeeks(date, 1),
+  },
+  biweekly: {
+    startOf: (date) => startOfWeek(date, WEEK_OPTS),
+    endOf: (date) => endOfDay(addDays(addWeeks(date, 2), -1)),
+    advance: (date) => addWeeks(date, 2),
   },
   daily: { startOf: startOfDay, endOf: endOfDay, advance: (date) => addDays(date, 1) },
 };
@@ -169,29 +168,25 @@ export const generatePeriodBuckets = ({
 };
 
 /**
- * Index of the bucket a transaction belongs to, or -1 when it falls outside the range.
+ * Index of the bucket a transaction time falls into, or -1 when it is outside every bucket.
+ * Both edges are inclusive, so a time exactly on a `periodStart` or `periodEnd` counts.
  * With `timezone`, the transaction is placed by its local calendar date, so a transaction
  * at 02:22 on the 1st in GMT+3 lands in that month's bucket even though its UTC instant
  * is still on the last day of the previous month.
  */
-export function findBucketIndex({
+export const findBucketIndex = ({
   transactionTime,
   buckets,
   timezone,
 }: {
-  transactionTime: string | Date;
+  transactionTime: Date;
   buckets: PeriodBucket[];
   /** IANA timezone of the requesting user, e.g. `Europe/Kyiv`. */
   timezone?: string;
-}): number {
-  const time = (timezone ? zonedCalendarDate(transactionTime, timezone) : new Date(transactionTime)).getTime();
+}): number => {
+  const time = (timezone ? zonedCalendarDate(transactionTime, timezone) : transactionTime).getTime();
   if (Number.isNaN(time)) {
     return -1;
   }
-  for (let i = buckets.length - 1; i >= 0; i -= 1) {
-    if (time >= buckets[i].periodStart.getTime()) {
-      return i;
-    }
-  }
-  return -1;
-}
+  return buckets.findIndex((bucket) => time >= bucket.periodStart.getTime() && time <= bucket.periodEnd.getTime());
+};
