@@ -60,6 +60,7 @@ export const transactionFilterFields = {
   // Amount filters accept decimals from API
   amountLte: z.preprocess((val) => Number(val), z.number().positive()).optional(),
   amountGte: z.preprocess((val) => Number(val), z.number().positive()).optional(),
+    amountCurrency: z.enum(['original', 'base']).optional(),
   noteSearch: z
     .string()
     .optional()
@@ -110,20 +111,28 @@ export const transactionFiltersSchema = withDateOrder(
  * amounts); the transactions model date-filters on `startDate`/`endDate` and compares
  * amounts as `Money`. Both are mapped here, at the HTTP boundary.
  */
-export const toServiceFilters = <T extends { from?: string; to?: string; amountGte?: number; amountLte?: number }>({
+export const toServiceFilters = <T extends { from?: string; to?: string; amountGte?: number; amountLte?: number ; amountCurrency?: 'original' | 'base'}>({
   from,
   to,
   amountGte,
   amountLte,
+    amountCurrency,
   ...rest
-}: T) => ({
-  ...rest,
-  startDate: from,
-  endDate: to,
-  amountGte: amountGte !== undefined ? Money.fromDecimal(amountGte) : undefined,
-  amountLte: amountLte !== undefined ? Money.fromDecimal(amountLte) : undefined,
-});
+}: T) => {
+    const useBaseCurrency = amountCurrency === 'base';
+    const toMoney = (value: number | undefined) =>
+          value !== undefined ? Money.fromDecimal(value) : undefined;
+    return { 
+        ...rest,
+      startDate: from,
+    endDate: to,
+    amountGte: useBaseCurrency ? undefined : toMoney(amountGte),      
 
+  amountLte: useBaseCurrency ? undefined : toMoney(amountLte),
+    refAmountGte: useBaseCurrency ? toMoney(amountGte) : undefined,      
+    refAmountLte: useBaseCurrency ? toMoney(amountLte) : undefined,      
+};
+};
 /** A bulk action targets either explicit ids or everything matching the list filters. */
 export const bulkTargetFields = {
   transactionIds: z.array(recordId()).min(1, 'At least one transaction ID required').optional(),
