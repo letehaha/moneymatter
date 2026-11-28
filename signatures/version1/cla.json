@@ -135,6 +135,14 @@
       "created_at": "2026-11-20T02:43:24Z",
       "repoId": 935666958,
       "pullRequestNo": 920
+    },
+    {
+      "name": "andres-aguilar-dev",
+      "id": 207197374,
+      "comment_id": 7243838256,
+      "created_at": "2026-11-28T18:30:11Z",
+      "repoId": 935666958,
+      "pullRequestNo": 947
     }
   ]
 }
