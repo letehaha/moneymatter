@@ -41,6 +41,7 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'POST /api/v1/notifications/device-tokens',
   'DELETE /api/v1/notifications/device-tokens/:token',
   'POST /api/v1/notifications/:id/read',
+  'POST /api/v1/notifications/:id/dismiss',
   'POST /api/v1/admin/notifications/broadcast',
 
   // Billing and admin plan grants: Stripe sessions and plan flags, no monetary data.

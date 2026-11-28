@@ -59,8 +59,8 @@ test.describe('Investment Calculator', () => {
     const labelCount = await inputLabels.count();
     expect(labelCount).toBeGreaterThanOrEqual(4);
 
-    // Number inputs should be present (initial balance input)
-    await expect(page.locator('input[type="number"]').first()).toBeVisible();
+    // Initial balance input should be present
+    await expect(page.locator('input[inputmode="decimal"]').first()).toBeVisible();
 
     // Indicator selector (combobox)
     const combobox = page.locator('button[role="combobox"]');
@@ -102,7 +102,7 @@ test.describe('Investment Calculator', () => {
   });
 
   test('changing initial balance updates summary', async ({ page }) => {
-    const balanceInput = page.locator('input[type="number"]').first();
+    const balanceInput = page.locator('input[inputmode="decimal"]').first();
     await expect(balanceInput).toBeVisible({ timeout: 10_000 });
 
     // Set a specific large balance and blur to trigger native @change
@@ -143,7 +143,7 @@ test.describe('Investment Calculator', () => {
 
   test('slider range popover opens with min/max inputs', async ({ page }) => {
     // Find the settings button next to the balance input
-    const balanceInput = page.locator('input[type="number"]').first();
+    const balanceInput = page.locator('input[inputmode="decimal"]').first();
     await expect(balanceInput).toBeVisible({ timeout: 10_000 });
     const settingsBtn = balanceInput.locator('xpath=..').locator('button').first();
     await settingsBtn.click();
