@@ -3,10 +3,12 @@ import { oauthProvider } from '@better-auth/oauth-provider';
 import { passkey } from '@better-auth/passkey';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
 import { OAUTH_PROVIDER, SocialOAuthProvider } from '@bt/shared/types';
-import { IOS_APP_ORIGIN } from '@common/const/ios-app-origin';
 import { EnvVar, isEnvConfigured } from '@common/utils/env';
 import { getAppleClientSecretFromEnv } from '@config/apple-client-secret';
+import { nativeAppPlugin } from '@config/auth-hooks/native-app-plugin';
 import { createSessionHooks } from '@config/auth-hooks/session-hooks';
+import { isSelfHost } from '@config/is-self-host';
+import { getAppCallbackOrigins, getNativeAppleAudience, resolveServerAuthority } from '@config/native-app-auth';
 import { oidcConfig } from '@config/oidc';
 import { shouldUseSecureCookies } from '@config/should-use-secure-cookies';
 import { isAuthApiError } from '@controllers/helpers/error-handler';
@@ -69,6 +71,7 @@ const SESSION_COOKIE_CACHE_MAX_AGE = 5 * 60;
 
 const OAUTH_BASE_URL = process.env.BETTER_AUTH_URL || 'https://localhost:8081';
 const OAUTH_MCP_URL = process.env.MCP_BASE_URL || OAUTH_BASE_URL;
+const SERVER_AUTHORITY = resolveServerAuthority({ baseUrl: OAUTH_BASE_URL });
 // MCP clients send the resource URL (e.g. https://mcp.moneymatter.app/mcp) as the token audience.
 export const OAUTH_RESOURCE_IDENTIFIERS = [...new Set([OAUTH_BASE_URL, OAUTH_MCP_URL, `${OAUTH_MCP_URL}/mcp`])];
 const DEFAULT_SESSION_CACHE_VERSION = '1';
@@ -82,6 +85,10 @@ const DEV_TRUSTED_ORIGINS =
 // ponytail: signed once at boot and valid for 6 months; a process running longer breaks web Apple sign-in.
 // Re-sign on a timer if deploys ever get that rare.
 const appleClientSecret = getAppleClientSecretFromEnv();
+const nativeAppleAudience = getNativeAppleAudience();
+const appleServicesId = isEnvConfigured(EnvVar.APPLE_CLIENT_ID, process.env.APPLE_CLIENT_ID)
+  ? process.env.APPLE_CLIENT_ID!
+  : null;
 
 const SOCIAL_PROVIDER_CONFIGURED: Record<SocialOAuthProvider, boolean> = {
   [OAUTH_PROVIDER.google]:
@@ -108,9 +115,9 @@ export const auth = betterAuth({
       .map((o) => o.trim())
       .filter(Boolean),
     ...DEV_TRUSTED_ORIGINS,
-    // Native iOS app: callback scheme, and the `expo-origin` value its cookie-bearing requests must send.
+    // Native iOS app: callback schemes, and the `expo-origin` value its cookie-bearing requests must send.
     // Kept out of ALLOWED_ORIGINS, which also feeds browser CORS.
-    IOS_APP_ORIGIN,
+    ...getAppCallbackOrigins({ selfHost: isSelfHost() }),
     // Apple posts the OAuth callback (response_mode=form_post) from its own origin.
     ...(appleClientSecret ? ['https://appleid.apple.com'] : []),
   ],
@@ -277,14 +284,13 @@ export const auth = betterAuth({
       enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.github],
     },
     apple: {
-      clientId: process.env.APPLE_CLIENT_ID || '',
+      // A native-only server has no Services ID; without a client id better-auth warns on every boot.
+      clientId: appleServicesId ?? nativeAppleAudience ?? '',
       clientSecret: appleClientSecret ?? '',
       // Web ID tokens are issued to the Services ID, native iOS ones to the app bundle ID.
-      audience: [EnvVar.APPLE_CLIENT_ID, EnvVar.APPLE_APP_BUNDLE_IDENTIFIER].flatMap((name) => {
-        const value = process.env[name];
-        return isEnvConfigured(name, value) ? [value!] : [];
-      }),
-      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.apple],
+      audience: [appleServicesId, nativeAppleAudience].filter((id): id is string => id !== null),
+      // Native ID tokens are verified with Apple's public keys, so they need no client secret.
+      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.apple] || nativeAppleAudience !== null,
     },
   },
 
@@ -363,6 +369,10 @@ export const auth = betterAuth({
     // Native iOS app: /expo-authorization-proxy for OAuth, and the session cookie appended
     // as ?cookie= on redirects to non-http trusted callbacks. Web flows are untouched.
     expo(),
+    nativeAppPlugin({
+      authority: SERVER_AUTHORITY,
+      appleWebFlowEnabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.apple],
+    }),
   ],
 
   // Enable rate limiting in production only. Disable in test/dev/preview

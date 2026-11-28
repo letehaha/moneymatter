@@ -28,6 +28,8 @@ Open `http://<host>:8080`. Full walkthrough:
   meet + recipes per proxy (Nginx Proxy Manager, Caddy).
 - [Traefik overlay](docs/traefik-overlay.md) – bundled TLS termination with
   Let's Encrypt, for hosts without a reverse proxy.
+- [Connect the iOS app](docs/ios-app.md) – use the App Store app with your
+  server: requirements, sign-in methods, what does not work.
 - [Environment variable reference](docs/environment-reference.md) – every
   `.env` setting: required, optional features, frontend runtime, overlays.
 - [Troubleshooting](docs/troubleshooting.md) – common issues and fixes.

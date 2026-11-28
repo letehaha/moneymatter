@@ -916,7 +916,9 @@
       "passwordTooShort": "Password is too short.",
       "passwordTooLong": "Password is too long.",
       "reauthenticationRequired": "For your security, sign in again to make this change.",
-      "signupsDisabled": "Signups are disabled by the administrator."
+      "signupsDisabled": "Signups are disabled by the administrator.",
+      "appleNonceInvalid": "Apple sign-in could not be verified. Please try again.",
+      "appleNonceServerMismatch": "Apple sign-in was refused: the address you connected to does not match this server's configured address (BETTER_AUTH_URL)."
     }
   },
   "backup": {

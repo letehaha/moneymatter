@@ -39,6 +39,10 @@ export interface AuthFeaturesResponse {
   socialProviders: SocialOAuthProvider[];
   /** Generic OIDC sign-in; null when the server has no OIDC provider configured. */
   oidc: { name: string } | null;
+  /** Release version of the server; null for a build made without one (e.g. built from source). */
+  serverVersion: string | null;
+  /** Whether the iOS app can sign in with a native Apple ID token. Separate from `socialProviders`, which lists the web flows. */
+  nativeAppleSignIn: boolean;
 }
 
 export interface UserModel {

@@ -149,6 +149,7 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-access-token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           sentry-release: ${{ needs.prepare.outputs.sha }}
+          app-version: ${{ needs.prepare.outputs.version }}
           image-tag: sha-${{ needs.prepare.outputs.sha_short }}-${{ matrix.arch }}
           platforms: linux/${{ matrix.arch }}
           push: 'true'

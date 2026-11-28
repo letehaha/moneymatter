@@ -924,7 +924,9 @@
       "passwordTooShort": "Пароль закороткий.",
       "passwordTooLong": "Пароль задовгий.",
       "reauthenticationRequired": "Для вашої безпеки увійдіть знову, щоб внести цю зміну.",
-      "signupsDisabled": "Адміністратор вимкнув реєстрацію."
+      "signupsDisabled": "Адміністратор вимкнув реєстрацію.",
+      "appleNonceInvalid": "Не вдалося підтвердити вхід через Apple. Спробуйте ще раз.",
+      "appleNonceServerMismatch": "Вхід через Apple відхилено: адреса, до якої ви підключилися, не збігається з налаштованою адресою цього сервера (BETTER_AUTH_URL)."
     }
   },
   "backup": {

@@ -18,6 +18,8 @@ const features = (overrides: Partial<AuthFeaturesResponse> = {}): AuthFeaturesRe
   emailEnabled: false,
   socialProviders: [],
   oidc: null,
+  serverVersion: null,
+  nativeAppleSignIn: false,
   ...overrides,
 });
 
