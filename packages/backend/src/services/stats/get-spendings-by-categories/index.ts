@@ -37,6 +37,7 @@ interface GetSpendingsByCategoriesParams extends StatsScopeFilters {
   excludePlanned?: boolean;
   /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
   decimals: number;
+    timezone?: string;
 }
 
 const loadCategoryAllocations = async ({ decimals, ...params }: GetSpendingsByCategoriesParams) => {
@@ -90,11 +91,11 @@ const getMonthlySpendingsByCategories = withTransaction(
   async (params: MonthlyParams): Promise<{ month: string; spendings: GetSpendingsByCategoriesReturnType }[]> => {
     const { allocations, categories, excludedCategoryIds } = await loadCategoryAllocations(params);
 
-    const buckets = generatePeriodBuckets({ from: params.from, to: params.to, granularity: 'monthly' });
+    const buckets = generatePeriodBuckets({ from: params.from, to: params.to, granularity: 'monthly', timezone: params.timezone });
     const byBucket = buckets.map((): CategoryAllocations => ({ base: [], refunds: [] }));
     for (const side of ['base', 'refunds'] as const) {
       for (const leg of allocations[side]) {
-        byBucket[findBucketIndex({ transactionTime: leg.time, buckets })]?.[side].push(leg);
+        byBucket[findBucketIndex({ transactionTime: leg.time, buckets, timezone: params.timezone })]?.[side].push(leg);
       }
     }
 
