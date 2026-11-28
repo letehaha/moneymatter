@@ -30,7 +30,7 @@ export const authenticateSessionOrUploadToken = async (req: Request, res: Respon
     }
 
     req.user = user;
-    setSentryUser({ userId: user.id, username: user.username, sessionId: getCurrentSessionId() });
+    setSentryUser({ userId: user.id, sessionId: getCurrentSessionId() });
   } catch (error) {
     logger.error({ message: 'Upload token authentication failed', error: error as Error });
     captureException({ error });

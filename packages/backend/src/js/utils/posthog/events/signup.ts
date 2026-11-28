@@ -8,13 +8,11 @@ type SignupMethod = 'email' | 'google' | 'github' | 'apple' | 'passkey';
 export function trackSignup({
   userId,
   email,
-  username,
   method,
   sessionId,
 }: {
   userId: string | number;
   email?: string;
-  username?: string;
   method: SignupMethod;
   sessionId?: string | null;
 }): void {
@@ -23,7 +21,6 @@ export function trackSignup({
     event: 'user_signed_up',
     properties: {
       email,
-      username,
       signup_method: method,
     },
     sessionId,

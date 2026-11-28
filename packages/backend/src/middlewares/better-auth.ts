@@ -90,8 +90,6 @@ export const authenticateSession = async (req: Request, res: Response, next: Nex
     // Set user context for Sentry error tracking (includes sessionId for correlation)
     setSentryUser({
       userId: user.id,
-      username: user.username,
-      email: session.user.email,
       sessionId: getCurrentSessionId(),
     });
   } catch (error) {

@@ -43,7 +43,7 @@ Toda aplicación depende de algunos servicios externos. Una aplicación de confi
 
 - **Stripe** gestiona los pagos. Recibe los datos de su tarjeta, y MoneyMatter nunca recibe el número de la tarjeta.
 - **Resend** envía los correos de inicio de sesión y de la cuenta.
-- **Sentry** recibe los informes de errores, que incluyen su correo. Una sesión con un error puede incluir una grabación, con todo el texto oculto y los archivos multimedia bloqueados.
+- **Sentry** recibe los informes de errores, vinculados a su ID de cuenta, pero no a su correo electrónico ni a su nombre. Una sesión con un error puede incluir una grabación, con todo el texto oculto y los archivos multimedia bloqueados.
 - **PostHog** recibe analítica de producto vinculada a su cuenta y su correo. Las cuentas reales no tienen grabación de sesiones. Active Do Not Track en su navegador para detener la analítica que envía su navegador. El servidor sigue registrando eventos como los inicios de sesión.
 - **Su proveedor de datos bancarios y su proveedor de IA**, si usa la sincronización bancaria o la IA.
 

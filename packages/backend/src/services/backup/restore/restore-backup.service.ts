@@ -6,6 +6,7 @@ import UserSettings, { type SettingsSchema, ZodSettingsSchema } from '@models/us
 import Users from '@models/users.model';
 import { unifyAiConnections } from '@root/migrations/utils/unify-ai-connections';
 import { recordFirstBudgetPlan } from '@services/budget-plans/create-plan';
+import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
 import { runUserDestroyLifecycle } from '@services/user/user-destroy-lifecycle';
 import { destroyUserOwnedData } from '@services/user/wipe-user-data.service';
 
@@ -229,10 +230,11 @@ export async function restoreUserBackup({
   // than joining a committed one.
   triggerPostRestorePriceSync({ securityIds: securities.resolvedSecurityIds });
 
+  const sourceEmail = archive.manifest.user?.email;
+  const restoringEmail = sourceEmail ? await getEmailForUser({ userId }).catch(() => null) : null;
   trackBackupRestored({
     userId,
-    sourceUsername: archive.manifest.user?.username,
-    sourceEmail: archive.manifest.user?.email,
+    sourceIsSameAccount: sourceEmail && restoringEmail ? sourceEmail === restoringEmail : null,
     backupExportedAt: archive.manifest.exportedAt,
   });
 

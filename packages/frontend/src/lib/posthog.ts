@@ -183,23 +183,17 @@ export function trackAnalyticsEvent(eventData: AnalyticsEvent): boolean {
 export function identifyUser({
   userId,
   email,
-  username,
   properties,
 }: {
   userId: string | number;
   email?: string;
-  username?: string;
   properties?: Record<string, unknown>;
 }): void {
   if (!isPostHogEnabled()) {
     return;
   }
 
-  posthog.identify(String(userId), {
-    email,
-    username,
-    ...properties,
-  });
+  posthog.identify(String(userId), { email, ...properties });
 }
 
 /**

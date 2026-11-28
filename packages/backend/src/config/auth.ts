@@ -483,8 +483,6 @@ export const auth = betterAuth({
               context: {
                 stage: 'createAppUserWithUniqueUsername',
                 authUserId: user.id,
-                email: user.email,
-                requestedName: user.name,
                 errorName: error instanceof Error ? error.name : 'unknown',
               },
             });
@@ -507,7 +505,6 @@ export const auth = betterAuth({
                 context: {
                   stage: 'rollbackOrphanBaUser',
                   authUserId: user.id,
-                  email: user.email,
                   originalError: error instanceof Error ? error.message : String(error),
                 },
               });
@@ -541,7 +538,6 @@ export const auth = betterAuth({
               userId: appUser.id,
               properties: {
                 email: user.email,
-                username: appUser.username,
                 createdAt: new Date().toISOString(),
               },
             });
@@ -553,7 +549,6 @@ export const auth = betterAuth({
             trackSignup({
               userId: appUser.id,
               email: user.email,
-              username: appUser.username,
               method: 'email',
             });
           } catch (analyticsError) {
