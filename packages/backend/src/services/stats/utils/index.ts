@@ -29,6 +29,7 @@ export { getScopedEnabledPortfolios } from './scoped-portfolios';
 export { fetchSavingsTransactions } from './savings-transactions';
 
 type ColumnName = 'time' | 'date';
+
 interface DateQuery {
   // yyyy-mm-dd
   from?: string;
@@ -86,15 +87,15 @@ const GRANULARITY_SPECS: Record<StatsGranularity, GranularitySpec> = {
   yearly: { startOf: startOfYear, endOf: endOfYear, advance: (date) => addYears(date, 1) },
   quarterly: { startOf: startOfQuarter, endOf: endOfQuarter, advance: (date) => addQuarters(date, 1) },
   monthly: { startOf: startOfMonth, endOf: endOfMonth, advance: (date) => addMonths(date, 1) },
+  biweekly: {
+    startOf: (date) => startOfWeek(date, WEEK_OPTS),
+    endOf: (date) => endOfWeek(addWeeks(date, 1), WEEK_OPTS),
+    advance: (date) => addWeeks(date, 2),
+  },
   weekly: {
     startOf: (date) => startOfWeek(date, WEEK_OPTS),
     endOf: (date) => endOfWeek(date, WEEK_OPTS),
     advance: (date) => addWeeks(date, 1),
-  },
-  biweekly: {
-    startOf: (date) => startOfWeek(date, WEEK_OPTS),
-    endOf: (date) => endOfDay(addDays(addWeeks(date, 2), -1)),
-    advance: (date) => addWeeks(date, 2),
   },
   daily: { startOf: startOfDay, endOf: endOfDay, advance: (date) => addDays(date, 1) },
 };
@@ -107,50 +108,90 @@ const getPayMonthSpec = (payday: number): GranularitySpec => ({
 });
 
 /**
+ * The calendar date (`yyyy-mm-dd`) of `value` in `timezone`, as a UTC-midnight Date.
+ * A plain `yyyy-mm-dd` string is already a local calendar date, so it is used as-is;
+ * a timestamp is converted to the date the user saw in their own timezone. Bucket
+ * starts/ends are therefore local calendar dates, represented as UTC-midnight dates
+ * the same way the rest of this file represents calendar dates, instead of the UTC
+ * date of the instant (which moves a 02:22 transaction on the 1st into the previous
+ * month for a positive-offset timezone).
+ */
+function zonedCalendarDate(value: string | Date, timezone: string): Date {
+  const dateString =
+    typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      ? value
+      : new Intl.DateTimeFormat('en-CA', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }).format(new Date(value));
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+/**
  * Generates the [from, to] time buckets (one per report column) for a granularity. Both edges are
  * clamped to the requested range exactly — the first bucket starts at `from`, the last ends at
  * `endOfDay(to)` — so a transaction on the boundary day is still counted. Shared by the cash-flow,
  * pivot and net-worth-history reports.
+ *
+ * When `timezone` is given, bucket boundaries are the user's local calendar dates: a transaction
+ * at 02:22 on the 1st of the month in GMT+3 belongs to that month, not to the previous one.
+ * Without a timezone the previous UTC behaviour is unchanged.
  */
 export const generatePeriodBuckets = ({
   from,
   to,
   granularity,
   payday = 1,
+  timezone,
 }: {
   from: string;
   to: string;
   granularity: StatsGranularity;
   /** Day of month (1-28) `monthly` buckets start on. */
   payday?: number;
+  /** IANA timezone of the requesting user, e.g. `Europe/Kyiv`. */
+  timezone?: string;
 }): PeriodBucket[] => {
   const spec = granularity === 'monthly' && payday !== 1 ? getPayMonthSpec(payday) : GRANULARITY_SPECS[granularity];
   const buckets: PeriodBucket[] = [];
-  const startDate = new Date(from);
-  const endDate = endOfDay(new Date(to));
-
+  const startDate = timezone ? zonedCalendarDate(from, timezone) : new Date(from);
+  const endDate = endOfDay(timezone ? zonedCalendarDate(to, timezone) : new Date(to));
   const withinRange = (date: Date): boolean => isBefore(date, endDate) || date.getTime() === endDate.getTime();
-
   let currentStart = spec.startOf(startDate);
   while (withinRange(currentStart)) {
     buckets.push({ periodStart: max([currentStart, startDate]), periodEnd: min([spec.endOf(currentStart), endDate]) });
     currentStart = spec.advance(currentStart);
   }
-
   return buckets;
 };
 
 /**
- * Index of the bucket a transaction time falls into, or -1 when it is outside every bucket.
- * Both edges are inclusive, so a time exactly on a `periodStart` or `periodEnd` counts.
+ * Index of the bucket a transaction belongs to, or -1 when it falls outside the range.
+ * With `timezone`, the transaction is placed by its local calendar date, so a transaction
+ * at 02:22 on the 1st in GMT+3 lands in that month's bucket even though its UTC instant
+ * is still on the last day of the previous month.
  */
-export const findBucketIndex = ({
+export function findBucketIndex({
   transactionTime,
   buckets,
+  timezone,
 }: {
-  transactionTime: Date;
+  transactionTime: string | Date;
   buckets: PeriodBucket[];
-}): number => {
-  const txTime = transactionTime.getTime();
-  return buckets.findIndex((bucket) => txTime >= bucket.periodStart.getTime() && txTime <= bucket.periodEnd.getTime());
-};
+  /** IANA timezone of the requesting user, e.g. `Europe/Kyiv`. */
+  timezone?: string;
+}): number {
+  const time = (timezone ? zonedCalendarDate(transactionTime, timezone) : new Date(transactionTime)).getTime();
+  if (Number.isNaN(time)) {
+    return -1;
+  }
+  for (let i = buckets.length - 1; i >= 0; i -= 1) {
+    if (time >= buckets[i].periodStart.getTime()) {
+      return i;
+    }
+  }
+  return -1;
+}
