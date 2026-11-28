@@ -1,6 +1,5 @@
 import type { PivotGranularity } from '@bt/shared/types';
 import { format, getQuarter, getYear, startOfWeek } from 'date-fns';
-
 import { PeriodBucket, generatePeriodBuckets } from '../utils';
 
 // Weeks start on Monday to match the cash-flow report and ISO conventions.
@@ -9,16 +8,20 @@ const WEEK_OPTS = { weekStartsOn: 1 } as const;
 /**
  * Generates the time buckets (one per pivot column) for a granularity over [from, to]. Bucketing
  * and edge clamping are shared with the cash-flow report via `generatePeriodBuckets`.
+ * When `timezone` is given, buckets are the user's local calendar periods.
  */
 export const generatePivotBuckets = ({
   from,
   to,
   granularity,
+  timezone,
 }: {
   from: string;
   to: string;
   granularity: PivotGranularity;
-}): PeriodBucket[] => generatePeriodBuckets({ from, to, granularity });
+  /** IANA timezone of the requesting user, e.g. `Europe/Kyiv`. */
+  timezone?: string;
+}): PeriodBucket[] => generatePeriodBuckets({ from, to, granularity, timezone });
 
 /**
  * Stable, range-unique column key. The year is always present so keys never collide across
@@ -64,6 +67,6 @@ export const getBucketLabel = ({
     case 'monthly':
       return format(periodStart, 'MMM yyyy');
     case 'weekly':
-      return `Wk of ${format(startOfWeek(periodStart, WEEK_OPTS), 'yyyy-MM-dd')}`;
+      return format(startOfWeek(periodStart, WEEK_OPTS), 'dd MMM yyyy');
   }
 };
